@@ -1,0 +1,62 @@
+import { Rect } from "./Rect";
+
+export type Column_Def = {
+    name:  string;
+    key:   string;
+    width: number;
+}
+
+export type Scrollbar = {
+    outer_rect: Rect;
+    track_rect: Rect;
+    thumb_rect: Rect;
+    max_thumb_position: number;
+    drag_offset: number;
+    is_dragging: boolean;
+}
+
+export type Dimensions = {
+    width:  number;
+    height: number;
+}
+
+export type Point = {
+    x: number;
+    y: number;
+}
+
+export type CT_Mouse_Down_Event = {
+    type: "mousedown";
+    button: number;
+}
+
+export type CT_Mouse_Up_Event = {
+    type: "mouseup";
+    button: number;
+}
+
+export type CT_Mouse_Move_Event = {
+    type: "mousemove";
+    x: number;
+    y: number;
+}
+
+export type CT_Wheel_Event = {
+    type: "wheel";
+    x: number;
+    y: number;
+}
+
+export type CT_Resize_Event = {
+    type: "resize";
+    width: number;
+    height: number;
+}
+
+export type CT_Event =
+    CT_Mouse_Down_Event
+    | CT_Mouse_Up_Event
+    | CT_Mouse_Move_Event
+    | CT_Wheel_Event
+    | CT_Resize_Event;
+
