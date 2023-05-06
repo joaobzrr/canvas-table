@@ -1,6 +1,7 @@
 export const background_color = "#041818";
 export const border_color = "#0fdfaf";
 export const font_color = "#0fdfaf";
+export const select_color = "#0b4141";
 export const scrollbar_background_color = "#041818";
 export const scrollbar_thumb_color = "#0fdfaf";
 export const scrollbar_corner_color = "#041818";

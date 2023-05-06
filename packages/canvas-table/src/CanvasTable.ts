@@ -18,9 +18,10 @@ export default class CanvasTable {
     events: types.CT_Event[] = [];
     resize_observer: ResizeObserver;
 
-    main_draw_area:   Rect;
-    header_draw_area: Rect;
-    body_draw_area:   Rect;
+    main_draw_area:       Rect;
+    header_draw_area:     Rect;
+    body_draw_area:       Rect;
+    table_body_draw_area: Rect;
 
     view: Rect;
 
@@ -73,13 +74,22 @@ export default class CanvasTable {
 
     cursor: string = "auto";
 
-    constructor(canvas: HTMLCanvasElement, columns: types.Column_Def[], rows: Record<string, any>[]) {
+    selected_row?: number;
+    on_row_click?: (row: Record<string, any>, index: number) => void;
+
+    constructor(
+        canvas: HTMLCanvasElement,
+        columns: types.Column_Def[],
+        rows: Record<string, any>[],
+        on_row_click?: (row: Record<string, any>, index: number) => void
+    ) {
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d")!;
 
-        this.main_draw_area   = new Rect(0, 0, 1, 1);
-        this.header_draw_area = new Rect(0, 0, 1, config.table_row_height);
-        this.body_draw_area   = new Rect(0, this.header_draw_area.bottom, 1, 1);
+        this.main_draw_area       = new Rect(0, 0, 1, 1);
+        this.header_draw_area     = new Rect(0, 0, 1, config.table_row_height);
+        this.body_draw_area       = new Rect(0, this.header_draw_area.bottom, 1, 1);
+        this.table_body_draw_area = new Rect(0, this.header_draw_area.bottom, 1, 1);
 
         this.view = new Rect(0, 0, 1, 1);
 
@@ -150,6 +160,8 @@ export default class CanvasTable {
 
         this.substring_length_cache = utils.make_matrix(
             this.rows.length + 1, this.column_defs.length);
+
+        this.on_row_click = on_row_click;
     }
 
     reinit(rows: Record<string, any>[], column_defs: types.Column_Def[]) {
@@ -175,6 +187,10 @@ export default class CanvasTable {
         this.substring_length_cache = utils.make_matrix(this.num_rows + 1, this.num_cols);
     }
 
+    set_selected_row(row: number | undefined) {
+        this.selected_row = row;
+    }
+
     destroy() {
         this.canvas.removeEventListener("mousedown", this.handle_mousedown);
         this.canvas.removeEventListener("wheel", this.handle_wheel);
@@ -191,20 +207,19 @@ export default class CanvasTable {
             const event = this.events.pop()!;
             switch (event.type) {
                 case "mousedown": {
-                    // Setup horizontal thumb dragging
                     if (this.hsb_thumb_rect.contains(this.mouse_pos)) {
                         this.hsb_drag_offset = this.mouse_pos.x - this.hsb_thumb_rect.left;
                         this.hsb_is_dragging = true;
-                    }
-
-                    if (this.vsb_thumb_rect.contains(this.mouse_pos)) {
+                    } else if (this.vsb_thumb_rect.contains(this.mouse_pos)) {
                         this.vsb_drag_offset = this.mouse_pos.y - this.vsb_thumb_rect.top;
                         this.vsb_is_dragging = true;
-                    }
-
-                    if (this.column_is_hovered !== null) {
+                    } else if (this.column_is_hovered !== null) {
                         this.column_to_resize = this.column_is_hovered;
                         this.is_resizing_column = true;
+                    } else if (this.on_row_click && this.table_body_draw_area.contains(this.mouse_pos)) {
+                        const mouse_y = this.mouse_pos.y + this.view.top;
+                        const row_index = Math.floor((mouse_y - this.header_draw_area.height) / config.table_row_height);
+                        this.on_row_click(this.rows[row_index], row_index);
                     }
                } break;
                 case "mouseup": {
@@ -294,6 +309,23 @@ export default class CanvasTable {
 
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Draw selected row
+        if (this.selected_row !== undefined) {
+            this.ctx.save();
+            this.ctx.fillStyle = config.select_color;
+
+            viewport.push(this.view.position.rev());
+            viewport.translate_y(this.body_draw_area.top);
+
+            const y = viewport.calc_y(this.selected_row * config.table_row_height);
+            const rect = new Rect(0, y, this.table_body_draw_area.width, config.table_row_height);
+
+            this.draw_rect(this.ctx, rect, "fill");
+
+            this.ctx.restore();
+            viewport.pop();
+        }
 
         // Draw header
         {
@@ -521,6 +553,9 @@ export default class CanvasTable {
         }
 
         this.header_draw_area.width = this.main_draw_area.width;
+
+        this.table_body_draw_area.width  = Math.min(this.table_body_dimensions.width,  this.body_draw_area.width);
+        this.table_body_draw_area.height = Math.min(this.table_body_dimensions.height, this.body_draw_area.height);
 
         this.view.width  = this.body_draw_area.width;
         this.view.height = this.body_draw_area.height;
