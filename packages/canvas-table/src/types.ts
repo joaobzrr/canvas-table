@@ -1,18 +1,7 @@
-import { Rect } from "./Rect";
-
 export type Column_Def = {
     name:  string;
     key:   string;
     width: number;
-}
-
-export type Scrollbar = {
-    outer_rect: Rect;
-    track_rect: Rect;
-    thumb_rect: Rect;
-    max_thumb_position: number;
-    drag_offset: number;
-    is_dragging: boolean;
 }
 
 export type Dimensions = {

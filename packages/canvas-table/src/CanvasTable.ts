@@ -34,8 +34,19 @@ export default class CanvasTable {
     num_rows: number;
     num_cols: number;
 
-    scrollbar_x: types.Scrollbar;
-    scrollbar_y: types.Scrollbar;
+    hsb_outer_rect: Rect;
+    hsb_track_rect: Rect;
+    hsb_thumb_rect: Rect;
+    hsb_max_thumb_position = 0;
+    hsb_drag_offset = 0;
+    hsb_is_dragging = false;
+
+    vsb_outer_rect: Rect;
+    vsb_track_rect: Rect;
+    vsb_thumb_rect: Rect;
+    vsb_max_thumb_position = 0;
+    vsb_drag_offset = 0;
+    vsb_is_dragging = false;
 
     overflow_x: boolean;
     overflow_y: boolean;
@@ -104,8 +115,13 @@ export default class CanvasTable {
 
         this.mouse_pos = new Vector2();
 
-        this.scrollbar_x = this.make_scrollbar_x();
-        this.scrollbar_y = this.make_scrollbar_y();
+        this.hsb_outer_rect = new Rect(0, 0, 1, config.scrollbar_size);
+        this.hsb_track_rect = new Rect(this.hsb_outer_rect.left + config.scrollbar_thumb_margin, 0, 1, track_size);
+        this.hsb_thumb_rect = new Rect(this.hsb_track_rect.left, 0, 1, track_size);
+
+        this.vsb_outer_rect = new Rect(0, this.header_draw_area.height, config.scrollbar_size, 1);
+        this.vsb_track_rect = new Rect(0, this.vsb_outer_rect.top + config.scrollbar_thumb_margin, track_size, 1);
+        this.vsb_thumb_rect = new Rect(0, this.vsb_track_rect.top, track_size, 1);
 
         this.handle_mousedown = this.handle_mousedown.bind(this);
         this.handle_mouseup   = this.handle_mouseup.bind(this);
@@ -176,23 +192,14 @@ export default class CanvasTable {
             switch (event.type) {
                 case "mousedown": {
                     // Setup horizontal thumb dragging
-                    {
-                        const { thumb_rect } = this.scrollbar_x;
-
-                        if (thumb_rect.contains(this.mouse_pos)) {
-                            this.scrollbar_x.drag_offset = this.mouse_pos.x - thumb_rect.left;
-                            this.scrollbar_x.is_dragging = true;
-                        }
+                    if (this.hsb_thumb_rect.contains(this.mouse_pos)) {
+                        this.hsb_drag_offset = this.mouse_pos.x - this.hsb_thumb_rect.left;
+                        this.hsb_is_dragging = true;
                     }
 
-                    // Setup vertical thumb dragging
-                    {
-                        const { thumb_rect } = this.scrollbar_y;
-
-                        if (thumb_rect.contains(this.mouse_pos)) {
-                            this.scrollbar_y.drag_offset = this.mouse_pos.y - thumb_rect.top;
-                            this.scrollbar_y.is_dragging = true;
-                        }
+                    if (this.vsb_thumb_rect.contains(this.mouse_pos)) {
+                        this.vsb_drag_offset = this.mouse_pos.y - this.vsb_thumb_rect.top;
+                        this.vsb_is_dragging = true;
                     }
 
                     if (this.column_is_hovered !== null) {
@@ -203,8 +210,8 @@ export default class CanvasTable {
                 case "mouseup": {
                     this.is_resizing_column = false;
 
-                    this.scrollbar_x.is_dragging = false;
-                    this.scrollbar_y.is_dragging = false;
+                    this.hsb_is_dragging = false;
+                    this.vsb_is_dragging = false;
 
                     this.cursor = "auto";
                 } break;
@@ -214,52 +221,41 @@ export default class CanvasTable {
                     this.mouse_pos.y = event.y - canvasBoundingClientRect.top;
 
                     // Move horizontal scrollbar thumb and view horizontally
-                    {
-                        const { track_rect, thumb_rect, max_thumb_position, drag_offset, is_dragging } = this.scrollbar_x;
+                    if (this.hsb_is_dragging) {
+                        this.hsb_thumb_rect.left = utils.clamp(this.mouse_pos.x - this.hsb_drag_offset, this.hsb_track_rect.left, this.hsb_max_thumb_position);
+                        this.recalculate_view_x_position();
 
-                        if (is_dragging) {
-                            thumb_rect.left = utils.clamp(this.mouse_pos.x - drag_offset, track_rect.left, max_thumb_position);
-                            this.recalculate_view_x_position();
-
-                            this.render_indices = this.calculate_render_indices();
-                        }
+                        this.render_indices = this.calculate_render_indices();
                     }
 
                     // Move vertical scrollbar thumb and view vertically
-                    {
-                        const { track_rect, thumb_rect, max_thumb_position, drag_offset, is_dragging } = this.scrollbar_y;
+                    if (this.vsb_is_dragging) {
+                        this.vsb_thumb_rect.top = utils.clamp(this.mouse_pos.y - this.vsb_drag_offset, this.vsb_track_rect.top, this.vsb_max_thumb_position);
+                        this.recalculate_view_y_position();
 
-                        if (is_dragging) {
-                            thumb_rect.top = utils.clamp(this.mouse_pos.y - drag_offset, track_rect.top, max_thumb_position);
-                            this.recalculate_view_y_position();
-
-                            this.render_indices = this.calculate_render_indices();
-                        }
+                        this.render_indices = this.calculate_render_indices();
                     }
 
                     // Update cursor if mouse is over a column's resize area
                     this.column_is_hovered = this.find_index_of_column_to_resize();
                     this.cursor = this.column_is_hovered !== null || this.is_resizing_column ? "col-resize" : "auto";
 
-                    // Resize column
-                    {
-                        if (this.is_resizing_column) {
-                            const { view, column_widths, column_positions, column_to_resize, mouse_pos } = this;
+                    if (this.is_resizing_column) {
+                        const { view, column_widths, column_positions, column_to_resize, mouse_pos } = this;
 
-                            const position = column_positions[column_to_resize];
-                            const calculated_column_width = mouse_pos.x + view.left - position;
-                            const actual_column_width = Math.max(calculated_column_width, config.table_column_min_width);
-                            column_widths[column_to_resize] = actual_column_width;
+                        const position = column_positions[column_to_resize];
+                        const calculated_column_width = mouse_pos.x + view.left - position;
+                        const actual_column_width = Math.max(calculated_column_width, config.table_column_min_width);
+                        column_widths[column_to_resize] = actual_column_width;
 
-                            this.column_positions = utils.accumulate(this.column_widths);
-                            this.table_body_dimensions.width = utils.sum_array(this.column_widths);
+                        this.column_positions = utils.accumulate(this.column_widths);
+                        this.table_body_dimensions.width = utils.sum_array(this.column_widths);
 
-                            this.reflow();
+                        this.reflow();
 
-                            const cache = this.substring_length_cache;
-                            for (let i = 0; i < cache.length; i++) {
-                                cache[i][column_to_resize] = undefined;
-                            }
+                        const cache = this.substring_length_cache;
+                        for (let i = 0; i < cache.length; i++) {
+                            cache[i][column_to_resize] = undefined;
                         }
                     }
                 } break;
@@ -437,8 +433,8 @@ export default class CanvasTable {
                 this.ctx.strokeStyle = config.border_color;
                 this.ctx.fillStyle = config.scrollbar_background_color;
 
-                this.draw_rect(this.ctx, this.scrollbar_x.outer_rect, "fill");
-                this.draw_rect(this.ctx, this.scrollbar_x.outer_rect, "stroke");
+                this.draw_rect(this.ctx, this.hsb_outer_rect, "fill");
+                this.draw_rect(this.ctx, this.hsb_outer_rect, "stroke");
 
                 this.ctx.restore();
             }
@@ -448,7 +444,7 @@ export default class CanvasTable {
                 this.ctx.save();
                 this.ctx.fillStyle = config.scrollbar_thumb_color;
 
-                this.draw_rect(this.ctx, this.scrollbar_x.thumb_rect, "fill");
+                this.draw_rect(this.ctx, this.hsb_thumb_rect, "fill");
 
                 this.ctx.restore();
             }
@@ -462,8 +458,8 @@ export default class CanvasTable {
                 this.ctx.strokeStyle = config.border_color;
                 this.ctx.fillStyle = config.scrollbar_background_color;
 
-                this.draw_rect(this.ctx, this.scrollbar_y.outer_rect, "fill");
-                this.draw_rect(this.ctx, this.scrollbar_y.outer_rect, "stroke");
+                this.draw_rect(this.ctx, this.vsb_outer_rect, "fill");
+                this.draw_rect(this.ctx, this.vsb_outer_rect, "stroke");
 
                 this.ctx.restore();
             }
@@ -473,7 +469,7 @@ export default class CanvasTable {
                 this.ctx.save();
                 this.ctx.fillStyle = config.scrollbar_thumb_color;
 
-                this.draw_rect(this.ctx, this.scrollbar_y.thumb_rect, "fill");
+                this.draw_rect(this.ctx, this.vsb_thumb_rect, "fill");
 
                 this.ctx.restore();
             }
@@ -539,83 +535,62 @@ export default class CanvasTable {
         this.view_max_left = this.scroll_dimensions.width  - this.view.width;
         this.view_max_top  = this.scroll_dimensions.height - this.view.height;
 
-        {
-            const { outer_rect, track_rect, thumb_rect } = this.scrollbar_x;
+        this.hsb_outer_rect.width = this.main_draw_area.width;
+        this.hsb_outer_rect.top   = this.main_draw_area.bottom;
 
-            outer_rect.width = this.main_draw_area.width;
-            outer_rect.top   = this.main_draw_area.bottom;
+        this.hsb_track_rect.width = this.hsb_outer_rect.width - scrollbar_thumb_margin_times_two;
+        this.hsb_track_rect.top   = this.hsb_outer_rect.top + config.scrollbar_thumb_margin;
 
-            track_rect.width = outer_rect.width - scrollbar_thumb_margin_times_two;
-            track_rect.top   = outer_rect.top + config.scrollbar_thumb_margin;
+        const new_thumb_rect_width = utils.scale(this.view.width, 0, this.scroll_dimensions.width, 0, this.hsb_track_rect.width);
+        this.hsb_thumb_rect.width = Math.max(new_thumb_rect_width, config.scrollbar_thumb_min_length);
+        this.hsb_thumb_rect.top = this.hsb_track_rect.top;
 
-            const new_thumb_rect_width = utils.scale(this.view.width, 0, this.scroll_dimensions.width, 0, track_rect.width);
-            thumb_rect.width = Math.max(new_thumb_rect_width, config.scrollbar_thumb_min_length);
-            thumb_rect.top = track_rect.top;
+        const max_thumb_position = this.hsb_track_rect.right - this.hsb_thumb_rect.width;
+        this.hsb_max_thumb_position = max_thumb_position;
 
-            const max_thumb_position = track_rect.right - thumb_rect.width;
-            this.scrollbar_x.max_thumb_position = max_thumb_position;
-
-            if (this.view.right > this.scroll_dimensions.width) {
-                this.view.right = this.scroll_dimensions.width;
-                thumb_rect.left = max_thumb_position;
-            } else {
-                this.recalculate_scrollbar_x_thumb_position();
-            }
+        if (this.view.right > this.scroll_dimensions.width) {
+            this.view.right = this.scroll_dimensions.width;
+            this.hsb_thumb_rect.left = max_thumb_position;
+        } else {
+            this.recalculate_scrollbar_x_thumb_position();
         }
 
-        {
-            const { outer_rect, track_rect, thumb_rect } = this.scrollbar_y;
+        this.vsb_outer_rect.height = this.main_draw_area.height - this.header_draw_area.height;
+        this.vsb_outer_rect.left   = this.main_draw_area.right;
 
-            outer_rect.height = this.main_draw_area.height - this.header_draw_area.height;
-            outer_rect.left   = this.main_draw_area.right;
+        this.vsb_track_rect.height = this.vsb_outer_rect.height - scrollbar_thumb_margin_times_two;
+        this.vsb_track_rect.left   = this.vsb_outer_rect.left + config.scrollbar_thumb_margin;
 
-            track_rect.height = outer_rect.height - scrollbar_thumb_margin_times_two;
-            track_rect.left = outer_rect.left + config.scrollbar_thumb_margin;
+        const thumb_rect_new_height = utils.scale(this.view.height, 0, this.scroll_dimensions.height, 0, this.vsb_track_rect.height);
+        this.vsb_thumb_rect.height = Math.max(thumb_rect_new_height, config.scrollbar_thumb_min_length);
+        this.vsb_thumb_rect.left = this.vsb_track_rect.left;
 
-            const thumb_rect_new_height = utils.scale(this.view.height, 0, this.scroll_dimensions.height, 0, track_rect.height);
-            thumb_rect.height = Math.max(thumb_rect_new_height, config.scrollbar_thumb_min_length);
-            thumb_rect.left = track_rect.left;
+        this.vsb_max_thumb_position = this.vsb_track_rect.bottom - this.vsb_thumb_rect.height;;
 
-            const max_thumb_position = track_rect.bottom - thumb_rect.height;
-            this.scrollbar_y.max_thumb_position = max_thumb_position;
-
-            if (this.view.bottom > this.scroll_dimensions.height) {
-                this.view.bottom = this.scroll_dimensions.height;
-                thumb_rect.top = max_thumb_position;
-            } else {
-                this.recalculate_scrollbar_y_thumb_position();
-            }
+        if (this.view.bottom > this.scroll_dimensions.height) {
+            this.view.bottom = this.scroll_dimensions.height;
+            this.vsb_thumb_rect.top = max_thumb_position;
+        } else {
+            this.recalculate_scrollbar_y_thumb_position();
         }
 
         this.render_indices = this.calculate_render_indices();
     }
 
     recalculate_view_x_position() {
-        const { view, view_max_left } = this;
-        const { track_rect, thumb_rect, max_thumb_position } = this.scrollbar_x;
-
-        view.left = utils.scale(thumb_rect.left, track_rect.left, max_thumb_position, 0, view_max_left);
+        this.view.left = utils.scale(this.hsb_thumb_rect.left, this.hsb_track_rect.left, this.hsb_max_thumb_position, 0, this.view_max_left);
     }
 
     recalculate_view_y_position() {
-        const { view, view_max_top } = this;
-        const { track_rect, thumb_rect, max_thumb_position } = this.scrollbar_y;
-
-        view.top = utils.scale(thumb_rect.top, track_rect.top, max_thumb_position, 0, view_max_top);
+        this.view.top = utils.scale(this.vsb_thumb_rect.top, this.vsb_track_rect.top, this.vsb_max_thumb_position, 0, this.view_max_top);
     }
 
     recalculate_scrollbar_x_thumb_position() {
-        const { view, view_max_left } = this;
-        const { track_rect, thumb_rect, max_thumb_position } = this.scrollbar_x;
-
-        thumb_rect.left = utils.scale(view.left, 0, view_max_left, track_rect.left, max_thumb_position);
+        this.hsb_thumb_rect.left = utils.scale(this.view.left, 0, this.view_max_left, this.hsb_track_rect.left, this.hsb_max_thumb_position);
     }
 
     recalculate_scrollbar_y_thumb_position() {
-        const { view, view_max_top } = this;
-        const { track_rect, thumb_rect, max_thumb_position } = this.scrollbar_y;
-
-        thumb_rect.top = utils.scale(view.top, 0, view_max_top, track_rect.top, max_thumb_position);
+        this.vsb_thumb_rect.top = utils.scale(this.view.top, 0, this.view_max_top, this.vsb_track_rect.top, this.vsb_max_thumb_position);
     }
 
     find_index_of_column_to_resize() {
@@ -662,8 +637,6 @@ export default class CanvasTable {
     }
 
     handle_mousedown(event: MouseEvent) {
-        console.log("ADORO");
-
         this.events.push({
             type: "mousedown",
             button: event.button
