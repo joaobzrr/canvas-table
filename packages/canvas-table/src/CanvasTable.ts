@@ -9,7 +9,7 @@ const scrollbar_thumb_margin_times_two = config.scrollbar_thumb_margin * 2;
 const track_size = config.scrollbar_size - scrollbar_thumb_margin_times_two - 1;
 const ellipsis = "...";
 
-export default class CanvasTable {
+export default class CanvasTable<T extends Record<string, string>> {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
 
@@ -30,7 +30,7 @@ export default class CanvasTable {
     grid_dimensions:       types.Dimensions;
 
     column_defs: types.Column_Def[];
-    rows: Record<string, any>[];
+    rows: types.Data_Row<T>[];
 
     num_rows: number;
     num_cols: number;
@@ -74,14 +74,14 @@ export default class CanvasTable {
 
     cursor: string = "auto";
 
-    selected_row?: number;
-    on_row_click?: (row: Record<string, any>, index: number) => void;
+    selected_row_id?: number | string;
+    on_select_row?: (row: types.Data_Row<T>) => void;
 
     constructor(
         canvas: HTMLCanvasElement,
         columns: types.Column_Def[],
-        rows: Record<string, any>[],
-        on_row_click?: (row: Record<string, any>, index: number) => void
+        rows: types.Data_Row<T>[],
+        on_select_row?: (row: types.Data_Row<T>) => void
     ) {
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d")!;
@@ -161,10 +161,10 @@ export default class CanvasTable {
         this.substring_length_cache = utils.make_matrix(
             this.rows.length + 1, this.column_defs.length);
 
-        this.on_row_click = on_row_click;
+        this.on_select_row = on_select_row;
     }
 
-    reinit(rows: Record<string, any>[], column_defs: types.Column_Def[]) {
+    reinit(rows: types.Data_Row<T>[], column_defs: types.Column_Def[]) {
         this.rows = rows;
         this.column_defs = column_defs;
 
@@ -185,10 +185,6 @@ export default class CanvasTable {
         // the entire matrix, clearing a column and setting the value for a
         // specific element.
         this.substring_length_cache = utils.make_matrix(this.num_rows + 1, this.num_cols);
-    }
-
-    set_selected_row(row: number | undefined) {
-        this.selected_row = row;
     }
 
     destroy() {
@@ -216,10 +212,16 @@ export default class CanvasTable {
                     } else if (this.column_is_hovered !== null) {
                         this.column_to_resize = this.column_is_hovered;
                         this.is_resizing_column = true;
-                    } else if (this.on_row_click && this.table_body_draw_area.contains(this.mouse_pos)) {
-                        const mouse_y = this.mouse_pos.y + this.view.top;
-                        const row_index = Math.floor((mouse_y - this.header_draw_area.height) / config.table_row_height);
-                        this.on_row_click(this.rows[row_index], row_index);
+                    } else if (this.on_select_row && this.table_body_draw_area.contains(this.mouse_pos)) {
+                        const viewport = new Viewport();
+                        viewport.push(this.view.position);
+                        viewport.translate_y(-this.body_draw_area.top);
+
+                        const row_index = Math.floor(viewport.calc_y(this.mouse_pos.y) / config.table_row_height);
+                        const row = this.rows[row_index];
+                        this.selected_row_id = row.id;
+
+                        this.on_select_row(row);
                     }
                } break;
                 case "mouseup": {
@@ -311,20 +313,33 @@ export default class CanvasTable {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Draw selected row
-        if (this.selected_row !== undefined) {
-            this.ctx.save();
-            this.ctx.fillStyle = config.select_color;
+        if (this.selected_row_id !== undefined) {
+            // Find row index of selected row 
+            let row_index = -1;
+            for (let i = this.render_indices.top; i < this.render_indices.bottom; i++) {
+                const row = this.rows[i];
+                if (this.selected_row_id === row.id) {
+                    row_index = i;
+                    break;
+                }
+            }
 
-            viewport.push(this.view.position.rev());
-            viewport.translate_y(this.body_draw_area.top);
+            if (row_index !== -1) {
+                this.ctx.save();
+                this.ctx.fillStyle = config.select_color;
 
-            const y = viewport.calc_y(this.selected_row * config.table_row_height);
-            const rect = new Rect(0, y, this.table_body_draw_area.width, config.table_row_height);
+                viewport.push(this.view.position.rev());
+                viewport.translate_y(this.body_draw_area.top);
 
-            this.draw_rect(this.ctx, rect, "fill");
+                const y = viewport.calc_y(row_index * config.table_row_height);
+                const rect = new Rect(0, y, this.table_body_draw_area.width, config.table_row_height);
 
-            this.ctx.restore();
-            viewport.pop();
+                this.draw_rect(this.ctx, rect, "fill");
+
+                this.ctx.restore();
+                viewport.pop();
+            }
+
         }
 
         // Draw header
@@ -706,7 +721,7 @@ export default class CanvasTable {
 
         let text: string;
         if (row_index > 0) {
-            text = this.rows[row_index - 1][column_def.key];
+            text = this.rows[row_index - 1][column_def.field];
         } else {
             text = column_def.name;
         }

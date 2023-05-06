@@ -1,8 +1,10 @@
 export type Column_Def = {
     name:  string;
-    key:   string;
+    field: string;
     width: number;
 }
+
+export type Data_Row<T> = T & { id: number | string; }
 
 export type Dimensions = {
     width:  number;
