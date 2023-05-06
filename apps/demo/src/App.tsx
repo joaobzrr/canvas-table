@@ -10,7 +10,7 @@ function App() {
             <CanvasTable
                 columns={columns}
                 data={data}
-                onSelectRow={(row, index) => console.log(row, index)}
+                onSelectRow={row => console.log(row)}
                 className="CanvasTable"
             />
         </div>
