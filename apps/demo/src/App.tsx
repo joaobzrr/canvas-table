@@ -1,8 +1,8 @@
 import { CanvasTable } from "@bzrr/canvas-table";
-import { generateData } from "./utils";
+import { generateData2 } from "./utils";
 import "./App.css";
 
-const [columns, data] = generateData(100, 100);
+const [columns, data] = generateData2(100, 100);
 
 function App() {
     return (

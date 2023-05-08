@@ -18,10 +18,11 @@ export default class CanvasTable<T extends Record<string, string>> {
     events: types.CT_Event[] = [];
     resize_observer: ResizeObserver;
 
-    main_draw_area:       Rect;
-    header_draw_area:     Rect;
-    body_draw_area:       Rect;
-    table_body_draw_area: Rect;
+    main_draw_area:         Rect;
+    header_draw_area:       Rect;
+    body_draw_area:         Rect;
+    table_header_draw_area: Rect;
+    table_body_draw_area:   Rect;
 
     view: Rect;
 
@@ -62,20 +63,22 @@ export default class CanvasTable<T extends Record<string, string>> {
         bottom: number;
     };
 
-    column_widths:      number[];
-    column_positions:   number[];
-    column_to_resize:   number;
-    column_is_hovered:  number | null;
-    is_resizing_column: boolean;
+    column_widths:              number[];
+    column_positions:           number[];
+    resizing_column_index:      number;
+    resizable_column_index:     number | null;
+    is_resizing_column:         boolean;
+
+    hovered_header_cell_index:  number | null;
+
+    selected_row_id?: number | string;
+    on_select_row?: (row: types.Data_Row<T>) => void;
 
     substring_length_cache: (number | undefined)[][];
 
     mouse_pos: Vector2;
 
     cursor: string = "auto";
-
-    selected_row_id?: number | string;
-    on_select_row?: (row: types.Data_Row<T>) => void;
 
     constructor(
         canvas: HTMLCanvasElement,
@@ -86,17 +89,19 @@ export default class CanvasTable<T extends Record<string, string>> {
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d")!;
 
-        this.main_draw_area       = new Rect(0, 0, 1, 1);
-        this.header_draw_area     = new Rect(0, 0, 1, config.table_row_height);
-        this.body_draw_area       = new Rect(0, this.header_draw_area.bottom, 1, 1);
-        this.table_body_draw_area = new Rect(0, this.header_draw_area.bottom, 1, 1);
+        this.main_draw_area         = new Rect(0, 0, 1, 1);
+        this.header_draw_area       = new Rect(0, 0, 1, config.table_row_height);
+        this.body_draw_area         = new Rect(0, this.header_draw_area.bottom, 1, 1);
+        this.table_header_draw_area = new Rect(0, 0, 1, config.table_row_height);
+        this.table_body_draw_area   = new Rect(0, this.header_draw_area.bottom, 1, 1);
 
         this.view = new Rect(0, 0, 1, 1);
 
         this.column_widths = columns.map(({ width }) => width);
         this.column_positions = utils.accumulate(this.column_widths);
-        this.column_to_resize = 0;
-        this.column_is_hovered = null;
+        this.resizing_column_index = 0;
+        this.resizable_column_index = null;
+        this.hovered_header_cell_index = 0;
         this.is_resizing_column = false;
 
         this.column_defs = columns;
@@ -158,8 +163,7 @@ export default class CanvasTable<T extends Record<string, string>> {
 
         this.frame_id = requestAnimationFrame(() => this.tick());
 
-        this.substring_length_cache = utils.make_matrix(
-            this.rows.length + 1, this.column_defs.length);
+        this.substring_length_cache = utils.make_matrix(this.rows.length + 1, this.column_defs.length);
 
         this.on_select_row = on_select_row;
     }
@@ -209,10 +213,20 @@ export default class CanvasTable<T extends Record<string, string>> {
                     } else if (this.vsb_thumb_rect.contains(this.mouse_pos)) {
                         this.vsb_drag_offset = this.mouse_pos.y - this.vsb_thumb_rect.top;
                         this.vsb_is_dragging = true;
-                    } else if (this.column_is_hovered !== null) {
-                        this.column_to_resize = this.column_is_hovered;
+                    } else if (this.resizable_column_index !== null) {
+                        this.resizing_column_index = this.resizable_column_index;
                         this.is_resizing_column = true;
-                    } else if (this.on_select_row && this.table_body_draw_area.contains(this.mouse_pos)) {
+                    } else if (this.hovered_header_cell_index !== null) {
+                        const column_def = this.column_defs[this.hovered_header_cell_index];
+
+                        this.rows.sort((a, b) => {
+                            const value_a = a[column_def.field];
+                            const value_b = b[column_def.field];
+                            return value_a.localeCompare(value_b);
+                        });
+
+                        this.substring_length_cache = utils.make_matrix(this.num_rows + 1, this.num_cols);
+                    } else if (this.table_body_draw_area.contains(this.mouse_pos)) {
                         const viewport = new Viewport();
                         viewport.push(this.view.position);
                         viewport.translate_y(-this.body_draw_area.top);
@@ -221,7 +235,7 @@ export default class CanvasTable<T extends Record<string, string>> {
                         const row = this.rows[row_index];
                         this.selected_row_id = row.id;
 
-                        this.on_select_row(row);
+                        if (this.on_select_row) this.on_select_row(row);
                     }
                } break;
                 case "mouseup": {
@@ -230,7 +244,9 @@ export default class CanvasTable<T extends Record<string, string>> {
                     this.hsb_is_dragging = false;
                     this.vsb_is_dragging = false;
 
-                    this.cursor = "auto";
+                    if (this.hovered_header_cell_index === null) {
+                        this.cursor = "auto";
+                    }
                 } break;
                 case "mousemove": {
                     const canvasBoundingClientRect = this.canvas.getBoundingClientRect();
@@ -253,17 +269,14 @@ export default class CanvasTable<T extends Record<string, string>> {
                         this.render_indices = this.calculate_render_indices();
                     }
 
-                    // Update cursor if mouse is over a column's resize area
-                    this.column_is_hovered = this.find_index_of_column_to_resize();
-                    this.cursor = this.column_is_hovered !== null || this.is_resizing_column ? "col-resize" : "auto";
-
+                    // Resize a column
                     if (this.is_resizing_column) {
-                        const { view, column_widths, column_positions, column_to_resize, mouse_pos } = this;
+                        const { view, column_widths, column_positions, resizing_column_index, mouse_pos } = this;
 
-                        const position = column_positions[column_to_resize];
+                        const position = column_positions[resizing_column_index];
                         const calculated_column_width = mouse_pos.x + view.left - position;
                         const actual_column_width = Math.max(calculated_column_width, config.table_column_min_width);
-                        column_widths[column_to_resize] = actual_column_width;
+                        column_widths[resizing_column_index] = actual_column_width;
 
                         this.column_positions = utils.accumulate(this.column_widths);
                         this.table_body_dimensions.width = utils.sum_array(this.column_widths);
@@ -272,8 +285,16 @@ export default class CanvasTable<T extends Record<string, string>> {
 
                         const cache = this.substring_length_cache;
                         for (let i = 0; i < cache.length; i++) {
-                            cache[i][column_to_resize] = undefined;
+                            cache[i][resizing_column_index] = undefined;
                         }
+                    }
+
+                    this.resizable_column_index = this.find_index_of_column_to_resize();
+                    if (this.resizable_column_index !== null || this.is_resizing_column) {
+                        this.cursor = "col-resize";
+                    } else {
+                        this.hovered_header_cell_index = this.find_hovered_header_cell_index();
+                        this.cursor = this.hovered_header_cell_index !== null ? "pointer" : "auto";
                     }
                 } break;
                 case "wheel": {
@@ -290,9 +311,13 @@ export default class CanvasTable<T extends Record<string, string>> {
                         this.render_indices = this.calculate_render_indices();
                     }
 
-                    // Update cursor if mouse is over a column's resize area
-                    this.column_is_hovered = this.find_index_of_column_to_resize();
-                    this.cursor = this.column_is_hovered !== null || this.is_resizing_column ? "col-resize" : "auto";
+                    this.resizable_column_index = this.find_index_of_column_to_resize();
+                    if (this.resizable_column_index !== null || this.is_resizing_column) {
+                        this.cursor = "col-resize";
+                    } else {
+                        this.hovered_header_cell_index = this.find_hovered_header_cell_index();
+                        this.cursor = this.hovered_header_cell_index !== null ? "pointer" : "auto";
+                    }
                 } break;
                 case "resize": {
                     this.canvas.width  = event.width;
@@ -643,6 +668,30 @@ export default class CanvasTable<T extends Record<string, string>> {
         this.vsb_thumb_rect.top = utils.scale(this.view.top, 0, this.view_max_top, this.vsb_track_rect.top, this.vsb_max_thumb_position);
     }
 
+    find_hovered_header_cell_index() {
+        let result: number | null = null;
+
+        if (this.mouse_pos.y < 0 || this.mouse_pos.y >= this.header_draw_area.bottom) {
+            return result;
+        }
+
+        for (let i = this.render_indices.left; i < this.render_indices.right; i++) {
+            const column_width = this.column_widths[i]
+            const column_left  = this.column_positions[i];
+            const column_right = column_left + column_width;
+
+            const viewport = new Viewport();
+            viewport.translate_x(this.view.left);
+
+            const mouse_x = viewport.calc_x(this.mouse_pos.x); // @Todo: Rename this variable
+            if (mouse_x >= column_left && mouse_x < column_right) {
+                result = i;
+                break;
+            }
+        }
+        return result;
+    }
+
     find_index_of_column_to_resize() {
         let result: number | null = null;
 
@@ -653,10 +702,13 @@ export default class CanvasTable<T extends Record<string, string>> {
 
             const resize_area_left = column_position + column_width - config.column_resize_area_half_width;
             const resize_area_width = (config.column_resize_area_half_width * 2) + 1;
-            const rect = new Rect(resize_area_left, 0, resize_area_width, this.header_draw_area.height);
+            const resize_area_right = resize_area_left + resize_area_width;
 
-            const point = this.mouse_pos.add(new Vector2(this.view.left, 0));
-            if (rect.contains(point)) {
+            const viewport = new Viewport();
+            viewport.translate_x(this.view.left);
+
+            const mouse_x = viewport.calc_x(this.mouse_pos.x); // @Todo: Rename this variable
+            if (mouse_x >= resize_area_left && mouse_x < resize_area_right) {
                 result = i;
                 break;
             }
