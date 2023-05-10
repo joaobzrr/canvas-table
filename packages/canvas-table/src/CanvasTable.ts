@@ -67,7 +67,8 @@ export default class CanvasTable<T extends Record<string, string>> {
     resizable_column_index: number | null;
     is_resizing_column:     boolean;
 
-    hovered_header_cell_index:  number | null;
+    sorting_column:   types.Column_State<T> | null;
+    sortable_column:  types.Column_State<T> | null;
 
     selected_row_id?: number | string;
     on_select_row?: (row: T) => void;
@@ -97,10 +98,12 @@ export default class CanvasTable<T extends Record<string, string>> {
 
         this.resizing_column_index = 0;
         this.resizable_column_index = null;
-        this.hovered_header_cell_index = 0;
         this.is_resizing_column = false;
 
-        this.column_states = column_defs.map(def => ({ ...def, position: 0, sort_order: null }));
+        this.sorting_column  = null;
+        this.sortable_column = null;
+
+        this.column_states = column_defs.map(def => ({ ...def, position: 0, sort_order: null, }));
         this.calculate_column_positions();
 
         // @Performance For loop would be faster
@@ -228,14 +231,36 @@ export default class CanvasTable<T extends Record<string, string>> {
                     } else if (this.resizable_column_index !== null) {
                         this.resizing_column_index = this.resizable_column_index;
                         this.is_resizing_column = true;
-                    } else if (this.hovered_header_cell_index !== null) {
-                        const column_def = this.column_states[this.hovered_header_cell_index];
+                    } else if (this.sortable_column) {
+                        if (this.sortable_column === this.sorting_column) {
+                            if (this.sorting_column.sort_order === "ascending") {
+                                this.sorting_column.sort_order = "descending";
+                            } else if (this.sorting_column.sort_order === "descending") {
+                                this.sorting_column.sort_order = null;
+                                this.sorting_column = null;
+                            }
+                        } else {
+                            if (this.sorting_column) {
+                                this.sorting_column.sort_order = null;
+                            }
+                            this.sorting_column = this.sortable_column;
+                            this.sorting_column.sort_order = "ascending";
+                        }
 
-                        this.rows.sort((a, b) => {
-                            const value_a = a.data[column_def.field];
-                            const value_b = b.data[column_def.field];
-                            return value_a.localeCompare(value_b);
-                        });
+                        if (this.sorting_column !== null) {
+                            this.rows.sort((a, b) => {
+                                const value_a = a.data[this.sorting_column!.field];
+                                const value_b = b.data[this.sorting_column!.field];
+                                const relation = value_a.localeCompare(value_b);
+                                if (this.sorting_column!.sort_order === "ascending") {
+                                    return relation;
+                                } else {
+                                    return -relation;
+                                }
+                            });
+                        } else {
+                            this.rows.sort((a, b) => a.id - b.id);
+                        }
                     } else if (this.table_body_draw_area.contains(this.mouse_pos)) {
                         const viewport = new Viewport();
                         viewport.push(this.view.position);
@@ -254,7 +279,7 @@ export default class CanvasTable<T extends Record<string, string>> {
                     this.hsb_is_dragging = false;
                     this.vsb_is_dragging = false;
 
-                    if (this.hovered_header_cell_index === null) {
+                    if (this.sortable_column === null) {
                         this.cursor = "auto";
                     }
                 } break;
@@ -309,8 +334,8 @@ export default class CanvasTable<T extends Record<string, string>> {
                     if (this.resizable_column_index !== null || this.is_resizing_column) {
                         this.cursor = "col-resize";
                     } else {
-                        this.hovered_header_cell_index = this.find_hovered_header_cell_index();
-                        this.cursor = this.hovered_header_cell_index !== null ? "pointer" : "auto";
+                        this.sortable_column = this.find_hovered_header_column();
+                        this.cursor = this.sortable_column ? "pointer" : "auto";
                     }
                 } break;
                 case "wheel": {
@@ -331,8 +356,8 @@ export default class CanvasTable<T extends Record<string, string>> {
                     if (this.resizable_column_index !== null || this.is_resizing_column) {
                         this.cursor = "col-resize";
                     } else {
-                        this.hovered_header_cell_index = this.find_hovered_header_cell_index();
-                        this.cursor = this.hovered_header_cell_index !== null ? "pointer" : "auto";
+                        this.sortable_column = this.find_hovered_header_column();
+                        this.cursor = this.sortable_column ? "pointer" : "auto";
                     }
                 } break;
                 case "resize": {
@@ -691,13 +716,12 @@ export default class CanvasTable<T extends Record<string, string>> {
         this.vsb_thumb_rect.top = utils.scale(this.view.top, 0, this.view_max_top, this.vsb_track_rect.top, this.vsb_max_thumb_position);
     }
 
-    find_hovered_header_cell_index() {
-        let result: number | null = null;
-
+    find_hovered_header_column() {
         if (this.mouse_pos.y < 0 || this.mouse_pos.y >= this.header_draw_area.bottom) {
-            return result;
+            return null;
         }
 
+        let index: number = -1;
         for (let i = this.render_indices.left; i < this.render_indices.right; i++) {
             const column_state = this.column_states[i];
             const column_left  = column_state.position;
@@ -708,11 +732,12 @@ export default class CanvasTable<T extends Record<string, string>> {
 
             const mouse_x = viewport.calc_x(this.mouse_pos.x); // @Todo: Rename this variable
             if (mouse_x >= column_left && mouse_x < column_right) {
-                result = i;
+                index = i;
                 break;
             }
         }
-        return result;
+
+        return index !== -1 ? this.column_states[index] : null;
     }
 
     find_index_of_column_to_resize() {
