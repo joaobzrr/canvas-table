@@ -4,6 +4,14 @@ export type Column_Def<T extends Record<string, string>> = {
     width: number;
 }
 
+export type Column_State<T extends Record<string, string>> = {
+    name:        string;
+    field:       Extract<keyof T, string>
+    position:    number;
+    width:       number;
+    sort_order: "ascending" | "descending" | null;
+}
+
 export type Data_Row<T> = {
     id:   number;
     data: T;

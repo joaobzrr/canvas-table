@@ -30,7 +30,7 @@ export default class CanvasTable<T extends Record<string, string>> {
     scroll_dimensions:     types.Dimensions;
     grid_dimensions:       types.Dimensions;
 
-    column_defs: types.Column_Def<T>[];
+    column_states: types.Column_State<T>[];
     rows: types.Data_Row<T>[];
 
     num_rows: number;
@@ -63,11 +63,9 @@ export default class CanvasTable<T extends Record<string, string>> {
         bottom: number;
     };
 
-    column_widths:              number[];
-    column_positions:           number[];
-    resizing_column_index:      number;
-    resizable_column_index:     number | null;
-    is_resizing_column:         boolean;
+    resizing_column_index:  number;
+    resizable_column_index: number | null;
+    is_resizing_column:     boolean;
 
     hovered_header_cell_index:  number | null;
 
@@ -81,8 +79,8 @@ export default class CanvasTable<T extends Record<string, string>> {
     cursor: string = "auto";
 
     constructor(
-        canvas: HTMLCanvasElement,
-        columns: types.Column_Def<T>[],
+        canvas:      HTMLCanvasElement,
+        column_defs: types.Column_Def<T>[],
         rows: T[],
         on_select_row?: (row: T) => void
     ) {
@@ -97,23 +95,27 @@ export default class CanvasTable<T extends Record<string, string>> {
 
         this.view = new Rect(0, 0, 1, 1);
 
-        this.column_widths = columns.map(({ width }) => width);
-        this.column_positions = utils.accumulate(this.column_widths);
         this.resizing_column_index = 0;
         this.resizable_column_index = null;
         this.hovered_header_cell_index = 0;
         this.is_resizing_column = false;
 
-        this.column_defs = columns;
+        this.column_states = column_defs.map(def => ({ ...def, position: 0, sort_order: null }));
+        this.calculate_column_positions();
+
         // @Performance For loop would be faster
         this.rows = rows.map((row, index) => ({ id: index, data: row }));
 
-        this.num_cols = this.column_defs.length;
+        this.num_cols = column_defs.length;
         this.num_rows = this.rows.length;
 
         this.string_truncator = new StringTruncator(str => this.ctx.measureText(str).width);
 
-        this.table_body_dimensions = this.calculate_table_body_dimensions();
+        const last_column_state = this.column_states[this.column_states.length - 1];
+        this.table_body_dimensions = {
+            width:  last_column_state.position + last_column_state.width,
+            height: rows.length * config.table_row_height
+        };
 
         this.scroll_dimensions = { width: 1, height: 1 };
         this.grid_dimensions   = { width: 1, height: 1 };
@@ -168,21 +170,33 @@ export default class CanvasTable<T extends Record<string, string>> {
         this.on_select_row = on_select_row;
     }
 
+    calculate_column_positions(start = 0) {
+        const starting_column_state = this.column_states[start];
+        let total_width = starting_column_state.position + starting_column_state.width;
+
+        for (let j = start + 1; j < this.column_states.length; j++) {
+            const column_state = this.column_states[j];
+            column_state.position = total_width;
+            total_width += column_state.width;
+        }
+    }
+
     reinit(rows: T[], column_defs: types.Column_Def<T>[]) {
         // @Performance For loop would be faster
-        this.rows = rows.map((row, index) => ({ id: index, data: row }));
-        this.column_defs = column_defs;
+        this.column_states = column_defs.map(def => ({ ...def, position: 0, sort_order: null }));
+        this.calculate_column_positions();
 
-        this.num_cols = this.column_defs.length;
+        // @Performance For loop would be faster
+        this.rows = rows.map((row, index) => ({ id: index, data: row }));
+
+        this.num_cols = column_defs.length;
         this.num_rows = this.rows.length;
 
-        this.column_widths = column_defs.map(({ width }) => width);
-        this.column_positions = utils.accumulate(this.column_widths);
+        const last_column_state = this.column_states[this.column_states.length - 1];
+        this.table_body_dimensions.width = last_column_state.position + last_column_state.width;
+        this.table_body_dimensions.height = rows.length * config.table_row_height;
 
-        this.table_body_dimensions = this.calculate_table_body_dimensions();
-
-        this.view.left = 0;
-        this.view.top = 0;
+        this.view.position = new Vector2(0, 0);
 
         this.reflow();
 
@@ -201,8 +215,6 @@ export default class CanvasTable<T extends Record<string, string>> {
     }
 
     tick() {
-        debugger;
-
         while (this.events.length > 0) {
             const event = this.events.pop()!;
             switch (event.type) {
@@ -217,7 +229,7 @@ export default class CanvasTable<T extends Record<string, string>> {
                         this.resizing_column_index = this.resizable_column_index;
                         this.is_resizing_column = true;
                     } else if (this.hovered_header_cell_index !== null) {
-                        const column_def = this.column_defs[this.hovered_header_cell_index];
+                        const column_def = this.column_states[this.hovered_header_cell_index];
 
                         this.rows.sort((a, b) => {
                             const value_a = a.data[column_def.field];
@@ -272,18 +284,20 @@ export default class CanvasTable<T extends Record<string, string>> {
                         const viewport = new Viewport();
                         viewport.translate_x(this.view.left);
 
-                        const position = this.column_positions[this.resizing_column_index];
+                        const column_state = this.column_states[this.resizing_column_index];
 
                         const relative_mouse_x = viewport.calc_x(this.mouse_pos.x);
-                        const actual_column_width = Math.max(relative_mouse_x - position, config.table_column_min_width);
-                        this.column_widths[this.resizing_column_index] = actual_column_width;
+                        const actual_column_width = Math.max(relative_mouse_x - column_state.position, config.table_column_min_width);
+                        column_state.width = actual_column_width;
 
-                        this.column_positions = utils.accumulate(this.column_widths);
-                        this.table_body_dimensions.width = utils.sum_array(this.column_widths);
+                        this.calculate_column_positions(this.resizing_column_index);
+
+                        const last_column_state = this.column_states[this.column_states.length - 1];
+                        this.table_body_dimensions.width = last_column_state.position + last_column_state.width;
 
                         this.reflow();
 
-                        const { field: column_field } = this.column_defs[this.resizing_column_index];
+                        const { field: column_field } = this.column_states[this.resizing_column_index];
 
                         this.string_truncator.clear_key(`header,${column_field}`);
                         for (let i = 0; i < this.num_rows + 1; i++) {
@@ -394,16 +408,14 @@ export default class CanvasTable<T extends Record<string, string>> {
             const text_height = actualBoundingBoxDescent - actualBoundingBoxAscent;
 
             for (let j = this.render_indices.left; j < this.render_indices.right; j++) {
-                const column_def      = this.column_defs[j];
-                const column_field    = column_def.field;
-                const column_width    = this.column_widths[j];
-                const column_position = this.column_positions[j];
+                const column_state = this.column_states[j];
 
-                const str = column_def.name;
-                const width = column_width - config.cell_padding * 2;
-                const text = this.string_truncator.truncate(str, width, `header,${column_field}`);
+                const str = column_state.name;
+                const key = `header,${column_state.field}`;
+                const width = column_state.width - config.cell_padding * 2;
+                const text = this.string_truncator.truncate(str, width, key);
 
-                const x = viewport.calc_x(column_position);
+                const x = viewport.calc_x(column_state.position);
                 const y = (config.table_row_height / 2) - (text_height / 2);
                 this.ctx.fillText(text, x, y);
             }
@@ -438,7 +450,8 @@ export default class CanvasTable<T extends Record<string, string>> {
             const first_col = this.render_indices.left;
             const last_col  = this.render_indices.right;
             for (let i = first_col; i < last_col; i++) {
-                const x = viewport.calc_x(this.column_positions[i]);
+                const column_state = this.column_states[i];
+                const x = viewport.calc_x(column_state.position);
 
                 this.ctx.beginPath();
                 this.ctx.moveTo(x, 0);
@@ -481,16 +494,14 @@ export default class CanvasTable<T extends Record<string, string>> {
                 const row = this.rows[i];
 
                 for (let j = left; j < right; j++) {
-                    const column_def      = this.column_defs[j];
-                    const column_field    = column_def.field;
-                    const column_width    = this.column_widths[j];
-                    const column_position = this.column_positions[j];
+                    const column_state = this.column_states[j];
 
-                    const str = row.data[column_field];
-                    const width = column_width - config.cell_padding * 2;
-                    const text = this.string_truncator.truncate(str, width, `${row.id},${column_field}`);
+                    const str = row.data[column_state.field];
+                    const key = `${row.id},${column_state.field}`;
+                    const width = column_state.width - config.cell_padding * 2;
+                    const text = this.string_truncator.truncate(str, width, key);
 
-                    const x = viewport.calc_x(column_position);
+                    const x = viewport.calc_x(column_state.position);
                     const y = viewport.calc_y(i * config.table_row_height);
 
                     this.ctx.fillText(text, x, y);
@@ -688,9 +699,9 @@ export default class CanvasTable<T extends Record<string, string>> {
         }
 
         for (let i = this.render_indices.left; i < this.render_indices.right; i++) {
-            const column_width = this.column_widths[i]
-            const column_left  = this.column_positions[i];
-            const column_right = column_left + column_width;
+            const column_state = this.column_states[i];
+            const column_left  = column_state.position;
+            const column_right = column_state.position + column_state.width;
 
             const viewport = new Viewport();
             viewport.translate_x(this.view.left);
@@ -708,10 +719,9 @@ export default class CanvasTable<T extends Record<string, string>> {
         let result: number | null = null;
 
         for (let i = this.render_indices.left; i < this.render_indices.right; i++) {
-            const column_width    = this.column_widths[i];
-            const column_position = this.column_positions[i];
+            const column_state = this.column_states[i];
 
-            const resize_area_left = column_position + column_width - config.column_resize_area_half_width;
+            const resize_area_left = column_state.position + column_state.width - config.column_resize_area_half_width;
             const resize_area_width = (config.column_resize_area_half_width * 2) + 1;
             const resize_area_right = resize_area_left + resize_area_width;
 
@@ -730,7 +740,7 @@ export default class CanvasTable<T extends Record<string, string>> {
 
     calculate_render_indices() {
         // @Note: We get -1 when column width is larger than canvas width.
-        let leftmost_visible_column = this.column_positions.findIndex(position => position > this.view.left);
+        let leftmost_visible_column = this.column_states.findIndex(({ position }) => position > this.view.left);
         if (leftmost_visible_column === -1) {
             leftmost_visible_column = this.num_cols - 1;
         }
@@ -738,7 +748,7 @@ export default class CanvasTable<T extends Record<string, string>> {
         const left = Math.max(leftmost_visible_column - 1, 0);
 
         // @Performance We could start at the 'left' index.
-        let rightmost_visible_column = this.column_positions.findIndex(position => position >= this.view.right);
+        let rightmost_visible_column = this.column_states.findIndex(({ position }) => position >= this.view.right);
         if (rightmost_visible_column === -1) {
             rightmost_visible_column = this.num_cols;
         }
@@ -793,12 +803,5 @@ export default class CanvasTable<T extends Record<string, string>> {
         const clipping_region = new Path2D();
         clipping_region.rect(rect.left, rect.top, rect.width, rect.height);
         ctx.clip(clipping_region, "evenodd");
-    }
-
-    calculate_table_body_dimensions() {
-        return {
-            width: utils.sum_array(this.column_widths),
-            height: this.num_rows * config.table_row_height
-        };
     }
 }
