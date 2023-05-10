@@ -449,6 +449,37 @@ export default class CanvasTable<T extends Record<string, string>> {
             viewport.pop();
         }
 
+        // Draw header arrows
+        {
+            this.ctx.save();
+            this.ctx.fillStyle = config.arrow_color;
+
+            viewport.push(this.view.position.rev());
+
+            for (let j = this.render_indices.left; j < this.render_indices.right; j++) {
+                const column_state = this.column_states[j];
+                if (column_state.sort_order === null) {
+                    continue;
+                }
+
+                const column_right = column_state.position + column_state.width;
+
+                const size = Math.round(config.table_row_height / 3);
+                const x = viewport.calc_x(column_right - size - config.cell_padding);
+                const y = (config.table_row_height / 2) - (size / 2);
+                const rect = new Rect(x, y, size, size);
+
+                if (column_state.sort_order === "ascending") {
+                    this.ctx.fill(this.make_triangle_up_path(rect));
+                } else {
+                    this.ctx.fill(this.make_triangle_down_path(rect));
+                }
+            }
+
+            viewport.pop();
+            this.ctx.restore();
+        }
+
         // Draw grid
         {
             this.ctx.save();
@@ -828,5 +859,21 @@ export default class CanvasTable<T extends Record<string, string>> {
         const clipping_region = new Path2D();
         clipping_region.rect(rect.left, rect.top, rect.width, rect.height);
         ctx.clip(clipping_region, "evenodd");
+    }
+
+    make_triangle_up_path(rect: Rect) {
+        const path = new Path2D();
+        path.moveTo(rect.centerx, rect.top);
+        path.lineTo(rect.left, rect.bottom);
+        path.lineTo(rect.right, rect.bottom);
+        return path;
+    }
+
+    make_triangle_down_path(rect: Rect) {
+        const path = new Path2D();
+        path.moveTo(rect.centerx, rect.bottom);
+        path.lineTo(rect.left, rect.top);
+        path.lineTo(rect.right, rect.top);
+        return path;
     }
 }

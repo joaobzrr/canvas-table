@@ -49,6 +49,14 @@ export class Rect {
         return this.position.x + this.size.x;
     }
 
+    get centerx() {
+        return this.position.x + this.size.x / 2;
+    }
+
+    get centery() {
+        return this.position.y + this.size.y / 2;
+    }
+
     set right(right: number) {
         this.position.x = right - this.size.x;
     }
