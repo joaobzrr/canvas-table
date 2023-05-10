@@ -1,13 +1,19 @@
-const ellipsis = "...";
+import Graphemer from "graphemer";
+
+const ellipsis = "..."
 
 export class StringTruncator {
     cache: Map<string, number | undefined>;
     measurer: (str: string) => number;
 
+    splitter: Graphemer;
+
     constructor(measurer: (str: string) => number) {
         this.measurer = measurer;
         this.cache = new Map();
+        this.splitter = new Graphemer();
     }
+
 
     clear_cache() {
         this.cache = new Map();
@@ -28,7 +34,7 @@ export class StringTruncator {
             this.cache.set(key, length)
         }
 
-        const substring = str.slice(0, length);
+        const substring = this.grapheme_slice(str, 0, length);
         return length < str.length ? substring + ellipsis : substring;
     }
 
@@ -47,11 +53,11 @@ export class StringTruncator {
         let length = 0;
         let substr_width = 0;
         let low = 0;
-        let high = str.length;
+        let high = this.splitter.countGraphemes(str);
 
         while (low <= high) {
             length = Math.floor((low + high) / 2);
-            substring = str.slice(0, length);
+            substring = this.grapheme_slice(str, 0, length);
             substr_width = this.measurer(substring + ellipsis);
             if (substr_width === target_width) {
                 break;
@@ -67,5 +73,10 @@ export class StringTruncator {
         }
 
         return length;
+    }
+
+    grapheme_slice(str: string, start?: number, end?: number) {
+        const graphemes = this.splitter.splitGraphemes(str);
+        return graphemes.slice(start, end).join("");
     }
 }

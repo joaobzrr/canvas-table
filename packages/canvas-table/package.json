@@ -23,6 +23,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "graphemer": "^1.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
