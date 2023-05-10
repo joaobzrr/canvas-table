@@ -18,5 +18,3 @@ export const table_col_width = 200;
 export const cell_padding = 10;
 export const table_column_min_width = 100;
 export const column_resize_area_half_width = 5;
-
-export const ellipsis_precision = 5;

@@ -1,10 +1,13 @@
-export type Column_Def = {
+export type Column_Def<T extends Record<string, string>> = {
     name:  string;
-    field: string;
+    field: Extract<keyof T, string>;
     width: number;
 }
 
-export type Data_Row<T> = T & { id: number | string; }
+export type Data_Row<T> = {
+    id:   number;
+    data: T;
+}
 
 export type Dimensions = {
     width:  number;

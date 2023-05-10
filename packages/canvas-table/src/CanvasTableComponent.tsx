@@ -1,12 +1,12 @@
 import { useRef, useEffect, useLayoutEffect } from "react";
 import CanvasTable from "./CanvasTable";
-import { Column_Def, Data_Row } from "./types";
+import { Column_Def } from "./types";
 
 type PropsType<T extends Record<string, string>> = {
-    columns: Column_Def[];
-    data: Data_Row<T>[];
+    columns: Column_Def<T>[];
+    data: T[];
 
-    onSelectRow?: (row: Data_Row<T>) => void;
+    onSelectRow?: (row: T) => void;
 
     className?: string;
 }

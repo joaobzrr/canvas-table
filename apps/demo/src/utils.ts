@@ -1,6 +1,6 @@
-import { Column_Def, Data_Row } from "@bzrr/canvas-table";
+import { Column_Def } from "@bzrr/canvas-table";
 
-export function generateData(rows: number, cols: number): [Column_Def[], Data_Row<any>] {
+export function generateData(rows: number, cols: number): [Column_Def<any>[], Record<string, string>[]] {
     const columns = [];
     for (let i = 0; i < cols; i++) {
 	columns.push({
@@ -12,42 +12,21 @@ export function generateData(rows: number, cols: number): [Column_Def[], Data_Ro
 
     const data = [];
     for (let i = 0; i < rows; i++) {
-	const extraProperties = Object.fromEntries(columns.map((column, index) => {
-	    return [column.field, `${i + 1}/${index + 1}`];
-	}));
-
-	data.push({
-	    id: i,
-	    ...extraProperties
-	});
+	data.push(Object.fromEntries(columns.map(column => {
+	    return [column.field, randomString(16)];
+	})));
     }
 
     return [columns, data];
 }
 
-export function generateData2(rows: number, cols: number): [Column_Def[], Data_Row<any>] {
-    const columns = [];
-    for (let i = 0; i < cols; i++) {
-	columns.push({
-	    name: `Column ${i + 1}`,
-	    field: `column${i + 1}`,
-	    width: randint(100, 200)
-	});
+export function randomString(length: number) {
+    const chars = [];
+    for (let i = 0; i < length; i++) {
+	chars.push(String.fromCharCode(randint(65, 90)));
     }
-
-    const data = [];
-    for (let i = 0; i < rows; i++) {
-	const extraProperties = Object.fromEntries(columns.map(column => {
-	    return [column.field, Array.from({ length: 8 }, () => String.fromCharCode(randint(65, 90))).join("")];
-	}));
-
-	data.push({
-	    id: i,
-	    ...extraProperties
-	});
-    }
-
-    return [columns, data];
+    const result = chars.join("");
+    return result;
 }
 
 export function randint(min: number, max: number) {

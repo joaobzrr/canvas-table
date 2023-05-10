@@ -1,4 +1,5 @@
 import { Viewport } from "./Viewport";
+import { StringTruncator } from "./StringTruncator";
 import { Rect } from "./Rect";
 import { Vector2 } from "./Vector2";
 import * as utils from "./utils";
@@ -7,7 +8,6 @@ import * as types from "./types";
 
 const scrollbar_thumb_margin_times_two = config.scrollbar_thumb_margin * 2;
 const track_size = config.scrollbar_size - scrollbar_thumb_margin_times_two - 1;
-const ellipsis = "...";
 
 export default class CanvasTable<T extends Record<string, string>> {
     canvas: HTMLCanvasElement;
@@ -30,7 +30,7 @@ export default class CanvasTable<T extends Record<string, string>> {
     scroll_dimensions:     types.Dimensions;
     grid_dimensions:       types.Dimensions;
 
-    column_defs: types.Column_Def[];
+    column_defs: types.Column_Def<T>[];
     rows: types.Data_Row<T>[];
 
     num_rows: number;
@@ -72,9 +72,9 @@ export default class CanvasTable<T extends Record<string, string>> {
     hovered_header_cell_index:  number | null;
 
     selected_row_id?: number | string;
-    on_select_row?: (row: types.Data_Row<T>) => void;
+    on_select_row?: (row: T) => void;
 
-    substring_length_cache: (number | undefined)[][];
+    string_truncator: StringTruncator;
 
     mouse_pos: Vector2;
 
@@ -82,9 +82,9 @@ export default class CanvasTable<T extends Record<string, string>> {
 
     constructor(
         canvas: HTMLCanvasElement,
-        columns: types.Column_Def[],
-        rows: types.Data_Row<T>[],
-        on_select_row?: (row: types.Data_Row<T>) => void
+        columns: types.Column_Def<T>[],
+        rows: T[],
+        on_select_row?: (row: T) => void
     ) {
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d")!;
@@ -105,10 +105,13 @@ export default class CanvasTable<T extends Record<string, string>> {
         this.is_resizing_column = false;
 
         this.column_defs = columns;
-        this.rows = rows;
+        // @Performance For loop would be faster
+        this.rows = rows.map((row, index) => ({ id: index, data: row }));
 
         this.num_cols = this.column_defs.length;
         this.num_rows = this.rows.length;
+
+        this.string_truncator = new StringTruncator(str => this.ctx.measureText(str).width);
 
         this.table_body_dimensions = this.calculate_table_body_dimensions();
 
@@ -143,7 +146,6 @@ export default class CanvasTable<T extends Record<string, string>> {
         this.handle_mousemove = this.handle_mousemove.bind(this);
         this.handle_wheel     = this.handle_wheel.bind(this);
 
-        // @Todo: Add function to remove event listeners
         this.canvas.addEventListener("mousedown", this.handle_mousedown);
         this.canvas.addEventListener("wheel", this.handle_wheel);
         window.addEventListener("mouseup", this.handle_mouseup);
@@ -163,13 +165,12 @@ export default class CanvasTable<T extends Record<string, string>> {
 
         this.frame_id = requestAnimationFrame(() => this.tick());
 
-        this.substring_length_cache = utils.make_matrix(this.rows.length + 1, this.column_defs.length);
-
         this.on_select_row = on_select_row;
     }
 
-    reinit(rows: types.Data_Row<T>[], column_defs: types.Column_Def[]) {
-        this.rows = rows;
+    reinit(rows: T[], column_defs: types.Column_Def<T>[]) {
+        // @Performance For loop would be faster
+        this.rows = rows.map((row, index) => ({ id: index, data: row }));
         this.column_defs = column_defs;
 
         this.num_cols = this.column_defs.length;
@@ -185,10 +186,7 @@ export default class CanvasTable<T extends Record<string, string>> {
 
         this.reflow();
 
-        // @Todo: Make a matrix abstraction that provides methods for clearing
-        // the entire matrix, clearing a column and setting the value for a
-        // specific element.
-        this.substring_length_cache = utils.make_matrix(this.num_rows + 1, this.num_cols);
+        this.string_truncator.clear_cache();
     }
 
     destroy() {
@@ -203,6 +201,8 @@ export default class CanvasTable<T extends Record<string, string>> {
     }
 
     tick() {
+        debugger;
+
         while (this.events.length > 0) {
             const event = this.events.pop()!;
             switch (event.type) {
@@ -220,12 +220,10 @@ export default class CanvasTable<T extends Record<string, string>> {
                         const column_def = this.column_defs[this.hovered_header_cell_index];
 
                         this.rows.sort((a, b) => {
-                            const value_a = a[column_def.field];
-                            const value_b = b[column_def.field];
+                            const value_a = a.data[column_def.field];
+                            const value_b = b.data[column_def.field];
                             return value_a.localeCompare(value_b);
                         });
-
-                        this.substring_length_cache = utils.make_matrix(this.num_rows + 1, this.num_cols);
                     } else if (this.table_body_draw_area.contains(this.mouse_pos)) {
                         const viewport = new Viewport();
                         viewport.push(this.view.position);
@@ -235,7 +233,7 @@ export default class CanvasTable<T extends Record<string, string>> {
                         const row = this.rows[row_index];
                         this.selected_row_id = row.id;
 
-                        if (this.on_select_row) this.on_select_row(row);
+                        if (this.on_select_row) this.on_select_row(row.data);
                     }
                } break;
                 case "mouseup": {
@@ -271,21 +269,25 @@ export default class CanvasTable<T extends Record<string, string>> {
 
                     // Resize a column
                     if (this.is_resizing_column) {
-                        const { view, column_widths, column_positions, resizing_column_index, mouse_pos } = this;
+                        const viewport = new Viewport();
+                        viewport.translate_x(this.view.left);
 
-                        const position = column_positions[resizing_column_index];
-                        const calculated_column_width = mouse_pos.x + view.left - position;
-                        const actual_column_width = Math.max(calculated_column_width, config.table_column_min_width);
-                        column_widths[resizing_column_index] = actual_column_width;
+                        const position = this.column_positions[this.resizing_column_index];
+
+                        const relative_mouse_x = viewport.calc_x(this.mouse_pos.x);
+                        const actual_column_width = Math.max(relative_mouse_x - position, config.table_column_min_width);
+                        this.column_widths[this.resizing_column_index] = actual_column_width;
 
                         this.column_positions = utils.accumulate(this.column_widths);
                         this.table_body_dimensions.width = utils.sum_array(this.column_widths);
 
                         this.reflow();
 
-                        const cache = this.substring_length_cache;
-                        for (let i = 0; i < cache.length; i++) {
-                            cache[i][resizing_column_index] = undefined;
+                        const { field: column_field } = this.column_defs[this.resizing_column_index];
+
+                        this.string_truncator.clear_key(`header,${column_field}`);
+                        for (let i = 0; i < this.num_rows + 1; i++) {
+                            this.string_truncator.clear_key(`${i},${column_field}`)
                         }
                     }
 
@@ -298,7 +300,7 @@ export default class CanvasTable<T extends Record<string, string>> {
                     }
                 } break;
                 case "wheel": {
-                    // @Note: Prevent scrolling with the mouse wheel if a column is being resized.
+                    // @Todo: Prevent scrolling with the mouse wheel if a column is being resized.
                     if (!this.is_resizing_column) {
                         // Move horizontal scrollbar thumb and view horizontally
                         this.view.left = utils.clamp(this.view.left + event.x, 0, this.view_max_left);
@@ -391,14 +393,18 @@ export default class CanvasTable<T extends Record<string, string>> {
             const { actualBoundingBoxAscent, actualBoundingBoxDescent } = this.ctx.measureText("M");
             const text_height = actualBoundingBoxDescent - actualBoundingBoxAscent;
 
-            for (let i = this.render_indices.left; i < this.render_indices.right; i++) {
-                const column_width    = this.column_widths[i];
-                const column_position = this.column_positions[i];
+            for (let j = this.render_indices.left; j < this.render_indices.right; j++) {
+                const column_def      = this.column_defs[j];
+                const column_field    = column_def.field;
+                const column_width    = this.column_widths[j];
+                const column_position = this.column_positions[j];
+
+                const str = column_def.name;
+                const width = column_width - config.cell_padding * 2;
+                const text = this.string_truncator.truncate(str, width, `header,${column_field}`);
 
                 const x = viewport.calc_x(column_position);
                 const y = (config.table_row_height / 2) - (text_height / 2);
-
-                const text = this.calc_text(column_width, 0, i);
                 this.ctx.fillText(text, x, y);
             }
 
@@ -472,14 +478,21 @@ export default class CanvasTable<T extends Record<string, string>> {
 
             const { left, right, top, bottom } = this.render_indices;
             for (let i = top; i < bottom; i++) {
+                const row = this.rows[i];
+
                 for (let j = left; j < right; j++) {
-                    const column_width   = this.column_widths[j];
+                    const column_def      = this.column_defs[j];
+                    const column_field    = column_def.field;
+                    const column_width    = this.column_widths[j];
                     const column_position = this.column_positions[j];
+
+                    const str = row.data[column_field];
+                    const width = column_width - config.cell_padding * 2;
+                    const text = this.string_truncator.truncate(str, width, `${row.id},${column_field}`);
 
                     const x = viewport.calc_x(column_position);
                     const y = viewport.calc_y(i * config.table_row_height);
 
-                    const text = this.calc_text(column_width, i + 1, j);
                     this.ctx.fillText(text, x, y);
                 }
             }
@@ -606,7 +619,6 @@ export default class CanvasTable<T extends Record<string, string>> {
         this.grid_dimensions.width  = Math.min(this.table_body_dimensions.width, this.main_draw_area.width);
         this.grid_dimensions.height = Math.min(this.table_body_dimensions.height + this.header_draw_area.height, this.main_draw_area.height);
 
-        // @Note: These might be unnecessary.
         this.view_max_left = this.scroll_dimensions.width  - this.view.width;
         this.view_max_top  = this.scroll_dimensions.height - this.view.height;
 
@@ -695,8 +707,7 @@ export default class CanvasTable<T extends Record<string, string>> {
     find_index_of_column_to_resize() {
         let result: number | null = null;
 
-        // @Performance It would be enough to check only the indices within the render ranges
-        for (let i = 0; i < this.num_cols; i++) {
+        for (let i = this.render_indices.left; i < this.render_indices.right; i++) {
             const column_width    = this.column_widths[i];
             const column_position = this.column_positions[i];
 
@@ -768,67 +779,6 @@ export default class CanvasTable<T extends Record<string, string>> {
         });
     }
 
-    calc_text(column_width: number, row_index: number, column_index: number) {
-        const column_def = this.column_defs[column_index];
-
-        let text: string;
-        if (row_index > 0) {
-            text = this.rows[row_index - 1][column_def.field];
-        } else {
-            text = column_def.name;
-        }
-
-        const cache = this.substring_length_cache;
-        let length = cache[row_index][column_index];
-        if (length === undefined) {
-            length = this.calc_text_length(text, column_width);
-            cache[row_index][column_index] = length;
-        }
-
-        if (length === text.length) {
-            return text;
-        } else {
-            return text.slice(0, length) + ellipsis;
-        }
-    }
-
-    calc_text_length(text: string, column_width: number) {
-        const { ctx } = this;
-
-        const available_space = column_width - config.cell_padding * 2;
-
-        let metrics = ctx.measureText(text);
-        if (metrics.width <= available_space) {
-            return text.length;
-        }
-
-        if (text.length <= ellipsis.length) {
-            return 0;
-        }
-
-        let length = -1;
-        let low  = 0;
-        let high = text.length;
-        const min_width = available_space - config.ellipsis_precision;
-        const max_width = available_space;
-
-        while (low <= high) {
-            length = Math.floor((low + high) / 2);
-
-            const substring = text.slice(0, length);
-            const { width } = ctx.measureText(substring + ellipsis);
-            if (width >= min_width && width < max_width) {
-                break;
-            } else if (width > available_space) {
-                high = length - 1;
-            } else {
-                low = length + 1;
-            }
-        }
-
-        return length as number;
-    }
-
     draw_rect(ctx: CanvasRenderingContext2D, rect: Rect, operation: "stroke" | "fill") {
         let fn: (x: number, y: number, width: number, height: number) => void;
         switch (operation) {
@@ -843,36 +793,6 @@ export default class CanvasTable<T extends Record<string, string>> {
         const clipping_region = new Path2D();
         clipping_region.rect(rect.left, rect.top, rect.width, rect.height);
         ctx.clip(clipping_region, "evenodd");
-    }
-
-    make_scrollbar_x() {
-        const outer_rect = new Rect(0, 0, 1, config.scrollbar_size);
-        const track_rect = new Rect(outer_rect.left + config.scrollbar_thumb_margin, 0, 1, track_size);
-        const thumb_rect = new Rect(track_rect.left, 0, 1, track_size);
-
-        return {
-            outer_rect,
-            track_rect,
-            thumb_rect,
-            max_thumb_position: 0,
-            drag_offset: 0,
-            is_dragging: false
-        };
-    }
-
-    make_scrollbar_y() {
-        const outer_rect = new Rect(0, this.header_draw_area.height, config.scrollbar_size, 1);
-        const track_rect = new Rect(0, outer_rect.top + config.scrollbar_thumb_margin, track_size, 1);
-        const thumb_rect = new Rect(0, track_rect.top, track_size, 1);
-
-        return {
-            outer_rect,
-            track_rect,
-            thumb_rect,
-            max_thumb_position: 0,
-            drag_offset: 0,
-            is_dragging: false
-        };
     }
 
     calculate_table_body_dimensions() {
