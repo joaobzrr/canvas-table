@@ -15,7 +15,6 @@ export const scrollbar_thumb_margin = 2;
 export const scrollbar_thumb_min_length = 20;
 
 export const table_row_height = 32;
-export const table_col_width = 200;
 export const cell_padding = 10;
 export const table_column_min_width = 100;
 export const column_resize_area_half_width = 5;

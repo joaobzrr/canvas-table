@@ -6,8 +6,24 @@ import * as utils from "./utils";
 import * as config from "./config";
 import * as types from "./types";
 
-const scrollbar_thumb_margin_times_two = config.scrollbar_thumb_margin * 2;
-const track_size = config.scrollbar_size - scrollbar_thumb_margin_times_two - 1;
+const default_theme: types.Theme = {
+    fontSize: 16,
+    fontFamily: "Arial",
+    fontColor: "black",
+    rowHeight: 32,
+    cellPaddingX: 10,
+    borderColor: "black",
+    arrowColor: "black",
+    backgroundColor: "lightyellow",
+    headerBackgroundColor: "#D1C8AD",
+    selectedRowColor: "#ACCEF7",
+    scrollbarSize: 20,
+    scrollbarThumbMargin: 0,
+    scrollbarThumbColor: "#D1C8AD",
+    scrollbarUpperCornerColor: "#D1C8AD",
+    scrollbarBottomCornerColor: "#D1C8AD",
+    scrollbarBackgroundColor: "lightyellow"
+};
 
 export default class CanvasTable<T extends Record<string, string>> {
     canvas: HTMLCanvasElement;
@@ -79,19 +95,24 @@ export default class CanvasTable<T extends Record<string, string>> {
 
     cursor: string = "auto";
 
+    theme: types.Theme;
+
     constructor(
-        canvas:      HTMLCanvasElement,
+        canvas: HTMLCanvasElement,
         column_defs: types.Column_Def<T>[],
         rows: T[],
-        on_select_row?: (row: T) => void
+        on_select_row?: (row: T) => void,
+        theme?: Partial<types.Theme>
     ) {
+        this.theme = Object.assign({}, default_theme, theme);
+
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d")!;
 
         this.main_draw_area         = new Rect(0, 0, 1, 1);
-        this.header_draw_area       = new Rect(0, 0, 1, config.table_row_height);
+        this.header_draw_area       = new Rect(0, 0, 1, this.theme.rowHeight);
         this.body_draw_area         = new Rect(0, this.header_draw_area.bottom, 1, 1);
-        this.table_header_draw_area = new Rect(0, 0, 1, config.table_row_height);
+        this.table_header_draw_area = new Rect(0, 0, 1, this.theme.rowHeight);
         this.table_body_draw_area   = new Rect(0, this.header_draw_area.bottom, 1, 1);
 
         this.view = new Rect(0, 0, 1, 1);
@@ -117,7 +138,7 @@ export default class CanvasTable<T extends Record<string, string>> {
         const last_column_state = this.column_states[this.column_states.length - 1];
         this.table_body_dimensions = {
             width:  last_column_state.position + last_column_state.width,
-            height: rows.length * config.table_row_height
+            height: rows.length * this.theme.rowHeight
         };
 
         this.scroll_dimensions = { width: 1, height: 1 };
@@ -138,12 +159,14 @@ export default class CanvasTable<T extends Record<string, string>> {
 
         this.mouse_pos = new Vector2();
 
-        this.hsb_outer_rect = new Rect(0, 0, 1, config.scrollbar_size);
-        this.hsb_track_rect = new Rect(this.hsb_outer_rect.left + config.scrollbar_thumb_margin, 0, 1, track_size);
+        const track_size = this.theme.scrollbarSize - this.theme.scrollbarThumbMargin * 2 - 1;
+
+        this.hsb_outer_rect = new Rect(0, 0, 1, this.theme.scrollbarSize);
+        this.hsb_track_rect = new Rect(this.hsb_outer_rect.left + this.theme.scrollbarThumbMargin, 0, 1, track_size);
         this.hsb_thumb_rect = new Rect(this.hsb_track_rect.left, 0, 1, track_size);
 
-        this.vsb_outer_rect = new Rect(0, this.header_draw_area.height, config.scrollbar_size, 1);
-        this.vsb_track_rect = new Rect(0, this.vsb_outer_rect.top + config.scrollbar_thumb_margin, track_size, 1);
+        this.vsb_outer_rect = new Rect(0, this.header_draw_area.height, this.theme.scrollbarSize, 1);
+        this.vsb_track_rect = new Rect(0, this.vsb_outer_rect.top + this.theme.scrollbarThumbMargin, track_size, 1);
         this.vsb_thumb_rect = new Rect(0, this.vsb_track_rect.top, track_size, 1);
 
         this.handle_mousedown = this.handle_mousedown.bind(this);
@@ -197,7 +220,7 @@ export default class CanvasTable<T extends Record<string, string>> {
 
         const last_column_state = this.column_states[this.column_states.length - 1];
         this.table_body_dimensions.width = last_column_state.position + last_column_state.width;
-        this.table_body_dimensions.height = rows.length * config.table_row_height;
+        this.table_body_dimensions.height = rows.length * this.theme.rowHeight;
 
         this.view.position = new Vector2(0, 0);
 
@@ -215,6 +238,10 @@ export default class CanvasTable<T extends Record<string, string>> {
         this.resize_observer.unobserve(this.canvas);
 
         cancelAnimationFrame(this.frame_id!);
+    }
+
+    set_theme(theme?: Partial<types.Theme>) {
+        Object.assign(this.theme, theme);
     }
 
     tick() {
@@ -266,7 +293,7 @@ export default class CanvasTable<T extends Record<string, string>> {
                         viewport.push(this.view.position);
                         viewport.translate_y(-this.body_draw_area.top);
 
-                        const row_index = Math.floor(viewport.calc_y(this.mouse_pos.y) / config.table_row_height);
+                        const row_index = Math.floor(viewport.calc_y(this.mouse_pos.y) / this.theme.rowHeight);
                         const row = this.rows[row_index];
                         this.selected_row_id = row.id;
 
@@ -342,11 +369,11 @@ export default class CanvasTable<T extends Record<string, string>> {
                     // @Todo: Prevent scrolling with the mouse wheel if a column is being resized.
                     if (!this.is_resizing_column) {
                         // Move horizontal scrollbar thumb and view horizontally
-                        this.view.left = utils.clamp(this.view.left + event.x, 0, this.view_max_left);
+                        this.view.left = utils.clamp(Math.round(this.view.left + event.x), 0, this.view_max_left);
                         this.recalculate_scrollbar_x_thumb_position();
 
                         // Move vertical scrollbar thumb and view vertically
-                        this.view.top = utils.clamp(this.view.top + event.y, 0, this.view_max_top);
+                        this.view.top = utils.clamp(Math.round(this.view.top + event.y), 0, this.view_max_top);
                         this.recalculate_scrollbar_y_thumb_position();
 
                         this.render_indices = this.calculate_render_indices();
@@ -378,6 +405,16 @@ export default class CanvasTable<T extends Record<string, string>> {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+        // Draw background
+        if (this.theme.backgroundColor) {
+            this.ctx.save();
+            this.ctx.fillStyle = this.theme.backgroundColor;
+
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+            this.ctx.restore();
+        }
+
         // Draw selected row
         if (this.selected_row_id !== undefined) {
             // Find row index of selected row 
@@ -392,13 +429,13 @@ export default class CanvasTable<T extends Record<string, string>> {
 
             if (row_index !== -1) {
                 this.ctx.save();
-                this.ctx.fillStyle = config.select_color;
+                this.ctx.fillStyle = this.theme.selectedRowColor;
 
                 viewport.push(this.view.position.rev());
                 viewport.translate_y(this.body_draw_area.top);
 
-                const y = viewport.calc_y(row_index * config.table_row_height);
-                const rect = new Rect(0, y, this.table_body_draw_area.width, config.table_row_height);
+                const y = viewport.calc_y(row_index * this.theme.rowHeight);
+                const rect = new Rect(0, y, this.table_body_draw_area.width, this.theme.rowHeight);
 
                 this.draw_rect(this.ctx, rect, "fill");
 
@@ -408,12 +445,12 @@ export default class CanvasTable<T extends Record<string, string>> {
 
         }
 
-        // Draw header
-        {
+        // Draw header background
+        if (this.theme.headerBackgroundColor) {
             this.ctx.save();
-            this.ctx.strokeStyle = config.border_color;
+            this.ctx.fillStyle = this.theme.headerBackgroundColor;
 
-            this.draw_rect(this.ctx, this.header_draw_area, "stroke");
+            this.draw_rect(this.ctx, this.header_draw_area, "fill");
 
             this.ctx.restore();
         }
@@ -421,11 +458,11 @@ export default class CanvasTable<T extends Record<string, string>> {
         // Draw header text
         {
             this.ctx.save();
-            this.ctx.font = `bold ${config.font_size}px ${config.font_family}`;
-            this.ctx.fillStyle = config.font_color;
+            this.ctx.font = `bold ${this.theme.fontSize}px ${this.theme.fontFamily}`;
+            this.ctx.fillStyle = this.theme.fontColor;
             
             viewport.push(this.view.position.rev());
-            viewport.translate_x(config.cell_padding);
+            viewport.translate_x(this.theme.cellPaddingX);
 
             this.clip_rect(this.ctx, this.header_draw_area);
 
@@ -437,11 +474,11 @@ export default class CanvasTable<T extends Record<string, string>> {
 
                 const str = column_state.name;
                 const key = `header,${column_state.field}`;
-                const width = column_state.width - config.cell_padding * 2;
+                const width = column_state.width - this.theme.cellPaddingX * 2;
                 const text = this.string_truncator.truncate(str, width, key);
 
                 const x = viewport.calc_x(column_state.position);
-                const y = (config.table_row_height / 2) - (text_height / 2);
+                const y = (this.theme.rowHeight / 2) - (text_height / 2);
                 this.ctx.fillText(text, x, y);
             }
 
@@ -452,7 +489,7 @@ export default class CanvasTable<T extends Record<string, string>> {
         // Draw header arrows
         {
             this.ctx.save();
-            this.ctx.fillStyle = config.arrow_color;
+            this.ctx.fillStyle = this.theme.arrowColor;
 
             viewport.push(this.view.position.rev());
 
@@ -464,9 +501,9 @@ export default class CanvasTable<T extends Record<string, string>> {
 
                 const column_right = column_state.position + column_state.width;
 
-                const size = Math.round(config.table_row_height / 3);
-                const x = viewport.calc_x(column_right - size - config.cell_padding);
-                const y = (config.table_row_height / 2) - (size / 2);
+                const size = Math.round(this.theme.rowHeight / 3);
+                const x = viewport.calc_x(column_right - size - this.theme.cellPaddingX);
+                const y = (this.theme.rowHeight / 2) - (size / 2);
                 const rect = new Rect(x, y, size, size);
 
                 if (column_state.sort_order === "ascending") {
@@ -483,18 +520,18 @@ export default class CanvasTable<T extends Record<string, string>> {
         // Draw grid
         {
             this.ctx.save();
-            this.ctx.strokeStyle = config.border_color;
+            this.ctx.strokeStyle = this.theme.borderColor;
 
             viewport.push(this.body_draw_area.position);
             viewport.translate(this.view.position.rev());
-            viewport.translate_y(config.table_row_height); // Start drawing from the top border of the second row.
+            viewport.translate_y(this.theme.rowHeight); // Start drawing from the top border of the second row.
 
             this.clip_rect(this.ctx, this.main_draw_area);
 
             const first_row = this.render_indices.top;
             const last_row = this.render_indices.bottom;
             for (let i = first_row; i < last_row; i++) {
-                const y = viewport.calc_y(i * config.table_row_height);
+                const y = viewport.calc_y(i * this.theme.rowHeight);
 
                 this.ctx.beginPath();
                 this.ctx.moveTo(0, y);
@@ -532,16 +569,16 @@ export default class CanvasTable<T extends Record<string, string>> {
         // Draw body text
         {
             this.ctx.save();
-            this.ctx.font = `${config.font_size}px ${config.font_family}`;
-            this.ctx.fillStyle = config.font_color;
+            this.ctx.font = `${this.theme.fontSize}px ${this.theme.fontFamily}`;
+            this.ctx.fillStyle = this.theme.fontColor;
 
             const { actualBoundingBoxAscent, actualBoundingBoxDescent } = this.ctx.measureText("M");
             const text_height = actualBoundingBoxDescent - actualBoundingBoxAscent;
 
             viewport.push(this.body_draw_area.position);
             viewport.translate(this.view.position.rev());
-            viewport.translate_x(config.cell_padding);
-            viewport.translate_y((config.table_row_height / 2) - (text_height / 2)); // Center text
+            viewport.translate_x(this.theme.cellPaddingX);
+            viewport.translate_y((this.theme.rowHeight / 2) - (text_height / 2)); // Center text
 
             this.clip_rect(this.ctx, this.body_draw_area);
 
@@ -554,11 +591,11 @@ export default class CanvasTable<T extends Record<string, string>> {
 
                     const str = row.data[column_state.field];
                     const key = `${row.id},${column_state.field}`;
-                    const width = column_state.width - config.cell_padding * 2;
+                    const width = column_state.width - this.theme.cellPaddingX * 2;
                     const text = this.string_truncator.truncate(str, width, key);
 
                     const x = viewport.calc_x(column_state.position);
-                    const y = viewport.calc_y(i * config.table_row_height);
+                    const y = viewport.calc_y(i * this.theme.rowHeight);
 
                     this.ctx.fillText(text, x, y);
                 }
@@ -568,24 +605,46 @@ export default class CanvasTable<T extends Record<string, string>> {
             viewport.pop();
         }
 
+        // Draw corners
         if (this.overflow_x && this.overflow_y) {
             this.ctx.save();
-            this.ctx.fillStyle = config.scrollbar_corner_color;
 
-            this.ctx.fillRect(this.main_draw_area.right, this.main_draw_area.bottom, config.scrollbar_size, config.scrollbar_size);
+            this.ctx.fillStyle = this.theme.scrollbarBottomCornerColor;
+            this.ctx.fillRect(this.main_draw_area.right, this.main_draw_area.bottom, this.theme.scrollbarSize, this.theme.scrollbarSize);
+
+            this.ctx.fillStyle = this.theme.scrollbarUpperCornerColor;
+            this.ctx.fillRect(this.main_draw_area.right, 0, this.theme.scrollbarSize, this.header_draw_area.height);
+
+            this.ctx.restore();
+        }
+
+        // Draw header border
+        {
+            this.ctx.save();
+            this.ctx.strokeStyle = this.theme.borderColor;
+
+            this.draw_rect(this.ctx, this.header_draw_area, "stroke");
 
             this.ctx.restore();
         }
 
         if (this.overflow_x) {
             // Draw horizontal scrollbar background
+            if (this.theme.scrollbarBackgroundColor) {
+                this.ctx.save();
+                this.ctx.fillStyle = this.theme.scrollbarBackgroundColor;
+
+                this.draw_rect(this.ctx, this.hsb_outer_rect, "fill");
+
+                this.ctx.restore();
+            }
+
+            // Draw horizontal scrollbar border
             {
                 this.ctx.save();
                 this.ctx.lineWidth = 1;
-                this.ctx.strokeStyle = config.border_color;
-                this.ctx.fillStyle = config.scrollbar_background_color;
+                this.ctx.strokeStyle = this.theme.borderColor;
 
-                this.draw_rect(this.ctx, this.hsb_outer_rect, "fill");
                 this.draw_rect(this.ctx, this.hsb_outer_rect, "stroke");
 
                 this.ctx.restore();
@@ -594,7 +653,7 @@ export default class CanvasTable<T extends Record<string, string>> {
             // Draw horizontal scrollbar thumb
             {
                 this.ctx.save();
-                this.ctx.fillStyle = config.scrollbar_thumb_color;
+                this.ctx.fillStyle = this.theme.scrollbarThumbColor;
 
                 this.draw_rect(this.ctx, this.hsb_thumb_rect, "fill");
 
@@ -604,11 +663,11 @@ export default class CanvasTable<T extends Record<string, string>> {
 
         if (this.overflow_y) {
             // Draw vertical scrollbar background
-            {
+            if (this.theme.scrollbarBackgroundColor) {
                 this.ctx.save();
                 this.ctx.lineWidth = 1;
-                this.ctx.strokeStyle = config.border_color;
-                this.ctx.fillStyle = config.scrollbar_background_color;
+                this.ctx.strokeStyle = this.theme.borderColor;
+                this.ctx.fillStyle = this.theme.scrollbarBackgroundColor;
 
                 this.draw_rect(this.ctx, this.vsb_outer_rect, "fill");
                 this.draw_rect(this.ctx, this.vsb_outer_rect, "stroke");
@@ -616,10 +675,21 @@ export default class CanvasTable<T extends Record<string, string>> {
                 this.ctx.restore();
             }
 
+            {
+                this.ctx.save();
+                this.ctx.lineWidth = 1;
+                this.ctx.strokeStyle = this.theme.borderColor;
+
+                this.draw_rect(this.ctx, this.vsb_outer_rect, "stroke");
+
+                this.ctx.restore();
+            }
+
+
             // Draw vertical scrollbar thumb
             {
                 this.ctx.save();
-                this.ctx.fillStyle = config.scrollbar_thumb_color;
+                this.ctx.fillStyle = this.theme.scrollbarThumbColor;
 
                 this.draw_rect(this.ctx, this.vsb_thumb_rect, "fill");
 
@@ -630,7 +700,7 @@ export default class CanvasTable<T extends Record<string, string>> {
         // Draw canvas border
         {
             this.ctx.save();
-            this.ctx.strokeStyle = config.border_color;
+            this.ctx.strokeStyle = this.theme.borderColor;
 
             this.ctx.strokeRect(0, 0, this.canvas.width - 1, this.canvas.height - 1);
 
@@ -645,13 +715,13 @@ export default class CanvasTable<T extends Record<string, string>> {
     reflow() {
         const main_draw_area_width_without_overflow  = this.canvas.width;
         const main_draw_area_height_without_overflow = this.canvas.height;
-        const main_draw_area_width_with_overflow  = main_draw_area_width_without_overflow  - config.scrollbar_size;
-        const main_draw_area_height_with_overflow = main_draw_area_height_without_overflow - config.scrollbar_size;
+        const main_draw_area_width_with_overflow  = main_draw_area_width_without_overflow  - this.theme.scrollbarSize;
+        const main_draw_area_height_with_overflow = main_draw_area_height_without_overflow - this.theme.scrollbarSize;
         
         const body_draw_area_width_without_overflow  = this.canvas.width;
         const body_draw_area_height_without_overflow = this.canvas.height - this.header_draw_area.height;
-        const body_draw_area_width_with_overflow  = body_draw_area_width_without_overflow  - config.scrollbar_size;
-        const body_draw_area_height_with_overflow = body_draw_area_height_without_overflow - config.scrollbar_size;
+        const body_draw_area_width_with_overflow  = body_draw_area_width_without_overflow  - this.theme.scrollbarSize;
+        const body_draw_area_height_with_overflow = body_draw_area_height_without_overflow - this.theme.scrollbarSize;
 
         this.overflow_x = body_draw_area_width_with_overflow  < this.table_body_dimensions.width;
         this.overflow_y = body_draw_area_height_with_overflow < this.table_body_dimensions.height;
@@ -692,8 +762,8 @@ export default class CanvasTable<T extends Record<string, string>> {
         this.hsb_outer_rect.width = this.main_draw_area.width;
         this.hsb_outer_rect.top   = this.main_draw_area.bottom;
 
-        this.hsb_track_rect.width = this.hsb_outer_rect.width - scrollbar_thumb_margin_times_two;
-        this.hsb_track_rect.top   = this.hsb_outer_rect.top + config.scrollbar_thumb_margin;
+        this.hsb_track_rect.width = this.hsb_outer_rect.width - this.theme.scrollbarThumbMargin * 2;
+        this.hsb_track_rect.top   = this.hsb_outer_rect.top + this.theme.scrollbarThumbMargin;
 
         const new_thumb_rect_width = utils.scale(this.view.width, 0, this.scroll_dimensions.width, 0, this.hsb_track_rect.width);
         this.hsb_thumb_rect.width = Math.max(new_thumb_rect_width, config.scrollbar_thumb_min_length);
@@ -712,8 +782,8 @@ export default class CanvasTable<T extends Record<string, string>> {
         this.vsb_outer_rect.height = this.main_draw_area.height - this.header_draw_area.height;
         this.vsb_outer_rect.left   = this.main_draw_area.right;
 
-        this.vsb_track_rect.height = this.vsb_outer_rect.height - scrollbar_thumb_margin_times_two;
-        this.vsb_track_rect.left   = this.vsb_outer_rect.left + config.scrollbar_thumb_margin;
+        this.vsb_track_rect.height = this.vsb_outer_rect.height - this.theme.scrollbarThumbMargin * 2;
+        this.vsb_track_rect.left   = this.vsb_outer_rect.left + this.theme.scrollbarThumbMargin;
 
         const thumb_rect_new_height = utils.scale(this.view.height, 0, this.scroll_dimensions.height, 0, this.vsb_track_rect.height);
         this.vsb_thumb_rect.height = Math.max(thumb_rect_new_height, config.scrollbar_thumb_min_length);
@@ -732,7 +802,7 @@ export default class CanvasTable<T extends Record<string, string>> {
     }
 
     recalculate_view_x_position() {
-        this.view.left = utils.scale(this.hsb_thumb_rect.left, this.hsb_track_rect.left, this.hsb_max_thumb_position, 0, this.view_max_left);
+        this.view.left = Math.round(utils.scale(this.hsb_thumb_rect.left, this.hsb_track_rect.left, this.hsb_max_thumb_position, 0, this.view_max_left));
     }
 
     recalculate_view_y_position() {
@@ -809,8 +879,8 @@ export default class CanvasTable<T extends Record<string, string>> {
             rightmost_visible_column = this.num_cols;
         }
 
-        const top    = Math.floor(this.view.top / config.table_row_height);
-        const bottom = Math.min(Math.ceil(this.view.bottom / config.table_row_height), this.num_rows);
+        const top    = Math.floor(this.view.top / this.theme.rowHeight);
+        const bottom = Math.min(Math.ceil(this.view.bottom / this.theme.rowHeight), this.num_rows);
 
         return { left, right: rightmost_visible_column, top, bottom };
     }

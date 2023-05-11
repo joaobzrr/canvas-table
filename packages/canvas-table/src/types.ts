@@ -17,6 +17,25 @@ export type Data_Row<T> = {
     data: T;
 }
 
+export type Theme = {
+    fontSize:                   number;
+    fontFamily:                 string;
+    fontColor:                  string;
+    backgroundColor?:           string;
+    borderColor:                string;
+    selectedRowColor:           string;
+    arrowColor:                 string;
+    headerBackgroundColor?:     string;
+    scrollbarBackgroundColor?:  string;
+    scrollbarThumbColor:        string;
+    scrollbarUpperCornerColor:  string;
+    scrollbarBottomCornerColor: string;
+    scrollbarSize:              number;
+    scrollbarThumbMargin:       number;
+    rowHeight:                  number;
+    cellPaddingX:               number;
+};
+
 export type Dimensions = {
     width:  number;
     height: number;
