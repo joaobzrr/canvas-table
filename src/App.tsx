@@ -31,9 +31,7 @@ function App() {
       ref={containerRef}
       className={styles.container}
       id="container"
-    >
-      Hello, World!
-    </div>
+    />
   );
 }
 
