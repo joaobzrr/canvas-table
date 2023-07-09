@@ -43,28 +43,6 @@ export class TableState {
     this.tableRanges = this.calculateTableRanges();
   }
 
-  getVisibleColumnStates() {
-    const { columnLeft, columnRight } = this.tableRanges;
-
-    const columnStates = [];
-    for (let j = columnLeft; j < columnRight; j++) {
-      columnStates.push(this.columnStates[j]);
-    }
-
-    return columnStates;
-  }
-
-  getVisibleDataRows() {
-    const { rowTop, rowBottom } = this.tableRanges;
-
-    const dataRows = [];
-    for (let i = rowTop; i < rowBottom; i++) {
-      dataRows.push(this.dataRows[i]);
-    }
-
-    return dataRows;
-  }
-
   calculateTableRanges(): TableRanges {
     const numOfColumns = this.columnStates.length;
     const numOfRows    = this.dataRows.length;
@@ -137,11 +115,11 @@ export class TableState {
 
   calculateScrollDimensions() {
     const { x: tableWidth,    y: tableHeight } = this.tableDimensions;
-    const { y: viewportWidth, y: viewportHeight } = this.viewportDimensions;
+    const { x: viewportWidth, y: viewportHeight } = this.viewportDimensions;
 
-    const newScrollWidth  = Math.max(tableWidth, viewportWidth);
-    const newScrollHeight = Math.max(tableHeight, viewportHeight);
+    const scrollWidth  = Math.max(tableWidth, viewportWidth);
+    const scrollHeight = Math.max(tableHeight, viewportHeight);
     
-    return new Vector(newScrollWidth, newScrollHeight);
+    return new Vector(scrollWidth, scrollHeight);
   }
 }

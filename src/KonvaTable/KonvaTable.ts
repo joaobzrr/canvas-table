@@ -10,7 +10,10 @@ export class KonvaTable {
 
   tableState: TableState;
 
-  grid = new DynamicGroup({ class: Konva.Line });
+  grid = new DynamicGroup({
+    class: Konva.Line,
+    initialSize: 64
+  });
 
   constructor(options: KonvaTableOptions) {
     this.stage = new Konva.Stage({ container: options.container });
@@ -67,6 +70,7 @@ export class KonvaTable {
     this.stage.width(width);
     this.stage.height(height);
 
+    debugger;
     this.tableState.setViewportDimensions(new Vector(width, height));
 
     this.redraw();
