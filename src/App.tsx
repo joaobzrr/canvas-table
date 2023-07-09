@@ -4,7 +4,7 @@ import { generateTableData } from "./testing/utils/generateTableData";
 import styles from "./App.module.css";
 import { useElementSize } from "./testing/hooks/useElementSize";
 
-const [columnDefs, dataRows] = generateTableData(10, 10);
+const [columnDefs, dataRows] = generateTableData(100, 100);
 
 function App() {
   const [containerSize, containerRef] = useElementSize();

@@ -1,3 +1,8 @@
+export type VectorLike = {
+  x: number;
+  y: number;
+}
+
 export type ColumnDef = {
   title: string;
   field: string;
@@ -33,4 +38,5 @@ export type KonvaTableOptions = {
   container:  string;
   columnDefs: ColumnDef[];
   dataRows:   DataRow[];
+  theme?:     Theme;
 }

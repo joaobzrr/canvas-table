@@ -1,17 +1,23 @@
 import Konva from "konva";
 
-type DynamicGroupOptions<T> = {
+type DynamicGroupOptions<
+  T extends Konva.Group | Konva.Shape,
+  Ctor extends (new (...args: any[]) => T)
+> = {
   initialSize?: number;
-  make: () => T;
+  class: Ctor;
 }
 
-export class DynamicGroup<T extends Konva.Group | Konva.Shape> extends Konva.Group {
+export class DynamicGroup<
+  T extends Konva.Group | Konva.Shape,
+  Ctor extends (new (...args: any[]) => T)
+> extends Konva.Group {
   nodes = [] as T[];
   used = 0;
 
-  make: () => T;
+  ctor: Ctor;
 
-  constructor(options: DynamicGroupOptions<T>) {
+  constructor(options: DynamicGroupOptions<T, Ctor>) {
     super();
 
     if (options.initialSize && options.initialSize < 0) {
@@ -19,11 +25,11 @@ export class DynamicGroup<T extends Konva.Group | Konva.Shape> extends Konva.Gro
     }
     const initialSize = options.initialSize ?? 1;
 
-    this.make = options.make;
+    this.ctor = options.class;
     this.nodes = this.makeMany(initialSize);
   }
 
-  useOne() {
+  useOne(config: ConstructorParameters<Ctor>[0]) {
     if (this.used === this.nodes.length) {
       this.nodes = this.nodes.concat(this.makeMany(this.nodes.length));
     }
@@ -31,15 +37,17 @@ export class DynamicGroup<T extends Konva.Group | Konva.Shape> extends Konva.Gro
     const node = this.nodes[this.used++];
     this.add(node);
 
+    node.setAttrs(config);
+
     return node;
   }
 
-  clear() {
+  reset() {
     this.removeChildren();
     this.used = 0;
   }
 
   makeMany(n: number) {
-    return Array.from({ length: n }, this.make);
+    return Array.from({ length: n }, () => new this.ctor());
   }
 }
