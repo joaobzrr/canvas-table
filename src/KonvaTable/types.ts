@@ -20,7 +20,7 @@ export type Theme = {
   cellPadding: number;
   tableBorderColor: string;
   scrollBarThickness: number;
-  scrollBarThumbMargin: number;
+  scrollBarTrackMargin: number;
   scrollBarBorderColor: string;
   fontSize: number;
   fontColor: string;

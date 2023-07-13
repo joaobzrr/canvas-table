@@ -1,6 +1,7 @@
 import Konva from "konva";
 import { TableState } from "./TableState";
-import { DynamicGroup } from "./DynamicGroup";
+import { Grid } from "./Grid";
+import { HorizontalScrollbar } from "./HorizontalScrollbar";
 import { Vector } from "./Vector";
 import { KonvaTableOptions, ColumnDef } from "./types";
 
@@ -10,10 +11,9 @@ export class KonvaTable {
 
   tableState: TableState;
 
-  grid = new DynamicGroup({
-    class: Konva.Line,
-    initialSize: 64
-  });
+  grid: Grid;
+
+  hsb: HorizontalScrollbar;
 
   constructor(options: KonvaTableOptions) {
     this.stage = new Konva.Stage({ container: options.container });
@@ -24,56 +24,25 @@ export class KonvaTable {
     const columnStates = this.columnDefsToColumnStates(options.columnDefs);
     this.tableState.setTableData(columnStates, options.dataRows);
 
+    this.hsb = new HorizontalScrollbar(this.tableState);
+
+    this.grid = new Grid({ tableState: this.tableState });
     this.layer.add(this.grid);
+    this.layer.add(this.hsb);
     
     this.stage.add(this.layer);
-    this.layer.draw();
 
-    new Konva.Line();
+    this.layer.getContext();
   }
 
-  redraw() {
-    this.grid.reset();
+  setCanvasDimensions(size: { width: number, height: number }) {
+    this.stage.width(size.width);
+    this.stage.height(size.height);
 
-    const theme = this.tableState.theme;
-    const offset = this.tableState.absoluteScrollPosition.reverse();
+    this.tableState.setViewportDimensions(new Vector(size.width, size.height));
 
-    const { columnLeft, columnRight } = this.tableState.tableRanges;
-    for (let j = columnLeft; j < columnRight; j++) {
-      const columnState = this.tableState.columnStates[j];
-      const relX = columnState.position;
-
-      this.grid.useOne({
-	x: relX + offset.x,
-	y: 0,
-	points: [0, 0, 0, this.stage.height()],
-	stroke: theme.tableBorderColor,
-	strokeWidth: 1
-      });
-    }
-
-    const { rowTop, rowBottom } = this.tableState.tableRanges;
-    for (let i = rowTop; i < rowBottom; i++) {
-      const relY = i * theme.rowHeight;
-
-      this.grid.useOne({
-	x: 0,
-	y: relY + offset.y,
-	points: [0, 0, this.stage.width(), 0],
-	stroke: theme.tableBorderColor,
-	strokeWidth: 1
-      });
-    }
-  }
-
-  setCanvasDimensions(width: number, height: number) {
-    this.stage.width(width);
-    this.stage.height(height);
-
-    debugger;
-    this.tableState.setViewportDimensions(new Vector(width, height));
-
-    this.redraw();
+    this.grid.onResize(size);
+    this.hsb.onResize(size);
   }
 
   columnDefsToColumnStates(columnDefs: ColumnDef[]) {

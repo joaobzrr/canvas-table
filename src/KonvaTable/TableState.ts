@@ -13,9 +13,9 @@ export class TableState {
     rowBottom: 0
   }
 
-  absoluteScrollPosition        = Vector.zero();
-  normalizedScrollPosition      = Vector.zero();
-  maximumAbsoluteScrollPosition = Vector.zero();
+  scrollPosition           = Vector.zero();
+  normalizedScrollPosition = Vector.zero();
+  maximumScrollPosition    = Vector.zero();
 
   tableDimensions    = Vector.unit();
   scrollDimensions   = Vector.unit();
@@ -38,8 +38,8 @@ export class TableState {
   setViewportDimensions(viewportDimensions: Vector) {
     this.viewportDimensions = viewportDimensions.copy();
     this.scrollDimensions = this.calculateScrollDimensions();
-    this.maximumAbsoluteScrollPosition = this.calculateMaximumAbsoluteScrollPosition();
-    this.absoluteScrollPosition = this.absoluteScrollPosition.min(this.maximumAbsoluteScrollPosition);
+    this.maximumScrollPosition = this.calculateMaximumScrollPosition();
+    this.scrollPosition = this.scrollPosition.min(this.maximumScrollPosition);
     this.tableRanges = this.calculateTableRanges();
   }
 
@@ -47,7 +47,7 @@ export class TableState {
     const numOfColumns = this.columnStates.length;
     const numOfRows    = this.dataRows.length;
 
-    const { x: scrollLeft,    y: scrollTop      } = this.absoluteScrollPosition;
+    const { x: scrollLeft,    y: scrollTop      } = this.scrollPosition;
     const { x: viewportWidth, y: viewportHeight } = this.viewportDimensions;
 
     const scrollRight  = scrollLeft + viewportWidth;
@@ -93,14 +93,14 @@ export class TableState {
     return index - 1;
   }
 
-  calculateMaximumAbsoluteScrollPosition() {
+  calculateMaximumScrollPosition() {
     const { x: scrollWidth,   y: scrollHeight } = this.scrollDimensions
     const { x: viewportWidth, y: viewportHeight } = this.viewportDimensions;
 
-    const maxAbsoluteScrollLeft = scrollWidth  - viewportWidth;
-    const maxAbsoluteScrollTop  = scrollHeight - viewportHeight;
+    const maxScrollLeft = scrollWidth  - viewportWidth;
+    const maxScrollTop  = scrollHeight - viewportHeight;
 
-    return new Vector(maxAbsoluteScrollLeft, maxAbsoluteScrollTop);
+    return new Vector(maxScrollLeft, maxScrollTop);
   }
 
   calculateTableDimensions() {

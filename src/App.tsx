@@ -4,7 +4,7 @@ import { generateTableData } from "./testing/utils/generateTableData";
 import styles from "./App.module.css";
 import { useElementSize } from "./testing/hooks/useElementSize";
 
-const [columnDefs, dataRows] = generateTableData(5, 5);
+const [columnDefs, dataRows] = generateTableData(100, 100);
 
 function App() {
   const [containerSize, containerRef] = useElementSize();
@@ -21,8 +21,7 @@ function App() {
 
   useEffect(() => {
     if (konvaTableRef.current) {
-      const { width: containerWidth, height: containerHeight } = containerSize;
-      konvaTableRef.current.setCanvasDimensions(containerWidth, containerHeight);
+      konvaTableRef.current.setCanvasDimensions(containerSize);
     }
   }, [containerSize]);
 
