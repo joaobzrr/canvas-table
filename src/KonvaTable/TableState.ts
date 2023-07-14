@@ -35,6 +35,12 @@ export class TableState {
     this.theme = theme;
   }
 
+  setScrollPosition(scrollPosition: Vector) {
+    this.scrollPosition = scrollPosition.clamp(Vector.zero(), this.maximumScrollPosition);
+    this.normalizedScrollPosition = this.calculateNormalizedScrollPosition(scrollPosition);
+    this.tableRanges = this.calculateTableRanges();
+  }
+
   setViewportDimensions(viewportDimensions: Vector) {
     this.viewportDimensions = viewportDimensions.copy();
     this.scrollDimensions = this.calculateScrollDimensions();
@@ -121,6 +127,10 @@ export class TableState {
     const scrollHeight = Math.max(tableHeight, viewportHeight);
     
     return new Vector(scrollWidth, scrollHeight);
+  }
+
+  calculateNormalizedScrollPosition(scrollPosition: Vector) {
+    return scrollPosition.div(this.maximumScrollPosition);
   }
 
   get numOfRows() {

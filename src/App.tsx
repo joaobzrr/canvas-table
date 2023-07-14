@@ -21,7 +21,7 @@ function App() {
 
   useEffect(() => {
     if (konvaTableRef.current) {
-      konvaTableRef.current.setCanvasDimensions(containerSize);
+      konvaTableRef.current.setStageDimensions(containerSize);
     }
   }, [containerSize]);
 

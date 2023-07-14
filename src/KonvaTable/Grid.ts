@@ -28,6 +28,14 @@ export class Grid extends Component {
   }
 
   onResize() {
+    this.render();
+  }
+
+  onWheel() {
+    this.render();
+  }
+
+  render() {
     const { x: scrollLeft, y: scrollTop   } = this.tableState.scrollPosition;
     const { x: tableWidth, y: tableHeight } = this.tableState.tableDimensions;
     const { x: viewportWidth, y: viewportHeight } = this.tableState.viewportDimensions;

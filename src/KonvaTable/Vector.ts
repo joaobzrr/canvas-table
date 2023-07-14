@@ -40,27 +40,24 @@ export class Vector {
     return this.x === other.x && this.y === other.y;
   }
 
-  add(other: Vector) {
+  set(other: Partial<Vector | VectorLike>) {
+    return new Vector(other.x ?? this.x, other.y ?? this.y);
+  }
+
+  add(other: Vector | VectorLike) {
     return new Vector(this.x + other.x, this.y + other.y);
   }
 
-  sub(other: Vector) {
+  sub(other: Vector | VectorLike) {
     return new Vector(this.x - other.x, this.y - other.y)
   }
 
-  mul(scalar: number) {
-    return new Vector(this.x * scalar, this.y * scalar);
+  mul(other: Vector | VectorLike) {
+    return new Vector(this.x * other.x, this.y * other.y);
   }
 
-  set({ x, y }: { x?: number, y?: number }) {
-    return new Vector(x ?? this.x, y ?? this.y);
-  }
-
-  div(scalar: number) {
-    if (scalar === 0) {
-      throw new Error("Division by zero");
-    }
-    return new Vector(this.x / scalar, this.y / scalar);
+  div(other: Vector | VectorLike) {
+    return new Vector(this.x / other.x, this.y / other.y);
   }
 
   reverse() {

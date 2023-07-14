@@ -26,4 +26,8 @@ export class Body extends Component {
     this.grid.height(this.height());
     this.grid.onResize();
   }
+
+  onWheel() {
+    this.grid.onWheel();
+  }
 }

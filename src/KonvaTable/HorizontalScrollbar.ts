@@ -32,6 +32,14 @@ export class HorizontalScrollbar extends Component {
   }
 
   onResize() {
+    this.render();
+  }
+
+  onWheel() {
+    this.render();
+  }
+
+  render() {
     const { x: viewportWidth } = this.tableState.viewportDimensions;
     const { x: scrollWidth } = this.tableState.scrollDimensions;
 
