@@ -37,7 +37,7 @@ export class TableState {
 
   setScrollPosition(scrollPosition: Vector) {
     this.scrollPosition = scrollPosition.clamp(Vector.zero(), this.maximumScrollPosition);
-    this.normalizedScrollPosition = this.calculateNormalizedScrollPosition(scrollPosition);
+    this.normalizedScrollPosition = this.calculateNormalizedScrollPosition(this.scrollPosition);
     this.tableRanges = this.calculateTableRanges();
   }
 

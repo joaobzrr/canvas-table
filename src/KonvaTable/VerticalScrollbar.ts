@@ -1,6 +1,7 @@
 import Konva from "konva";
 import { Component, ComponentConfig } from "./Component";
 import { TableState } from "./TableState";
+import { MathUtils } from "./MathUtils";
 
 export interface VerticalScrollbarConfig extends ComponentConfig {
   tableState: TableState;
@@ -12,6 +13,8 @@ export class VerticalScrollbar extends Component {
   bar:   Konva.Rect;
   track: Konva.Rect;
   thumb: Konva.Rect;
+
+  maxThumbTop = 0;
 
   constructor(config: VerticalScrollbarConfig) {
     super(config);
@@ -33,10 +36,12 @@ export class VerticalScrollbar extends Component {
 
   onResize() {
     this.render();
+    this.maxThumbTop = this.track.y() + this.track.height() - this.thumb.height();
   }
 
   onWheel() {
     this.render();
+    this.repositionThumb();
   }
 
   render() {
@@ -73,5 +78,10 @@ export class VerticalScrollbar extends Component {
       width: trackWidth,
       height: (viewportHeight / scrollHeight) * trackHeight,
     });
+  }
+
+  repositionThumb() {
+    const { y: normalizedScrollTop } = this.tableState.normalizedScrollPosition;
+    this.thumb.y(MathUtils.scale(normalizedScrollTop, 0, 1, this.track.y(), this.maxThumbTop));
   }
 }

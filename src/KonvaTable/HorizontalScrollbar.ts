@@ -1,6 +1,7 @@
 import Konva from "konva";
 import { Component, ComponentConfig } from "./Component";
 import { TableState } from "./TableState";
+import { MathUtils } from "./MathUtils";
 
 export interface HorizontalScrollbarConfig extends ComponentConfig {
   tableState: TableState;
@@ -12,6 +13,8 @@ export class HorizontalScrollbar extends Component {
   bar: Konva.Rect;
   track: Konva.Rect;
   thumb: Konva.Rect;
+
+  maxThumbLeft = 0;
 
   constructor(config: HorizontalScrollbarConfig) {
     super(config);
@@ -33,10 +36,12 @@ export class HorizontalScrollbar extends Component {
 
   onResize() {
     this.render();
+    this.maxThumbLeft = this.track.x() + this.track.width() - this.thumb.width();
   }
 
   onWheel() {
     this.render();
+    this.repositionThumb();
   }
 
   render() {
@@ -73,5 +78,10 @@ export class HorizontalScrollbar extends Component {
       width: (viewportWidth / scrollWidth) * trackWidth,
       height: trackHeight
     });
+  }
+
+  repositionThumb() {
+    const { x: normalizedScrollLeft } = this.tableState.normalizedScrollPosition;
+    this.thumb.x(MathUtils.scale(normalizedScrollLeft, 0, 1, this.track.x(), this.maxThumbLeft));
   }
 }
