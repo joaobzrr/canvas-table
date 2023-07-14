@@ -46,7 +46,7 @@ export class Grid extends Component {
 
     this.group.reset();
 
-    for (let j = Math.max(columnLeft, 1); j < columnRight; j++) {
+    for (let j = columnLeft + 1; j < columnRight; j++) {
       const columnState = this.tableState.columnStates[j];
       const relColPos = columnState.position;
       const absColPos = relColPos - scrollLeft;
@@ -74,7 +74,7 @@ export class Grid extends Component {
     }
 
     const { rowTop, rowBottom } = this.tableState.tableRanges;
-    for (let i = Math.max(rowTop, 1); i < rowBottom; i++) {
+    for (let i = rowTop + 1; i < rowBottom; i++) {
       const relRowPos = i * theme.rowHeight;
       const absRowPos = relRowPos - scrollTop;
 
