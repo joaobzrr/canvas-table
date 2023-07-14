@@ -35,16 +35,6 @@ export class VerticalScrollbar extends Component {
   }
 
   onResize() {
-    this.render();
-    this.maxThumbTop = this.track.y() + this.track.height() - this.thumb.height();
-  }
-
-  onWheel() {
-    this.render();
-    this.repositionThumb();
-  }
-
-  render() {
     const { y: viewportHeight } = this.tableState.viewportDimensions;
     const { y: scrollHeight } = this.tableState.scrollDimensions;
 
@@ -72,12 +62,23 @@ export class VerticalScrollbar extends Component {
       height: trackHeight
     });
 
+    const thumbHeight = (viewportHeight / scrollHeight) * trackHeight;
+
     this.thumb.setAttrs({
       x: trackX,
       y: trackY,
       width: trackWidth,
-      height: (viewportHeight / scrollHeight) * trackHeight,
+      height: thumbHeight,
     });
+
+    const trackBottom = trackY + trackHeight;
+    this.maxThumbTop = trackBottom - thumbHeight;
+
+    this.repositionThumb();
+  }
+
+  onWheel() {
+    this.repositionThumb();
   }
 
   repositionThumb() {
