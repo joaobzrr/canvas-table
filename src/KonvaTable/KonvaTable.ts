@@ -31,7 +31,10 @@ export class KonvaTable {
     const columnStates = this.columnDefsToColumnStates(options.columnDefs);
     this.tableState.setTableData(columnStates, options.dataRows);
 
-    this.body = new Body({ tableState: this.tableState });
+    this.body = new Body({
+      tableState: this.tableState,
+      y: theme.rowHeight
+    });
     this.layer.add(this.body);
 
     this.head = new Head({ tableState: this.tableState });
@@ -70,17 +73,17 @@ export class KonvaTable {
     const bodyHeight = vsbIsVisible ? bodyHeightWithOverflow : bodyHeightWithoutOverflow;
     this.body.height(bodyHeight);
 
+    this.body.onResize();
+
     this.hsb.y(size.height - theme.scrollBarThickness);
     this.hsb.width(bodyWidth);
     this.hsb.visible(hsbIsVisible);
     this.hsb.onResize();
-    //this.hsb.onResize();
 
     this.vsb.x(bodyWidth);
     this.vsb.height(bodyHeight);
     this.vsb.visible(vsbIsVisible);
     this.vsb.onResize();
-    //this.vsb.onResize();
   }
 
   columnDefsToColumnStates(columnDefs: ColumnDef[]) {

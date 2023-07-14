@@ -2,7 +2,6 @@ import Konva from "konva";
 import { Component, ComponentConfig } from "./Component";
 import { DynamicGroup } from "./DynamicGroup";
 import { TableState } from "./TableState";
-import { KonvaEventObject } from "konva/lib/Node";
 
 export interface GridConfig extends ComponentConfig {
   tableState: TableState;
@@ -28,15 +27,10 @@ export class Grid extends Component {
     this.on("resize", this.onResize.bind(this));
   }
 
-  onResize(event: KonvaEventObject<UIEvent>) {
-    debugger;
-
+  onResize() {
     this.group.reset();
 
-    const stage = this.getStage();
-    if (!stage) {
-      throw new Error("State is null");
-    }
+    const { width, height } = this.size();
 
     const scrollPosition = this.tableState.scrollPosition;
     const theme = this.tableState.theme;
@@ -50,7 +44,7 @@ export class Grid extends Component {
       this.group.useOne({
 	x: colAbsPos,
 	y: 0,
-	points: [0, 0, 0, size.height],
+	points: [0, 0, 0, height],
 	stroke: theme.tableBorderColor,
 	strokeWidth: 1
       });
@@ -64,7 +58,7 @@ export class Grid extends Component {
       this.group.useOne({
 	x: 0,
 	y: rowAbsPos,
-	points: [0, 0, size.width, 0],
+	points: [0, 0, width, 0],
 	stroke: theme.tableBorderColor,
 	strokeWidth: 1
       });

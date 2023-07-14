@@ -19,8 +19,7 @@ export class VerticalScrollbar extends Component {
     this.tableState = config.tableState;
 
     this.bar = new Konva.Rect({
-      stroke: "black",
-      fill: "white",
+      fill: "green",
       strokeWidth: 1
     });
     this.add(this.bar);
