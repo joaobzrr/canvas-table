@@ -54,8 +54,6 @@ export class KonvaTable {
     this.stage.width(size.width);
     this.stage.height(size.height);
 
-    this.tableState.setViewportDimensions(new Vector(size.width, size.height));
-
     const { x: tableWidth, y: tableHeight } = this.tableState.tableDimensions;
     const { theme } = this.tableState;
 
@@ -67,12 +65,14 @@ export class KonvaTable {
 
     const hsbIsVisible = bodyHeightWithOverflow < tableHeight;
     const bodyWidth = hsbIsVisible ? bodyWidthWithOverflow : bodyWidthWithoutOverflow;
-    this.body.width(bodyWidth);
 
     const vsbIsVisible = bodyWidthWithOverflow < tableWidth;
     const bodyHeight = vsbIsVisible ? bodyHeightWithOverflow : bodyHeightWithoutOverflow;
-    this.body.height(bodyHeight);
 
+    this.tableState.setViewportDimensions(new Vector({ x: bodyWidth, y: bodyHeight }));
+
+    this.body.width(bodyWidth);
+    this.body.height(bodyHeight);
     this.body.onResize();
 
     this.hsb.y(size.height - theme.scrollBarThickness);

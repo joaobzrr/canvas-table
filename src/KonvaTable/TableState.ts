@@ -122,4 +122,12 @@ export class TableState {
     
     return new Vector(scrollWidth, scrollHeight);
   }
+
+  get numOfRows() {
+    return this.dataRows.length;
+  }
+
+  get numOfCols() {
+    return this.columnStates.length;
+  }
 }
