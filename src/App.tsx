@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { KonvaTable } from "./KonvaTable";
 import { generateTableData } from "./testing/utils/generateTableData";
-import styles from "./App.module.css";
 import { useElementSize } from "./testing/hooks/useElementSize";
+import styles from "./App.module.css";
 
 const [columnDefs, dataRows] = generateTableData(100, 100);
 
@@ -26,12 +26,10 @@ function App() {
   }, [containerSize]);
 
   return (
-    <div
-      ref={containerRef}
-      className={styles.container}
-      id="container"
-    />
+    <div className={styles.app}>
+      <div id="container" ref={containerRef} className={styles.container} />
+    </div>
   );
 }
 
-export default App
+export default App;

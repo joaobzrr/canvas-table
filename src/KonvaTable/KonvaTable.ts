@@ -1,7 +1,9 @@
 import Konva from "konva";
-import { TableState } from "./TableState";
-import { Grid } from "./Grid";
+import { Body } from "./Body";
+import { Head } from "./Head";
 import { HorizontalScrollbar } from "./HorizontalScrollbar";
+import { VerticalScrollbar } from "./VerticalScrollbar";
+import { TableState } from "./TableState";
 import { Vector } from "./Vector";
 import { KonvaTableOptions, ColumnDef } from "./types";
 
@@ -11,28 +13,38 @@ export class KonvaTable {
 
   tableState: TableState;
 
-  grid: Grid;
+  head: Head;
+  body: Body;
 
   hsb: HorizontalScrollbar;
+  vsb: VerticalScrollbar;
 
   constructor(options: KonvaTableOptions) {
     this.stage = new Konva.Stage({ container: options.container });
     this.layer = new Konva.Layer();
+    this.stage.add(this.layer);
 
     this.tableState = new TableState();
 
+    const { theme } = this.tableState;
+    
     const columnStates = this.columnDefsToColumnStates(options.columnDefs);
     this.tableState.setTableData(columnStates, options.dataRows);
 
-    this.hsb = new HorizontalScrollbar(this.tableState);
+    this.body = new Body({ tableState: this.tableState });
+    this.layer.add(this.body);
 
-    this.grid = new Grid({ tableState: this.tableState });
-    this.layer.add(this.grid);
+    this.head = new Head({ tableState: this.tableState });
+    this.layer.add(this.head);
+
+    this.hsb = new HorizontalScrollbar({ tableState: this.tableState });
     this.layer.add(this.hsb);
-    
-    this.stage.add(this.layer);
 
-    this.layer.getContext();
+    this.vsb = new VerticalScrollbar({
+      tableState: this.tableState,
+      y: theme.rowHeight
+    });
+    this.layer.add(this.vsb);
   }
 
   setCanvasDimensions(size: { width: number, height: number }) {
@@ -41,8 +53,34 @@ export class KonvaTable {
 
     this.tableState.setViewportDimensions(new Vector(size.width, size.height));
 
-    this.grid.onResize(size);
-    this.hsb.onResize(size);
+    const { x: tableWidth, y: tableHeight } = this.tableState.tableDimensions;
+    const { theme } = this.tableState;
+
+    const bodyWidthWithoutOverflow = size.width;
+    const bodyWidthWithOverflow = bodyWidthWithoutOverflow - theme.scrollBarThickness;
+
+    const bodyHeightWithoutOverflow = size.height - theme.rowHeight;
+    const bodyHeightWithOverflow = bodyHeightWithoutOverflow - theme.scrollBarThickness;
+
+    const hsbIsVisible = bodyHeightWithOverflow < tableHeight;
+    const bodyWidth = hsbIsVisible ? bodyWidthWithOverflow : bodyWidthWithoutOverflow;
+    this.body.width(bodyWidth);
+
+    const vsbIsVisible = bodyWidthWithOverflow < tableWidth;
+    const bodyHeight = vsbIsVisible ? bodyHeightWithOverflow : bodyHeightWithoutOverflow;
+    this.body.height(bodyHeight);
+
+    this.hsb.y(size.height - theme.scrollBarThickness);
+    this.hsb.width(bodyWidth);
+    this.hsb.visible(hsbIsVisible);
+    this.hsb.onResize();
+    //this.hsb.onResize();
+
+    this.vsb.x(bodyWidth);
+    this.vsb.height(bodyHeight);
+    this.vsb.visible(vsbIsVisible);
+    this.vsb.onResize();
+    //this.vsb.onResize();
   }
 
   columnDefsToColumnStates(columnDefs: ColumnDef[]) {

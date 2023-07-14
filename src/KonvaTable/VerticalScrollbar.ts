@@ -2,18 +2,18 @@ import Konva from "konva";
 import { Component, ComponentConfig } from "./Component";
 import { TableState } from "./TableState";
 
-export interface HorizontalScrollbarConfig extends ComponentConfig {
+export interface VerticalScrollbarConfig extends ComponentConfig {
   tableState: TableState;
 }
 
-export class HorizontalScrollbar extends Component {
+export class VerticalScrollbar extends Component {
   tableState: TableState;
 
-  bar: Konva.Rect;
+  bar:   Konva.Rect;
   track: Konva.Rect;
   thumb: Konva.Rect;
 
-  constructor(config: HorizontalScrollbarConfig) {
+  constructor(config: VerticalScrollbarConfig) {
     super(config);
 
     this.tableState = config.tableState;
@@ -33,13 +33,13 @@ export class HorizontalScrollbar extends Component {
   }
 
   onResize() {
-    const { x: viewportWidth } = this.tableState.viewportDimensions;
-    const { x: scrollWidth } = this.tableState.scrollDimensions;
+    const { y: viewportHeight } = this.tableState.viewportDimensions;
+    const { y: scrollHeight } = this.tableState.scrollDimensions;
 
     const { theme } = this.tableState;
-    const barHeight = theme.scrollBarThickness;
+    const barWidth = theme.scrollBarThickness;
 
-    const barWidth = this.width();
+    const barHeight = this.height();
 
     this.bar.setAttrs({
       x: 0,
@@ -48,9 +48,9 @@ export class HorizontalScrollbar extends Component {
       height: barHeight
     });
 
-    const trackX = theme.scrollBarTrackMargin; 
+    const trackX = theme.scrollBarTrackMargin;
     const trackY = theme.scrollBarTrackMargin;
-    const trackWidth = barWidth - (theme.scrollBarTrackMargin * 2);
+    const trackWidth  = barWidth  - (theme.scrollBarTrackMargin * 2);
     const trackHeight = barHeight - (theme.scrollBarTrackMargin * 2);
 
     this.track.setAttrs({
@@ -63,8 +63,8 @@ export class HorizontalScrollbar extends Component {
     this.thumb.setAttrs({
       x: trackX,
       y: trackY,
-      width: (viewportWidth / scrollWidth) * trackWidth,
-      height: trackHeight
+      width: trackWidth,
+      height: (viewportHeight / scrollHeight) * trackHeight,
     });
   }
 }

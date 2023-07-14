@@ -2,6 +2,7 @@ import Konva from "konva";
 import { Component, ComponentConfig } from "./Component";
 import { DynamicGroup } from "./DynamicGroup";
 import { TableState } from "./TableState";
+import { KonvaEventObject } from "konva/lib/Node";
 
 export interface GridConfig extends ComponentConfig {
   tableState: TableState;
@@ -23,9 +24,13 @@ export class Grid extends Component {
     });
 
     this.add(this.group);
+
+    this.on("resize", this.onResize.bind(this));
   }
 
-  onResize(size: { width: number, height: number }) {
+  onResize(event: KonvaEventObject<UIEvent>) {
+    debugger;
+
     this.group.reset();
 
     const stage = this.getStage();
