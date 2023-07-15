@@ -38,7 +38,10 @@ export class KonvaTable {
     });
     this.layer.add(this.body);
 
-    this.head = new Head({ tableState: this.tableState });
+    this.head = new Head({
+      tableState: this.tableState,
+      height: theme.rowHeight
+    });
     this.layer.add(this.head);
 
     this.hsb = new HorizontalScrollbar({ tableState: this.tableState });
@@ -76,6 +79,9 @@ export class KonvaTable {
     this.body.width(bodyWidth);
     this.body.height(bodyHeight);
     this.body.onResize();
+
+    this.head.width(bodyWidth);
+    this.head.onResize();
 
     this.hsb.y(stageHeight - theme.scrollBarThickness);
     this.hsb.width(bodyWidth);
