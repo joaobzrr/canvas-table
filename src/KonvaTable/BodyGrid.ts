@@ -3,16 +3,16 @@ import { Component, ComponentConfig } from "./Component";
 import { DynamicGroup } from "./DynamicGroup";
 import { TableState } from "./TableState";
 
-export interface GridConfig extends ComponentConfig {
+export interface BodyGridConfig extends ComponentConfig {
   tableState: TableState;
 }
 
-export class Grid extends Component {
+export class BodyGrid extends Component {
   tableState: TableState;
 
   group: DynamicGroup<typeof Konva.Line>;
 
-  constructor(config: GridConfig) {
+  constructor(config: BodyGridConfig) {
     super(config);
 
     this.tableState = config.tableState;
@@ -21,10 +21,7 @@ export class Grid extends Component {
       class: Konva.Line,
       initialSize: 64
     });
-
     this.add(this.group);
-
-    this.on("resize", this.onResize.bind(this));
   }
 
   onResize() {
@@ -40,7 +37,7 @@ export class Grid extends Component {
     const { x: tableWidth, y: tableHeight } = this.tableState.tableDimensions;
     const { x: viewportWidth, y: viewportHeight } = this.tableState.viewportDimensions;
     const { columnLeft, columnRight } = this.tableState.tableRanges;
-    const theme = this.tableState.theme;
+    const { theme } = this.tableState;
 
     const { width: gridWidth, height: gridHeight } = this.size();
 

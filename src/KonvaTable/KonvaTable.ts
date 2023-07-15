@@ -105,6 +105,7 @@ export class KonvaTable {
     this.tableState.setScrollPosition(newScrollLeft);
 
     this.body.onWheel();
+    this.head.onWheel();
     this.hsb.onWheel();
     this.vsb.onWheel();
   }
