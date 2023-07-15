@@ -1,25 +1,27 @@
 import { Vector } from "./Vector";
 import { defaultTheme } from "./defaultTheme";
-import { ColumnState, DataRow, TableRanges, Theme } from "./types";
+import {
+  ColumnState,
+  DataRow,
+  Dimensions,
+  TableRanges,
+  Theme,
+  VectorLike
+} from "./types";
 
 export class TableState {
   columnStates = [] as ColumnState[];
   dataRows = [] as DataRow[];
 
-  tableRanges = {
-    columnLeft: 0,
-    columnRight: 0,
-    rowTop: 0,
-    rowBottom: 0
-  }
+  tableRanges = { columnLeft: 0, columnRight: 0, rowTop: 0, rowBottom: 0 }
 
-  scrollPosition           = Vector.zero();
-  normalizedScrollPosition = Vector.zero();
-  maximumScrollPosition    = Vector.zero();
+  scrollPosition           = { x: 0, y: 0 };
+  normalizedScrollPosition = { x: 0, y: 0 };
+  maximumScrollPosition    = { x: 0, y: 0 };
 
-  tableDimensions    = Vector.unit();
-  scrollDimensions   = Vector.unit();
-  viewportDimensions = Vector.unit();
+  tableDimensions    = { width: 1, height: 1 };
+  scrollDimensions   = { width: 1, height: 1 };
+  viewportDimensions = { width: 1, height: 1 };
 
   theme = defaultTheme;
 
@@ -51,23 +53,30 @@ export class TableState {
     this.theme = theme;
   }
 
-  setScrollPosition(scrollPosition: Vector) {
-    this.scrollPosition = scrollPosition.clamp(Vector.zero(), this.maximumScrollPosition);
+  setScrollPosition(scrollPosition: VectorLike) {
+    this.scrollPosition = new Vector(scrollPosition)
+      .clamp(Vector.zero(), new Vector(this.maximumScrollPosition))
+      .data();
+
     this.normalizedScrollPosition = this.calculateNormalizedScrollPosition(this.scrollPosition);
     this.tableRanges = this.calculateTableRanges();
   }
 
-  setViewportDimensions(viewportDimensions: Vector) {
-    this.viewportDimensions = viewportDimensions.copy();
+  setViewportDimensions(viewportDimensions: Dimensions) {
+    this.viewportDimensions =  { ...viewportDimensions };
     this.scrollDimensions = this.calculateScrollDimensions();
     this.maximumScrollPosition = this.calculateMaximumScrollPosition();
-    this.scrollPosition = this.scrollPosition.min(this.maximumScrollPosition);
+
+    this.scrollPosition = new Vector(this.scrollPosition)
+      .min(new Vector(this.maximumScrollPosition))
+      .data();
+
     this.tableRanges = this.calculateTableRanges();
   }
 
   calculateTableRanges(): TableRanges {
-    const { x: scrollLeft,    y: scrollTop      } = this.scrollPosition;
-    const { x: viewportWidth, y: viewportHeight } = this.viewportDimensions;
+    const { x: scrollLeft, y: scrollTop } = this.scrollPosition;
+    const { width: viewportWidth, height: viewportHeight } = this.viewportDimensions;
 
     const scrollRight  = scrollLeft + viewportWidth;
     const scrollBottom = scrollTop  + viewportHeight;
@@ -96,7 +105,7 @@ export class TableState {
       throw new Error("Index is out of bounds");
     }
 
-    const max = this.tableDimensions.x;
+    const max = this.tableDimensions.width;
     if (x >= max) return -1;
     if (x < 0) return -1;
     if (x == 0) return 0;
@@ -113,13 +122,13 @@ export class TableState {
   }
 
   calculateMaximumScrollPosition() {
-    const { x: scrollWidth,   y: scrollHeight } = this.scrollDimensions
-    const { x: viewportWidth, y: viewportHeight } = this.viewportDimensions;
+    const { width: scrollWidth, height: scrollHeight } = this.scrollDimensions
+    const { width: viewportWidth, height: viewportHeight } = this.viewportDimensions;
 
-    const maxScrollLeft = scrollWidth  - viewportWidth;
-    const maxScrollTop  = scrollHeight - viewportHeight;
+    const x = scrollWidth  - viewportWidth;
+    const y = scrollHeight - viewportHeight;
 
-    return new Vector(maxScrollLeft, maxScrollTop);
+    return { x, y };
   }
 
   calculateTableDimensions() {
@@ -129,21 +138,23 @@ export class TableState {
     const { rowHeight } = this.theme;
     const height = this.numOfRows * rowHeight;
 
-    return new Vector(width, height);
+    return { width, height };
   }
 
   calculateScrollDimensions() {
-    const { x: tableWidth,    y: tableHeight } = this.tableDimensions;
-    const { x: viewportWidth, y: viewportHeight } = this.viewportDimensions;
+    const { width: tableWidth, height: tableHeight } = this.tableDimensions;
+    const { width: viewportWidth, height: viewportHeight } = this.viewportDimensions;
 
-    const scrollWidth  = Math.max(tableWidth, viewportWidth);
-    const scrollHeight = Math.max(tableHeight, viewportHeight);
+    const width  = Math.max(tableWidth, viewportWidth);
+    const height = Math.max(tableHeight, viewportHeight);
     
-    return new Vector(scrollWidth, scrollHeight);
+    return { width, height };
   }
 
-  calculateNormalizedScrollPosition(scrollPosition: Vector) {
-    return scrollPosition.div(this.maximumScrollPosition);
+  calculateNormalizedScrollPosition(scrollPosition: VectorLike) {
+    return new Vector(scrollPosition)
+      .div(this.maximumScrollPosition)
+      .data();
   }
 
   get numOfRows() {

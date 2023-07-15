@@ -37,8 +37,8 @@ export class VerticalScrollbar extends Component {
   }
 
   onResize() {
-    const { y: viewportHeight } = this.tableState.viewportDimensions;
-    const { y: scrollHeight } = this.tableState.scrollDimensions;
+    const { height: viewportHeight } = this.tableState.viewportDimensions;
+    const { height: scrollHeight } = this.tableState.scrollDimensions;
 
     const { theme } = this.tableState;
     const barWidth = theme.scrollBarThickness;

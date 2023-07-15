@@ -36,8 +36,8 @@ export class BodyGrid extends Component {
 
   render() {
     const { x: scrollLeft, y: scrollTop   } = this.tableState.scrollPosition;
-    const { x: tableWidth, y: tableHeight } = this.tableState.tableDimensions;
-    const { x: viewportWidth, y: viewportHeight } = this.tableState.viewportDimensions;
+    const { width: tableWidth, height: tableHeight } = this.tableState.tableDimensions;
+    const { width: viewportWidth, height: viewportHeight } = this.tableState.viewportDimensions;
     const { columnLeft, columnRight } = this.tableState.tableRanges;
     const { theme } = this.tableState;
 
