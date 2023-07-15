@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { Component, ComponentConfig } from "./Component";
 import { TableState } from "./TableState";
-import { MathUtils } from "./MathUtils";
+import { Utils } from "./Utils";
 
 export interface VerticalScrollbarConfig extends ComponentConfig {
   tableState: TableState;
@@ -85,6 +85,6 @@ export class VerticalScrollbar extends Component {
 
   repositionThumb() {
     const { y: normalizedScrollTop } = this.tableState.normalizedScrollPosition;
-    this.thumb.y(MathUtils.scale(normalizedScrollTop, 0, 1, this.track.y(), this.maxThumbTop));
+    this.thumb.y(Utils.scale(normalizedScrollTop, 0, 1, this.track.y(), this.maxThumbTop));
   }
 }

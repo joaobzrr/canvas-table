@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { Component, ComponentConfig } from "./Component";
 import { TableState } from "./TableState";
-import { MathUtils } from "./MathUtils";
+import { Utils } from "./Utils";
 
 export interface HorizontalScrollbarConfig extends ComponentConfig {
   tableState: TableState;
@@ -83,7 +83,7 @@ export class HorizontalScrollbar extends Component {
   repositionThumb() {
     const { x: normalizedScrollLeft } = this.tableState.normalizedScrollPosition;
 
-    const thumbLeft = MathUtils.scale(normalizedScrollLeft, 0, 1, this.track.x(), this.maxThumbLeft);
+    const thumbLeft = Utils.scale(normalizedScrollLeft, 0, 1, this.track.x(), this.maxThumbLeft);
     this.thumb.x(thumbLeft);
   }
 }

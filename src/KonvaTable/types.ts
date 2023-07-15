@@ -45,3 +45,10 @@ export type KonvaTableOptions = {
   dataRows:   DataRow[];
   theme?:     Theme;
 }
+
+export type LineProps = {
+  type:      "hline" | "vline";
+  length:    number;
+  thickness: number;
+  color:     string;
+}
