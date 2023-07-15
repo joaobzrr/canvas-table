@@ -31,6 +31,22 @@ export class TableState {
     this.tableRanges = this.calculateTableRanges();
   }
 
+  getColumnState(columnIndex: number) {
+    const columnState = this.columnStates[columnIndex];
+    if (!columnState) {
+      throw new Error("Index out of bounds");
+    }
+    return columnState;
+  }
+
+  getDataRow(rowIndex: number) {
+    const dataRow = this.dataRows[rowIndex];
+    if (!dataRow) {
+      throw new Error("Index out of bounds");
+    }
+    return dataRow;
+  }
+
   setTheme(theme: Theme) {
     this.theme = theme;
   }
@@ -50,9 +66,6 @@ export class TableState {
   }
 
   calculateTableRanges(): TableRanges {
-    const numOfColumns = this.columnStates.length;
-    const numOfRows    = this.dataRows.length;
-
     const { x: scrollLeft,    y: scrollTop      } = this.scrollPosition;
     const { x: viewportWidth, y: viewportHeight } = this.viewportDimensions;
 
@@ -63,12 +76,12 @@ export class TableState {
     if (columnLeft === -1) columnLeft = 0;
 
     let columnRight = this.findColumnIndexAtXCoordinate(scrollRight, columnLeft);
-    columnRight = columnRight !== -1 ? columnRight + 1 : numOfColumns;
+    columnRight = columnRight !== -1 ? columnRight + 1 : this.numOfCols;
 
     const { rowHeight } = this.theme;
 
     const rowTop    = Math.floor(scrollTop / rowHeight);
-    const rowBottom = Math.min(Math.ceil(scrollBottom / rowHeight), numOfRows);
+    const rowBottom = Math.min(Math.ceil(scrollBottom / rowHeight), this.numOfRows);
 
     return {
       columnLeft,
@@ -79,7 +92,7 @@ export class TableState {
   }
 
   findColumnIndexAtXCoordinate(x: number, start: number = 0) {
-    if (start < 0 || start >= this.columnStates.length) {
+    if (start < 0 || start >= this.numOfCols) {
       throw new Error("Index is out of bounds");
     }
 
@@ -89,7 +102,7 @@ export class TableState {
     if (x == 0) return 0;
 
     let index = start;
-    for (; index < this.columnStates.length; index++) {
+    for (; index < this.numOfCols; index++) {
       const columnState = this.columnStates[index];
       if (columnState.position >= x) {
         break;
@@ -110,11 +123,11 @@ export class TableState {
   }
 
   calculateTableDimensions() {
-    const lastColumnState = this.columnStates[this.columnStates.length - 1];
+    const lastColumnState = this.columnStates[this.numOfCols - 1];
     const width = lastColumnState.position + lastColumnState.width;
 
     const { rowHeight } = this.theme;
-    const height = this.dataRows.length * rowHeight;
+    const height = this.numOfRows * rowHeight;
 
     return new Vector(width, height);
   }

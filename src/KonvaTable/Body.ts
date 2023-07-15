@@ -49,11 +49,11 @@ export class Body extends Component {
     this.cellGroup.removeChildren();
 
     for (let i = rowTop; i < rowBottom; i++) {
-      const dataRow = this.tableState.dataRows[i];
+      const dataRow = this.tableState.getDataRow(i);
       const y = i * theme.rowHeight - scrollTop;
 
       for (let j = columnLeft; j < columnRight; j++) {
-        const columnState = this.tableState.columnStates[j];
+        const columnState = this.tableState.getColumnState(j);
         const x = columnState.position - scrollLeft;
 
         const cell = this.getCell(i, j);
@@ -74,7 +74,7 @@ export class Body extends Component {
 
     const { theme } = this.tableState;
 
-    const columnState = this.tableState.columnStates[colIndex];
+    const columnState = this.tableState.getColumnState(colIndex);
 
     cell = new Konva.Group({
       row: rowIndex,

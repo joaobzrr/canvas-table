@@ -46,7 +46,7 @@ export class BodyGrid extends Component {
     this.group.reset();
 
     for (let j = columnLeft + 1; j < columnRight; j++) {
-      const columnState = this.tableState.columnStates[j];
+      const columnState = this.tableState.getColumnState(j);
       const relColPos = columnState.position;
       const absColPos = relColPos - scrollLeft;
 
