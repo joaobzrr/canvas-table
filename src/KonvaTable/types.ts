@@ -3,6 +3,11 @@ export type VectorLike = {
   y: number;
 }
 
+export type Dimensions = {
+  width:  number;
+  height: number;
+}
+
 export type ColumnDef = {
   title: string;
   field: string;

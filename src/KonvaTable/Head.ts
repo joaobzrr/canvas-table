@@ -24,6 +24,8 @@ export class Head extends Component {
 
     this.bottomBorder = new Konva.Line();
     this.add(this.bottomBorder);
+
+    this.on("widthChange heightChange", this.onResize.bind(this));
   }
 
   onResize() {

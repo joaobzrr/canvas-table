@@ -29,6 +29,8 @@ export class HorizontalScrollbar extends Component {
 
     this.thumb = new Konva.Rect({ fill: "red" });
     this.add(this.thumb);
+
+    this.on("widthChange heightChange", this.onResize.bind(this));
   }
 
   onResize() {
@@ -78,44 +80,10 @@ export class HorizontalScrollbar extends Component {
     this.repositionThumb();
   }
 
-  render() {
-    const { x: viewportWidth } = this.tableState.viewportDimensions;
-    const { x: scrollWidth } = this.tableState.scrollDimensions;
-
-    const { theme } = this.tableState;
-    const barHeight = theme.scrollBarThickness;
-
-    const barWidth = this.width();
-
-    this.bar.setAttrs({
-      x: 0,
-      y: 0,
-      width: barWidth,
-      height: barHeight
-    });
-
-    const trackX = theme.scrollBarTrackMargin; 
-    const trackY = theme.scrollBarTrackMargin;
-    const trackWidth = barWidth - (theme.scrollBarTrackMargin * 2);
-    const trackHeight = barHeight - (theme.scrollBarTrackMargin * 2);
-
-    this.track.setAttrs({
-      x: trackX,
-      y: trackY,
-      width: trackWidth,
-      height: trackHeight
-    });
-
-    this.thumb.setAttrs({
-      x: trackX,
-      y: trackY,
-      width: (viewportWidth / scrollWidth) * trackWidth,
-      height: trackHeight
-    });
-  }
-
   repositionThumb() {
     const { x: normalizedScrollLeft } = this.tableState.normalizedScrollPosition;
-    this.thumb.x(MathUtils.scale(normalizedScrollLeft, 0, 1, this.track.x(), this.maxThumbLeft));
+
+    const thumbLeft = MathUtils.scale(normalizedScrollLeft, 0, 1, this.track.x(), this.maxThumbLeft);
+    this.thumb.x(thumbLeft);
   }
 }

@@ -1,19 +1,19 @@
 import Konva from "konva";
 
-type DynamicGroupOptions<SomeCtor> = {
+type DynamicGroupOptions<T> = {
   initialSize?: number;
-  class: SomeCtor;
+  make: () => T;
 }
 
 export class DynamicGroup<
-  Ctor extends new (...args: any[]) => any
+  T extends Konva.Group | Konva.Shape
 > extends Konva.Group {
-  nodes = [] as InstanceType<Ctor>[];
+  nodes = [] as T[];
   used = 0;
 
-  ctor: Ctor;
+  make: () => T;
 
-  constructor(options: DynamicGroupOptions<Ctor>) {
+  constructor(options: DynamicGroupOptions<T>) {
     super();
 
     if (options.initialSize && options.initialSize < 0) {
@@ -21,19 +21,17 @@ export class DynamicGroup<
     }
     const initialSize = options.initialSize ?? 1;
 
-    this.ctor = options.class;
+    this.make = options.make;
     this.nodes = this.makeMany(initialSize);
   }
 
-  useOne(config: ConstructorParameters<Ctor>[0]) {
+  useOne() {
     if (this.used === this.nodes.length) {
       this.nodes = this.nodes.concat(this.makeMany(this.nodes.length));
     }
 
     const node = this.nodes[this.used++];
     this.add(node);
-
-    node.setAttrs(config);
 
     return node;
   }
@@ -44,6 +42,6 @@ export class DynamicGroup<
   }
 
   makeMany(n: number) {
-    return Array.from({ length: n }, () => new this.ctor());
+    return Array.from({ length: n }, this.make);
   }
 }

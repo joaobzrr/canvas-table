@@ -10,7 +10,7 @@ export interface BodyGridConfig extends ComponentConfig {
 export class BodyGrid extends Component {
   tableState: TableState;
 
-  group: DynamicGroup<typeof Konva.Line>;
+  group: DynamicGroup<Konva.Line>;
 
   constructor(config: BodyGridConfig) {
     super(config);
@@ -18,10 +18,12 @@ export class BodyGrid extends Component {
     this.tableState = config.tableState;
 
     this.group = new DynamicGroup({
-      class: Konva.Line,
+      make: () => new Konva.Line(),
       initialSize: 64
     });
     this.add(this.group);
+
+    this.on("widthChange heightChange", this.onResize.bind(this));
   }
 
   onResize() {
@@ -48,7 +50,8 @@ export class BodyGrid extends Component {
       const relColPos = columnState.position;
       const absColPos = relColPos - scrollLeft;
 
-      this.group.useOne({
+      const cell = this.group.useOne();
+      cell.setAttrs({
 	x: absColPos,
 	y: 0,
 	points: [0, 0, 0, Math.min(gridHeight, tableHeight)],
@@ -61,7 +64,8 @@ export class BodyGrid extends Component {
       const relTableRight = tableWidth;
       const absTableRight = relTableRight - scrollLeft;
 
-      this.group.useOne({
+      const cell = this.group.useOne()
+      cell.setAttrs({
 	x: absTableRight,
 	y: 0,
 	points: [0, 0, 0, Math.min(gridHeight, tableHeight)],
@@ -75,7 +79,8 @@ export class BodyGrid extends Component {
       const relRowPos = i * theme.rowHeight;
       const absRowPos = relRowPos - scrollTop;
 
-      this.group.useOne({
+      const cell = this.group.useOne();
+      cell.setAttrs({
 	x: 0,
 	y: absRowPos,
 	points: [0, 0, Math.min(gridWidth, tableWidth), 0],
@@ -88,7 +93,8 @@ export class BodyGrid extends Component {
       const relRowPos = tableHeight;
       const absRowPos = relRowPos - scrollTop;
 
-      this.group.useOne({
+      const cell = this.group.useOne();
+      cell.setAttrs({
 	x: 0,
 	y: absRowPos,
 	points: [0, 0, Math.min(gridWidth, tableWidth), 0],

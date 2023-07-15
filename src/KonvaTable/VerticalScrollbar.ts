@@ -32,6 +32,8 @@ export class VerticalScrollbar extends Component {
 
     this.thumb = new Konva.Rect({ fill: "red" });
     this.add(this.thumb);
+
+    this.on("widthChange heightChange", this.onResize.bind(this));
   }
 
   onResize() {

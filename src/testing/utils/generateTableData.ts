@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { ColumnDef } from "../KonvaTable";
+import { ColumnDef } from "../../KonvaTable";
 import { randint } from "./randint";
 import { randstr } from "./randstr";
 
@@ -8,16 +8,16 @@ export function generateTableData<T extends Record<string, string>>(
   cols: number
 ): [ColumnDef[], T[]] {
   const columns = [];
-  for (let i = 0; i < cols; i++) {
+  for (let colIndex = 0; colIndex < cols; colIndex++) {
     columns.push({
-      title: `Column ${i + 1}`,
-      field: `column${i + 1}`,
+      title: `Column ${colIndex + 1}`,
+      field: `column${colIndex + 1}`,
       width: randint(100, 200)
     });
   }
 
   const data = [];
-  for (let i = 0; i < rows; i++) {
+  for (let rowIndex = 0; rowIndex < rows; rowIndex++) {
     const row = Object.fromEntries(columns.map(column => {
       return [column.field, randstr(16)];
     }));

@@ -6,7 +6,7 @@ import { HorizontalScrollbar } from "./HorizontalScrollbar";
 import { VerticalScrollbar } from "./VerticalScrollbar";
 import { TableState } from "./TableState";
 import { Vector } from "./Vector";
-import { KonvaTableOptions, ColumnDef } from "./types";
+import { KonvaTableOptions, ColumnDef, Dimensions } from "./types";
 
 export class KonvaTable {
   stage: Konva.Stage;
@@ -56,8 +56,26 @@ export class KonvaTable {
     this.stage.on("wheel", this.onWheel.bind(this));
   }
 
-  onResize() {
-    const { width: stageWidth, height: stageHeight } = this.stage.size();
+  onWheel(event: KonvaEventObject<WheelEvent>) {
+    const { x: scrollLeft, y: scrollTop } = this.tableState.scrollPosition;
+
+    const newScrollLeft = new Vector({
+      x: Math.round(scrollLeft + event.evt.deltaX),
+      y: Math.round(scrollTop  + event.evt.deltaY)
+    });
+
+    this.tableState.setScrollPosition(newScrollLeft);
+
+    this.body.onWheel();
+    this.head.onWheel();
+    this.hsb.onWheel();
+    this.vsb.onWheel();
+  }
+
+  setStageDimensions(stageDimensions: Dimensions) {
+    this.stage.size(stageDimensions);
+
+    const { width: stageWidth, height: stageHeight } = stageDimensions;
 
     const { x: tableWidth, y: tableHeight } = this.tableState.tableDimensions;
     const { theme } = this.tableState;
@@ -76,44 +94,21 @@ export class KonvaTable {
 
     this.tableState.setViewportDimensions(new Vector({ x: bodyWidth, y: bodyHeight }));
 
-    this.body.width(bodyWidth);
-    this.body.height(bodyHeight);
-    this.body.onResize();
+    this.body.size({ width: bodyWidth, height: bodyHeight });
 
     this.head.width(bodyWidth);
-    this.head.onResize();
 
-    this.hsb.y(stageHeight - theme.scrollBarThickness);
-    this.hsb.width(bodyWidth);
-    this.hsb.visible(hsbIsVisible);
-    this.hsb.onResize();
-
-    this.vsb.x(bodyWidth);
-    this.vsb.height(bodyHeight);
-    this.vsb.visible(vsbIsVisible);
-    this.vsb.onResize();
-  }
-
-  onWheel(event: KonvaEventObject<WheelEvent>) {
-    const { x: scrollLeft, y: scrollTop } = this.tableState.scrollPosition;
-
-    const newScrollLeft = new Vector({
-      x: Math.round(scrollLeft + event.evt.deltaX),
-      y: Math.round(scrollTop  + event.evt.deltaY)
+    this.hsb.setAttrs({
+      y: stageHeight - theme.scrollBarThickness,
+      width: bodyWidth,
+      visible: hsbIsVisible
     });
 
-    this.tableState.setScrollPosition(newScrollLeft);
-
-    this.body.onWheel();
-    this.head.onWheel();
-    this.hsb.onWheel();
-    this.vsb.onWheel();
-  }
-
-  setStageDimensions(size: { width: number, height: number }) {
-    this.stage.width(size.width);
-    this.stage.height(size.height);
-    this.onResize();
+    this.vsb.setAttrs({
+      x: bodyWidth,
+      height: bodyHeight,
+      visible: vsbIsVisible
+    });
   }
 
   columnDefsToColumnStates(columnDefs: ColumnDef[]) {
