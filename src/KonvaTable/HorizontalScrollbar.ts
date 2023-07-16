@@ -2,13 +2,16 @@ import Konva from "konva";
 import { Component, ComponentConfig } from "./Component";
 import { TableState } from "./TableState";
 import { Utils } from "./Utils";
+import { Theme } from "./types";
 
 export interface HorizontalScrollbarConfig extends ComponentConfig {
   tableState: TableState;
+  theme:      Theme
 }
 
 export class HorizontalScrollbar extends Component {
   tableState: TableState;
+  theme:      Theme;
 
   bar: Konva.Rect;
   track: Konva.Rect;
@@ -20,14 +23,15 @@ export class HorizontalScrollbar extends Component {
     super(config);
 
     this.tableState = config.tableState;
+    this.theme = config.theme;
 
-    this.bar = new Konva.Rect({ fill: "green", strokeWidth: 1 });
+    this.bar = new Konva.Rect({ fill: "white", strokeWidth: 1 });
     this.add(this.bar);
 
     this.track = new Konva.Rect();
     this.add(this.track);
 
-    this.thumb = new Konva.Rect({ fill: "red" });
+    this.thumb = new Konva.Rect({ fill: "black" });
     this.add(this.thumb);
 
     this.on("widthChange heightChange", this.onResize.bind(this));
@@ -37,8 +41,7 @@ export class HorizontalScrollbar extends Component {
     const { width: viewportWidth } = this.tableState.viewportDimensions;
     const { width: scrollWidth } = this.tableState.scrollDimensions;
 
-    const { theme } = this.tableState;
-    const barHeight = theme.scrollBarThickness;
+    const barHeight = this.theme.scrollBarThickness;
 
     const barWidth = this.width();
 
@@ -49,10 +52,10 @@ export class HorizontalScrollbar extends Component {
       height: barHeight
     });
 
-    const trackX = theme.scrollBarTrackMargin; 
-    const trackY = theme.scrollBarTrackMargin;
-    const trackWidth = barWidth - (theme.scrollBarTrackMargin * 2);
-    const trackHeight = barHeight - (theme.scrollBarTrackMargin * 2);
+    const trackX = this.theme.scrollBarTrackMargin; 
+    const trackY = this.theme.scrollBarTrackMargin;
+    const trackWidth = barWidth   - (this.theme.scrollBarTrackMargin * 2);
+    const trackHeight = barHeight - (this.theme.scrollBarTrackMargin * 2);
 
     this.track.setAttrs({
       x: trackX,

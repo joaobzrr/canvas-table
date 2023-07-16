@@ -1,8 +1,7 @@
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
-// import { Head } from "./Head";
-// import { HorizontalScrollbar } from "./HorizontalScrollbar";
-// import { VerticalScrollbar } from "./VerticalScrollbar";
+import { HorizontalScrollbar } from "./HorizontalScrollbar";
+import { VerticalScrollbar } from "./VerticalScrollbar";
 import { TableState } from "./TableState";
 import { Vector } from "./Vector";
 import { Utils } from "./Utils";
@@ -21,28 +20,26 @@ export class KonvaTable {
 
   tableState: TableState;
 
-  head:          Konva.Group;
-  headGrid:      Konva.Group;
-  headCells:     Konva.Group;
-  headCellCache: Map<string, Konva.Group>;
-
   body:          Konva.Group;
   bodyGrid:      Konva.Group;
   bodyCells:     Konva.Group;
   bodyCellCache: Map<string, Konva.Group>;
 
+  head:          Konva.Group;
+  headGrid:      Konva.Group;
+  headCells:     Konva.Group;
+  headCellCache: Map<string, Konva.Group>;
+
+  hsb: HorizontalScrollbar;
+  vsb: VerticalScrollbar;
+
   lineImageCache: Map<string, HTMLImageElement>;
-
-  // head: Head;
-
-  // hsb: HorizontalScrollbar;
-  // vsb: VerticalScrollbar;
 
   theme: Theme;
 
   constructor(options: KonvaTableOptions) {
     this.stage = new Konva.Stage({ container: options.container });
-    this.layer = new Konva.Layer({ listening: false });
+    this.layer = new Konva.Layer();
     this.stage.add(this.layer);
 
     this.theme = defaultTheme;
@@ -52,17 +49,6 @@ export class KonvaTable {
 
     const columnStates = this.columnDefsToColumnStates(options.columnDefs);
     this.tableState.setTableData(columnStates, options.dataRows);
-
-    this.head = new Konva.Group({ height: this.theme.rowHeight });
-    this.layer.add(this.head);
-
-    this.headGrid = new Konva.Group();
-    this.head.add(this.headGrid);
-
-    this.headCells = new Konva.Group();
-    this.head.add(this.headCells);
-
-    this.headCellCache = new Map();
 
     this.body = new Konva.Group({ y: this.theme.rowHeight });
     this.layer.add(this.body);
@@ -75,22 +61,31 @@ export class KonvaTable {
 
     this.bodyCellCache = new Map();
 
+    this.head = new Konva.Group({ height: this.theme.rowHeight });
+    this.layer.add(this.head);
+
+    this.headGrid = new Konva.Group();
+    this.head.add(this.headGrid);
+
+    this.headCells = new Konva.Group();
+    this.head.add(this.headCells);
+
+    this.headCellCache = new Map();
+
+    this.hsb = new HorizontalScrollbar({
+      tableState: this.tableState,
+      theme:      this.theme
+    });
+    this.layer.add(this.hsb);
+
+    this.vsb = new VerticalScrollbar({
+      tableState: this.tableState,
+      y:          this.theme.rowHeight,
+      theme:      this.theme
+    });
+    this.layer.add(this.vsb);
+
     this.lineImageCache = new Map();
-
-    // this.head = new Head({
-    //   tableState: this.tableState,
-    //   height: this.theme.rowHeight
-    // });
-    // this.layer.add(this.head);
-
-    // this.hsb = new HorizontalScrollbar({ tableState: this.tableState });
-    // this.layer.add(this.hsb);
-
-    // this.vsb = new VerticalScrollbar({
-    //   tableState: this.tableState,
-    //   y: this.theme.rowHeight
-    // });
-    // this.layer.add(this.vsb);
 
     this.stage.on("wheel", this.onWheel.bind(this));
   }
@@ -111,9 +106,8 @@ export class KonvaTable {
     this.updateHeadGrid();
     this.updateHeadCells();
 
-    // this.head.onWheel();
-    // this.hsb.onWheel();
-    // this.vsb.onWheel();
+    this.hsb.onWheel();
+    this.vsb.onWheel();
   }
 
   setStageDimensions(stageDimensions: Dimensions) {
@@ -142,16 +136,16 @@ export class KonvaTable {
 
     this.head.width(bodyWidth);
 
-    // this.hsb.setAttrs({
-    //   y: stageHeight - this.theme.scrollBarThickness,
-    //   width: bodyWidth,
-    //   visible: hsbIsVisible
-    // });
+    this.hsb.setAttrs({
+      y: stageHeight - this.theme.scrollBarThickness,
+      width: bodyWidth,
+      visible: hsbIsVisible
+    });
 
-    // this.vsb.setAttrs({ x: bodyWidth,
-    //   height: bodyHeight,
-    //   visible: vsbIsVisible
-    // });
+    this.vsb.setAttrs({ x: bodyWidth,
+      height: bodyHeight,
+      visible: vsbIsVisible
+    });
 
     this.updateBodyGrid();
     this.updateBodyCells();
