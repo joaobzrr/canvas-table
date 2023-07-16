@@ -1,15 +1,15 @@
 import Konva from "konva";
-import { Component, ComponentConfig } from "./Component";
+import { GroupConfig } from "konva/lib/Group";
 import { TableState } from "./TableState";
 import { Utils } from "./Utils";
 import { Theme } from "./types";
 
-export interface HorizontalScrollbarConfig extends ComponentConfig {
+export interface HorizontalScrollbarConfig extends GroupConfig {
   tableState: TableState;
   theme:      Theme
 }
 
-export class HorizontalScrollbar extends Component {
+export class HorizontalScrollbar extends Konva.Group {
   tableState: TableState;
   theme:      Theme;
 
