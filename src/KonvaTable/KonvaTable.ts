@@ -75,14 +75,15 @@ export class KonvaTable {
 
     this.hsb = new HorizontalScrollbar({
       tableState: this.tableState,
-      theme:      this.theme
+      theme:      this.theme,
+      height:     this.theme.scrollBarThickness
     });
     this.layer.add(this.hsb);
 
     this.vsb = new VerticalScrollbar({
       tableState: this.tableState,
-      y:          this.theme.rowHeight,
-      theme:      this.theme
+      theme:      this.theme,
+      width:      this.theme.scrollBarThickness
     });
     this.layer.add(this.vsb);
 
@@ -137,6 +138,7 @@ export class KonvaTable {
     this.body.clip({ x: 0, y: 0, width: bodyWidth, height: bodyHeight });
 
     this.head.width(bodyWidth);
+    this.head.clip({ x: 0, y: 0, width: this.head.width(), height: this.head.height() });
 
     this.hsb.setAttrs({
       y: stageHeight - this.theme.scrollBarThickness,
@@ -144,8 +146,9 @@ export class KonvaTable {
       visible: hsbIsVisible
     });
 
-    this.vsb.setAttrs({ x: bodyWidth,
-      height: bodyHeight,
+    this.vsb.setAttrs({
+      x: bodyWidth,
+      height: stageHeight - this.theme.scrollBarThickness,
       visible: vsbIsVisible
     });
 
@@ -190,6 +193,15 @@ export class KonvaTable {
         color: "#000000"
       }));
     }
+
+    this.bodyGrid.add(new Line({
+      x: 0,
+      y: 0,
+      type: "hline",
+      length: Math.min(this.body.width(), tableDimensions.width),
+      thickness: 1,
+      color: "#000000"
+    }));
   }
 
   updateBodyCells() {
@@ -246,7 +258,6 @@ export class KonvaTable {
 
   updateHeadGrid() {
     const scrollPosition  = this.tableState.getScrollPosition();
-    const tableDimensions = this.tableState.getTableDimensions();
     const tableRanges     = this.tableState.getTableRanges();
 
     this.headGrid.removeChildren();
@@ -264,15 +275,6 @@ export class KonvaTable {
         color: "#000000"
       }));
     }
-
-    this.headGrid.add(new Line({
-      x: 0,
-      y: this.theme.rowHeight,
-      type: "hline",
-      length: Math.min(this.body.width(), tableDimensions.width),
-      thickness: 1,
-      color: "#000000"
-    }));
   }
 
   getLine(props: LineProps) {

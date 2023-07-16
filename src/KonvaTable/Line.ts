@@ -7,12 +7,19 @@ export interface LineConfig extends LineProps {
   y: number;
 }
 
+const defaultImage = new Image();
+
 export class Line extends Konva.Image {
   static cache?: Map<string, HTMLImageElement>;
 
   constructor(config: LineConfig) {
     if (!Line.cache) {
       throw new Error("Cache has not been set");
+    }
+
+    if (config.length < 1 || config.thickness < 1) {
+      super({ ...config, image: defaultImage });
+      return;
     }
 
     const key = Line.cacheKey(config);

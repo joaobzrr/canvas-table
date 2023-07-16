@@ -1,6 +1,7 @@
 import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
 import { TableState } from "./TableState";
+import { Line } from "./Line";
 import { Utils } from "./Utils";
 import { Theme } from "./types";
 
@@ -13,9 +14,11 @@ export class HorizontalScrollbar extends Konva.Group {
   tableState: TableState;
   theme:      Theme;
 
-  bar: Konva.Rect;
+  bar:   Konva.Rect;
   track: Konva.Rect;
   thumb: Konva.Rect;
+
+  lines: Konva.Group;
 
   maxThumbLeft = 0;
 
@@ -33,6 +36,9 @@ export class HorizontalScrollbar extends Konva.Group {
 
     this.thumb = new Konva.Rect({ fill: "black" });
     this.add(this.thumb);
+
+    this.lines = new Konva.Group();
+    this.add(this.lines);
 
     this.on("widthChange heightChange", this.onResize.bind(this));
   }
@@ -52,10 +58,10 @@ export class HorizontalScrollbar extends Konva.Group {
       height: barHeight
     });
 
-    const trackX = this.theme.scrollBarTrackMargin; 
-    const trackY = this.theme.scrollBarTrackMargin;
-    const trackWidth = barWidth   - (this.theme.scrollBarTrackMargin * 2);
-    const trackHeight = barHeight - (this.theme.scrollBarTrackMargin * 2);
+    const trackX = this.theme.scrollBarTrackMargin;
+    const trackY = this.theme.scrollBarTrackMargin + 1;
+    const trackWidth  = barWidth  - (this.theme.scrollBarTrackMargin * 2);
+    const trackHeight = barHeight - trackY - this.theme.scrollBarTrackMargin;
 
     this.track.setAttrs({
       x: trackX,
@@ -77,6 +83,26 @@ export class HorizontalScrollbar extends Konva.Group {
     this.maxThumbLeft = trackRight - thumbWidth;
 
     this.repositionThumb();
+
+    this.lines.removeChildren();
+
+    this.lines.add(new Line({
+      x: 0,
+      y: 0,
+      type: "hline",
+      length: this.width(),
+      thickness: 1,
+      color: "#000000",
+    }));
+
+    this.lines.add(new Line({
+      x: this.width(),
+      y: 0,
+      type: "vline",
+      length: this.height(),
+      thickness: 1,
+      color: "#000000"
+    }));
   }
 
   onWheel() {
