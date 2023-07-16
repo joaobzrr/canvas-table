@@ -108,6 +108,7 @@ export class KonvaTable {
     this.updateBodyGrid();
     this.updateBodyCells();
 
+    this.updateHeadGrid();
     this.updateHeadCells();
 
     // this.head.onWheel();
@@ -137,8 +138,9 @@ export class KonvaTable {
     this.tableState.setViewportDimensions({ width: bodyWidth, height: bodyHeight });
 
     this.body.size({ width: bodyWidth, height: bodyHeight });
+    this.body.clip({ x: 0, y: 0, width: bodyWidth, height: bodyHeight });
 
-    // this.head.width(bodyWidth);
+    this.head.width(bodyWidth);
 
     // this.hsb.setAttrs({
     //   y: stageHeight - this.theme.scrollBarThickness,
@@ -153,6 +155,8 @@ export class KonvaTable {
 
     this.updateBodyGrid();
     this.updateBodyCells();
+
+    this.updateHeadGrid();
     this.updateHeadCells();
   }
 
@@ -166,19 +170,15 @@ export class KonvaTable {
     const hLineLength = Math.min(this.body.width(), tableDimensions.width);
 
     for (let i = tableRanges.rowTop + 1; i < tableRanges.rowBottom; i++) {
-      const canvas = this.getLine({
-        type: "hline",
-        length: hLineLength,
-        thickness: 1,
-        color: "#000000"
-      });
-
       this.bodyGrid.add(new Konva.Image({
-        image: canvas,
+        image: this.getLine({
+          type: "hline",
+          length: hLineLength,
+          thickness: 1,
+          color: "#000000"
+        }),
         x: 0,
         y: i * this.theme.rowHeight - scrollPosition.y,
-        width: canvas.width,
-        height: canvas.height
       }));
     }
 
@@ -187,19 +187,15 @@ export class KonvaTable {
     for (let j = tableRanges.columnLeft + 1; j < tableRanges.columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
 
-      const canvas = this.getLine({
-        type: "vline",
-        length: vLineLength,
-        thickness: 1,
-        color: "#000000"
-      });
-
       this.bodyGrid.add(new Konva.Image({
-        image: canvas,
+        image: this.getLine({
+          type: "vline",
+          length: vLineLength,
+          thickness: 1,
+          color: "#000000"
+        }),
         x: columnState.position - scrollPosition.x,
         y: 0,
-        width: canvas.width,
-        height: canvas.height,
       }));
     }
   }
@@ -254,6 +250,43 @@ export class KonvaTable {
       const text = cell.findOne("Text") as Konva.Text;
       text.text(columnState.title);
     }
+  }
+
+  updateHeadGrid() {
+    const scrollPosition  = this.tableState.getScrollPosition();
+    const tableDimensions = this.tableState.getTableDimensions();
+    const tableRanges     = this.tableState.getTableRanges();
+
+    this.headGrid.removeChildren();
+
+    const { columnLeft, columnRight } = tableRanges;
+    for (let j = columnLeft + 1; j < columnRight; j++) {
+      const columnState = this.tableState.getColumnState(j);
+
+      const image = this.getLine({
+        type: "vline",
+        length: this.theme.rowHeight,
+        thickness: 1,
+        color: "#000000"
+      });
+
+      this.headGrid.add(new Konva.Image({
+        image: image,
+        x: columnState.position - scrollPosition.x,
+        y: 0
+      }));
+    }
+
+    this.headGrid.add(new Konva.Image({
+      image: this.getLine({
+        type: "hline",
+        length: Math.min(this.body.width(), tableDimensions.width),
+        thickness: 1,
+        color: "#000000"
+      }),
+      x: 0,
+      y: this.theme.rowHeight
+    }))
   }
 
   getLine(props: LineProps) {
