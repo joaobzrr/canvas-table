@@ -47,8 +47,9 @@ export type KonvaTableOptions = {
 }
 
 export type LineProps = {
-  type:      "hline" | "vline";
+  type:      "horizontal" | "vertical";
   length:    number;
   thickness: number;
   color:     string;
+  key:       string;
 }

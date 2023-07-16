@@ -5,7 +5,7 @@ export class Utils {
     const { type, length, thickness, color } = props;
 
     const canvas = document.createElement("canvas");
-    if (type === "hline") {
+    if (type === "horizontal") {
       canvas.width  = length;
       canvas.height = thickness;
     } else {

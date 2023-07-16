@@ -1,24 +1,28 @@
 import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
 import { TableState } from "./TableState";
-import { Line } from "./Line";
+import { NodeManager } from "./NodeManager";
 import { Utils } from "./Utils";
 import { Theme } from "./types";
 
 export interface VerticalScrollbarConfig extends GroupConfig {
   tableState: TableState;
   theme:      Theme;
+
+  nodeManager: NodeManager;
 }
 
 export class VerticalScrollbar extends Konva.Group {
   tableState: TableState;
   theme:      Theme;
 
+  nodeManager: NodeManager;
+
   bar:   Konva.Rect;
   track: Konva.Rect;
   thumb: Konva.Rect;
 
-  lines: Konva.Group;
+  borders: Konva.Group;
 
   maxThumbTop = 0;
 
@@ -27,6 +31,8 @@ export class VerticalScrollbar extends Konva.Group {
 
     this.tableState = config.tableState;
     this.theme = config.theme;
+
+    this.nodeManager = config.nodeManager;
 
     this.bar = new Konva.Rect({ fill: "white", strokeWidth: 1 });
     this.add(this.bar);
@@ -37,8 +43,8 @@ export class VerticalScrollbar extends Konva.Group {
     this.thumb = new Konva.Rect({ fill: "black" });
     this.add(this.thumb);
 
-    this.lines = new Konva.Group();
-    this.add(this.lines);
+    this.borders = new Konva.Group();
+    this.add(this.borders);
 
     this.on("widthChange heightChange", this.onResize.bind(this));
   }
@@ -82,33 +88,35 @@ export class VerticalScrollbar extends Konva.Group {
     const trackBottom = trackY + trackHeight;
     this.maxThumbTop = trackBottom - thumbHeight;
 
-    this.lines.removeChildren();
-    this.lines.add(new Line({
-      x: 0,
-      y: 0,
-      type: "vline",
+    this.borders.removeChildren();
+    const leftBorder = this.nodeManager.getLine({
+      type: "vertical",
       length: this.height(),
       thickness: 1,
-      color: "#000000"
-    }));
+      color: "#000000",
+      key: "vsb-left-border"
+    });
+    this.borders.add(leftBorder);
 
-    this.lines.add(new Line({
-      x: 0,
-      y: barY,
-      type: "hline",
+    const topBorder = this.nodeManager.getLine({
+      type: "horizontal",
       length: this.width(),
       thickness: 1,
-      color: "#000000"
-    }));
+      color: "#000000",
+      key: "vsb-top-border"
+    });
+    topBorder.y(barY);
+    this.borders.add(topBorder);
 
-    this.lines.add(new Line({
-      x: 0,
-      y: this.height(),
-      type: "hline",
+    const bottomBorder = this.nodeManager.getLine({
+      type: "horizontal",
       length: this.width(),
       thickness: 1,
-      color: "#000000"
-    }));
+      color: "#000000",
+      key: "vsb-bottom-border"
+    });
+    bottomBorder.y(this.height());
+    this.borders.add(bottomBorder);
 
     this.repositionThumb();
   }

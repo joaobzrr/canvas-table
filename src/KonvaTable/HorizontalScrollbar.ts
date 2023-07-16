@@ -1,24 +1,28 @@
 import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
 import { TableState } from "./TableState";
-import { Line } from "./Line";
+import { NodeManager } from "./NodeManager";
 import { Utils } from "./Utils";
 import { Theme } from "./types";
 
 export interface HorizontalScrollbarConfig extends GroupConfig {
   tableState: TableState;
   theme:      Theme
+
+  nodeManager: NodeManager;
 }
 
 export class HorizontalScrollbar extends Konva.Group {
   tableState: TableState;
   theme:      Theme;
 
+  nodeManager: NodeManager;
+
   bar:   Konva.Rect;
   track: Konva.Rect;
   thumb: Konva.Rect;
 
-  lines: Konva.Group;
+  borders: Konva.Group;
 
   maxThumbLeft = 0;
 
@@ -27,6 +31,8 @@ export class HorizontalScrollbar extends Konva.Group {
 
     this.tableState = config.tableState;
     this.theme = config.theme;
+
+    this.nodeManager = config.nodeManager;
 
     this.bar = new Konva.Rect({ fill: "white", strokeWidth: 1 });
     this.add(this.bar);
@@ -37,8 +43,8 @@ export class HorizontalScrollbar extends Konva.Group {
     this.thumb = new Konva.Rect({ fill: "black" });
     this.add(this.thumb);
 
-    this.lines = new Konva.Group();
-    this.add(this.lines);
+    this.borders = new Konva.Group();
+    this.add(this.borders);
 
     this.on("widthChange heightChange", this.onResize.bind(this));
   }
@@ -84,25 +90,26 @@ export class HorizontalScrollbar extends Konva.Group {
 
     this.repositionThumb();
 
-    this.lines.removeChildren();
+    this.borders.removeChildren();
 
-    this.lines.add(new Line({
-      x: 0,
-      y: 0,
-      type: "hline",
+    const topBorder = this.nodeManager.getLine({
+      type: "horizontal",
       length: this.width(),
       thickness: 1,
       color: "#000000",
-    }));
+      key: "hsb-top-border"
+    });
+    this.borders.add(topBorder);
 
-    this.lines.add(new Line({
-      x: this.width(),
-      y: 0,
-      type: "vline",
+    const rightBorder = this.nodeManager.getLine({
+      type: "vertical",
       length: this.height(),
       thickness: 1,
-      color: "#000000"
-    }));
+      color: "#000000",
+      key: "hsb-right-border"
+    });
+    rightBorder.x(this.width());
+    this.borders.add(rightBorder);
   }
 
   onWheel() {
