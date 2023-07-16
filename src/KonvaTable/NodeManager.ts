@@ -69,6 +69,7 @@ export class NodeManager {
       height: rowHeight,
       fontSize: this.theme.fontSize,
       fontFamily: this.theme.fontFamily,
+      fontStyle: "bold",
       fill: this.theme.fontColor,
       verticalAlign: "middle",
       wrap: "none",
