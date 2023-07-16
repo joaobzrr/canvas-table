@@ -173,6 +173,7 @@ export class KonvaTable {
         }),
         x: 0,
         y: i * this.theme.rowHeight - scrollPosition.y,
+        listening: false
       }));
     }
 
@@ -190,6 +191,7 @@ export class KonvaTable {
         }),
         x: columnState.position - scrollPosition.x,
         y: 0,
+        listening: false
       }));
     }
   }
@@ -267,7 +269,8 @@ export class KonvaTable {
       this.headGrid.add(new Konva.Image({
         image: image,
         x: columnState.position - scrollPosition.x,
-        y: 0
+        y: 0,
+        listening: false
       }));
     }
 
@@ -279,7 +282,8 @@ export class KonvaTable {
         color: "#000000"
       }),
       x: 0,
-      y: this.theme.rowHeight
+      y: this.theme.rowHeight,
+      listening: false
     }))
   }
 
@@ -316,6 +320,7 @@ export class KonvaTable {
       verticalAlign: "middle",
       wrap: "none",
       ellipsis: true,
+      listening: false
     }));
 
     this.bodyCellCache.set(key, cell);
@@ -343,6 +348,7 @@ export class KonvaTable {
       verticalAlign: "middle",
       wrap: "none",
       ellipsis: true,
+      listening: false
     }));
 
     this.headCellCache.set(key, cell);
