@@ -1,19 +1,15 @@
 import { Vector } from "./Vector";
-import { defaultTheme } from "./defaultTheme";
 import {
   ColumnState,
   DataRow,
   Dimensions,
   TableRanges,
-  Theme,
   VectorLike
 } from "./types";
 
 export class TableState {
   columnStates = [] as ColumnState[];
   dataRows = [] as DataRow[];
-
-  tableRanges = { columnLeft: 0, columnRight: 0, rowTop: 0, rowBottom: 0 }
 
   scrollPosition           = { x: 0, y: 0 };
   normalizedScrollPosition = { x: 0, y: 0 };
@@ -23,15 +19,9 @@ export class TableState {
   scrollDimensions   = { width: 1, height: 1 };
   viewportDimensions = { width: 1, height: 1 };
 
-  theme = defaultTheme;
+  tableRanges = { columnLeft: 0, columnRight: 0, rowTop: 0, rowBottom: 0 }
 
-  setTableData(columnStates: ColumnState[], dataRows: DataRow[]) {
-    this.columnStates = columnStates;
-    this.dataRows = dataRows;
-
-    this.tableDimensions = this.calculateTableDimensions();
-    this.tableRanges = this.calculateTableRanges();
-  }
+  rowHeight = 1;
 
   getColumnState(columnIndex: number) {
     const columnState = this.columnStates[columnIndex];
@@ -49,8 +39,24 @@ export class TableState {
     return dataRow;
   }
 
-  setTheme(theme: Theme) {
-    this.theme = theme;
+  setTableData(columnStates: ColumnState[], dataRows: DataRow[]) {
+    this.columnStates = columnStates;
+    this.dataRows = dataRows;
+
+    this.tableDimensions = this.calculateTableDimensions();
+    this.tableRanges = this.calculateTableRanges();
+  }
+
+  getRowHeight() {
+    return this.rowHeight;
+  }
+
+  setRowHeight(rowHeight: number) {
+    this.rowHeight = rowHeight;
+  }
+
+  getScrollPosition() {
+    return { ...this.scrollPosition };
   }
 
   setScrollPosition(scrollPosition: VectorLike) {
@@ -60,6 +66,26 @@ export class TableState {
 
     this.normalizedScrollPosition = this.calculateNormalizedScrollPosition(this.scrollPosition);
     this.tableRanges = this.calculateTableRanges();
+  }
+
+  getNormalizedScrollPosition() {
+    return { ...this.normalizedScrollPosition };
+  }
+
+  getMaximumScrollPosition() {
+    return { ...this.maximumScrollPosition };
+  }
+
+  getScrollDimensions() {
+    return { ...this.scrollDimensions };
+  }
+
+  getTableDimensions() {
+    return { ...this.tableDimensions };
+  }
+
+  getViewportDimensions() {
+    return { ...this.viewportDimensions };
   }
 
   setViewportDimensions(viewportDimensions: Dimensions) {
@@ -72,6 +98,10 @@ export class TableState {
       .data();
 
     this.tableRanges = this.calculateTableRanges();
+  }
+
+  getTableRanges() {
+    return { ...this.tableRanges };
   }
 
   calculateTableRanges(): TableRanges {
@@ -87,10 +117,8 @@ export class TableState {
     let columnRight = this.findColumnIndexAtXCoordinate(scrollRight, columnLeft);
     columnRight = columnRight !== -1 ? columnRight + 1 : this.numOfCols;
 
-    const { rowHeight } = this.theme;
-
-    const rowTop    = Math.floor(scrollTop / rowHeight);
-    const rowBottom = Math.min(Math.ceil(scrollBottom / rowHeight), this.numOfRows);
+    const rowTop    = Math.floor(scrollTop / this.rowHeight);
+    const rowBottom = Math.min(Math.ceil(scrollBottom / this.rowHeight), this.numOfRows);
 
     return {
       columnLeft,
@@ -135,8 +163,7 @@ export class TableState {
     const lastColumnState = this.columnStates[this.numOfCols - 1];
     const width = lastColumnState.position + lastColumnState.width;
 
-    const { rowHeight } = this.theme;
-    const height = this.numOfRows * rowHeight;
+    const height = this.numOfRows * this.rowHeight;
 
     return { width, height };
   }

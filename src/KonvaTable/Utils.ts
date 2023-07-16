@@ -33,7 +33,9 @@ export class Utils {
 
     ctx.putImageData(imageData, 0, 0);
 
-    return canvas;
+    const img = document.createElement("img");
+    img.src = canvas.toDataURL();
+    return img;
   }
 
   static scale(value: number, fromMin: number, fromMax: number, toMin: number, toMax: number) {
