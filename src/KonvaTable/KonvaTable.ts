@@ -152,9 +152,10 @@ export class KonvaTable {
   }
 
   updateBodyGrid() {
-    const scrollPosition  = this.tableState.getScrollPosition();
-    const tableDimensions = this.tableState.getTableDimensions();
-    const tableRanges     = this.tableState.getTableRanges();
+    const scrollPosition     = this.tableState.getScrollPosition();
+    const tableDimensions    = this.tableState.getTableDimensions();
+    const viewportDimensions = this.tableState.getViewportDimensions();
+    const tableRanges        = this.tableState.getTableRanges();
 
     this.bodyGrid.removeChildren();
 
@@ -172,6 +173,18 @@ export class KonvaTable {
       this.bodyGrid.add(line);
     }
 
+    if (viewportDimensions.height > tableDimensions.height) {
+      const bottomBorder = this.nodeManager.getLine({
+        type: "horizontal",
+        length: hLineLength,
+        thickness: 1,
+        color: "#000000",
+        key: "table-bottom-border"
+      });
+      bottomBorder.y(tableDimensions.height);
+      this.bodyGrid.add(bottomBorder);
+    }
+
     const vLineLength = Math.min(this.body.height(), tableDimensions.height);
 
     for (let j = tableRanges.columnLeft + 1; j < tableRanges.columnRight; j++) {
@@ -186,6 +199,18 @@ export class KonvaTable {
       });
       line.x(columnState.position - scrollPosition.x);
       this.bodyGrid.add(line);
+    }
+
+    if (viewportDimensions.width > tableDimensions.width) {
+      const rightBorder = this.nodeManager.getLine({
+        type: "vertical",
+        length: vLineLength,
+        thickness: 1,
+        color: "#000000",
+        key: "body-right-border"
+      });
+      rightBorder.x(tableDimensions.width);
+      this.bodyGrid.add(rightBorder);
     }
 
     const topBorder = this.nodeManager.getLine({
@@ -251,8 +276,10 @@ export class KonvaTable {
   }
 
   updateHeadGrid() {
-    const scrollPosition  = this.tableState.getScrollPosition();
-    const tableRanges     = this.tableState.getTableRanges();
+    const scrollPosition     = this.tableState.getScrollPosition();
+    const tableDimensions    = this.tableState.getTableDimensions();
+    const viewportDimensions = this.tableState.getViewportDimensions();
+    const tableRanges        = this.tableState.getTableRanges();
 
     this.headGrid.removeChildren();
 
@@ -269,6 +296,18 @@ export class KonvaTable {
       });
       line.x(columnState.position - scrollPosition.x);
       this.headGrid.add(line);
+    }
+
+    if (viewportDimensions.width > tableDimensions.width) {
+      const rightBorder = this.nodeManager.getLine({
+        type: "vertical",
+        length: this.theme.rowHeight,
+        thickness: 1,
+        color: "#000000",
+        key: "table-right-border"
+      });
+      rightBorder.x(tableDimensions.width);
+      this.headGrid.add(rightBorder);
     }
   }
 
