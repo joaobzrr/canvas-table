@@ -166,7 +166,7 @@ export class KonvaTable {
         type: "horizontal",
         length: hLineLength,
         thickness: 1,
-        color: "#000000",
+        color: this.theme.tableBorderColor,
         key: `body-row-line-${i}`
       });
       line.y(i * this.theme.rowHeight - scrollPosition.y);
@@ -178,7 +178,7 @@ export class KonvaTable {
         type: "horizontal",
         length: hLineLength,
         thickness: 1,
-        color: "#000000",
+        color: this.theme.tableBorderColor,
         key: "table-bottom-border"
       });
       bottomBorder.y(tableDimensions.height);
@@ -194,7 +194,7 @@ export class KonvaTable {
         type: "vertical",
         length: vLineLength,
         thickness: 1,
-        color: "#000000",
+        color: this.theme.tableBorderColor,
         key: `body-col-line-${j}`
       });
       line.x(columnState.position - scrollPosition.x);
@@ -206,7 +206,7 @@ export class KonvaTable {
         type: "vertical",
         length: vLineLength,
         thickness: 1,
-        color: "#000000",
+        color: this.theme.tableBorderColor,
         key: "body-right-border"
       });
       rightBorder.x(tableDimensions.width);
@@ -217,7 +217,7 @@ export class KonvaTable {
       type: "horizontal",
       length: hLineLength,
       thickness: 1,
-      color: "#000000",
+      color: this.theme.tableBorderColor,
       key: "body-top-border"
     });
     this.bodyGrid.add(topBorder);
@@ -291,7 +291,7 @@ export class KonvaTable {
         type: "vertical",
         length: this.theme.rowHeight,
         thickness: 1,
-        color: "#000000",
+        color: this.theme.tableBorderColor,
         key: `head-col-line-${j}`
       });
       line.x(columnState.position - scrollPosition.x);
@@ -303,7 +303,7 @@ export class KonvaTable {
         type: "vertical",
         length: this.theme.rowHeight,
         thickness: 1,
-        color: "#000000",
+        color: this.theme.tableBorderColor,
         key: "table-right-border"
       });
       rightBorder.x(tableDimensions.width);

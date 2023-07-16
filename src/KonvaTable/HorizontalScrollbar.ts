@@ -34,13 +34,18 @@ export class HorizontalScrollbar extends Konva.Group {
 
     this.nodeManager = config.nodeManager;
 
-    this.bar = new Konva.Rect({ fill: "white", strokeWidth: 1 });
+    this.bar = new Konva.Rect({
+      fill: this.theme.scrollBarTrackColor,
+      strokeWidth: 1
+    });
     this.add(this.bar);
 
     this.track = new Konva.Rect();
     this.add(this.track);
 
-    this.thumb = new Konva.Rect({ fill: "black" });
+    this.thumb = new Konva.Rect({
+      fill: this.theme.scrollBarThumbColor
+    });
     this.add(this.thumb);
 
     this.borders = new Konva.Group();
@@ -96,7 +101,7 @@ export class HorizontalScrollbar extends Konva.Group {
       type: "horizontal",
       length: this.width(),
       thickness: 1,
-      color: "#000000",
+      color: this.theme.tableBorderColor,
       key: "hsb-top-border"
     });
     this.borders.add(topBorder);
@@ -105,7 +110,7 @@ export class HorizontalScrollbar extends Konva.Group {
       type: "vertical",
       length: this.height(),
       thickness: 1,
-      color: "#000000",
+      color: this.theme.tableBorderColor,
       key: "hsb-right-border"
     });
     rightBorder.x(this.width());

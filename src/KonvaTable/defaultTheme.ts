@@ -3,11 +3,12 @@ import { Theme } from "./types";
 export const defaultTheme: Theme = {
   rowHeight: 30,
   cellPadding: 10,
-  tableBorderColor: "black",
+  tableBorderColor: "#000000",
   scrollBarThickness: 20,
   scrollBarTrackMargin: 2,
-  scrollBarBorderColor: "black",
+  scrollBarTrackColor: "white",
+  scrollBarThumbColor: "#000000",
   fontSize: 14,
-  fontColor: "black",
+  fontColor: "#000000",
   fontFamily: "Arial"
 };
