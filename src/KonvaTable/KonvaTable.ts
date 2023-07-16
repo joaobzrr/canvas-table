@@ -2,6 +2,7 @@ import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { HorizontalScrollbar } from "./HorizontalScrollbar";
 import { VerticalScrollbar } from "./VerticalScrollbar";
+import { Line } from "./Line";
 import { TableState } from "./TableState";
 import { Vector } from "./Vector";
 import { Utils } from "./Utils";
@@ -86,6 +87,7 @@ export class KonvaTable {
     this.layer.add(this.vsb);
 
     this.lineImageCache = new Map();
+    Line.setCache(this.lineImageCache);
 
     this.stage.on("wheel", this.onWheel.bind(this));
   }
@@ -164,16 +166,13 @@ export class KonvaTable {
     const hLineLength = Math.min(this.body.width(), tableDimensions.width);
 
     for (let i = tableRanges.rowTop + 1; i < tableRanges.rowBottom; i++) {
-      this.bodyGrid.add(new Konva.Image({
-        image: this.getLine({
-          type: "hline",
-          length: hLineLength,
-          thickness: 1,
-          color: "#000000"
-        }),
+      this.bodyGrid.add(new Line({
         x: 0,
         y: i * this.theme.rowHeight - scrollPosition.y,
-        listening: false
+        type: "hline",
+        length: hLineLength,
+        thickness: 1,
+        color: "#000000"
       }));
     }
 
@@ -182,16 +181,13 @@ export class KonvaTable {
     for (let j = tableRanges.columnLeft + 1; j < tableRanges.columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
 
-      this.bodyGrid.add(new Konva.Image({
-        image: this.getLine({
-          type: "vline",
-          length: vLineLength,
-          thickness: 1,
-          color: "#000000"
-        }),
+      this.bodyGrid.add(new Line({
         x: columnState.position - scrollPosition.x,
         y: 0,
-        listening: false
+        type: "vline",
+        length: vLineLength,
+        thickness: 1,
+        color: "#000000"
       }));
     }
   }
@@ -259,32 +255,24 @@ export class KonvaTable {
     for (let j = columnLeft + 1; j < columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
 
-      const image = this.getLine({
+      this.headGrid.add(new Line({
+        x: columnState.position - scrollPosition.x,
+        y: 0,
         type: "vline",
         length: this.theme.rowHeight,
         thickness: 1,
         color: "#000000"
-      });
-
-      this.headGrid.add(new Konva.Image({
-        image: image,
-        x: columnState.position - scrollPosition.x,
-        y: 0,
-        listening: false
       }));
     }
 
-    this.headGrid.add(new Konva.Image({
-      image: this.getLine({
-        type: "hline",
-        length: Math.min(this.body.width(), tableDimensions.width),
-        thickness: 1,
-        color: "#000000"
-      }),
+    this.headGrid.add(new Line({
       x: 0,
       y: this.theme.rowHeight,
-      listening: false
-    }))
+      type: "hline",
+      length: Math.min(this.body.width(), tableDimensions.width),
+      thickness: 1,
+      color: "#000000"
+    }));
   }
 
   getLine(props: LineProps) {
