@@ -1,8 +1,10 @@
 import Konva from "konva";
 import { TableState } from "./TableState";
 import { LRUCache } from "./LRUCache";
+import { BodyCell } from "./BodyCell";
 import { Utils } from "./Utils";
 import { LineProps, Theme } from "./types";
+import { HeadCell } from "./HeadCell";
 
 type NodeManagerOptions = {
   tableState: TableState;
@@ -29,24 +31,17 @@ export class NodeManager {
     let cell = this.nodeCache.get<Konva.Group>(key);
     if (cell) return cell;
 
-    cell = new Konva.Group({ row: rowIndex, col: colIndex, name: key });
-
     const columnState = this.tableState.getColumnState(colIndex);
+    const dataRow     = this.tableState.getDataRow(rowIndex);
     const rowHeight   = this.tableState.getRowHeight();
 
-    const text = new Konva.Text({
+    cell = new BodyCell({
       width: columnState.width,
       height: rowHeight,
-      padding: this.theme.cellPadding,
-      fontSize: this.theme.fontSize,
-      fontFamily: this.theme.fontFamily,
-      fill: this.theme.fontColor,
-      verticalAlign: "middle",
-      wrap: "none",
-      ellipsis: true,
-      listening: false
+      text: dataRow[columnState.field],
+      theme: this.theme,
+      name: key
     });
-    cell.add(text);
 
     this.nodeCache.put(key, cell);
 
@@ -58,24 +53,16 @@ export class NodeManager {
     let cell = this.nodeCache.get<Konva.Group>(key);
     if (cell) return cell;
 
-    cell = new Konva.Group({ col: colIndex, name: key });
-
     const columnState = this.tableState.getColumnState(colIndex);
     const rowHeight   = this.tableState.getRowHeight();
 
-    cell.add(new Konva.Text({
+    cell = new HeadCell({
       width: columnState.width,
       height: rowHeight,
-      padding: this.theme.cellPadding,
-      fontSize: this.theme.fontSize,
-      fontFamily: this.theme.fontFamily,
-      fontStyle: "bold",
-      fill: this.theme.fontColor,
-      verticalAlign: "middle",
-      wrap: "none",
-      ellipsis: true,
-      listening: false
-    }));
+      text: columnState.title,
+      theme: this.theme,
+      name: key
+    });
 
     this.nodeCache.put(key, cell);
 

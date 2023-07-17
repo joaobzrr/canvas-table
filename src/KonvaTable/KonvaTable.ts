@@ -232,7 +232,6 @@ export class KonvaTable {
 
     const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
     for (let rowIndex = rowTop; rowIndex < rowBottom; rowIndex++) {
-      const dataRow = this.tableState.getDataRow(rowIndex);
       const y = rowIndex * rowHeight - scrollPosition.y;
 
       for (let colIndex = columnLeft; colIndex < columnRight; colIndex++) {
@@ -245,9 +244,6 @@ export class KonvaTable {
         }
 
         cell.setPosition({ x, y });
-
-        const text = cell.findOne("Text") as Konva.Text;
-        text.text(dataRow[columnState.field]);
       }
     }
   }
@@ -269,9 +265,6 @@ export class KonvaTable {
       }
 
       cell.x(x);
-
-      const text = cell.findOne("Text") as Konva.Text;
-      text.text(columnState.title);
     }
   }
 
