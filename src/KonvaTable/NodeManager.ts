@@ -35,9 +35,9 @@ export class NodeManager {
     const rowHeight   = this.tableState.getRowHeight();
 
     const text = new Konva.Text({
-      x: this.theme.cellPadding,
-      width: columnState.width - this.theme.cellPadding * 2,
+      width: columnState.width,
       height: rowHeight,
+      padding: this.theme.cellPadding,
       fontSize: this.theme.fontSize,
       fontFamily: this.theme.fontFamily,
       fill: this.theme.fontColor,
@@ -64,9 +64,9 @@ export class NodeManager {
     const rowHeight   = this.tableState.getRowHeight();
 
     cell.add(new Konva.Text({
-      x: this.theme.cellPadding,
-      width: columnState.width - this.theme.cellPadding * 2,
+      width: columnState.width,
       height: rowHeight,
+      padding: this.theme.cellPadding,
       fontSize: this.theme.fontSize,
       fontFamily: this.theme.fontFamily,
       fontStyle: "bold",
