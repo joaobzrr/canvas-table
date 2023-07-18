@@ -1,5 +1,6 @@
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
+import { throttle } from "lodash";
 import { HorizontalScrollbar } from "./HorizontalScrollbar";
 import { VerticalScrollbar } from "./VerticalScrollbar";
 import { TableState } from "./TableState";
@@ -82,7 +83,7 @@ export class KonvaTable {
     });
     this.layer.add(this.vsb);
 
-    this.stage.on("wheel", this.onWheel.bind(this));
+    this.stage.on("wheel", throttle((event => this.onWheel(event)), 16));
   }
 
   onWheel(event: KonvaEventObject<WheelEvent>) {
