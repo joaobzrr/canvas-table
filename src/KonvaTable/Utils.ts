@@ -1,4 +1,6 @@
-import { LineProps } from "./types";
+import { GlyphAtlasSpec, LineProps } from "./types";
+
+const charset = Array.from({ length: 255 }, (_, i) => String.fromCharCode(i)).join("");
 
 export class Utils {
   static drawNonAntialiasedLine(props: LineProps) {
@@ -24,7 +26,7 @@ export class Utils {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
-    for (let i = 0;i < data.length; i += 4) {
+    for (let i = 0; i < data.length; i += 4) {
       data[i + 0] = r;
       data[i + 1] = g;
       data[i + 2] = b;
@@ -36,6 +38,35 @@ export class Utils {
     const img = document.createElement("img");
     img.src = canvas.toDataURL();
     return img;
+  }
+
+  static createGlyphAtlas(spec: GlyphAtlasSpec) {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d")!;
+    if (!ctx) {
+      throw new Error("Failed to instantiate context");
+    }
+
+    function setupContext() {
+      const { fontFamily, fontSize, fontStyle, fillStyle } = spec;
+      ctx.font = `${fontStyle} ${fontSize}px ${fontFamily}`;
+      ctx.fillStyle = fillStyle;
+      ctx.textBaseline = "top";
+    }
+
+    setupContext();
+
+    const metrics = ctx.measureText(charset);
+    canvas.width = metrics.width;
+    canvas.height = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+
+    // @Note We have to do this again because changing the canvas
+    // dimensions resets the context properties.
+    setupContext();
+
+    ctx.fillText(charset, 0, 0);
+
+    return createImageBitmap(canvas);
   }
 
   static scale(value: number, fromMin: number, fromMax: number, toMin: number, toMax: number) {
