@@ -88,9 +88,12 @@ export class KonvaTable {
 
   static async create(options: KonvaTableOptions) {
     const theme = options?.theme ?? defaultTheme;
-    const { fontFamily, fontSize } = theme;
+    GlyphAtlas.theme = theme;
+    Text.theme = theme;
 
+    const { fontFamily, fontSize } = theme;
     const glyphAtlas = await GlyphAtlas.create(fontFamily, fontSize);
+
     Text.glyphAtlas = glyphAtlas;
 
     return new KonvaTable({ ...options, glyphAtlas });

@@ -1,4 +1,4 @@
-import { LineProps } from "./types";
+import { FontSpecifier, LineProps, Nullable } from "./types";
 
 export class Utils {
   static drawNonAntialiasedLine(props: LineProps) {
@@ -57,24 +57,7 @@ export class Utils {
     } : null;
   }
 
-  static nextCodePoint(str: string, index: number) {
-    if (index < 0 || index >= str.length) {
-      throw new Error("Index out of bounds");
-    }
-
-    if (index === str.length -1) {
-      return str.length -1;
-    }
-
-    const nextCodePoint = str.codePointAt(index + 1)!;
-    if (nextCodePoint >= 0xdc00 && nextCodePoint <= 0xdfff) {
-      return index + 2;
-    }
-
-    return index + 1;
-  }
-
-  static joinStrings(strings: (string | undefined | null)[], sep = "") {
+  static joinStrings(strings: Nullable<string>[], sep = "") {
     let result = "";
     for (const str of strings) {
       if (str === undefined || str === null) {
@@ -84,5 +67,14 @@ export class Utils {
       result += sep;
     }
     return result;
+  }
+
+  static serializeFontSpecifier(specifier: FontSpecifier) {
+    return Utils.joinStrings([
+      specifier?.fontStyle,
+      specifier?.fontWeight,
+      specifier.fontSize,
+      specifier.fontFamily
+    ], " ");
   }
 }

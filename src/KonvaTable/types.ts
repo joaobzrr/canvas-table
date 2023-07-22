@@ -55,8 +55,17 @@ export type LineProps = {
   key:       string;
 }
 
+export type FontSpecifier = {
+  fontFamily:  string;
+  fontSize:    string;
+  fontStyle?:  string;
+  fontWeight?: string;
+}
+
 export type FontConfig = {
   configName:  string;
   fontStyle?:  string;
   fontWeight?: string;
 };
+
+export type Nullable<T> = T | undefined | null;

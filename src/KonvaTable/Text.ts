@@ -3,6 +3,7 @@ import { Context } from "konva/lib/Context";
 import { ShapeConfig } from "konva/lib/Shape";
 import Graphemer from "graphemer";
 import { GlyphAtlas } from "./GlyphAtlas";
+import { Theme } from "./types";
 import { Utils } from "./Utils";
 
 export interface TextConfig extends ShapeConfig {
@@ -12,6 +13,7 @@ export interface TextConfig extends ShapeConfig {
 
 export class Text extends Konva.Shape {
   static glyphAtlas: GlyphAtlas;
+  static theme: Theme;
 
   text:       string;
   padding?:   number;
@@ -19,10 +21,7 @@ export class Text extends Konva.Shape {
   graphemer: Graphemer;
 
   constructor(config: TextConfig) {
-    super({
-      ...config,
-      listening: false
-    });
+    super({ ...config, listening: false });
 
     this.text = config.text;
     this.padding = config.padding;
@@ -31,8 +30,25 @@ export class Text extends Konva.Shape {
 
     this.sceneFunc(this.drawShape);
   }
+
+  static nextCodePoint(str: string, index: number) {
+    if (index < 0 || index >= str.length) {
+      throw new Error("Index out of bounds");
+    }
+
+    if (index === str.length -1) {
+      return str.length -1;
+    }
+
+    const nextCodePoint = str.codePointAt(index + 1)!;
+    if (nextCodePoint >= 0xdc00 && nextCodePoint <= 0xdfff) {
+      return index + 2;
+    }
+
+    return index + 1;
+  }
   
-  drawShape(context: Context) {
+  drawShape(ctx: Context) {
     const glyphAtlas = Text.glyphAtlas;
     const text       = this.text;
     const padding    = this.padding ?? 0;
@@ -43,36 +59,46 @@ export class Text extends Konva.Shape {
 
     const availableWidth = this.width() - padding * 2;
     let requiredWidth = 0;
-    let graphemeCount = 0;
+    let glyphCount = 0;
     let charIndex = 0;
 
     const y = (this.height() / 2) - (glyphHeight / 2);
 
-    while (requiredWidth + glyphWidth <= availableWidth && charIndex < text.length - 1) {
+    ctx.textBaseline = "top";
+    ctx.font = Utils.serializeFontSpecifier({
+      fontFamily: Text.theme.fontFamily,
+      fontSize:   Text.theme.fontSize,
+    });
+    ctx.fillStyle = Text.theme.fontColor;
+
+    while (requiredWidth + glyphWidth <= availableWidth) {
       const codepoint = this.text.codePointAt(charIndex)!;
-      if (codepoint <= 255) {
-	const char = text.charAt(charIndex);
+      const char = text.charAt(charIndex);
+
+      const x = glyphCount * glyphWidth + padding;
+
+      if (codepoint <= 0xFF) {
 	const rect = glyphAtlas.getGlyphBitmapRect("normal", char);
-
-	const x = graphemeCount * glyphWidth + padding;
-
-	context.drawImage(
-	  bitmap,
-	  rect.x, rect.y, rect.width, rect.height,
-	  x, y, glyphWidth, glyphHeight);
+	ctx.drawImage(bitmap, rect.x, rect.y, rect.width, rect.height, x, y, glyphWidth, glyphHeight);
       } else {
-	throw new Error("Not implemented");
+	ctx.fillText(char, x, y, glyphWidth);
       }
 
       const isSingleCodePoint = codepoint <= 0xFFFF;
+      let nextCharIndex: number;
       if (isSingleCodePoint) {
-	charIndex = Utils.nextCodePoint(text, charIndex);
+	nextCharIndex = Text.nextCodePoint(text, charIndex);
       } else {
-	charIndex = Graphemer.nextBreak(text, charIndex);
+	nextCharIndex = Graphemer.nextBreak(text, charIndex);
       }
 
+      if (nextCharIndex === charIndex) {
+	break;
+      }
+      charIndex = nextCharIndex;
+
       requiredWidth += glyphWidth;
-      graphemeCount += 1;
+      glyphCount += 1;
     }
   }
 }

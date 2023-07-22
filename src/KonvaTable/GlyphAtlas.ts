@@ -1,5 +1,5 @@
 import { Utils } from "./Utils";
-import { FontConfig } from "./types";
+import { FontConfig, FontSpecifier, Theme } from "./types";
 
 export class GlyphAtlas {
   static fontConfigs: FontConfig[] = [
@@ -16,10 +16,14 @@ export class GlyphAtlas {
     }
   ];
 
-  static charset = Array.from({ length: 255 }, (_, i) => String.fromCharCode(i)).join("");
+  static latinChars = Array.from({ length: 255 }, (_, i) => {
+    return String.fromCharCode(i);
+  }).join("");
 
-  bitmap:      ImageBitmap;
-  glyphWidth:  number;
+  static theme: Theme;
+
+  bitmap: ImageBitmap;
+  glyphWidth: number;
   glyphHeight: number;
 
   constructor(bitmap: ImageBitmap, glyphWidth: number, glyphHeight: number) {
@@ -35,30 +39,24 @@ export class GlyphAtlas {
       throw new Error("Failed to instantiate context");
     }
 
-    function setupContext(config?: FontConfig) {
-      ctx.font = Utils.joinStrings([
-	config?.fontStyle,
-	config?.fontWeight,
-	fontSize,
-	fontFamily
-      ], " ");
-
+    function setupContext(specifier: FontSpecifier) {
+      ctx.font = Utils.serializeFontSpecifier(specifier);
       ctx.textBaseline = "top";
-      ctx.fillStyle = "white";
+      ctx.fillStyle = GlyphAtlas.theme.fontColor;
     }
 
     // @Note Setup context for taking measurements
-    setupContext();
+    setupContext({ fontFamily, fontSize });
 
-    const metrics = ctx.measureText(GlyphAtlas.charset);
+    const metrics = ctx.measureText(GlyphAtlas.latinChars);
     canvas.width = metrics.width;
 
     const glyphHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
     canvas.height = glyphHeight * GlyphAtlas.fontConfigs.length;
 
     for (const [index, config] of GlyphAtlas.fontConfigs.entries()) {
-      setupContext(config)
-      ctx.fillText(GlyphAtlas.charset, 0, index * glyphHeight);
+      setupContext({ ...config, fontFamily, fontSize });
+      ctx.fillText(GlyphAtlas.latinChars, 0, index * glyphHeight);
     }
 
     const bitmap = await createImageBitmap(canvas);
