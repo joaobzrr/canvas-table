@@ -3,6 +3,7 @@ import { Context } from "konva/lib/Context";
 import { ShapeConfig } from "konva/lib/Shape";
 import Graphemer from "graphemer";
 import { GlyphAtlas } from "./GlyphAtlas";
+import { Utils } from "./Utils";
 
 export interface TextConfig extends ShapeConfig {
   text:       string;
@@ -40,37 +41,38 @@ export class Text extends Konva.Shape {
     const glyphWidth  = glyphAtlas.getGlyphWidth();
     const glyphHeight = glyphAtlas.getGlyphHeight();
 
-    const chars = [];
     const availableWidth = this.width() - padding * 2;
     let requiredWidth = 0;
-    let ellipsis = false;
-
-    for (const grapheme of this.graphemer.iterateGraphemes(text)) {
-      if (requiredWidth > availableWidth) {
-        ellipsis = true;
-        break;
-      }
-      chars.push(grapheme);
-      requiredWidth += glyphWidth;
-    }
-
-    let actualText = this.text;
-    if (ellipsis) {
-      actualText = chars.slice(0, -3).join("") + "...";
-    }
+    let graphemeCount = 0;
+    let charIndex = 0;
 
     const y = (this.height() / 2) - (glyphHeight / 2);
 
-    for (let i = 0; i < actualText.length; i++) {
-      const char = actualText[i];
-      const rect = glyphAtlas.getGlyphBitmapRect("normal", char);
+    while (requiredWidth + glyphWidth <= availableWidth && charIndex < text.length - 1) {
+      const codepoint = this.text.codePointAt(charIndex)!;
+      if (codepoint <= 255) {
+	const char = text.charAt(charIndex);
+	const rect = glyphAtlas.getGlyphBitmapRect("normal", char);
 
-      const x = i * glyphWidth + padding;
+	const x = graphemeCount * glyphWidth + padding;
 
-      context.drawImage(
-        bitmap,
-        rect.x, rect.y, rect.width, rect.height,
-        x, y, glyphWidth, glyphHeight);
+	context.drawImage(
+	  bitmap,
+	  rect.x, rect.y, rect.width, rect.height,
+	  x, y, glyphWidth, glyphHeight);
+      } else {
+	throw new Error("Not implemented");
+      }
+
+      const isSingleCodePoint = codepoint <= 0xFFFF;
+      if (isSingleCodePoint) {
+	charIndex = Utils.nextCodePoint(text, charIndex);
+      } else {
+	charIndex = Graphemer.nextBreak(text, charIndex);
+      }
+
+      requiredWidth += glyphWidth;
+      graphemeCount += 1;
     }
   }
 }
