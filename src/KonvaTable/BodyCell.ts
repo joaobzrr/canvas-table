@@ -1,32 +1,28 @@
 import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
-import { Theme } from ".";
+import { Text } from "./Text";
+import { Theme } from "./types";
 
 export interface BodyCellConfig extends GroupConfig {
-  theme: Theme;
   text: string;
+  theme: Theme;
 }
 
 export class BodyCell extends Konva.Group {
+  text: string;
   theme: Theme;
 
   constructor(config: BodyCellConfig) {
     super(config);
 
+    this.text = config.text;
     this.theme = config.theme;
 
-    this.add(new Konva.Text({
+    this.add(new Text({
       width: this.width(),
       height: this.height(),
-      padding: this.theme.cellPadding,
       text: config.text,
-      fontSize: this.theme.fontSize,
-      fontFamily: this.theme.fontFamily,
-      fill: this.theme.fontColor,
-      verticalAlign: "middle",
-      wrap: "none",
-      ellipsis: true,
-      listening: false
+      padding: this.theme.cellPadding
     }));
   }
 }

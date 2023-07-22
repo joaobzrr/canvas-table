@@ -12,11 +12,13 @@ function App() {
   const konvaTableRef = useRef<KonvaTable>();
 
   useLayoutEffect(() => {
-    konvaTableRef.current = new KonvaTable({
-      container: "container",
-      columnDefs,
-      dataRows
-    });
+    (async () => {
+      konvaTableRef.current = await KonvaTable.create({
+        container: "container",
+        columnDefs,
+        dataRows
+      });
+    })();
   }, []);
 
   useEffect(() => {

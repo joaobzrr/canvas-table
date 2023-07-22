@@ -1,6 +1,4 @@
-import { GlyphAtlasSpec, LineProps } from "./types";
-
-const charset = Array.from({ length: 255 }, (_, i) => String.fromCharCode(i)).join("");
+import { LineProps } from "./types";
 
 export class Utils {
   static drawNonAntialiasedLine(props: LineProps) {
@@ -40,35 +38,6 @@ export class Utils {
     return img;
   }
 
-  static createGlyphAtlas(spec: GlyphAtlasSpec) {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d")!;
-    if (!ctx) {
-      throw new Error("Failed to instantiate context");
-    }
-
-    function setupContext() {
-      const { fontFamily, fontSize, fontStyle, fillStyle } = spec;
-      ctx.font = `${fontStyle} ${fontSize}px ${fontFamily}`;
-      ctx.fillStyle = fillStyle;
-      ctx.textBaseline = "top";
-    }
-
-    setupContext();
-
-    const metrics = ctx.measureText(charset);
-    canvas.width = metrics.width;
-    canvas.height = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
-
-    // @Note We have to do this again because changing the canvas
-    // dimensions resets the context properties.
-    setupContext();
-
-    ctx.fillText(charset, 0, 0);
-
-    return createImageBitmap(canvas);
-  }
-
   static scale(value: number, fromMin: number, fromMax: number, toMin: number, toMax: number) {
     if (value <= fromMin) {
       return toMin;
@@ -86,5 +55,17 @@ export class Utils {
       g: parseInt(result[2], 16),
       b: parseInt(result[3], 16)
     } : null;
+  }
+
+  static joinStrings(strings: (string | undefined | null)[], sep = "") {
+    let result = "";
+    for (const str of strings) {
+      if (str === undefined || str === null) {
+        continue;
+      }
+      result += str;
+      result += sep;
+    }
+    return result;
   }
 }

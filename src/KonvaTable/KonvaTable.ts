@@ -3,7 +3,9 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { throttle } from "lodash";
 import { HorizontalScrollbar } from "./HorizontalScrollbar";
 import { VerticalScrollbar } from "./VerticalScrollbar";
+import { Text } from "./Text";
 import { TableState } from "./TableState";
+import { GlyphAtlas } from "./GlyphAtlas";
 import { Vector } from "./Vector";
 import { defaultTheme } from "./defaultTheme";
 import { KonvaTableOptions, ColumnDef, Dimensions, Theme } from "./types";
@@ -14,6 +16,7 @@ export class KonvaTable {
   layer: Konva.Layer;
 
   tableState: TableState;
+  theme: Theme;
 
   body:          Konva.Group;
   bodyGrid:      Konva.Group;
@@ -24,14 +27,11 @@ export class KonvaTable {
   headCells:     Konva.Group;
 
   nodeManager: NodeManager;
-  // nodeCache: LRUCache<Konva.Node>;
 
   hsb: HorizontalScrollbar;
   vsb: VerticalScrollbar;
 
-  theme: Theme;
-
-  constructor(options: KonvaTableOptions) {
+  constructor(options: KonvaTableOptions & { glyphAtlas: GlyphAtlas }) {
     this.stage = new Konva.Stage({ container: options.container });
     this.layer = new Konva.Layer();
     this.stage.add(this.layer);
@@ -60,7 +60,7 @@ export class KonvaTable {
     this.head.add(this.headGrid);
 
     this.headCells = new Konva.Group();
-    this.head.add(this.headCells);
+    //this.head.add(this.headCells);
 
     this.nodeManager = new NodeManager({
       tableState: this.tableState,
@@ -86,6 +86,16 @@ export class KonvaTable {
     this.stage.on("wheel", throttle((event => this.onWheel(event)), 16));
   }
 
+  static async create(options: KonvaTableOptions) {
+    const theme = options?.theme ?? defaultTheme;
+    const { fontFamily, fontSize } = theme;
+
+    const glyphAtlas = await GlyphAtlas.create(fontFamily, fontSize);
+    Text.glyphAtlas = glyphAtlas;
+
+    return new KonvaTable({ ...options, glyphAtlas });
+  }
+
   onWheel(event: KonvaEventObject<WheelEvent>) {
     const { x: scrollLeft, y: scrollTop } = this.tableState.scrollPosition;
 
@@ -100,7 +110,7 @@ export class KonvaTable {
     this.updateBodyCells();
 
     this.updateHeadGrid();
-    this.updateHeadCells();
+    //this.updateHeadCells();
 
     this.hsb.onWheel();
     this.vsb.onWheel();

@@ -28,7 +28,7 @@ export type Theme = {
   scrollBarTrackMargin: number;
   scrollBarTrackColor: string;
   scrollBarThumbColor: string;
-  fontSize: number;
+  fontSize: string;
   fontColor: string;
   fontFamily: string;
 }
@@ -54,3 +54,9 @@ export type LineProps = {
   color:     string;
   key:       string;
 }
+
+export type FontConfig = {
+  configName:  string;
+  fontStyle?:  string;
+  fontWeight?: string;
+};

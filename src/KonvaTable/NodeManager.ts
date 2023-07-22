@@ -3,8 +3,8 @@ import { TableState } from "./TableState";
 import { LRUCache } from "./LRUCache";
 import { BodyCell } from "./BodyCell";
 import { Utils } from "./Utils";
-import { LineProps, Theme } from "./types";
 import { HeadCell } from "./HeadCell";
+import { LineProps, Theme } from "./types";
 
 type NodeManagerOptions = {
   tableState: TableState;

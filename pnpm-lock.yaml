@@ -4,6 +4,9 @@ dependencies:
   '@react-hook/resize-observer':
     specifier: ^1.2.6
     version: 1.2.6(react@18.2.0)
+  graphemer:
+    specifier: ^1.4.0
+    version: 1.4.0
   konva:
     specifier: ^9.2.0
     version: 9.2.0
@@ -1076,7 +1079,6 @@ packages:
 
   /graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
-    dev: true
 
   /has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
