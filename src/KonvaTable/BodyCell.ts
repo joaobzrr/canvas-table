@@ -19,7 +19,8 @@ export class BodyCell extends Konva.Group {
       width: this.width(),
       height: this.height(),
       padding: this.theme.cellPadding,
-      text: config.text
+      text: config.text,
+      fontConfig: "normal"
     }));
   }
 }

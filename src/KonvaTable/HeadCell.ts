@@ -21,6 +21,7 @@ export class HeadCell extends Konva.Group {
       height: this.height(),
       padding: this.theme.cellPadding,
       text: config.text,
+      fontConfig: "bold"
     }));
   }
 }

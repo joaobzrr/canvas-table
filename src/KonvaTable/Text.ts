@@ -7,16 +7,18 @@ import { Theme } from "./types";
 import { Utils } from "./Utils";
 
 export interface TextConfig extends ShapeConfig {
-  text:       string;
-  padding?:   number;
+  text: string;
+  fontConfig: "normal" | "bold" | "italic";
+  padding?: number;
 }
 
 export class Text extends Konva.Shape {
   static glyphAtlas: GlyphAtlas;
   static theme: Theme;
 
-  text:       string;
-  padding?:   number;
+  text: string;
+  fontConfig: "normal" | "bold" | "italic";
+  padding?: number;
 
   graphemer: Graphemer;
 
@@ -24,6 +26,7 @@ export class Text extends Konva.Shape {
     super({ ...config, listening: false });
 
     this.text = config.text;
+    this.fontConfig = config.fontConfig;
     this.padding = config.padding;
 
     this.graphemer = new Graphemer();
@@ -78,7 +81,7 @@ export class Text extends Konva.Shape {
       const x = glyphCount * glyphWidth + padding;
 
       if (codepoint <= 0xFF) {
-	const rect = glyphAtlas.getGlyphBitmapRect("normal", char);
+	const rect = glyphAtlas.getGlyphBitmapRect(this.fontConfig, char);
 	ctx.drawImage(bitmap, rect.x, rect.y, rect.width, rect.height, x, y, glyphWidth, glyphHeight);
       } else {
 	ctx.fillText(char, x, y, glyphWidth);

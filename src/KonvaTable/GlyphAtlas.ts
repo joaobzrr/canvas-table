@@ -66,10 +66,14 @@ export class GlyphAtlas {
   }
 
   getGlyphBitmapRect(configName: string, char: string) {
+    if (configName === "bold") {
+      debugger;
+    }
+
     const configIndex = GlyphAtlas.fontConfigs.findIndex(
       config => config.configName === configName);
 
-    if (configIndex) {
+    if (configIndex === -1) {
       throw new Error(`Font config named ${configName} does not exist`);
     }
 
