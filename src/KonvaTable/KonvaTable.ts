@@ -18,13 +18,13 @@ export class KonvaTable {
   tableState: TableState;
   theme: Theme;
 
-  body:          Konva.Group;
-  bodyGrid:      Konva.Group;
-  bodyCells:     Konva.Group;
+  body:      Konva.Group;
+  bodyGrid:  Konva.Group;
+  bodyCells: Konva.Group;
 
-  head:          Konva.Group;
-  headGrid:      Konva.Group;
-  headCells:     Konva.Group;
+  head:      Konva.Group;
+  headGrid:  Konva.Group;
+  headCells: Konva.Group;
 
   nodeManager: NodeManager;
 
