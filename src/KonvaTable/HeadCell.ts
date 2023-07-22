@@ -1,6 +1,7 @@
 import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
-import { Theme } from ".";
+import { Text } from "./Text";
+import { Theme } from "./types";
 
 export interface HeadCellConfig extends GroupConfig {
   theme: Theme;
@@ -15,19 +16,11 @@ export class HeadCell extends Konva.Group {
 
     this.theme = config.theme;
 
-    this.add(new Konva.Text({
+    this.add(new Text({
       width: this.width(),
       height: this.height(),
       padding: this.theme.cellPadding,
       text: config.text,
-      fontSize: this.theme.fontSize,
-      fontFamily: this.theme.fontFamily,
-      fontStyle: "bold",
-      fill: this.theme.fontColor,
-      verticalAlign: "middle",
-      wrap: "none",
-      ellipsis: true,
-      listening: false
     }));
   }
 }

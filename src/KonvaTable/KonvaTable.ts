@@ -60,7 +60,7 @@ export class KonvaTable {
     this.head.add(this.headGrid);
 
     this.headCells = new Konva.Group();
-    //this.head.add(this.headCells);
+    this.head.add(this.headCells);
 
     this.nodeManager = new NodeManager({
       tableState: this.tableState,
@@ -113,7 +113,7 @@ export class KonvaTable {
     this.updateBodyCells();
 
     this.updateHeadGrid();
-    //this.updateHeadCells();
+    this.updateHeadCells();
 
     this.hsb.onWheel();
     this.vsb.onWheel();
