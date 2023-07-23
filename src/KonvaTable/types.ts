@@ -52,7 +52,6 @@ export type LineProps = {
   length:    number;
   thickness: number;
   color:     string;
-  key:       string;
 }
 
 export type FontSpecifier = {

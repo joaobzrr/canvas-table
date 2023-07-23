@@ -1,7 +1,7 @@
 import { FontSpecifier, LineProps, Nullable } from "./types";
 
 export class Utils {
-  static drawNonAntialiasedLine(props: LineProps) {
+  static async drawNonAntialiasedLine(props: LineProps) {
     const { type, length, thickness, color } = props;
 
     const canvas = document.createElement("canvas");
@@ -33,8 +33,7 @@ export class Utils {
 
     ctx.putImageData(imageData, 0, 0);
 
-    const img = document.createElement("img");
-    img.src = canvas.toDataURL();
+    const img = await createImageBitmap(canvas);
     return img;
   }
 

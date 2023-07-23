@@ -22,7 +22,7 @@ export class HorizontalScrollbar extends Konva.Group {
   track: Konva.Rect;
   thumb: Konva.Rect;
 
-  borders: Konva.Group;
+  //borders: Konva.Group;
 
   maxThumbLeft = 0;
 
@@ -48,8 +48,10 @@ export class HorizontalScrollbar extends Konva.Group {
     });
     this.add(this.thumb);
 
+    /*
     this.borders = new Konva.Group();
     this.add(this.borders);
+    */
 
     this.on("widthChange heightChange", this.onResize.bind(this));
   }
@@ -95,6 +97,7 @@ export class HorizontalScrollbar extends Konva.Group {
 
     this.repositionThumb();
 
+    /*
     this.borders.removeChildren();
 
     const topBorder = this.nodeManager.getLine({
@@ -115,6 +118,7 @@ export class HorizontalScrollbar extends Konva.Group {
     });
     rightBorder.x(this.width());
     this.borders.add(rightBorder);
+    */
   }
 
   onWheel() {

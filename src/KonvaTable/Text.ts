@@ -104,4 +104,8 @@ export class Text extends Konva.Shape {
       glyphCount += 1;
     }
   }
+
+  setText(text: string) {
+    this.text = text;
+  }
 }

@@ -9,7 +9,9 @@ import { GlyphAtlas } from "./GlyphAtlas";
 import { Vector } from "./Vector";
 import { defaultTheme } from "./defaultTheme";
 import { KonvaTableOptions, ColumnDef, Dimensions, Theme } from "./types";
-import { NodeManager } from "./NodeManager";
+import { ObjectPool } from "./ObjectPool";
+import { BodyCell } from "./BodyCell";
+import { HeadCell } from "./HeadCell";
 
 export class KonvaTable {
   stage: Konva.Stage;
@@ -18,15 +20,17 @@ export class KonvaTable {
   tableState: TableState;
   theme: Theme;
 
-  body:      Konva.Group;
-  bodyGrid:  Konva.Group;
-  bodyCells: Konva.Group;
+  body:     Konva.Group;
+  bodyGrid: Konva.Group;
+
+  bodyCellGroup: Konva.Group;
+  bodyCellPool:  ObjectPool<BodyCell>;
 
   head:      Konva.Group;
   headGrid:  Konva.Group;
-  headCells: Konva.Group;
 
-  nodeManager: NodeManager;
+  headCellGroup: Konva.Group;
+  headCellPool:  ObjectPool<HeadCell>;
 
   hsb: HorizontalScrollbar;
   vsb: VerticalScrollbar;
@@ -50,8 +54,8 @@ export class KonvaTable {
     this.bodyGrid = new Konva.Group();
     this.body.add(this.bodyGrid);
 
-    this.bodyCells = new Konva.Group();
-    this.body.add(this.bodyCells);
+    this.bodyCellGroup = new Konva.Group();
+    this.body.add(this.bodyCellGroup);
 
     this.head = new Konva.Group({ height: this.theme.rowHeight });
     this.layer.add(this.head);
@@ -59,12 +63,17 @@ export class KonvaTable {
     this.headGrid = new Konva.Group();
     this.head.add(this.headGrid);
 
-    this.headCells = new Konva.Group();
-    this.head.add(this.headCells);
+    this.headCellGroup = new Konva.Group();
+    this.head.add(this.headCellGroup);
 
-    this.nodeManager = new NodeManager({
-      tableState: this.tableState,
-      theme:      this.theme
+    this.bodyCellPool = new ObjectPool({
+      initialSize: 1000,
+      make: () => new BodyCell({ theme: this.theme }),
+    });
+
+    this.headCellPool = new ObjectPool({
+      initialSize: 20,
+      make: () => new HeadCell({ theme: this.theme }),
     });
 
     this.hsb = new HorizontalScrollbar({
@@ -109,10 +118,10 @@ export class KonvaTable {
 
     this.tableState.setScrollPosition(newScrollLeft);
 
-    this.updateBodyGrid();
+    //this.updateBodyGrid();
     this.updateBodyCells();
 
-    this.updateHeadGrid();
+    //this.updateHeadGrid();
     this.updateHeadCells();
 
     this.hsb.onWheel();
@@ -158,13 +167,14 @@ export class KonvaTable {
       visible: vsbIsVisible
     });
 
-    this.updateBodyGrid();
+    //this.updateBodyGrid();
     this.updateBodyCells();
 
-    this.updateHeadGrid();
+    //this.updateHeadGrid();
     this.updateHeadCells();
   }
 
+  /*
   updateBodyGrid() {
     const scrollPosition     = this.tableState.getScrollPosition();
     const tableDimensions    = this.tableState.getTableDimensions();
@@ -176,27 +186,25 @@ export class KonvaTable {
     const hLineLength = Math.min(this.body.width(), tableDimensions.width);
 
     for (let i = tableRanges.rowTop + 1; i < tableRanges.rowBottom; i++) {
-      const line = this.nodeManager.getLine({
-        type: "horizontal",
+      const line = this.hLinePool.getOne();
+      line.setAttrs({
+	y: i * this.theme.rowHeight - scrollPosition.y,
         length: hLineLength,
         thickness: 1,
         color: this.theme.tableBorderColor,
-        key: `body-row-line-${i}`
       });
-      line.y(i * this.theme.rowHeight - scrollPosition.y);
       this.bodyGrid.add(line);
     }
 
     if (viewportDimensions.height > tableDimensions.height) {
-      const bottomBorder = this.nodeManager.getLine({
-        type: "horizontal",
+      const line = this.vLinePool.getOne();
+      line.setAttrs({
+	y: tableDimensions.height,
         length: hLineLength,
         thickness: 1,
         color: this.theme.tableBorderColor,
-        key: "table-bottom-border"
       });
-      bottomBorder.y(tableDimensions.height);
-      this.bodyGrid.add(bottomBorder);
+      this.bodyGrid.add(line);
     }
 
     const vLineLength = Math.min(this.body.height(), tableDimensions.height);
@@ -204,60 +212,68 @@ export class KonvaTable {
     for (let j = tableRanges.columnLeft + 1; j < tableRanges.columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
 
-      const line = this.nodeManager.getLine({
-        type: "vertical",
+      const line = this.vLinePool.getOne();
+      line.setAttrs({
+	x: columnState.position - scrollPosition.x,
         length: vLineLength,
         thickness: 1,
         color: this.theme.tableBorderColor,
-        key: `body-col-line-${j}`
       });
-      line.x(columnState.position - scrollPosition.x);
       this.bodyGrid.add(line);
     }
 
     if (viewportDimensions.width > tableDimensions.width) {
-      const rightBorder = this.nodeManager.getLine({
-        type: "vertical",
+      const line = this.vLinePool.getOne()
+      line.setAttrs({
+	x: tableDimensions.width,
         length: vLineLength,
         thickness: 1,
         color: this.theme.tableBorderColor,
-        key: "body-right-border"
       });
-      rightBorder.x(tableDimensions.width);
-      this.bodyGrid.add(rightBorder);
+      this.bodyGrid.add(line);
     }
 
-    const topBorder = this.nodeManager.getLine({
-      type: "horizontal",
-      length: hLineLength,
-      thickness: 1,
-      color: this.theme.tableBorderColor,
-      key: "body-top-border"
-    });
-    this.bodyGrid.add(topBorder);
+    {
+      const line = this.hLinePool.getOne();
+      line.setAttrs({
+	length: hLineLength,
+	thickness: 1,
+	color: this.theme.tableBorderColor,
+      });
+      this.bodyGrid.add(line);
+    }
   }
+  */
 
   updateBodyCells() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges    = this.tableState.getTableRanges();
     const rowHeight      = this.tableState.getRowHeight();
 
-    this.bodyCells.removeChildren();
+    this.bodyCellPool.releaseMany(this.bodyCellGroup.children as BodyCell[]);
+    this.bodyCellGroup.removeChildren();
 
     const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
     for (let rowIndex = rowTop; rowIndex < rowBottom; rowIndex++) {
+      const dataRow = this.tableState.getDataRow(rowIndex);
       const y = rowIndex * rowHeight - scrollPosition.y;
 
       for (let colIndex = columnLeft; colIndex < columnRight; colIndex++) {
         const columnState = this.tableState.getColumnState(colIndex);
         const x = columnState.position - scrollPosition.x;
 
-        const cell = this.nodeManager.getBodyCell(rowIndex, colIndex);
-        if (!cell.parent) {
-          this.bodyCells.add(cell);
+        const cell = this.bodyCellPool.getOne();
+	if (!cell.parent) {
+          this.bodyCellGroup.add(cell);
         }
 
-        cell.setPosition({ x, y });
+	cell.setAttrs(({
+	  x, y,
+	  width: columnState.width,
+	  height: rowHeight,
+	  text: dataRow[columnState.field],
+	  theme: this.theme
+	}));
       }
     }
   }
@@ -265,23 +281,32 @@ export class KonvaTable {
   updateHeadCells() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges    = this.tableState.getTableRanges();
+    const rowHeight      = this.tableState.getRowHeight();
 
-    this.headCells.removeChildren();
+    this.headCellPool.releaseMany(this.headCellGroup.children as HeadCell[]);
+    this.headCellGroup.removeChildren();
 
     const { columnLeft, columnRight } = tableRanges;
     for (let j = columnLeft; j < columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
       const x = columnState.position - scrollPosition.x;
 
-      const cell = this.nodeManager.getHeadCell(j);
+      const cell = this.headCellPool.getOne();
       if (!cell.parent) {
-        this.headCells.add(cell);
+        this.headCellGroup.add(cell);
       }
 
-      cell.x(x);
+      cell.setAttrs({
+	x,
+	width: columnState.width,
+	height: rowHeight,
+	text: columnState.title,
+	theme: this.theme,
+      });
     }
   }
 
+  /*
   updateHeadGrid() {
     const scrollPosition     = this.tableState.getScrollPosition();
     const tableDimensions    = this.tableState.getTableDimensions();
@@ -317,6 +342,7 @@ export class KonvaTable {
       this.headGrid.add(rightBorder);
     }
   }
+  */
 
   columnDefsToColumnStates(columnDefs: ColumnDef[]) {
     const result = [];

@@ -22,7 +22,7 @@ export class VerticalScrollbar extends Konva.Group {
   track: Konva.Rect;
   thumb: Konva.Rect;
 
-  borders: Konva.Group;
+  // borders: Konva.Group;
 
   maxThumbTop = 0;
 
@@ -48,8 +48,10 @@ export class VerticalScrollbar extends Konva.Group {
     });
     this.add(this.thumb);
 
+    /*
     this.borders = new Konva.Group();
     this.add(this.borders);
+    */
 
     this.on("widthChange heightChange", this.onResize.bind(this));
   }
@@ -93,6 +95,7 @@ export class VerticalScrollbar extends Konva.Group {
     const trackBottom = trackY + trackHeight;
     this.maxThumbTop = trackBottom - thumbHeight;
 
+    /*
     this.borders.removeChildren();
     const leftBorder = this.nodeManager.getLine({
       type: "vertical",
@@ -102,6 +105,7 @@ export class VerticalScrollbar extends Konva.Group {
       key: "vsb-left-border"
     });
     this.borders.add(leftBorder);
+    
 
     const topBorder = this.nodeManager.getLine({
       type: "horizontal",
@@ -122,6 +126,7 @@ export class VerticalScrollbar extends Konva.Group {
     });
     bottomBorder.y(this.height());
     this.borders.add(bottomBorder);
+    */
 
     this.repositionThumb();
   }
