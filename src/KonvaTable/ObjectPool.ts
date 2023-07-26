@@ -8,7 +8,7 @@ export type ObjectPoolParams<T> = {
 }
 
 export class ObjectPool<T extends object> {
-  array: (T | null)[] = [];
+  elements: T[] = [];
   freeElements = 0;
   freeIndex = 0;
 
@@ -25,47 +25,46 @@ export class ObjectPool<T extends object> {
     }
   }
 
-  getOne() {
-    if (this.freeElements / this.array.length <= MINIMUM_PERCENT_FREE / 100) {
+  borrow<Element extends T>() {
+    if (this.freeElements / this.elements.length <= MINIMUM_PERCENT_FREE / 100) {
       this.increasePoolSize();
     }
 
     this.freeElements--;
-    const freeElement = this.array[this.freeIndex]!;
-    this.array[this.freeIndex++] = null;
-    return freeElement;
+    const freeElement = this.elements[this.freeIndex]!;
+    this.freeIndex++;
+    return freeElement as Element;
   }
 
-  releaseOne(element: T) {
+  retrieve(element: T) {
     this.freeElements++;
-    this.array[--this.freeIndex] = element;
+    this.elements[--this.freeIndex] = element;
     this.reset(element);
   }
 
-  releaseMany(elements: T[]) {
-    for (const element of elements) {
-      this.releaseOne(element);
+  retrieveAll() {
+    const borrowed = this.freeIndex;
+    for (let i = borrowed - 1; i > 0; i--) {
+      this.retrieve(this.elements[i]);
     }
   }
 
   increasePoolSize() {
     const increaseSize = Math.round(
-      (INCREASE_PERCENT * this.array.length) / 100);
+      (INCREASE_PERCENT * this.elements.length) / 100);
 
     for (let i = 0; i < increaseSize; i++) {
       this.createElement();
     }
-
-    console.log(this.array.length);
   }
 
   createElement() {
     this.freeElements++;
-    this.array.push(this.reset(this.make()));
-    return this.array[this.array.length - 1];
+    this.elements.push(this.reset(this.make()));
+    return this.elements[this.elements.length - 1];
   }
 
   get size() {
-    return this.array.length;
+    return this.elements.length;
   }
 }

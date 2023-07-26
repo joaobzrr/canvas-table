@@ -9,9 +9,7 @@ import { GlyphAtlas } from "./GlyphAtlas";
 import { Vector } from "./Vector";
 import { defaultTheme } from "./defaultTheme";
 import { KonvaTableOptions, ColumnDef, Dimensions, Theme } from "./types";
-import { ObjectPool } from "./ObjectPool";
-import { BodyCell } from "./BodyCell";
-import { HeadCell } from "./HeadCell";
+import { NodeManager } from "./NodeManager";
 
 export class KonvaTable {
   stage: Konva.Stage;
@@ -24,13 +22,13 @@ export class KonvaTable {
   bodyGrid: Konva.Group;
 
   bodyCellGroup: Konva.Group;
-  bodyCellPool:  ObjectPool<BodyCell>;
 
   head:      Konva.Group;
   headGrid:  Konva.Group;
 
   headCellGroup: Konva.Group;
-  headCellPool:  ObjectPool<HeadCell>;
+
+  poolManager: NodeManager;
 
   hsb: HorizontalScrollbar;
   vsb: VerticalScrollbar;
@@ -66,20 +64,11 @@ export class KonvaTable {
     this.headCellGroup = new Konva.Group();
     this.head.add(this.headCellGroup);
 
-    this.bodyCellPool = new ObjectPool({
-      initialSize: 1000,
-      make: () => new BodyCell({ theme: this.theme }),
-    });
-
-    this.headCellPool = new ObjectPool({
-      initialSize: 20,
-      make: () => new HeadCell({ theme: this.theme }),
-    });
+    this.poolManager = new NodeManager(this.theme);
 
     this.hsb = new HorizontalScrollbar({
       tableState:  this.tableState,
       theme:       this.theme,
-      nodeManager: this.nodeManager,
       height:      this.theme.scrollBarThickness
     });
     this.layer.add(this.hsb);
@@ -87,7 +76,6 @@ export class KonvaTable {
     this.vsb = new VerticalScrollbar({
       tableState:  this.tableState,
       theme:       this.theme,
-      nodeManager: this.nodeManager,
       width:       this.theme.scrollBarThickness
     });
     this.layer.add(this.vsb);
@@ -250,7 +238,7 @@ export class KonvaTable {
     const tableRanges    = this.tableState.getTableRanges();
     const rowHeight      = this.tableState.getRowHeight();
 
-    this.bodyCellPool.releaseMany(this.bodyCellGroup.children as BodyCell[]);
+    this.poolManager.retrieveAllBodyCells();
     this.bodyCellGroup.removeChildren();
 
     const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
@@ -262,7 +250,7 @@ export class KonvaTable {
         const columnState = this.tableState.getColumnState(colIndex);
         const x = columnState.position - scrollPosition.x;
 
-        const cell = this.bodyCellPool.getOne();
+        const cell = this.poolManager.borrowBodyCell();
 	if (!cell.parent) {
           this.bodyCellGroup.add(cell);
         }
@@ -283,7 +271,7 @@ export class KonvaTable {
     const tableRanges    = this.tableState.getTableRanges();
     const rowHeight      = this.tableState.getRowHeight();
 
-    this.headCellPool.releaseMany(this.headCellGroup.children as HeadCell[]);
+    this.poolManager.retrieveAllHeadCells();
     this.headCellGroup.removeChildren();
 
     const { columnLeft, columnRight } = tableRanges;
@@ -291,7 +279,7 @@ export class KonvaTable {
       const columnState = this.tableState.getColumnState(j);
       const x = columnState.position - scrollPosition.x;
 
-      const cell = this.headCellPool.getOne();
+      const cell = this.poolManager.borrowHeadCell();
       if (!cell.parent) {
         this.headCellGroup.add(cell);
       }

@@ -1,22 +1,18 @@
 import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
 import { TableState } from "./TableState";
-import { NodeManager } from "./NodeManager";
 import { Utils } from "./Utils";
 import { Theme } from "./types";
 
 export interface HorizontalScrollbarConfig extends GroupConfig {
   tableState: TableState;
   theme:      Theme
-
-  nodeManager: NodeManager;
 }
 
 export class HorizontalScrollbar extends Konva.Group {
   tableState: TableState;
   theme:      Theme;
 
-  nodeManager: NodeManager;
 
   bar:   Konva.Rect;
   track: Konva.Rect;
@@ -31,8 +27,6 @@ export class HorizontalScrollbar extends Konva.Group {
 
     this.tableState = config.tableState;
     this.theme = config.theme;
-
-    this.nodeManager = config.nodeManager;
 
     this.bar = new Konva.Rect({
       fill: this.theme.scrollBarTrackColor,
