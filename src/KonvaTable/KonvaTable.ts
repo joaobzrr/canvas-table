@@ -28,7 +28,7 @@ export class KonvaTable {
 
   headCellGroup: Konva.Group;
 
-  poolManager: NodeManager;
+  nodeManager: NodeManager;
 
   hsb: HorizontalScrollbar;
   vsb: VerticalScrollbar;
@@ -64,7 +64,7 @@ export class KonvaTable {
     this.headCellGroup = new Konva.Group();
     this.head.add(this.headCellGroup);
 
-    this.poolManager = new NodeManager(this.theme);
+    this.nodeManager = new NodeManager(this.theme);
 
     this.hsb = new HorizontalScrollbar({
       tableState:  this.tableState,
@@ -106,10 +106,10 @@ export class KonvaTable {
 
     this.tableState.setScrollPosition(newScrollLeft);
 
-    //this.updateBodyGrid();
-    this.updateBodyCells();
+    this.updateBodyGrid();
+    this.updateHeadGrid();
 
-    //this.updateHeadGrid();
+    this.updateBodyCells();
     this.updateHeadCells();
 
     this.hsb.onWheel();
@@ -155,42 +155,56 @@ export class KonvaTable {
       visible: vsbIsVisible
     });
 
-    //this.updateBodyGrid();
-    this.updateBodyCells();
+    this.nodeManager.retrieveAllLines();
+    this.updateBodyGrid();
+    this.updateHeadGrid();
 
-    //this.updateHeadGrid();
+    this.updateBodyCells();
     this.updateHeadCells();
   }
 
-  /*
   updateBodyGrid() {
     const scrollPosition     = this.tableState.getScrollPosition();
     const tableDimensions    = this.tableState.getTableDimensions();
     const viewportDimensions = this.tableState.getViewportDimensions();
     const tableRanges        = this.tableState.getTableRanges();
 
+    this.nodeManager.retrieveAllLines();
     this.bodyGrid.removeChildren();
 
     const hLineLength = Math.min(this.body.width(), tableDimensions.width);
 
     for (let i = tableRanges.rowTop + 1; i < tableRanges.rowBottom; i++) {
-      const line = this.hLinePool.getOne();
+      const y = i * this.theme.rowHeight - scrollPosition.y;
+
+      const line = this.nodeManager.borrowLine();
       line.setAttrs({
-	y: i * this.theme.rowHeight - scrollPosition.y,
-        length: hLineLength,
-        thickness: 1,
-        color: this.theme.tableBorderColor,
+	x: 0,
+	y,
+	points: [0, 0, hLineLength, 0],
+        stroke: this.theme.tableBorderColor,
       });
       this.bodyGrid.add(line);
     }
 
     if (viewportDimensions.height > tableDimensions.height) {
-      const line = this.vLinePool.getOne();
+      const line = this.nodeManager.borrowLine();
       line.setAttrs({
+	x: 0,
 	y: tableDimensions.height,
-        length: hLineLength,
-        thickness: 1,
-        color: this.theme.tableBorderColor,
+	points: [0, 0.5, hLineLength, 0.5],
+	stroke: this.theme.tableBorderColor
+      });
+      this.bodyGrid.add(line);
+    }
+
+    {
+      const line = this.nodeManager.borrowLine();
+      line.setAttrs({
+	x: 0,
+	y: 0,
+	points: [0, 0.5, hLineLength, 0.5],
+	stroke: this.theme.tableBorderColor,
       });
       this.bodyGrid.add(line);
     }
@@ -199,46 +213,36 @@ export class KonvaTable {
 
     for (let j = tableRanges.columnLeft + 1; j < tableRanges.columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
+      const x = columnState.position - scrollPosition.x;
 
-      const line = this.vLinePool.getOne();
+      const line = this.nodeManager.borrowLine();
       line.setAttrs({
-	x: columnState.position - scrollPosition.x,
-        length: vLineLength,
-        thickness: 1,
-        color: this.theme.tableBorderColor,
+	x,
+	y: 0,
+	points: [0.5, 0, 0.5, vLineLength],
+        stroke: this.theme.tableBorderColor,
       });
       this.bodyGrid.add(line);
     }
 
     if (viewportDimensions.width > tableDimensions.width) {
-      const line = this.vLinePool.getOne()
+      const line = this.nodeManager.borrowLine();
       line.setAttrs({
 	x: tableDimensions.width,
-        length: vLineLength,
-        thickness: 1,
-        color: this.theme.tableBorderColor,
-      });
-      this.bodyGrid.add(line);
-    }
-
-    {
-      const line = this.hLinePool.getOne();
-      line.setAttrs({
-	length: hLineLength,
-	thickness: 1,
-	color: this.theme.tableBorderColor,
+	y: 0,
+	points: [0.5, 0, 0.5, vLineLength],
+        stroke: this.theme.tableBorderColor,
       });
       this.bodyGrid.add(line);
     }
   }
-  */
 
   updateBodyCells() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges    = this.tableState.getTableRanges();
     const rowHeight      = this.tableState.getRowHeight();
 
-    this.poolManager.retrieveAllBodyCells();
+    this.nodeManager.retrieveAllBodyCells();
     this.bodyCellGroup.removeChildren();
 
     const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
@@ -250,7 +254,7 @@ export class KonvaTable {
         const columnState = this.tableState.getColumnState(colIndex);
         const x = columnState.position - scrollPosition.x;
 
-        const cell = this.poolManager.borrowBodyCell();
+        const cell = this.nodeManager.borrowBodyCell();
 	if (!cell.parent) {
           this.bodyCellGroup.add(cell);
         }
@@ -271,7 +275,7 @@ export class KonvaTable {
     const tableRanges    = this.tableState.getTableRanges();
     const rowHeight      = this.tableState.getRowHeight();
 
-    this.poolManager.retrieveAllHeadCells();
+    this.nodeManager.retrieveAllHeadCells();
     this.headCellGroup.removeChildren();
 
     const { columnLeft, columnRight } = tableRanges;
@@ -279,7 +283,7 @@ export class KonvaTable {
       const columnState = this.tableState.getColumnState(j);
       const x = columnState.position - scrollPosition.x;
 
-      const cell = this.poolManager.borrowHeadCell();
+      const cell = this.nodeManager.borrowHeadCell();
       if (!cell.parent) {
         this.headCellGroup.add(cell);
       }
@@ -294,7 +298,6 @@ export class KonvaTable {
     }
   }
 
-  /*
   updateHeadGrid() {
     const scrollPosition     = this.tableState.getScrollPosition();
     const tableDimensions    = this.tableState.getTableDimensions();
@@ -306,31 +309,27 @@ export class KonvaTable {
     const { columnLeft, columnRight } = tableRanges;
     for (let j = columnLeft + 1; j < columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
+      const x = columnState.position - scrollPosition.x;
 
-      const line = this.nodeManager.getLine({
-        type: "vertical",
-        length: this.theme.rowHeight,
-        thickness: 1,
-        color: this.theme.tableBorderColor,
-        key: `head-col-line-${j}`
+      const line = this.nodeManager.borrowLine()
+      line.setAttrs({
+	x,
+	points: [0.5, 0, 0.5, this.theme.rowHeight],
+        stroke: this.theme.tableBorderColor,
       });
-      line.x(columnState.position - scrollPosition.x);
       this.headGrid.add(line);
     }
 
     if (viewportDimensions.width > tableDimensions.width) {
-      const rightBorder = this.nodeManager.getLine({
-        type: "vertical",
-        length: this.theme.rowHeight,
-        thickness: 1,
-        color: this.theme.tableBorderColor,
-        key: "table-right-border"
+      const line = this.nodeManager.borrowLine();
+      line.setAttrs({
+	x: tableDimensions.width,
+	points: [0.5, 0, 0.5, this.theme.rowHeight],
+        stroke: this.theme.tableBorderColor,
       });
-      rightBorder.x(tableDimensions.width);
-      this.headGrid.add(rightBorder);
+      this.headGrid.add(line);
     }
   }
-  */
 
   columnDefsToColumnStates(columnDefs: ColumnDef[]) {
     const result = [];

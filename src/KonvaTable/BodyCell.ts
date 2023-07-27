@@ -20,7 +20,8 @@ export class BodyCell extends Konva.Group {
       height: this.height(),
       padding: this.theme.cellPadding,
       text: config.text,
-      fontConfig: "normal"
+      fontConfig: "normal",
+      listening: false
     });
     this.add(this.text);
 
