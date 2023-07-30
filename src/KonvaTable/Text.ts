@@ -65,7 +65,7 @@ export class Text extends Konva.Shape {
     let glyphCount = 0;
     let charIndex = 0;
 
-    const y = (this.height() / 2) - (glyphHeight / 2);
+    const y = (this.height() / 2) - (glyphHeight / 2) + 1;
 
     ctx.textBaseline = "top";
     ctx.font = Utils.serializeFontSpecifier({
