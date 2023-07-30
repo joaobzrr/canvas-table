@@ -19,7 +19,7 @@ export class ObjectPool<T extends object> {
     this.make  = params.make;
     this.reset = params.reset ?? ((object: T) => object);
 
-    const { initialSize =  1000 } = params;
+    const { initialSize = 1000 } = params;
     for (let i = 0; i < initialSize; i++) {
       this.createElement();
     }
@@ -36,16 +36,11 @@ export class ObjectPool<T extends object> {
     return freeElement as Element;
   }
 
-  retrieve(element: T) {
-    this.freeElements++;
-    this.elements[--this.freeIndex] = element;
-    this.reset(element);
-  }
-
-  retrieveAll() {
-    const borrowed = this.freeIndex;
-    for (let i = borrowed - 1; i > 0; i--) {
-      this.retrieve(this.elements[i]);
+  retrieve(...elements: T[]) {
+    for (const element of elements) {
+      this.freeElements++;
+      this.elements[--this.freeIndex] = element;
+      this.reset(element);
     }
   }
 

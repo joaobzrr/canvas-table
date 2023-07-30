@@ -1,24 +1,27 @@
 import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
 import { TableState } from "./TableState";
+import { NodeManager } from "./NodeManager";
 import { Utils } from "./Utils";
 import { Theme } from "./types";
+import { Line } from "./Line";
 
 export interface HorizontalScrollbarConfig extends GroupConfig {
   tableState: TableState;
-  theme:      Theme
+  nodeManager: NodeManager;
+  theme: Theme
 }
 
 export class HorizontalScrollbar extends Konva.Group {
   tableState: TableState;
-  theme:      Theme;
-
+  nodeManager: NodeManager;
+  theme: Theme;
 
   bar:   Konva.Rect;
   track: Konva.Rect;
   thumb: Konva.Rect;
 
-  //borders: Konva.Group;
+  borderGroup: Konva.Group;
 
   maxThumbLeft = 0;
 
@@ -27,6 +30,8 @@ export class HorizontalScrollbar extends Konva.Group {
 
     this.tableState = config.tableState;
     this.theme = config.theme;
+
+    this.nodeManager = new NodeManager(this.theme);
 
     this.bar = new Konva.Rect({
       fill: this.theme.scrollBarTrackColor,
@@ -42,10 +47,8 @@ export class HorizontalScrollbar extends Konva.Group {
     });
     this.add(this.thumb);
 
-    /*
-    this.borders = new Konva.Group();
-    this.add(this.borders);
-    */
+    this.borderGroup = new Konva.Group();
+    this.add(this.borderGroup);
 
     this.on("widthChange heightChange", this.onResize.bind(this));
   }
@@ -89,30 +92,28 @@ export class HorizontalScrollbar extends Konva.Group {
     const trackRight = this.track.x() + this.track.width();
     this.maxThumbLeft = trackRight - thumbWidth;
 
+    const lines = this.borderGroup.children as Line[];
+    this.borderGroup.removeChildren();
+    this.nodeManager.retrieve("line", ...lines);
+
+    const topBorder = this.nodeManager.borrow("line");
+    topBorder.setAttrs({
+      width: this.width(),
+      height: 1,
+      fill: this.theme.tableBorderColor,
+    });
+    this.borderGroup.add(topBorder);
+
+    const rightBorder = this.nodeManager.borrow("line");
+    rightBorder.setAttrs({
+      x: this.width(),
+      width: 1,
+      height: this.height(),
+      fill: this.theme.tableBorderColor,
+    });
+    this.borderGroup.add(rightBorder);
+
     this.repositionThumb();
-
-    /*
-    this.borders.removeChildren();
-
-    const topBorder = this.nodeManager.getLine({
-      type: "horizontal",
-      length: this.width(),
-      thickness: 1,
-      color: this.theme.tableBorderColor,
-      key: "hsb-top-border"
-    });
-    this.borders.add(topBorder);
-
-    const rightBorder = this.nodeManager.getLine({
-      type: "vertical",
-      length: this.height(),
-      thickness: 1,
-      color: this.theme.tableBorderColor,
-      key: "hsb-right-border"
-    });
-    rightBorder.x(this.width());
-    this.borders.add(rightBorder);
-    */
   }
 
   onWheel() {

@@ -3,21 +3,25 @@ import { GroupConfig } from "konva/lib/Group";
 import { TableState } from "./TableState";
 import { Utils } from "./Utils";
 import { Theme } from "./types";
+import { NodeManager } from "./NodeManager";
+import { Line } from "./Line";
 
 export interface VerticalScrollbarConfig extends GroupConfig {
   tableState: TableState;
-  theme:      Theme;
+  nodeManager: NodeManager;
+  theme: Theme;
 }
 
 export class VerticalScrollbar extends Konva.Group {
   tableState: TableState;
-  theme:      Theme;
+  nodeManager: NodeManager;
+  theme: Theme;
 
   bar:   Konva.Rect;
   track: Konva.Rect;
   thumb: Konva.Rect;
 
-  // borders: Konva.Group;
+  borderGroup: Konva.Group;
 
   maxThumbTop = 0;
 
@@ -27,9 +31,10 @@ export class VerticalScrollbar extends Konva.Group {
     this.tableState = config.tableState;
     this.theme = config.theme;
 
+    this.nodeManager = config.nodeManager;
+
     this.bar = new Konva.Rect({
       fill: this.theme.scrollBarTrackColor,
-      strokeWidth: 1
     });
     this.add(this.bar);
 
@@ -41,10 +46,8 @@ export class VerticalScrollbar extends Konva.Group {
     });
     this.add(this.thumb);
 
-    /*
-    this.borders = new Konva.Group();
-    this.add(this.borders);
-    */
+    this.borderGroup = new Konva.Group();
+    this.add(this.borderGroup);
 
     this.on("widthChange heightChange", this.onResize.bind(this));
   }
@@ -88,38 +91,35 @@ export class VerticalScrollbar extends Konva.Group {
     const trackBottom = trackY + trackHeight;
     this.maxThumbTop = trackBottom - thumbHeight;
 
-    /*
-    this.borders.removeChildren();
-    const leftBorder = this.nodeManager.getLine({
-      type: "vertical",
-      length: this.height(),
-      thickness: 1,
-      color: this.theme.tableBorderColor,
-      key: "vsb-left-border"
+    const lines = this.borderGroup.children as Line[];
+    this.borderGroup.removeChildren();
+    this.nodeManager.retrieve("line", ...lines);
+
+    const leftBorder = this.nodeManager.borrow("line");
+    leftBorder.setAttrs({
+      width: 1,
+      height: this.height(),
+      fill: this.theme.tableBorderColor
     });
-    this.borders.add(leftBorder);
+    this.borderGroup.add(leftBorder);
     
-
-    const topBorder = this.nodeManager.getLine({
-      type: "horizontal",
-      length: this.width(),
-      thickness: 1,
-      color: this.theme.tableBorderColor,
-      key: "vsb-top-border"
+    const topBorder = this.nodeManager.borrow("line");
+    topBorder.setAttrs({
+      y: barY,
+      width: this.width(),
+      height: 1,
+      fill: this.theme.tableBorderColor
     });
-    topBorder.y(barY);
-    this.borders.add(topBorder);
+    this.borderGroup.add(topBorder);
 
-    const bottomBorder = this.nodeManager.getLine({
-      type: "horizontal",
-      length: this.width(),
-      thickness: 1,
-      color: this.theme.tableBorderColor,
-      key: "vsb-bottom-border"
+    const bottomBorder = this.nodeManager.borrow("line");
+    bottomBorder.setAttrs({
+      y: this.height(),
+      width: this.width(),
+      height: 1,
+      fill: this.theme.tableBorderColor,
     });
-    bottomBorder.y(this.height());
-    this.borders.add(bottomBorder);
-    */
+    this.borderGroup.add(bottomBorder);
 
     this.repositionThumb();
   }
