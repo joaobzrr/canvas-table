@@ -312,11 +312,9 @@ export class KonvaTable {
     const viewportDimensions = this.tableState.getViewportDimensions();
     const tableRanges        = this.tableState.getTableRanges();
 
-
     const lines = this.headGrid.children as Line[];
     this.headGrid.removeChildren();
     this.nodeAllocator.free("line", ...lines);
-
 
     const { columnLeft, columnRight } = tableRanges;
     for (let j = columnLeft + 1; j < columnRight; j++) {
