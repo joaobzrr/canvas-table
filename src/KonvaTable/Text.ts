@@ -23,7 +23,7 @@ export class Text extends Konva.Shape {
   graphemer: Graphemer;
 
   constructor(config: TextConfig) {
-    super({ ...config, listening: false });
+    super(config);
 
     this.text = config.text;
     this.fontConfig = config.fontConfig;
