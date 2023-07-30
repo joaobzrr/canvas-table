@@ -4,7 +4,7 @@ import { HeadCell } from "./HeadCell";
 import { Line } from "./Line";
 import { Theme } from "./types";
 
-export class NodeManager {
+export class NodeAllocator {
   bodyCellPool: ObjectPool<BodyCell>;
   headCellPool: ObjectPool<HeadCell>;
 
@@ -45,10 +45,10 @@ export class NodeManager {
     });
   }
 
-  public borrow(type: "bodyCell"): BodyCell;
-  public borrow(type: "headCell"): HeadCell;
-  public borrow(type: "line"): Line;
-  public borrow(type: string): any {
+  public allocate(type: "bodyCell"): BodyCell;
+  public allocate(type: "headCell"): HeadCell;
+  public allocate(type: "line"): Line;
+  public allocate(type: string): any {
     switch (type) {
       case "bodyCell": {
 	return this.bodyCellPool.borrow();
@@ -65,10 +65,10 @@ export class NodeManager {
     }
   }
 
-  public retrieve(type: "bodyCell", ...elements: BodyCell[]): void;
-  public retrieve(type: "headCell", ...elements: HeadCell[]): void;
-  public retrieve(type: "line", ...elements: Line[]): void;
-  public retrieve(type: string, ...elements: any[]) {
+  public free(type: "bodyCell", ...elements: BodyCell[]): void;
+  public free(type: "headCell", ...elements: HeadCell[]): void;
+  public free(type: "line", ...elements: Line[]): void;
+  public free(type: string, ...elements: any[]) {
     switch (type) {
       case "bodyCell": {
 	this.bodyCellPool.retrieve(...elements);

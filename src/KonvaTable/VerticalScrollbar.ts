@@ -4,18 +4,18 @@ import { TableState } from "./TableState";
 import { Utils } from "./Utils";
 import { Line } from "./Line";
 import { Rect } from "./Rect";
-import { NodeManager } from "./NodeManager";
+import { NodeAllocator } from "./NodeAllocator";
 import { Theme } from "./types";
 
 export interface VerticalScrollbarConfig extends GroupConfig {
   tableState: TableState;
-  nodeManager: NodeManager;
+  nodeAllocator: NodeAllocator;
   theme: Theme;
 }
 
 export class VerticalScrollbar extends Konva.Group {
   tableState: TableState;
-  nodeManager: NodeManager;
+  nodeAllocator: NodeAllocator;
   theme: Theme;
 
   bar:   Konva.Rect;
@@ -32,7 +32,7 @@ export class VerticalScrollbar extends Konva.Group {
     this.tableState = config.tableState;
     this.theme = config.theme;
 
-    this.nodeManager = config.nodeManager;
+    this.nodeAllocator = config.nodeAllocator;
 
     this.bar = new Konva.Rect({
       fill: this.theme.scrollBarTrackColor,
@@ -109,9 +109,9 @@ export class VerticalScrollbar extends Konva.Group {
   updateBorders() {
     const lines = this.borderGroup.children as Line[];
     this.borderGroup.removeChildren();
-    this.nodeManager.retrieve("line", ...lines);
+    this.nodeAllocator.free("line", ...lines);
 
-    const leftBorder = this.nodeManager.borrow("line");
+    const leftBorder = this.nodeAllocator.allocate("line");
     leftBorder.setAttrs({
       width: 1,
       height: this.height(),
@@ -119,7 +119,7 @@ export class VerticalScrollbar extends Konva.Group {
     });
     this.borderGroup.add(leftBorder);
     
-    const topBorder = this.nodeManager.borrow("line");
+    const topBorder = this.nodeAllocator.allocate("line");
     topBorder.setAttrs({
       y: this.bar.y(),
       width: this.width(),
@@ -128,7 +128,7 @@ export class VerticalScrollbar extends Konva.Group {
     });
     this.borderGroup.add(topBorder);
 
-    const bottomBorder = this.nodeManager.borrow("line");
+    const bottomBorder = this.nodeAllocator.allocate("line");
     bottomBorder.setAttrs({
       y: this.height(),
       width: this.width(),

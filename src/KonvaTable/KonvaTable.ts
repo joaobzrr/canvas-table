@@ -12,7 +12,7 @@ import { GlyphAtlas } from "./GlyphAtlas";
 import { Vector } from "./Vector";
 import { defaultTheme } from "./defaultTheme";
 import { KonvaTableOptions, ColumnDef, Dimensions, Theme } from "./types";
-import { NodeManager } from "./NodeManager";
+import { NodeAllocator } from "./NodeAllocator";
 
 export class KonvaTable {
   stage: Konva.Stage;
@@ -31,7 +31,7 @@ export class KonvaTable {
 
   headCellGroup: Konva.Group;
 
-  nodeManager: NodeManager;
+  nodeAllocator: NodeAllocator;
 
   hsb: HorizontalScrollbar;
   vsb: VerticalScrollbar;
@@ -67,21 +67,21 @@ export class KonvaTable {
     this.headCellGroup = new Konva.Group();
     this.head.add(this.headCellGroup);
 
-    this.nodeManager = new NodeManager(this.theme);
+    this.nodeAllocator = new NodeAllocator(this.theme);
 
     this.hsb = new HorizontalScrollbar({
-      tableState:  this.tableState,
-      nodeManager: this.nodeManager,
-      theme:       this.theme,
-      height:      this.theme.scrollBarThickness
+      tableState: this.tableState,
+      nodeAllocator: this.nodeAllocator,
+      theme: this.theme,
+      height: this.theme.scrollBarThickness
     });
     this.layer.add(this.hsb);
 
     this.vsb = new VerticalScrollbar({
-      tableState:  this.tableState,
-      nodeManager: this.nodeManager,
-      theme:       this.theme,
-      width:       this.theme.scrollBarThickness
+      tableState: this.tableState,
+      nodeAllocator: this.nodeAllocator,
+      theme: this.theme,
+      width: this.theme.scrollBarThickness
     });
     this.layer.add(this.vsb);
 
@@ -175,12 +175,12 @@ export class KonvaTable {
 
     const lines = this.bodyGrid.children as Line[];
     this.bodyGrid.removeChildren();
-    this.nodeManager.retrieve("line", ...lines);
+    this.nodeAllocator.free("line", ...lines);
 
     const hLineLength = Math.min(this.body.width(), tableDimensions.width);
 
     {
-      const line = this.nodeManager.borrow("line");
+      const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
 	x: 0,
 	y: 0,
@@ -194,7 +194,7 @@ export class KonvaTable {
     for (let i = tableRanges.rowTop + 1; i < tableRanges.rowBottom; i++) {
       const y = i * this.theme.rowHeight - scrollPosition.y;
 
-      const line = this.nodeManager.borrow("line");
+      const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
 	x: 0,
 	y,
@@ -206,7 +206,7 @@ export class KonvaTable {
     }
 
     if (viewportDimensions.height > tableDimensions.height) {
-      const line = this.nodeManager.borrow("line");
+      const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
 	x: 0,
 	y: tableDimensions.height,
@@ -223,7 +223,7 @@ export class KonvaTable {
       const columnState = this.tableState.getColumnState(j);
       const x = columnState.position - scrollPosition.x;
 
-      const line = this.nodeManager.borrow("line");
+      const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
 	x,
 	y: 0,
@@ -235,7 +235,7 @@ export class KonvaTable {
     }
 
     if (viewportDimensions.width > tableDimensions.width) {
-      const line = this.nodeManager.borrow("line");
+      const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
 	x: tableDimensions.width,
 	y: 0,
@@ -254,7 +254,7 @@ export class KonvaTable {
 
     const bodyCells = this.bodyCellGroup.children as BodyCell[];
     this.bodyCellGroup.removeChildren();
-    this.nodeManager.retrieve("bodyCell", ...bodyCells);
+    this.nodeAllocator.free("bodyCell", ...bodyCells);
 
     const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
     for (let rowIndex = rowTop; rowIndex < rowBottom; rowIndex++) {
@@ -265,7 +265,7 @@ export class KonvaTable {
         const columnState = this.tableState.getColumnState(colIndex);
         const x = columnState.position - scrollPosition.x;
 
-        const cell = this.nodeManager.borrow("bodyCell");
+        const cell = this.nodeAllocator.allocate("bodyCell");
 	this.bodyCellGroup.add(cell);
 
 	cell.setAttrs(({
@@ -285,7 +285,7 @@ export class KonvaTable {
     const rowHeight      = this.tableState.getRowHeight();
 
     const headCells = this.headCellGroup.children as HeadCell[];
-    this.nodeManager.retrieve("headCell", ...headCells);
+    this.nodeAllocator.free("headCell", ...headCells);
     this.headCellGroup.removeChildren();
 
     const { columnLeft, columnRight } = tableRanges;
@@ -293,7 +293,7 @@ export class KonvaTable {
       const columnState = this.tableState.getColumnState(j);
       const x = columnState.position - scrollPosition.x;
 
-      const cell = this.nodeManager.borrow("headCell");
+      const cell = this.nodeAllocator.allocate("headCell");
       this.headCellGroup.add(cell);
 
       cell.setAttrs({
@@ -312,14 +312,18 @@ export class KonvaTable {
     const viewportDimensions = this.tableState.getViewportDimensions();
     const tableRanges        = this.tableState.getTableRanges();
 
+
+    const lines = this.headGrid.children as Line[];
     this.headGrid.removeChildren();
+    this.nodeAllocator.free("line", ...lines);
+
 
     const { columnLeft, columnRight } = tableRanges;
     for (let j = columnLeft + 1; j < columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
       const x = columnState.position - scrollPosition.x;
 
-      const line = this.nodeManager.borrow("line");
+      const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
 	x,
 	width: 1,
@@ -330,7 +334,7 @@ export class KonvaTable {
     }
 
     if (viewportDimensions.width > tableDimensions.width) {
-      const line = this.nodeManager.borrow("line");
+      const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
 	x: tableDimensions.width,
 	width: 1,

@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
 import { TableState } from "./TableState";
-import { NodeManager } from "./NodeManager";
+import { NodeAllocator } from "./NodeAllocator";
 import { Line } from "./Line";
 import { Rect } from "./Rect";
 import { Utils } from "./Utils";
@@ -9,13 +9,13 @@ import { Theme } from "./types";
 
 export interface HorizontalScrollbarConfig extends GroupConfig {
   tableState: TableState;
-  nodeManager: NodeManager;
+  nodeAllocator: NodeAllocator;
   theme: Theme
 }
 
 export class HorizontalScrollbar extends Konva.Group {
   tableState: TableState;
-  nodeManager: NodeManager;
+  nodeAllocator: NodeAllocator;
   theme: Theme;
 
   bar:   Konva.Rect;
@@ -32,7 +32,7 @@ export class HorizontalScrollbar extends Konva.Group {
     this.tableState = config.tableState;
     this.theme = config.theme;
 
-    this.nodeManager = new NodeManager(this.theme);
+    this.nodeAllocator = new NodeAllocator(this.theme);
 
     this.bar = new Konva.Rect({ fill: this.theme.scrollBarTrackColor });
     this.add(this.bar);
@@ -105,9 +105,9 @@ export class HorizontalScrollbar extends Konva.Group {
   updateBorders() {
     const lines = this.borderGroup.children as Line[];
     this.borderGroup.removeChildren();
-    this.nodeManager.retrieve("line", ...lines);
+    this.nodeAllocator.free("line", ...lines);
 
-    const topBorder = this.nodeManager.borrow("line");
+    const topBorder = this.nodeAllocator.allocate("line");
     topBorder.setAttrs({
       width: this.width(),
       height: 1,
@@ -115,7 +115,7 @@ export class HorizontalScrollbar extends Konva.Group {
     });
     this.borderGroup.add(topBorder);
 
-    const rightBorder = this.nodeManager.borrow("line");
+    const rightBorder = this.nodeAllocator.allocate("line");
     rightBorder.setAttrs({
       x: this.width(),
       width: 1,
