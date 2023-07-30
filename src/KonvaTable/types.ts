@@ -3,6 +3,13 @@ export type VectorLike = {
   y: number;
 }
 
+export type RectLike = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export type Dimensions = {
   width:  number;
   height: number;

@@ -2,9 +2,10 @@ import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
 import { TableState } from "./TableState";
 import { Utils } from "./Utils";
-import { Theme } from "./types";
-import { NodeManager } from "./NodeManager";
 import { Line } from "./Line";
+import { Rect } from "./Rect";
+import { NodeManager } from "./NodeManager";
+import { Theme } from "./types";
 
 export interface VerticalScrollbarConfig extends GroupConfig {
   tableState: TableState;
@@ -18,8 +19,8 @@ export class VerticalScrollbar extends Konva.Group {
   theme: Theme;
 
   bar:   Konva.Rect;
-  track: Konva.Rect;
   thumb: Konva.Rect;
+  track: Rect;
 
   borderGroup: Konva.Group;
 
@@ -38,8 +39,7 @@ export class VerticalScrollbar extends Konva.Group {
     });
     this.add(this.bar);
 
-    this.track = new Konva.Rect();
-    this.add(this.track);
+    this.track = Rect.create();
 
     this.thumb = new Konva.Rect({
       fill: this.theme.scrollBarThumbColor
@@ -53,10 +53,18 @@ export class VerticalScrollbar extends Konva.Group {
   }
 
   onResize() {
-    const { height: viewportHeight } = this.tableState.viewportDimensions;
-    const { height: scrollHeight } = this.tableState.scrollDimensions;
+    this.updateBar();
+    this.updateTrack();
+    this.updateThumb();
+    this.updateBorders();
+    this.repositionThumb();
+  }
 
-    const barY = this.theme.rowHeight;
+  onWheel() {
+    this.repositionThumb();
+  }
+
+  updateBar() {
     const barWidth = this.theme.scrollBarThickness;
     const barHeight = this.height() - this.theme.rowHeight;
 
@@ -65,32 +73,40 @@ export class VerticalScrollbar extends Konva.Group {
       y: this.theme.rowHeight,
       width: barWidth,
       height: barHeight,
-    });
+    })
+  }
 
+  updateTrack() {
     const trackX = this.theme.scrollBarTrackMargin + 1;
-    const trackY = barY + this.theme.scrollBarTrackMargin;
-    const trackWidth  = barWidth  - trackX - this.theme.scrollBarTrackMargin;
-    const trackHeight = barHeight - (this.theme.scrollBarTrackMargin * 2);
+    const trackY = this.bar.y() + this.theme.scrollBarTrackMargin;
+    const trackWidth  = this.bar.width()  - trackX - this.theme.scrollBarTrackMargin;
+    const trackHeight = this.bar.height() - (this.theme.scrollBarTrackMargin * 2);
 
-    this.track.setAttrs({
+    this.track.set({
       x: trackX,
       y: trackY,
       width: trackWidth,
       height: trackHeight
     });
+  }
 
-    const thumbHeight = (viewportHeight / scrollHeight) * trackHeight;
+  updateThumb() {
+    const { height: viewportHeight } = this.tableState.viewportDimensions;
+    const { height: scrollHeight } = this.tableState.scrollDimensions;
+
+    const thumbHeight = (viewportHeight / scrollHeight) * this.track.height;
 
     this.thumb.setAttrs({
-      x: trackX,
-      y: trackY,
-      width: trackWidth,
+      x: this.track.x,
+      y: this.track.y,
+      width: this.track.width,
       height: thumbHeight,
     });
 
-    const trackBottom = trackY + trackHeight;
-    this.maxThumbTop = trackBottom - thumbHeight;
+    this.maxThumbTop = this.track.bottom - thumbHeight;
+  }
 
+  updateBorders() {
     const lines = this.borderGroup.children as Line[];
     this.borderGroup.removeChildren();
     this.nodeManager.retrieve("line", ...lines);
@@ -105,7 +121,7 @@ export class VerticalScrollbar extends Konva.Group {
     
     const topBorder = this.nodeManager.borrow("line");
     topBorder.setAttrs({
-      y: barY,
+      y: this.bar.y(),
       width: this.width(),
       height: 1,
       fill: this.theme.tableBorderColor
@@ -120,16 +136,10 @@ export class VerticalScrollbar extends Konva.Group {
       fill: this.theme.tableBorderColor,
     });
     this.borderGroup.add(bottomBorder);
-
-    this.repositionThumb();
-  }
-
-  onWheel() {
-    this.repositionThumb();
   }
 
   repositionThumb() {
     const { y: normalizedScrollTop } = this.tableState.normalizedScrollPosition;
-    this.thumb.y(Utils.scale(normalizedScrollTop, 0, 1, this.track.y(), this.maxThumbTop));
+    this.thumb.y(Utils.scale(normalizedScrollTop, 0, 1, this.track.y, this.maxThumbTop));
   }
 }
