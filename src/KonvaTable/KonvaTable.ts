@@ -13,6 +13,7 @@ import { GlyphAtlas } from "./GlyphAtlas";
 import { NodeAllocator } from "./NodeAllocator";
 import { Vector } from "./Vector";
 import { defaultTheme } from "./defaultTheme";
+import { columnResizerHalfWidth } from "./constants";
 import { KonvaTableOptions, ColumnDef, Dimensions, Theme } from "./types";
 
 export class KonvaTable {
@@ -412,7 +413,7 @@ export class KonvaTable {
     const { columnLeft, columnRight } = tableRanges;
     for (let j = columnLeft; j < columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
-      const x = columnState.position + columnState.width - scrollPosition.x;
+      const x = columnState.position + columnState.width - scrollPosition.x - columnResizerHalfWidth;
 
       const resizer = this.nodeAllocator.allocate("columnResizer");
       this.columnResizerGroup.add(resizer);
@@ -420,7 +421,7 @@ export class KonvaTable {
       resizer.setAttrs({
 	x,
 	y: 0,
-	width: 10,
+	width: columnResizerHalfWidth * 2,
 	height: this.theme.rowHeight,
       });
     }

@@ -29,12 +29,20 @@ export class NodeAllocator {
 
     this.headCellPool = new ObjectPool({
       initialSize: 20,
-      make: () => new HeadCell({ theme: this.theme })
+      make: () => new HeadCell({ theme: this.theme }),
+      reset: (cell: HeadCell) => {
+	cell.position({ x: 0, y: 0 });
+	return cell;
+      }
     });
 
     this.columnResizerPool = new ObjectPool({
       initialSize: 20,
-      make: () => new ColumnResizer()
+      make: () => new ColumnResizer(),
+      reset: (resizer: ColumnResizer) => {
+	resizer.position({ x: 0, y: 0 });
+	return resizer;
+      }
     });
 
     this.lineImageCache = new Map();
