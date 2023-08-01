@@ -25,7 +25,11 @@ export class ObjectPool<T extends object> {
     }
   }
 
-  borrow<Element extends T>() {
+  get size() {
+    return this.elements.length;
+  }
+
+  public allocate<Element extends T>() {
     if (this.freeElements / this.elements.length <= MINIMUM_PERCENT_FREE / 100) {
       this.increasePoolSize();
     }
@@ -36,7 +40,7 @@ export class ObjectPool<T extends object> {
     return freeElement as Element;
   }
 
-  retrieve(...elements: T[]) {
+  public free(...elements: T[]) {
     for (const element of elements) {
       this.freeElements++;
       this.elements[--this.freeIndex] = element;
@@ -44,7 +48,7 @@ export class ObjectPool<T extends object> {
     }
   }
 
-  increasePoolSize() {
+  private increasePoolSize() {
     const increaseSize = Math.round(
       (INCREASE_PERCENT * this.elements.length) / 100);
 
@@ -53,13 +57,9 @@ export class ObjectPool<T extends object> {
     }
   }
 
-  createElement() {
+  private createElement() {
     this.freeElements++;
     this.elements.push(this.reset(this.make()));
     return this.elements[this.elements.length - 1];
-  }
-
-  get size() {
-    return this.elements.length;
   }
 }

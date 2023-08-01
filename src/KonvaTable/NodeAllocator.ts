@@ -2,11 +2,13 @@ import { ObjectPool } from "./ObjectPool";
 import { BodyCell } from "./BodyCell";
 import { HeadCell } from "./HeadCell";
 import { Line } from "./Line";
+import { ColumnResizer } from "./ColumnResizer";
 import { Theme } from "./types";
 
 export class NodeAllocator {
   bodyCellPool: ObjectPool<BodyCell>;
   headCellPool: ObjectPool<HeadCell>;
+  columnResizerPool: ObjectPool<ColumnResizer>;
 
   lineImageCache: Map<string, ImageBitmap>;
   linePool: ObjectPool<Line>;
@@ -30,6 +32,11 @@ export class NodeAllocator {
       make: () => new HeadCell({ theme: this.theme })
     });
 
+    this.columnResizerPool = new ObjectPool({
+      initialSize: 20,
+      make: () => new ColumnResizer()
+    });
+
     this.lineImageCache = new Map();
 
     this.linePool = new ObjectPool({
@@ -48,16 +55,20 @@ export class NodeAllocator {
   public allocate(type: "bodyCell"): BodyCell;
   public allocate(type: "headCell"): HeadCell;
   public allocate(type: "line"): Line;
+  public allocate(type: "columnResizer"): ColumnResizer;
   public allocate(type: string): any {
     switch (type) {
       case "bodyCell": {
-	return this.bodyCellPool.borrow();
+	return this.bodyCellPool.allocate();
       }
       case "headCell": {
-	return this.headCellPool.borrow();
+	return this.headCellPool.allocate();
       }
       case "line": {
-	return this.linePool.borrow();
+	return this.linePool.allocate();
+      }
+      case "columnResizer": {
+	return this.columnResizerPool.allocate();
       }
       default: {
 	throw new Error(`Unknown node type "${type}"`);
@@ -68,16 +79,20 @@ export class NodeAllocator {
   public free(type: "bodyCell", ...elements: BodyCell[]): void;
   public free(type: "headCell", ...elements: HeadCell[]): void;
   public free(type: "line", ...elements: Line[]): void;
+  public free(type: "columnResizer", ...elements: ColumnResizer[]): void;
   public free(type: string, ...elements: any[]) {
     switch (type) {
       case "bodyCell": {
-	this.bodyCellPool.retrieve(...elements);
+	this.bodyCellPool.free(...elements);
       } break;
       case "headCell": {
-	this.headCellPool.retrieve(...elements);
+	this.headCellPool.free(...elements);
       } break;
       case "line": {
-	this.linePool.retrieve(...elements);
+	this.linePool.free(...elements);
+      } break;
+      case "columnResizer": {
+	this.columnResizerPool.free(...elements);
       } break;
       default: {
 	throw new Error(`Unknown node type "${type}"`);

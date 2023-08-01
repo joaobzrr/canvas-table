@@ -7,12 +7,13 @@ import { HorizontalScrollbar } from "./HorizontalScrollbar";
 import { VerticalScrollbar } from "./VerticalScrollbar";
 import { Text } from "./Text";
 import { Line } from "./Line";
+import { ColumnResizer } from "./ColumnResizer";
 import { TableState } from "./TableState";
 import { GlyphAtlas } from "./GlyphAtlas";
+import { NodeAllocator } from "./NodeAllocator";
 import { Vector } from "./Vector";
 import { defaultTheme } from "./defaultTheme";
 import { KonvaTableOptions, ColumnDef, Dimensions, Theme } from "./types";
-import { NodeAllocator } from "./NodeAllocator";
 
 export class KonvaTable {
   stage: Konva.Stage;
@@ -29,6 +30,8 @@ export class KonvaTable {
   header: Konva.Group;
   headLineGroup: Konva.Group;
   headCellGroup: Konva.Group;
+
+  columnResizerGroup: Konva.Group;
 
   nodeAllocator: NodeAllocator;
 
@@ -68,6 +71,9 @@ export class KonvaTable {
 
     this.headCellGroup = new Konva.Group();
     this.header.add(this.headCellGroup);
+
+    this.columnResizerGroup = new Konva.Group();
+    this.head.add(this.columnResizerGroup);
 
     this.nodeAllocator = new NodeAllocator(this.theme);
 
@@ -118,6 +124,8 @@ export class KonvaTable {
 
     this.updateBodyCells();
     this.updateHeadCells();
+
+    this.updateColumnResizers();
 
     this.hsb.onWheel();
     this.vsb.onWheel();
@@ -182,6 +190,8 @@ export class KonvaTable {
 
     this.updateBodyCells();
     this.updateHeadCells();
+
+    this.updateColumnResizers();
   }
 
   updateBodyGrid() {
@@ -387,6 +397,31 @@ export class KonvaTable {
 	height: rowHeight,
 	text: columnState.title,
 	theme: this.theme,
+      });
+    }
+  }
+
+  updateColumnResizers() {
+    const scrollPosition = this.tableState.getScrollPosition();
+    const tableRanges = this.tableState.getTableRanges();
+
+    const resizers = this.columnResizerGroup.children as ColumnResizer[];
+    this.nodeAllocator.free("columnResizer", ...resizers);
+    this.columnResizerGroup.removeChildren();
+
+    const { columnLeft, columnRight } = tableRanges;
+    for (let j = columnLeft; j < columnRight; j++) {
+      const columnState = this.tableState.getColumnState(j);
+      const x = columnState.position + columnState.width - scrollPosition.x;
+
+      const resizer = this.nodeAllocator.allocate("columnResizer");
+      this.columnResizerGroup.add(resizer);
+
+      resizer.setAttrs({
+	x,
+	y: 0,
+	width: 10,
+	height: this.theme.rowHeight,
       });
     }
   }
