@@ -17,6 +17,14 @@ export class ColumnResizer extends Konva.Group {
     });
     this.add(this.rect);
 
+    this.on("mouseenter", () => {
+      this.getStage()!.container().style.cursor = "col-resize";
+    });
+
+    this.on("mouseleave", () => {
+      this.getStage()!.container().style.cursor = "default";
+    });
+
     this.on("widthChange heightChange", () => {
       this.rect.size(this.size());
     });
