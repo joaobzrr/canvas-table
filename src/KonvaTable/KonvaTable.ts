@@ -21,14 +21,13 @@ export class KonvaTable {
   tableState: TableState;
   theme: Theme;
 
-  body:     Konva.Group;
-  bodyGrid: Konva.Group;
-
+  body: Konva.Group;
+  bodyLineGroup: Konva.Group;
   bodyCellGroup: Konva.Group;
 
-  head:      Konva.Group;
-  headGrid:  Konva.Group;
-
+  head: Konva.Group;
+  header: Konva.Group;
+  headLineGroup: Konva.Group;
   headCellGroup: Konva.Group;
 
   nodeAllocator: NodeAllocator;
@@ -52,8 +51,8 @@ export class KonvaTable {
     this.body = new Konva.Group({ y: this.theme.rowHeight });
     this.layer.add(this.body);
 
-    this.bodyGrid = new Konva.Group();
-    this.body.add(this.bodyGrid);
+    this.bodyLineGroup = new Konva.Group();
+    this.body.add(this.bodyLineGroup);
 
     this.bodyCellGroup = new Konva.Group();
     this.body.add(this.bodyCellGroup);
@@ -61,11 +60,14 @@ export class KonvaTable {
     this.head = new Konva.Group({ height: this.theme.rowHeight });
     this.layer.add(this.head);
 
-    this.headGrid = new Konva.Group();
-    this.head.add(this.headGrid);
+    this.header = new Konva.Group({ height: this.theme.rowHeight });
+    this.head.add(this.header);
+
+    this.headLineGroup = new Konva.Group();
+    this.head.add(this.headLineGroup);
 
     this.headCellGroup = new Konva.Group();
-    this.head.add(this.headCellGroup);
+    this.header.add(this.headCellGroup);
 
     this.nodeAllocator = new NodeAllocator(this.theme);
 
@@ -143,10 +145,23 @@ export class KonvaTable {
     this.tableState.setViewportDimensions({ width: bodyWidth, height: bodyHeight });
 
     this.body.size({ width: bodyWidth, height: bodyHeight });
-    this.body.clip({ x: 0, y: 0, width: bodyWidth, height: bodyHeight });
+    this.body.clip({
+      x: 0,
+      y: 0,
+      width: bodyWidth,
+      height: bodyHeight
+    });
 
     this.head.width(bodyWidth);
-    this.head.clip({ x: 0, y: 0, width: this.head.width(), height: this.head.height() });
+
+    const tableDimensions = this.tableState.getTableDimensions();
+    this.header.width(Math.min(bodyWidth, tableDimensions.width));
+    this.header.clip({
+      x: 0,
+      y: 0,
+      width: this.header.width(),
+      height: this.header.height()
+    });
 
     this.hsb.setAttrs({
       y: stageHeight - this.theme.scrollBarThickness,
@@ -156,7 +171,9 @@ export class KonvaTable {
 
     this.vsb.setAttrs({
       x: bodyWidth,
-      height: stageHeight - this.theme.scrollBarThickness,
+      y: this.theme.rowHeight,
+      width: this.theme.scrollBarThickness,
+      height: stageHeight - this.theme.rowHeight - this.theme.scrollBarThickness,
       visible: vsbIsVisible
     });
 
@@ -173,24 +190,13 @@ export class KonvaTable {
     const viewportDimensions = this.tableState.getViewportDimensions();
     const tableRanges        = this.tableState.getTableRanges();
 
-    const lines = this.bodyGrid.children as Line[];
-    this.bodyGrid.removeChildren();
+    const lines = this.bodyLineGroup.children as Line[];
+    this.bodyLineGroup.removeChildren();
     this.nodeAllocator.free("line", ...lines);
 
     const hLineLength = Math.min(this.body.width(), tableDimensions.width);
 
-    {
-      const line = this.nodeAllocator.allocate("line");
-      line.setAttrs({
-	x: 0,
-	y: 0,
-	width: hLineLength,
-	height: 1,
-	fill: this.theme.tableBorderColor
-      });
-      this.bodyGrid.add(line);
-    }
-
+    // Draw body horizontal lines
     for (let i = tableRanges.rowTop + 1; i < tableRanges.rowBottom; i++) {
       const y = i * this.theme.rowHeight - scrollPosition.y;
 
@@ -202,9 +208,10 @@ export class KonvaTable {
 	height: 1,
         fill: this.theme.tableBorderColor
       });
-      this.bodyGrid.add(line);
+      this.bodyLineGroup.add(line);
     }
 
+    // Draw last body horizontal line
     if (viewportDimensions.height > tableDimensions.height) {
       const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
@@ -214,11 +221,12 @@ export class KonvaTable {
 	height: 1,
 	fill: this.theme.tableBorderColor
       });
-      this.bodyGrid.add(line);
+      this.bodyLineGroup.add(line);
     }
 
     const vLineLength = Math.min(this.body.height(), tableDimensions.height);
 
+    // Draw body vertical lines
     for (let j = tableRanges.columnLeft + 1; j < tableRanges.columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
       const x = columnState.position - scrollPosition.x;
@@ -231,9 +239,10 @@ export class KonvaTable {
 	height: vLineLength,
 	fill: this.theme.tableBorderColor
       });
-      this.bodyGrid.add(line);
+      this.bodyLineGroup.add(line);
     }
 
+    // Draw last body vertical line
     if (viewportDimensions.width > tableDimensions.width) {
       const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
@@ -243,7 +252,83 @@ export class KonvaTable {
 	height: vLineLength,
         fill: this.theme.tableBorderColor,
       });
-      this.bodyGrid.add(line);
+      this.bodyLineGroup.add(line);
+    }
+  }
+
+  updateHeadGrid() {
+    const scrollPosition     = this.tableState.getScrollPosition();
+    const tableDimensions    = this.tableState.getTableDimensions();
+    const viewportDimensions = this.tableState.getViewportDimensions();
+    const tableRanges        = this.tableState.getTableRanges();
+
+    const lines = this.headLineGroup.children as Line[];
+    this.headLineGroup.removeChildren();
+    this.nodeAllocator.free("line", ...lines);
+
+    // Draw bottom head border
+    {
+      const line = this.nodeAllocator.allocate("line");
+      line.setAttrs({
+	x: 0,
+	y: this.head.height(),
+	width: this.head.width(),
+	height: 1,
+	fill: this.theme.tableBorderColor
+      });
+      this.headLineGroup.add(line);
+    }
+
+    // Draw head vertical lines
+    const { columnLeft, columnRight } = tableRanges;
+    for (let j = columnLeft + 1; j < columnRight; j++) {
+      const columnState = this.tableState.getColumnState(j);
+      const x = columnState.position - scrollPosition.x;
+
+      const line = this.nodeAllocator.allocate("line");
+      line.setAttrs({
+	x,
+	width: 1,
+	height: this.theme.rowHeight,
+        fill: this.theme.tableBorderColor,
+      });
+      this.headLineGroup.add(line);
+    }
+
+    // Draw right header border
+    if (viewportDimensions.width > tableDimensions.width) {
+      const line = this.nodeAllocator.allocate("line");
+      line.setAttrs({
+	x: tableDimensions.width,
+	width: 1,
+	height: this.theme.rowHeight,
+        fill: this.theme.tableBorderColor
+      });
+      this.headLineGroup.add(line);
+    }
+
+    // Draw right head border
+    {
+      const line = this.nodeAllocator.allocate("line");
+      line.setAttrs({
+	x: this.head.width(),
+	width: 1,
+	height: this.head.height(),
+	fill: this.theme.tableBorderColor
+      });
+      this.headLineGroup.add(line);
+    }
+
+    // Draw right header border
+    if (viewportDimensions.width > tableDimensions.width) {
+      const line = this.nodeAllocator.allocate("line");
+      line.setAttrs({
+	x: tableDimensions.width,
+	width: 1,
+	height: this.theme.rowHeight,
+        fill: this.theme.tableBorderColor
+      });
+      this.headLineGroup.add(line);
     }
   }
 
@@ -303,43 +388,6 @@ export class KonvaTable {
 	text: columnState.title,
 	theme: this.theme,
       });
-    }
-  }
-
-  updateHeadGrid() {
-    const scrollPosition     = this.tableState.getScrollPosition();
-    const tableDimensions    = this.tableState.getTableDimensions();
-    const viewportDimensions = this.tableState.getViewportDimensions();
-    const tableRanges        = this.tableState.getTableRanges();
-
-    const lines = this.headGrid.children as Line[];
-    this.headGrid.removeChildren();
-    this.nodeAllocator.free("line", ...lines);
-
-    const { columnLeft, columnRight } = tableRanges;
-    for (let j = columnLeft + 1; j < columnRight; j++) {
-      const columnState = this.tableState.getColumnState(j);
-      const x = columnState.position - scrollPosition.x;
-
-      const line = this.nodeAllocator.allocate("line");
-      line.setAttrs({
-	x,
-	width: 1,
-	height: this.theme.rowHeight,
-        fill: this.theme.tableBorderColor,
-      });
-      this.headGrid.add(line);
-    }
-
-    if (viewportDimensions.width > tableDimensions.width) {
-      const line = this.nodeAllocator.allocate("line");
-      line.setAttrs({
-	x: tableDimensions.width,
-	width: 1,
-	height: this.theme.rowHeight,
-        fill: this.theme.tableBorderColor
-      });
-      this.headGrid.add(line);
     }
   }
 

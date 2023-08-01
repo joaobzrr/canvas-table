@@ -65,15 +65,7 @@ export class VerticalScrollbar extends Konva.Group {
   }
 
   updateBar() {
-    const barWidth = this.theme.scrollBarThickness;
-    const barHeight = this.height() - this.theme.rowHeight;
-
-    this.bar.setAttrs({
-      x: 0,
-      y: this.theme.rowHeight,
-      width: barWidth,
-      height: barHeight,
-    })
+    this.bar.setAttrs({ width: this.width(), height: this.height() });
   }
 
   updateTrack() {
@@ -113,6 +105,7 @@ export class VerticalScrollbar extends Konva.Group {
 
     const leftBorder = this.nodeAllocator.allocate("line");
     leftBorder.setAttrs({
+      y: this.bar.y(),
       width: 1,
       height: this.height(),
       fill: this.theme.tableBorderColor
