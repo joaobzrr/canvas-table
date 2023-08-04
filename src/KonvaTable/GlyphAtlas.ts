@@ -49,7 +49,7 @@ export class GlyphAtlas {
 
     const metrics = ctx.measureText(GlyphAtlas.latinChars);
     const glyphWidth = ctx.measureText("M").width;
-    const glyphHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    const glyphHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
 
     // @Note: Changing the canvas dimensions resets the context
     canvas.width = metrics.width;
