@@ -45,23 +45,26 @@ export class GlyphAtlas {
       ctx.fillStyle = GlyphAtlas.theme.fontColor;
     }
 
-    // @Note Setup context for taking measurements
     setupContext({ fontFamily, fontSize });
 
     const metrics = ctx.measureText(GlyphAtlas.latinChars);
-    canvas.width = metrics.width;
-
+    const glyphWidth = ctx.measureText("M").width;
     const glyphHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+
+    // @Note: Changing the canvas dimensions resets the context
+    canvas.width = metrics.width;
     canvas.height = glyphHeight * GlyphAtlas.fontConfigs.length;
 
     for (const [index, config] of GlyphAtlas.fontConfigs.entries()) {
       setupContext({ ...config, fontFamily, fontSize });
-      ctx.fillText(GlyphAtlas.latinChars, 0, index * glyphHeight);
+      const y = index * glyphHeight;
+      for (let i = 0; i < GlyphAtlas.latinChars.length; i++) {
+          const x = i * glyphWidth;
+          ctx.fillText(GlyphAtlas.latinChars.charAt(i), x, y);
+      }
     }
 
     const bitmap = await createImageBitmap(canvas);
-    const glyphWidth = ctx.measureText("M").width;
-
     return new GlyphAtlas(bitmap, glyphWidth, glyphHeight);
   }
 
