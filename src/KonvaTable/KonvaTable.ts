@@ -416,13 +416,13 @@ export class KonvaTable {
       this.columnResizerGroup.add(resizer);
 
       const onDrag = (dx: number) => {
-	  console.log(dx);
+	console.log(dx);
       }
 
       resizer.setAttrs({
 	x,
 	y: 0,
-	width: columnResizerHalfWidth * 2,
+	width: (columnResizerHalfWidth * 2) + 1,
 	height: this.theme.rowHeight,
 	onDrag
       });
