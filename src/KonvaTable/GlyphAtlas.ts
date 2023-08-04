@@ -51,13 +51,17 @@ export class GlyphAtlas {
     const glyphWidth = ctx.measureText("M").width;
     const glyphHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
 
-    // @Note: Changing the canvas dimensions resets the context
+    // @Note Changing the canvas dimensions resets the context
     canvas.width = metrics.width;
     canvas.height = glyphHeight * GlyphAtlas.fontConfigs.length;
 
     for (const [index, config] of GlyphAtlas.fontConfigs.entries()) {
       setupContext({ ...config, fontFamily, fontSize });
-      const y = index * glyphHeight;
+
+      // @Note Move down one more pixel to avoid including pixels
+      // from the bottom row
+      const y = index * (glyphHeight + 1);
+
       for (let i = 0; i < GlyphAtlas.latinChars.length; i++) {
           const x = i * glyphWidth;
           ctx.fillText(GlyphAtlas.latinChars.charAt(i), x, y);

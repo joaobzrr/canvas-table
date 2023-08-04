@@ -78,13 +78,16 @@ export class Text extends Konva.Shape {
       const codepoint = this.text.codePointAt(charIndex)!;
       const char = text.charAt(charIndex);
 
-      const x = glyphCount * glyphWidth + padding;
+      const isPrintable = char !== " ";
+      if (isPrintable) {
+	const x = glyphCount * glyphWidth + padding;
 
-      if (codepoint <= 0xFF) {
-	const rect = glyphAtlas.getGlyphBitmapRect(this.fontConfig, char);
-	ctx.drawImage(bitmap, rect.x, rect.y, rect.width, rect.height, x, y, glyphWidth, glyphHeight);
-      } else {
-	ctx.fillText(char, x, y, glyphWidth);
+	if (codepoint <= 0xFF) {
+	  const rect = glyphAtlas.getGlyphBitmapRect(this.fontConfig, char);
+	  ctx.drawImage(bitmap, rect.x, rect.y, rect.width, rect.height, x, y, glyphWidth, glyphHeight);
+	} else {
+	  ctx.fillText(char, x, y, glyphWidth);
+	}
       }
 
       const isSingleCodePoint = codepoint <= 0xFFFF;
