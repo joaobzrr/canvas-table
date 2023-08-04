@@ -82,6 +82,7 @@ export class KonvaTable {
       tableState: this.tableState,
       nodeAllocator: this.nodeAllocator,
       theme: this.theme,
+      y: this.theme.rowHeight,
       height: this.theme.scrollBarThickness
     });
     this.layer.add(this.hsb);
@@ -122,10 +123,8 @@ export class KonvaTable {
 
     this.updateBodyGrid();
     this.updateHeadGrid();
-
     this.updateBodyCells();
     this.updateHeadCells();
-
     this.updateColumnResizers();
 
     this.hsb.onWheel();
@@ -188,10 +187,8 @@ export class KonvaTable {
 
     this.updateBodyGrid();
     this.updateHeadGrid();
-
     this.updateBodyCells();
     this.updateHeadCells();
-
     this.updateColumnResizers();
   }
 
@@ -418,11 +415,16 @@ export class KonvaTable {
       const resizer = this.nodeAllocator.allocate("columnResizer");
       this.columnResizerGroup.add(resizer);
 
+      const onDrag = (dx: number) => {
+	  console.log(dx);
+      }
+
       resizer.setAttrs({
 	x,
 	y: 0,
 	width: columnResizerHalfWidth * 2,
 	height: this.theme.rowHeight,
+	onDrag
       });
     }
   }
