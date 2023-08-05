@@ -1,5 +1,6 @@
 import { Vector } from "./Vector";
 import {
+  ColumnDef,
   ColumnState,
   DataRow,
   Dimensions,
@@ -23,23 +24,22 @@ export class TableState {
 
   rowHeight = 1;
 
-  getColumnState(columnIndex: number) {
-    const columnState = this.columnStates[columnIndex];
-    if (!columnState) {
-      throw new Error("Index out of bounds");
-    }
-    return columnState;
+  get numOfRows() {
+    return this.dataRows.length;
   }
 
-  getDataRow(rowIndex: number) {
-    const dataRow = this.dataRows[rowIndex];
-    if (!dataRow) {
-      throw new Error("Index out of bounds");
-    }
-    return dataRow;
+  get numOfCols() {
+    return this.columnStates.length;
   }
 
-  setTableData(columnStates: ColumnState[], dataRows: DataRow[]) {
+  public setTableData(columnDefs: ColumnDef[], dataRows: DataRow[]) {
+    const columnStates = [];
+    let total = 0;
+    for (const columnDef of columnDefs) {
+      columnStates.push({ ...columnDef, position: total });
+      total += columnDef.width;
+    }
+
     this.columnStates = columnStates;
     this.dataRows = dataRows;
 
@@ -47,19 +47,51 @@ export class TableState {
     this.tableRanges = this.calculateTableRanges();
   }
 
-  getRowHeight() {
+  public getColumnState(columnIndex: number) {
+    const columnState = this.columnStates[columnIndex];
+    if (!columnState) {
+      throw new Error("Index out of bounds");
+    }
+    return columnState;
+  }
+
+  public setColumnWidth(columnIndex: number, width: number) {
+    const columnToResize = this.getColumnState(columnIndex);
+    columnToResize.width = width;
+
+      // @Note Recalculate the position of columns after the one being resized
+    let total = columnToResize.position + columnToResize.width;
+    for (let j = columnIndex + 1; j < this.numOfCols; j++) {
+      const columnState = this.getColumnState(j);
+      columnState.position = total;
+      total += columnState.width;
+    }
+
+    this.tableDimensions = this.calculateTableDimensions();
+    this.tableRanges = this.calculateTableRanges();
+  }
+
+  public getDataRow(rowIndex: number) {
+    const dataRow = this.dataRows[rowIndex];
+    if (!dataRow) {
+      throw new Error("Index out of bounds");
+    }
+    return dataRow;
+  }
+
+  public getRowHeight() {
     return this.rowHeight;
   }
 
-  setRowHeight(rowHeight: number) {
+  public setRowHeight(rowHeight: number) {
     this.rowHeight = rowHeight;
   }
 
-  getScrollPosition() {
+  public getScrollPosition() {
     return { ...this.scrollPosition };
   }
 
-  setScrollPosition(scrollPosition: VectorLike) {
+  public setScrollPosition(scrollPosition: VectorLike) {
     this.scrollPosition = new Vector(scrollPosition)
       .clamp(Vector.zero(), new Vector(this.maximumScrollPosition))
       .data();
@@ -68,27 +100,27 @@ export class TableState {
     this.tableRanges = this.calculateTableRanges();
   }
 
-  getNormalizedScrollPosition() {
+  public getNormalizedScrollPosition() {
     return { ...this.normalizedScrollPosition };
   }
 
-  getMaximumScrollPosition() {
+  public getMaximumScrollPosition() {
     return { ...this.maximumScrollPosition };
   }
 
-  getScrollDimensions() {
+  public getScrollDimensions() {
     return { ...this.scrollDimensions };
   }
 
-  getTableDimensions() {
+  public getTableDimensions() {
     return { ...this.tableDimensions };
   }
 
-  getViewportDimensions() {
+  public getViewportDimensions() {
     return { ...this.viewportDimensions };
   }
 
-  setViewportDimensions(viewportDimensions: Dimensions) {
+  public setViewportDimensions(viewportDimensions: Dimensions) {
     this.viewportDimensions =  { ...viewportDimensions };
     this.scrollDimensions = this.calculateScrollDimensions();
     this.maximumScrollPosition = this.calculateMaximumScrollPosition();
@@ -100,11 +132,11 @@ export class TableState {
     this.tableRanges = this.calculateTableRanges();
   }
 
-  getTableRanges() {
+  public getTableRanges() {
     return { ...this.tableRanges };
   }
 
-  calculateTableRanges(): TableRanges {
+  private calculateTableRanges(): TableRanges {
     const { x: scrollLeft, y: scrollTop } = this.scrollPosition;
     const { width: viewportWidth, height: viewportHeight } = this.viewportDimensions;
 
@@ -128,7 +160,7 @@ export class TableState {
     };
   }
 
-  findColumnIndexAtXCoordinate(x: number, start: number = 0) {
+  private findColumnIndexAtXCoordinate(x: number, start: number = 0) {
     if (start < 0 || start >= this.numOfCols) {
       throw new Error("Index is out of bounds");
     }
@@ -149,7 +181,7 @@ export class TableState {
     return index - 1;
   }
 
-  calculateMaximumScrollPosition() {
+  private calculateMaximumScrollPosition() {
     const { width: scrollWidth, height: scrollHeight } = this.scrollDimensions
     const { width: viewportWidth, height: viewportHeight } = this.viewportDimensions;
 
@@ -159,7 +191,7 @@ export class TableState {
     return { x, y };
   }
 
-  calculateTableDimensions() {
+  private calculateTableDimensions() {
     const lastColumnState = this.columnStates[this.numOfCols - 1];
     const width = lastColumnState.position + lastColumnState.width;
 
@@ -168,7 +200,7 @@ export class TableState {
     return { width, height };
   }
 
-  calculateScrollDimensions() {
+  private calculateScrollDimensions() {
     const { width: tableWidth, height: tableHeight } = this.tableDimensions;
     const { width: viewportWidth, height: viewportHeight } = this.viewportDimensions;
 
@@ -178,17 +210,9 @@ export class TableState {
     return { width, height };
   }
 
-  calculateNormalizedScrollPosition(scrollPosition: VectorLike) {
+  private calculateNormalizedScrollPosition(scrollPosition: VectorLike) {
     return new Vector(scrollPosition)
       .div(this.maximumScrollPosition)
       .data();
-  }
-
-  get numOfRows() {
-    return this.dataRows.length;
-  }
-
-  get numOfCols() {
-    return this.columnStates.length;
   }
 }

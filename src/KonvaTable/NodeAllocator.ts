@@ -38,7 +38,9 @@ export class NodeAllocator {
 
     this.columnResizerPool = new ObjectPool({
       initialSize: 20,
-      make: () => new ColumnResizer(),
+      make: () => new ColumnResizer({
+	height: this.theme.rowHeight
+      }),
       reset: (resizer: ColumnResizer) => {
 	resizer.position({ x: 0, y: 0 });
 	return resizer;

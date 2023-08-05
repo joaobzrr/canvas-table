@@ -1,1 +1,1 @@
-export const columnResizerHalfWidth = 5;
+export const COLUMN_RESIZER_SIDE = 5;

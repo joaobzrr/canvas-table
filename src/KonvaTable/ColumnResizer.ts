@@ -1,14 +1,17 @@
 import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
+import { COLUMN_RESIZER_SIDE } from "./constants";
 
-export interface ColumnResizerConfig extends Omit<GroupConfig, "draggable"> {
-  onDrag?: (dx: number) => void;
+const COLUMN_RESIZER_WIDTH = (COLUMN_RESIZER_SIDE * 2) + 1;
+
+export interface ColumnResizerConfig extends Omit<GroupConfig, "width" | "draggable" > {
+  onDrag?: (position: number) => void;
 }
 
 export class ColumnResizer extends Konva.Group {
   rect: Konva.Rect;
 
-  onDrag?: (dx: number) => void;
+  onDrag?: (position: number) => void;
 
   originalX = 0;
   originalY = 0;
@@ -16,6 +19,7 @@ export class ColumnResizer extends Konva.Group {
   constructor(config?: ColumnResizerConfig) {
     super({
       ...config,
+      width: COLUMN_RESIZER_WIDTH,
       draggable: true
     });
 
@@ -47,14 +51,18 @@ export class ColumnResizer extends Konva.Group {
 
     this.on("dragmove", () => {
       this.y(this.originalY);
-      const dx = this.x() - this.originalX;
+
       if (this?.onDrag) {
-	this.onDrag(dx);
+	this.onDrag(this.x() + COLUMN_RESIZER_SIDE);
       }
     })
   }
 
   setOnDrag(onDrag: (dx: number) => void) {
     this.onDrag = onDrag;
+  }
+
+  setCenterx(centerx: number) {
+    this.x(centerx - COLUMN_RESIZER_SIDE);
   }
 }

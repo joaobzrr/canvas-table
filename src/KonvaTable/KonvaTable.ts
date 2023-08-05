@@ -13,8 +13,7 @@ import { GlyphAtlas } from "./GlyphAtlas";
 import { NodeAllocator } from "./NodeAllocator";
 import { Vector } from "./Vector";
 import { defaultTheme } from "./defaultTheme";
-import { columnResizerHalfWidth } from "./constants";
-import { KonvaTableOptions, ColumnDef, Dimensions, Theme } from "./types";
+import { KonvaTableOptions, Dimensions, Theme } from "./types";
 
 export class KonvaTable {
   stage: Konva.Stage;
@@ -49,8 +48,7 @@ export class KonvaTable {
     this.tableState = new TableState();
     this.tableState.setRowHeight(defaultTheme.rowHeight);
 
-    const columnStates = this.columnDefsToColumnStates(options.columnDefs);
-    this.tableState.setTableData(columnStates, options.dataRows);
+    this.tableState.setTableData(options.columnDefs, options.dataRows);
 
     this.body = new Konva.Group({ y: this.theme.rowHeight });
     this.layer.add(this.body);
@@ -110,31 +108,6 @@ export class KonvaTable {
     Text.glyphAtlas = glyphAtlas;
 
     return new KonvaTable({ ...options, glyphAtlas });
-  }
-
-  onWheel(event: KonvaEventObject<WheelEvent>) {
-    const { x: scrollLeft, y: scrollTop } = this.tableState.scrollPosition;
-
-    const newScrollLeft = new Vector({
-      x: Math.round(scrollLeft + event.evt.deltaX),
-      y: Math.round(scrollTop  + event.evt.deltaY)
-    });
-
-    this.tableState.setScrollPosition(newScrollLeft);
-
-    this.updateBodyGrid();
-    this.updateHeadGrid();
-    this.updateBodyCells();
-    this.updateHeadCells();
-    this.updateColumnResizers();
-
-    if (this.hsb.parent) {
-      this.hsb.onWheel();
-    }
-
-    if (this.vsb.parent) {
-      this.vsb.onWheel();
-    }
   }
 
   setStageDimensions(stageDimensions: Dimensions) {
@@ -204,6 +177,31 @@ export class KonvaTable {
     this.updateBodyCells();
     this.updateHeadCells();
     this.updateColumnResizers();
+  }
+
+  onWheel(event: KonvaEventObject<WheelEvent>) {
+    const { x: scrollLeft, y: scrollTop } = this.tableState.scrollPosition;
+
+    const newScrollLeft = new Vector({
+      x: Math.round(scrollLeft + event.evt.deltaX),
+      y: Math.round(scrollTop  + event.evt.deltaY)
+    });
+
+    this.tableState.setScrollPosition(newScrollLeft);
+
+    this.updateBodyGrid();
+    this.updateHeadGrid();
+    this.updateBodyCells();
+    this.updateHeadCells();
+    this.updateColumnResizers();
+
+    if (this.hsb.parent) {
+      this.hsb.onWheel();
+    }
+
+    if (this.vsb.parent) {
+      this.vsb.onWheel();
+    }
   }
 
   updateBodyGrid() {
@@ -355,6 +353,8 @@ export class KonvaTable {
   }
 
   updateBodyCells() {
+    debugger;
+
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges    = this.tableState.getTableRanges();
     const rowHeight      = this.tableState.getRowHeight();
@@ -424,34 +424,26 @@ export class KonvaTable {
     const { columnLeft, columnRight } = tableRanges;
     for (let j = columnLeft; j < columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
-      const x = columnState.position + columnState.width - scrollPosition.x - columnResizerHalfWidth;
+      const centerx = columnState.position + columnState.width - scrollPosition.x;
 
       const resizer = this.nodeAllocator.allocate("columnResizer");
       this.columnResizerGroup.add(resizer);
 
-      const onDrag = (dx: number) => {
-	console.log(dx);
+      const onDrag = (position: number) => {
+	this.tableState.setColumnWidth(j, position - columnState.position);
+
+	this.updateBodyGrid();
+	this.updateHeadGrid();
+	this.updateBodyCells();
+	this.updateHeadCells();
+	// this.updateColumnResizers();
       }
 
       resizer.setAttrs({
-	x,
+	centerx,
 	y: 0,
-	width: (columnResizerHalfWidth * 2) + 1,
-	height: this.theme.rowHeight,
 	onDrag
       });
     }
-  }
-
-  columnDefsToColumnStates(columnDefs: ColumnDef[]) {
-    const result = [];
-    let total = 0;
-
-    for (const columnDef of columnDefs) {
-      result.push({ ...columnDef, position: total });
-      total += columnDef.width;
-    }
-
-    return result;
   }
 }
