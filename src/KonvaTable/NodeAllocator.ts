@@ -2,13 +2,13 @@ import { ObjectPool } from "./ObjectPool";
 import { BodyCell } from "./BodyCell";
 import { HeadCell } from "./HeadCell";
 import { Line } from "./Line";
-import { ColumnResizer } from "./ColumnResizer";
+import { ResizeColumnButton } from "./ResizeColumnButton";
 import { Theme } from "./types";
 
 export class NodeAllocator {
   bodyCellPool: ObjectPool<BodyCell>;
   headCellPool: ObjectPool<HeadCell>;
-  columnResizerPool: ObjectPool<ColumnResizer>;
+  resizeColumnButtonPool: ObjectPool<ResizeColumnButton>;
 
   lineImageCache: Map<string, ImageBitmap>;
   linePool: ObjectPool<Line>;
@@ -36,14 +36,14 @@ export class NodeAllocator {
       }
     });
 
-    this.columnResizerPool = new ObjectPool({
+    this.resizeColumnButtonPool = new ObjectPool({
       initialSize: 20,
-      make: () => new ColumnResizer({
+      make: () => new ResizeColumnButton({
 	height: this.theme.rowHeight
       }),
-      reset: (resizer: ColumnResizer) => {
-	resizer.position({ x: 0, y: 0 });
-	return resizer;
+      reset: (button: ResizeColumnButton) => {
+	button.position({ x: 0, y: 0 });
+	return button;
       }
     });
 
@@ -65,7 +65,7 @@ export class NodeAllocator {
   public allocate(type: "bodyCell"): BodyCell;
   public allocate(type: "headCell"): HeadCell;
   public allocate(type: "line"): Line;
-  public allocate(type: "columnResizer"): ColumnResizer;
+  public allocate(type: "resizeColumnButton"): ResizeColumnButton;
   public allocate(type: string): any {
     switch (type) {
       case "bodyCell": {
@@ -77,8 +77,8 @@ export class NodeAllocator {
       case "line": {
 	return this.linePool.allocate();
       }
-      case "columnResizer": {
-	return this.columnResizerPool.allocate();
+      case "resizeColumnButton": {
+	return this.resizeColumnButtonPool.allocate();
       }
       default: {
 	throw new Error(`Unknown node type "${type}"`);
@@ -89,7 +89,7 @@ export class NodeAllocator {
   public free(type: "bodyCell", ...elements: BodyCell[]): void;
   public free(type: "headCell", ...elements: HeadCell[]): void;
   public free(type: "line", ...elements: Line[]): void;
-  public free(type: "columnResizer", ...elements: ColumnResizer[]): void;
+  public free(type: "resizeColumnButton", ...elements: ResizeColumnButton[]): void;
   public free(type: string, ...elements: any[]) {
     switch (type) {
       case "bodyCell": {
@@ -101,8 +101,8 @@ export class NodeAllocator {
       case "line": {
 	this.linePool.free(...elements);
       } break;
-      case "columnResizer": {
-	this.columnResizerPool.free(...elements);
+      case "resizeColumnButton": {
+	this.resizeColumnButtonPool.free(...elements);
       } break;
       default: {
 	throw new Error(`Unknown node type "${type}"`);

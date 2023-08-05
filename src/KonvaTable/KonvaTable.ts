@@ -7,12 +7,14 @@ import { HorizontalScrollbar } from "./HorizontalScrollbar";
 import { VerticalScrollbar } from "./VerticalScrollbar";
 import { Text } from "./Text";
 import { Line } from "./Line";
-import { ColumnResizer } from "./ColumnResizer";
+import { ResizeColumnButton } from "./ResizeColumnButton";
+import { ResizeColumnDraggable } from "./ResizeColumnDraggable";
 import { TableState } from "./TableState";
 import { GlyphAtlas } from "./GlyphAtlas";
 import { NodeAllocator } from "./NodeAllocator";
 import { Vector } from "./Vector";
 import { defaultTheme } from "./defaultTheme";
+import { MIN_COLUMN_WIDTH } from "./constants";
 import { KonvaTableOptions, Dimensions, Theme } from "./types";
 
 export class KonvaTable {
@@ -31,7 +33,7 @@ export class KonvaTable {
   headLineGroup: Konva.Group;
   headCellGroup: Konva.Group;
 
-  columnResizerGroup: Konva.Group;
+  resizeColumnButtonGroup: Konva.Group;
 
   nodeAllocator: NodeAllocator;
 
@@ -71,8 +73,8 @@ export class KonvaTable {
     this.headCellGroup = new Konva.Group();
     this.header.add(this.headCellGroup);
 
-    this.columnResizerGroup = new Konva.Group();
-    this.head.add(this.columnResizerGroup);
+    this.resizeColumnButtonGroup = new Konva.Group();
+    this.head.add(this.resizeColumnButtonGroup);
 
     this.nodeAllocator = new NodeAllocator(this.theme);
 
@@ -176,7 +178,7 @@ export class KonvaTable {
     this.updateHeadGrid();
     this.updateBodyCells();
     this.updateHeadCells();
-    this.updateColumnResizers();
+    this.updateResizeColumnButtons();
   }
 
   onWheel(event: KonvaEventObject<WheelEvent>) {
@@ -193,7 +195,7 @@ export class KonvaTable {
     this.updateHeadGrid();
     this.updateBodyCells();
     this.updateHeadCells();
-    this.updateColumnResizers();
+    this.updateResizeColumnButtons();
 
     if (this.hsb.parent) {
       this.hsb.onWheel();
@@ -202,6 +204,28 @@ export class KonvaTable {
     if (this.vsb.parent) {
       this.vsb.onWheel();
     }
+  }
+
+  startColumnResize(columnIndex: number, x: number) {
+    const columnState = this.tableState.getColumnState(columnIndex);
+
+    const onDragMove = (position: number) => {
+      this.doColumnResize(columnIndex, position - columnState.position);
+    }
+
+    const rect = new ResizeColumnDraggable({ x, onDragMove });
+    this.layer.add(rect);
+    rect.startDrag();
+  }
+
+  doColumnResize(columnIndex: number, columnWidth: number) {
+    this.tableState.setColumnWidth(columnIndex, Math.max(columnWidth, MIN_COLUMN_WIDTH));
+
+    this.updateBodyGrid();
+    this.updateHeadGrid();
+    this.updateBodyCells();
+    this.updateHeadCells();
+    this.updateResizeColumnButtons();
   }
 
   updateBodyGrid() {
@@ -353,8 +377,6 @@ export class KonvaTable {
   }
 
   updateBodyCells() {
-    debugger;
-
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges    = this.tableState.getTableRanges();
     const rowHeight      = this.tableState.getRowHeight();
@@ -413,36 +435,28 @@ export class KonvaTable {
     }
   }
 
-  updateColumnResizers() {
+  updateResizeColumnButtons() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges = this.tableState.getTableRanges();
 
-    const resizers = this.columnResizerGroup.children as ColumnResizer[];
-    this.nodeAllocator.free("columnResizer", ...resizers);
-    this.columnResizerGroup.removeChildren();
+    const buttons = this.resizeColumnButtonGroup.children as ResizeColumnButton[];
+    this.nodeAllocator.free("resizeColumnButton", ...buttons);
+    this.resizeColumnButtonGroup.removeChildren();
 
     const { columnLeft, columnRight } = tableRanges;
     for (let j = columnLeft; j < columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
       const centerx = columnState.position + columnState.width - scrollPosition.x;
 
-      const resizer = this.nodeAllocator.allocate("columnResizer");
-      this.columnResizerGroup.add(resizer);
+      const button = this.nodeAllocator.allocate("resizeColumnButton");
+      this.resizeColumnButtonGroup.add(button);
 
-      const onDrag = (position: number) => {
-	this.tableState.setColumnWidth(j, position - columnState.position);
-
-	this.updateBodyGrid();
-	this.updateHeadGrid();
-	this.updateBodyCells();
-	this.updateHeadCells();
-	// this.updateColumnResizers();
-      }
-
-      resizer.setAttrs({
+      button.setAttrs({
 	centerx,
 	y: 0,
-	onDrag
+	onMouseDown: () => {
+	  this.startColumnResize(j, centerx);
+	}
       });
     }
   }
