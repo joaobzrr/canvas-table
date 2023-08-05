@@ -41,8 +41,8 @@ export class GlyphAtlas {
 
     function setupContext(specifier: FontSpecifier) {
       ctx.font = Utils.serializeFontSpecifier(specifier);
-      ctx.textBaseline = "top";
       ctx.fillStyle = GlyphAtlas.theme.fontColor;
+      ctx.textBaseline = "alphabetic";
     }
 
     setupContext({ fontFamily, fontSize });
@@ -58,9 +58,7 @@ export class GlyphAtlas {
     for (const [index, config] of GlyphAtlas.fontConfigs.entries()) {
       setupContext({ ...config, fontFamily, fontSize });
 
-      // @Note Move down one more pixel to avoid including pixels
-      // from the bottom row
-      const y = index * (glyphHeight + 1);
+      const y = (index * glyphHeight) + metrics.fontBoundingBoxAscent;
 
       for (let i = 0; i < GlyphAtlas.latinChars.length; i++) {
           const x = i * glyphWidth;

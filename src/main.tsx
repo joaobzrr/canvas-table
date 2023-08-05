@@ -5,7 +5,9 @@ import './index.css'
 
 /*
 import { GlyphAtlas } from "./KonvaTable/GlyphAtlas";
+import { defaultTheme } from './KonvaTable/defaultTheme.ts';
 (async () => {
+  GlyphAtlas.theme = defaultTheme;
   const atlas = await GlyphAtlas.create("Courier New", "30px");
   const bitmap = atlas.getBitmap();
 
