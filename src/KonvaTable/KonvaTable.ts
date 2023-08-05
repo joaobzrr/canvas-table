@@ -91,6 +91,7 @@ export class KonvaTable {
       tableState: this.tableState,
       nodeAllocator: this.nodeAllocator,
       theme: this.theme,
+      y: this.theme.rowHeight,
       width: this.theme.scrollBarThickness
     });
     this.layer.add(this.vsb);
@@ -127,8 +128,13 @@ export class KonvaTable {
     this.updateHeadCells();
     this.updateColumnResizers();
 
-    this.hsb.onWheel();
-    this.vsb.onWheel();
+    if (this.hsb.parent) {
+      this.hsb.onWheel();
+    }
+
+    if (this.vsb.parent) {
+      this.vsb.onWheel();
+    }
   }
 
   setStageDimensions(stageDimensions: Dimensions) {
@@ -144,11 +150,11 @@ export class KonvaTable {
     const bodyHeightWithoutOverflow = stageHeight - this.theme.rowHeight;
     const bodyHeightWithOverflow = bodyHeightWithoutOverflow - this.theme.scrollBarThickness;
 
-    const hsbIsVisible = bodyHeightWithOverflow < tableHeight;
-    const bodyWidth = hsbIsVisible ? bodyWidthWithOverflow : bodyWidthWithoutOverflow;
+    const hsbIsVisible = bodyWidthWithOverflow < tableWidth;
+    const vsbIsVisible = bodyHeightWithOverflow < tableHeight;
 
-    const vsbIsVisible = bodyWidthWithOverflow < tableWidth;
-    const bodyHeight = vsbIsVisible ? bodyHeightWithOverflow : bodyHeightWithoutOverflow;
+    const bodyWidth  = vsbIsVisible ? bodyWidthWithOverflow : bodyWidthWithoutOverflow;
+    const bodyHeight = hsbIsVisible ? bodyHeightWithOverflow : bodyHeightWithoutOverflow;
 
     this.tableState.setViewportDimensions({ width: bodyWidth, height: bodyHeight });
 
@@ -171,19 +177,27 @@ export class KonvaTable {
       height: this.header.height()
     });
 
-    this.hsb.setAttrs({
-      y: stageHeight - this.theme.scrollBarThickness,
-      width: bodyWidth,
-      visible: hsbIsVisible
-    });
+    if (hsbIsVisible) {
+      if (!this.hsb.parent) {
+	this.layer.add(this.hsb);
+      }
+      
+      this.hsb.y(stageHeight - this.theme.scrollBarThickness);
+      this.hsb.width(bodyWidth)
+    } else {
+      this.hsb.remove();
+    }
 
-    this.vsb.setAttrs({
-      x: bodyWidth,
-      y: this.theme.rowHeight,
-      width: this.theme.scrollBarThickness,
-      height: stageHeight - this.theme.rowHeight - this.theme.scrollBarThickness,
-      visible: vsbIsVisible
-    });
+    if (vsbIsVisible) {
+      if (!this.vsb.parent) {
+	this.layer.add(this.vsb);
+      }
+
+      this.vsb.x(bodyWidth);
+      this.vsb.height(bodyHeight);
+    } else {
+      this.vsb.remove();
+    }
 
     this.updateBodyGrid();
     this.updateHeadGrid();
