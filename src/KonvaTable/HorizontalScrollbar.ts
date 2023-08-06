@@ -61,7 +61,7 @@ export class HorizontalScrollbar extends Konva.Group {
   }
 
   public onScrollDimensionsChange() {
-    this.updateThumb();
+    this.repositionThumb();
   }
 
   public onWheel() {
