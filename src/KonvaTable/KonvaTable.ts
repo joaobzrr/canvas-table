@@ -165,14 +165,13 @@ export class KonvaTable {
   onClickColumnResizeButton(columnIndex: number, x: number) {
     const columnState = this.tableState.getColumnState(columnIndex);
 
-    const onDragMove = (event: KonvaEventObject<MouseEvent>) => {
+    const onDragMove = throttle((event: KonvaEventObject<MouseEvent>) => {
       const scrollPosition = this.tableState.getScrollPosition();
-
-      const draggable = event.currentTarget;
+      const draggable = event.target;
       const dragX = draggable.x() + scrollPosition.x;
       const columnWidth = dragX - columnState.position
       this.resizeColumn(columnIndex, columnWidth);
-    }
+    }, 16);
 
     const rect = new ResizeColumnDraggable({ x, onDragMove });
     this.layer.add(rect);
@@ -195,7 +194,7 @@ export class KonvaTable {
     this.updateVerticalScrollbarVisibility();
     if (this.vsbIsVisible) {
       this.vsb.updateThumb();
-      this.hsb.repositionThumb();
+      this.vsb.repositionThumb();
     }
 
     this.updateBodyGrid();

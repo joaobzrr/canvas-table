@@ -12,8 +12,6 @@ export class ResizeColumnDraggable extends Konva.Rect {
   constructor(config?: ResizeColumnDraggableConfig) {
     super(config);
 
-    this.on("resize", 2) 
-
     this.on("dragstart", () => {
       this.originalY = this.y();
     });
