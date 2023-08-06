@@ -206,19 +206,25 @@ export class KonvaTable {
     }
   }
 
-  startColumnResize(columnIndex: number, x: number) {
+  onClickColumnResizeButton(columnIndex: number, x: number) {
     const columnState = this.tableState.getColumnState(columnIndex);
 
-    const onDragMove = (position: number) => {
-      this.doColumnResize(columnIndex, position - columnState.position);
+    const onDragMove = (event: KonvaEventObject<MouseEvent>) => {
+      const scrollPosition = this.tableState.getScrollPosition();
+
+      const draggable = event.currentTarget;
+      const dragX = draggable.x() + scrollPosition.x;
+      const columnWidth = dragX - columnState.position
+      this.resizeColumn(columnIndex, columnWidth);
     }
 
     const rect = new ResizeColumnDraggable({ x, onDragMove });
     this.layer.add(rect);
+
     rect.startDrag();
   }
 
-  doColumnResize(columnIndex: number, columnWidth: number) {
+  resizeColumn(columnIndex: number, columnWidth: number) {
     this.tableState.setColumnWidth(columnIndex, Math.max(columnWidth, MIN_COLUMN_WIDTH));
 
     this.updateBodyGrid();
@@ -226,6 +232,8 @@ export class KonvaTable {
     this.updateBodyCells();
     this.updateHeadCells();
     this.updateResizeColumnButtons();
+
+    this.hsb.onScrollDimensionsChange();
   }
 
   updateBodyGrid() {
@@ -455,7 +463,7 @@ export class KonvaTable {
 	centerx,
 	y: 0,
 	onMouseDown: () => {
-	  this.startColumnResize(j, centerx);
+	  this.onClickColumnResizeButton(j, centerx);
 	}
       });
     }

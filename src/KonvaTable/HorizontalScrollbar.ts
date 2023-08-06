@@ -14,17 +14,17 @@ export interface HorizontalScrollbarConfig extends GroupConfig {
 }
 
 export class HorizontalScrollbar extends Konva.Group {
-  tableState: TableState;
-  nodeAllocator: NodeAllocator;
-  theme: Theme;
+  private tableState: TableState;
+  private nodeAllocator: NodeAllocator;
+  private theme: Theme;
 
-  bar:   Konva.Rect;
-  thumb: Konva.Rect;
-  track: Rect;
+  private bar:   Konva.Rect;
+  private thumb: Konva.Rect;
+  private track: Rect;
 
-  borderGroup: Konva.Group;
+  private borderGroup: Konva.Group;
 
-  maxThumbLeft = 0;
+  private maxThumbLeft = 0;
 
   constructor(config: HorizontalScrollbarConfig) {
     super(config);
@@ -48,19 +48,27 @@ export class HorizontalScrollbar extends Konva.Group {
     this.on("widthChange heightChange", this.onResize.bind(this));
   }
 
-  onResize() {
+  public onResize() {
     this.updateBar();
     this.updateTrack();
+
     this.updateThumb();
+    this.maxThumbLeft = this.track.right - this.thumb.width();
+
+    this.repositionThumb();
+
     this.updateBorders();
+  }
+
+  public onScrollDimensionsChange() {
+    this.updateThumb();
+  }
+
+  public onWheel() {
     this.repositionThumb();
   }
 
-  onWheel() {
-    this.repositionThumb();
-  }
-
-  updateBar() {
+  private updateBar() {
     const barHeight = this.theme.scrollBarThickness;
     const barWidth = this.width();
 
@@ -72,7 +80,7 @@ export class HorizontalScrollbar extends Konva.Group {
     });
   }
 
-  updateTrack() {
+  private updateTrack() {
     const trackX = this.theme.scrollBarTrackMargin;
     const trackY = this.theme.scrollBarTrackMargin + 1;
     const trackWidth  = this.bar.width()  - (this.theme.scrollBarTrackMargin * 2);
@@ -86,23 +94,20 @@ export class HorizontalScrollbar extends Konva.Group {
     });
   }
 
-  updateThumb() {
+  private updateThumb() {
     const { width: viewportWidth } = this.tableState.viewportDimensions;
     const { width: scrollWidth } = this.tableState.scrollDimensions;
 
     const thumbWidth = (viewportWidth / scrollWidth) * this.track.width;
 
     this.thumb.setAttrs({
-      x: this.track.x,
       y: this.track.y,
       width: thumbWidth,
       height: this.track.height
     });
-
-    this.maxThumbLeft = this.track.right - thumbWidth;
   }
 
-  updateBorders() {
+  private updateBorders() {
     const lines = this.borderGroup.children as Line[];
     this.borderGroup.removeChildren();
     this.nodeAllocator.free("line", ...lines);
@@ -125,7 +130,7 @@ export class HorizontalScrollbar extends Konva.Group {
     this.borderGroup.add(rightBorder);
   }
 
-  repositionThumb() {
+  private repositionThumb() {
     const { x: normalizedScrollLeft } = this.tableState.normalizedScrollPosition;
 
     const thumbLeft = Utils.scale(normalizedScrollLeft, 0, 1, this.track.x, this.maxThumbLeft);

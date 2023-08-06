@@ -68,6 +68,10 @@ export class TableState {
     }
 
     this.tableDimensions = this.calculateTableDimensions();
+    this.scrollDimensions = this.calculateScrollDimensions();
+    this.maximumScrollPosition = this.calculateMaximumScrollPosition();
+    this.normalizedScrollPosition = this.calculateNormalizedScrollPosition();
+
     this.tableRanges = this.calculateTableRanges();
   }
 
@@ -96,7 +100,7 @@ export class TableState {
       .clamp(Vector.zero(), new Vector(this.maximumScrollPosition))
       .data();
 
-    this.normalizedScrollPosition = this.calculateNormalizedScrollPosition(this.scrollPosition);
+    this.normalizedScrollPosition = this.calculateNormalizedScrollPosition();
     this.tableRanges = this.calculateTableRanges();
   }
 
@@ -125,11 +129,7 @@ export class TableState {
     this.scrollDimensions = this.calculateScrollDimensions();
     this.maximumScrollPosition = this.calculateMaximumScrollPosition();
 
-    this.scrollPosition = new Vector(this.scrollPosition)
-      .min(new Vector(this.maximumScrollPosition))
-      .data();
-
-    this.tableRanges = this.calculateTableRanges();
+    this.setScrollPosition(this.scrollPosition);
   }
 
   public getTableRanges() {
@@ -210,8 +210,8 @@ export class TableState {
     return { width, height };
   }
 
-  private calculateNormalizedScrollPosition(scrollPosition: VectorLike) {
-    return new Vector(scrollPosition)
+  private calculateNormalizedScrollPosition() {
+    return new Vector(this.scrollPosition)
       .div(this.maximumScrollPosition)
       .data();
   }
