@@ -1,9 +1,6 @@
 import { ObjectPool } from "./ObjectPool";
-import { BodyCell } from "./BodyCell";
-import { HeadCell } from "./HeadCell";
-import { Line } from "./Line";
-import { ResizeColumnButton } from "./ResizeColumnButton";
-import { Theme } from "./types";
+import { BodyCell, HeadCell, Line, ResizeColumnButton } from "../components";
+import { Theme } from "../types";
 
 export class NodeAllocator {
   bodyCellPool: ObjectPool<BodyCell>;

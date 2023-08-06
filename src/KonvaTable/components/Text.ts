@@ -2,9 +2,9 @@ import Konva from "konva";
 import { Context } from "konva/lib/Context";
 import { ShapeConfig } from "konva/lib/Shape";
 import Graphemer from "graphemer";
-import { GlyphAtlas } from "./GlyphAtlas";
-import { Theme } from "./types";
-import { Utils } from "./Utils";
+import { GlyphAtlas } from "../GlyphAtlas";
+import { Utils } from "../Utils";
+import { Theme } from "../types";
 
 export interface TextConfig extends ShapeConfig {
   text: string;

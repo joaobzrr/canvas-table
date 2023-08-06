@@ -1,6 +1,6 @@
 import Konva from "konva";
 import { RectConfig } from "konva/lib/shapes/Rect";
-import { RESIZE_COLUMN_BUTTON_SIDE } from "./constants";
+import { RESIZE_COLUMN_BUTTON_SIDE } from "../constants";
 
 const RESIZE_COLUMN_BUTTON_WIDTH = (RESIZE_COLUMN_BUTTON_SIDE * 2) + 1;
 

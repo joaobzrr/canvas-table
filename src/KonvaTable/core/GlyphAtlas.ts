@@ -1,5 +1,5 @@
-import { Utils } from "./Utils";
-import { FontConfig, FontSpecifier, Theme } from "./types";
+import { Utils } from "../Utils";
+import { FontConfig, FontSpecifier, Theme } from "../types";
 
 export class GlyphAtlas {
   static fontConfigs: FontConfig[] = [

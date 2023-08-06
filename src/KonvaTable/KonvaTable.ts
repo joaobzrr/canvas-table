@@ -1,18 +1,22 @@
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { throttle } from "lodash";
-import { BodyCell } from "./BodyCell";
-import { HeadCell } from "./HeadCell";
-import { HorizontalScrollbar } from "./HorizontalScrollbar";
-import { VerticalScrollbar } from "./VerticalScrollbar";
-import { Text } from "./Text";
-import { Line } from "./Line";
-import { ResizeColumnButton } from "./ResizeColumnButton";
-import { ResizeColumnDraggable } from "./ResizeColumnDraggable";
-import { TableState } from "./TableState";
-import { GlyphAtlas } from "./GlyphAtlas";
-import { NodeAllocator } from "./NodeAllocator";
-import { Vector } from "./Vector";
+import {
+  NodeAllocator,
+  GlyphAtlas,
+  Vector,
+  TableState
+} from "./core";
+import {
+  BodyCell,
+  HeadCell,
+  HorizontalScrollbar,
+  VerticalScrollbar,
+  Text,
+  Line,
+  ResizeColumnButton,
+  ResizeColumnDraggable
+} from "./components";
 import { defaultTheme } from "./defaultTheme";
 import { MIN_COLUMN_WIDTH } from "./constants";
 import { KonvaTableOptions, Dimensions, Theme } from "./types";

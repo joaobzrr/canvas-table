@@ -1,11 +1,9 @@
 import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
-import { TableState } from "./TableState";
-import { NodeAllocator } from "./NodeAllocator";
+import { NodeAllocator, TableState, Rect } from "../core";
+import { Utils } from "../Utils";
+import { Theme } from "../types";
 import { Line } from "./Line";
-import { Rect } from "./Rect";
-import { Utils } from "./Utils";
-import { Theme } from "./types";
 
 export interface HorizontalScrollbarConfig extends GroupConfig {
   tableState: TableState;

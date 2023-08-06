@@ -1,4 +1,3 @@
-
 import { Vector } from "./Vector";
 import { RectLike, VectorLike } from "./types";
 

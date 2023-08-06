@@ -54,13 +54,6 @@ export type KonvaTableOptions = {
   theme?:     Theme;
 }
 
-export type LineProps = {
-  type:      "horizontal" | "vertical";
-  length:    number;
-  thickness: number;
-  color:     string;
-}
-
 export type FontSpecifier = {
   fontFamily:  string;
   fontSize:    string;

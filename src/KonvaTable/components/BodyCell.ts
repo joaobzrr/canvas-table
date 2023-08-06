@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
+import { Theme } from "../types";
 import { Text } from "./Text";
-import { Theme } from "./types";
 
 export interface BodyCellConfig extends GroupConfig {
 }

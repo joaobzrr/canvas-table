@@ -6,7 +6,7 @@ import {
   Dimensions,
   TableRanges,
   VectorLike
-} from "./types";
+} from "../types";
 
 export class TableState {
   columnStates = [] as ColumnState[];
