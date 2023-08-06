@@ -55,8 +55,6 @@ export class VerticalScrollbar extends Konva.Group {
   public onResize() {
     this.updateBar();
     this.updateTrack();
-    this.updateThumb();
-    this.repositionThumb();
     this.updateBorders();
   }
 

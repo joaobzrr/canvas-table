@@ -6,7 +6,7 @@ import { randstr } from "./randstr";
 export function generateTableData<T extends Record<string, string>>(
   rows: number,
   cols: number
-): [ColumnDef[], T[]] {
+): { columns: ColumnDef[], data:  T[] } {
   const columns = [];
   for (let colIndex = 0; colIndex < cols; colIndex++) {
     columns.push({
@@ -27,5 +27,8 @@ export function generateTableData<T extends Record<string, string>>(
     data.push(row);
   }
 
-  return [columns, data as T[]];
+  return {
+    columns,
+    data: data as T[]
+  };
 }

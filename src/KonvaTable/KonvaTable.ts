@@ -19,7 +19,13 @@ import {
 } from "./components";
 import { defaultTheme } from "./defaultTheme";
 import { MIN_COLUMN_WIDTH } from "./constants";
-import { KonvaTableOptions, Dimensions, Theme } from "./types";
+import {
+  KonvaTableOptions,
+  ColumnDef,
+  DataRow,
+  Dimensions,
+  Theme
+} from "./types";
 
 export class KonvaTable {
   stage: Konva.Stage;
@@ -119,6 +125,32 @@ export class KonvaTable {
     return new KonvaTable({ ...options, glyphAtlas });
   }
 
+  setTableData(columnDefs: ColumnDef[], dataRows: DataRow[]) {
+    this.tableState.setTableData(columnDefs, dataRows);
+    this.tableState.setScrollPosition({ x: 0, y: 0 });
+
+    this.resizeBody();
+    this.resizeHead();
+
+    this.updateHorizontalScrollbarVisibility();
+    this.hsb.y(this.stage.height() - this.theme.scrollBarThickness);
+    this.hsb.width(this.body.width());
+    this.hsb.updateThumb();
+    this.hsb.repositionThumb();
+
+    this.updateVerticalScrollbarVisibility();
+    this.vsb.x(this.body.width());
+    this.vsb.height(this.body.height());
+    this.vsb.updateThumb();
+    this.vsb.repositionThumb();
+
+    this.updateBodyGrid();
+    this.updateHeadGrid();
+    this.updateBodyCells();
+    this.updateHeadCells();
+    this.updateResizeColumnButtons();
+  }
+
   setStageDimensions(stageDimensions: Dimensions) {
     this.stage.size(stageDimensions);
 
@@ -129,10 +161,14 @@ export class KonvaTable {
     const stageHeight = this.stage.height();
     this.hsb.y(stageHeight - this.theme.scrollBarThickness);
     this.hsb.width(this.body.width());
+    this.hsb.updateThumb();
+    this.hsb.repositionThumb();
 
     this.updateVerticalScrollbarVisibility();
     this.vsb.x(this.body.width());
     this.vsb.height(this.body.height());
+    this.vsb.updateThumb();
+    this.vsb.repositionThumb();
 
     this.updateBodyGrid();
     this.updateHeadGrid();

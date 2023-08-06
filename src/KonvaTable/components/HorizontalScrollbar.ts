@@ -50,7 +50,6 @@ export class HorizontalScrollbar extends Konva.Group {
     this.updateBar();
     this.updateTrack();
     this.updateThumb();
-    this.repositionThumb();
     this.updateBorders();
   }
 
