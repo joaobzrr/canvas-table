@@ -71,7 +71,6 @@ export class TableState {
     this.scrollDimensions = this.calculateScrollDimensions();
     this.maximumScrollPosition = this.calculateMaximumScrollPosition();
     this.normalizedScrollPosition = this.calculateNormalizedScrollPosition();
-
     this.tableRanges = this.calculateTableRanges();
   }
 
@@ -211,8 +210,14 @@ export class TableState {
   }
 
   private calculateNormalizedScrollPosition() {
-    return new Vector(this.scrollPosition)
-      .div(this.maximumScrollPosition)
-      .data();
+    const x = this.maximumScrollPosition.x > 0
+      ? this.scrollPosition.x / this.maximumScrollPosition.x
+      : 0;
+
+    const y = this.maximumScrollPosition.y > 0
+      ? this.scrollPosition.y / this.maximumScrollPosition.y
+      : 0;
+
+    return new Vector(x, y).data();
   }
 }

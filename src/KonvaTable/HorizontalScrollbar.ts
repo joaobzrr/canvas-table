@@ -51,21 +51,31 @@ export class HorizontalScrollbar extends Konva.Group {
   public onResize() {
     this.updateBar();
     this.updateTrack();
-
     this.updateThumb();
-    this.maxThumbLeft = this.track.right - this.thumb.width();
-
     this.repositionThumb();
-
     this.updateBorders();
   }
 
-  public onScrollDimensionsChange() {
-    this.repositionThumb();
+  public updateThumb() {
+    const { width: viewportWidth } = this.tableState.viewportDimensions;
+    const { width: scrollWidth } = this.tableState.scrollDimensions;
+
+    const thumbWidth = (viewportWidth / scrollWidth) * this.track.width;
+
+    this.thumb.setAttrs({
+      y: this.track.y,
+      width: thumbWidth,
+      height: this.track.height
+    });
+
+    this.maxThumbLeft = this.track.right - this.thumb.width();
   }
 
-  public onWheel() {
-    this.repositionThumb();
+  public repositionThumb() {
+    const { x: normalizedScrollLeft } = this.tableState.normalizedScrollPosition;
+
+    const thumbLeft = Utils.scale(normalizedScrollLeft, 0, 1, this.track.x, this.maxThumbLeft);
+    this.thumb.x(thumbLeft);
   }
 
   private updateBar() {
@@ -94,19 +104,6 @@ export class HorizontalScrollbar extends Konva.Group {
     });
   }
 
-  private updateThumb() {
-    const { width: viewportWidth } = this.tableState.viewportDimensions;
-    const { width: scrollWidth } = this.tableState.scrollDimensions;
-
-    const thumbWidth = (viewportWidth / scrollWidth) * this.track.width;
-
-    this.thumb.setAttrs({
-      y: this.track.y,
-      width: thumbWidth,
-      height: this.track.height
-    });
-  }
-
   private updateBorders() {
     const lines = this.borderGroup.children as Line[];
     this.borderGroup.removeChildren();
@@ -128,12 +125,5 @@ export class HorizontalScrollbar extends Konva.Group {
       fill: this.theme.tableBorderColor,
     });
     this.borderGroup.add(rightBorder);
-  }
-
-  private repositionThumb() {
-    const { x: normalizedScrollLeft } = this.tableState.normalizedScrollPosition;
-
-    const thumbLeft = Utils.scale(normalizedScrollLeft, 0, 1, this.track.x, this.maxThumbLeft);
-    this.thumb.x(thumbLeft);
   }
 }

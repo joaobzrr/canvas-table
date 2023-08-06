@@ -121,8 +121,14 @@ export class KonvaTable {
     this.resizeBody();
     this.resizeHead();
 
-    this.updateHorizontalScrollbar();
-    this.updateVerticalScrollbar();
+    this.updateHorizontalScrollbarVisibility();
+    const stageHeight = this.stage.height();
+    this.hsb.y(stageHeight - this.theme.scrollBarThickness);
+    this.hsb.width(this.body.width());
+
+    this.updateVerticalScrollbarVisibility();
+    this.vsb.x(this.body.width());
+    this.vsb.height(this.body.height());
 
     this.updateBodyGrid();
     this.updateHeadGrid();
@@ -148,11 +154,11 @@ export class KonvaTable {
     this.updateResizeColumnButtons();
 
     if (this.hsb.parent) {
-      this.hsb.onWheel();
+      this.hsb.repositionThumb();
     }
 
     if (this.vsb.parent) {
-      this.vsb.onWheel();
+      this.vsb.repositionThumb();
     }
   }
 
@@ -177,22 +183,26 @@ export class KonvaTable {
   resizeColumn(columnIndex: number, columnWidth: number) {
     this.tableState.setColumnWidth(columnIndex, Math.max(columnWidth, MIN_COLUMN_WIDTH));
 
-    const tableDimensions = this.tableState.getTableDimensions();
-    this.header.width(Math.min(this.body.width(), tableDimensions.width));
-    this.header.clip({
-      x: 0,
-      y: 0,
-      width: this.header.width(),
-      height: this.header.height(),
-    });
+    this.resizeHead();
+    this.resizeBody();
+
+    this.updateHorizontalScrollbarVisibility();
+    if (this.hsbIsVisible) {
+      this.hsb.updateThumb();
+      this.hsb.repositionThumb();
+    }
+
+    this.updateVerticalScrollbarVisibility();
+    if (this.vsbIsVisible) {
+      this.vsb.updateThumb();
+      this.hsb.repositionThumb();
+    }
 
     this.updateBodyGrid();
     this.updateHeadGrid();
     this.updateBodyCells();
     this.updateHeadCells();
     this.updateResizeColumnButtons();
-
-    this.hsb.onScrollDimensionsChange();
   }
 
   resizeBody() {
@@ -236,30 +246,18 @@ export class KonvaTable {
     });
   }
 
-  updateHorizontalScrollbar() {
-    const stageHeight = this.stage.height();
-
-    if (this.hsbIsVisible) {
-      if (!this.hsb.parent) {
-	this.layer.add(this.hsb);
-      }
-      
-      this.hsb.y(stageHeight - this.theme.scrollBarThickness);
-      this.hsb.width(this.body.width());
-    } else {
+  updateHorizontalScrollbarVisibility() {
+    if (this.hsbIsVisible && !this.hsb.parent) {
+      this.layer.add(this.hsb);
+    } else if (!this.hsbIsVisible && this.hsb.parent) {
       this.hsb.remove();
     }
   }
 
-  updateVerticalScrollbar() {
-    if (this.vsbIsVisible) {
-      if (!this.vsb.parent) {
-	this.layer.add(this.vsb);
-      }
-
-      this.vsb.x(this.body.width());
-      this.vsb.height(this.body.height());
-    } else {
+  updateVerticalScrollbarVisibility() {
+    if (this.vsbIsVisible && !this.vsb.parent) {
+      this.layer.add(this.vsb);
+    } else if (!this.vsbIsVisible && this.vsb.parent) {
       this.vsb.remove();
     }
   }
