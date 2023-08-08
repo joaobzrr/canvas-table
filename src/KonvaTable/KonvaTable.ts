@@ -14,8 +14,7 @@ import {
   VerticalScrollbar,
   Text,
   Line,
-  ResizeColumnButton,
-  ResizeColumnDraggable
+  ResizeColumnButton
 } from "./components";
 import { defaultTheme } from "./defaultTheme";
 import { MIN_COLUMN_WIDTH } from "./constants";
@@ -24,7 +23,8 @@ import {
   ColumnDef,
   DataRow,
   Dimensions,
-  Theme
+  Theme,
+  VectorLike
 } from "./types";
 
 export class KonvaTable {
@@ -51,8 +51,9 @@ export class KonvaTable {
   nodeAllocator: NodeAllocator;
 
   hsb: HorizontalScrollbar;
-
   vsb: VerticalScrollbar;
+
+  draggables: Konva.Node[] = [];
 
   constructor(options: KonvaTableOptions & { glyphAtlas: GlyphAtlas }) {
     this.stage = new Konva.Stage({ container: options.container });
@@ -111,6 +112,7 @@ export class KonvaTable {
     this.layer.add(this.vsb);
 
     this.stage.on("wheel", throttle((event => this.onWheel(event)), 16));
+    this.stage.on("mouseup", () => this.clearDraggables());
   }
 
   static async create(options: KonvaTableOptions) {
@@ -206,11 +208,10 @@ export class KonvaTable {
       this.resizeColumn(columnIndex, columnWidth);
     }, 16);
 
-    const rect = new ResizeColumnDraggable({ x, onDragMove });
-    this.layer.add(rect);
-
-    rect.startDrag();
+    this.createDraggable({ x, y: 0 }, onDragMove);
   }
+
+  
 
   resizeColumn(columnIndex: number, columnWidth: number) {
     this.tableState.setColumnWidth(columnIndex, Math.max(columnWidth, MIN_COLUMN_WIDTH));
@@ -524,5 +525,22 @@ export class KonvaTable {
 	}
       });
     }
+  }
+
+  createDraggable(position: VectorLike, handler: (event: KonvaEventObject<MouseEvent>) => void) {
+    const draggable = new Konva.Rect();
+    draggable.position(position);
+    draggable.on("dragmove", handler);
+    draggable.on("dragend", () => draggable.destroy());
+
+    this.layer.add(draggable);
+    this.draggables.push(draggable);
+
+    draggable.startDrag();
+  }
+
+  clearDraggables() {
+    this.draggables.forEach(draggable => draggable.destroy());
+    this.draggables = [];
   }
 }

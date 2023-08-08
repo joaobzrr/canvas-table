@@ -5,4 +5,3 @@ export { HeadCell } from "./HeadCell";
 export { HorizontalScrollbar } from "./HorizontalScrollbar";
 export { VerticalScrollbar } from "./VerticalScrollbar";
 export { ResizeColumnButton } from "./ResizeColumnButton";
-export { ResizeColumnDraggable } from "./ResizeColumnDraggable";
