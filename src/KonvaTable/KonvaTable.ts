@@ -132,8 +132,8 @@ export class KonvaTable {
 
     this.updateBodyDimensions();
     this.updateScrollbarVisibility();
-    this.resizeBody();
-    this.resizeHead();
+    this.updateBody();
+    this.updateHead();
 
     if (this.hsb.visible()) {
       this.hsb.y(this.stage.height() - this.theme.scrollBarThickness);
@@ -161,8 +161,8 @@ export class KonvaTable {
 
     this.updateBodyDimensions();
     this.updateScrollbarVisibility();
-    this.resizeBody();
-    this.resizeHead();
+    this.updateBody();
+    this.updateHead();
 
     if (this.hsb.visible()) {
       const stageHeight = this.stage.height();
@@ -173,7 +173,6 @@ export class KonvaTable {
     }
 
     if (this.vsb.visible()) {
-      this.updateScrollbarVisibility();
       this.vsb.x(this.body.width());
       this.vsb.height(this.body.height());
       this.vsb.updateThumb();
@@ -189,27 +188,19 @@ export class KonvaTable {
 
   onWheel(event: KonvaEventObject<WheelEvent>) {
     const { x: scrollLeft, y: scrollTop } = this.tableState.scrollPosition;
+    const newScrollLeft = scrollLeft + event.evt.deltaX;
+    const newScrollTop  = scrollTop + event.evt.deltaY;
+    const newScrollPosition = new Vector(newScrollLeft, newScrollTop);
+    this.tableState.setScrollPosition(newScrollPosition);
 
-    const newScrollLeft = new Vector({
-      x: Math.round(scrollLeft + event.evt.deltaX),
-      y: Math.round(scrollTop  + event.evt.deltaY)
-    });
-
-    this.tableState.setScrollPosition(newScrollLeft);
+    if (this.hsb.visible()) this.hsb.repositionThumb();
+    if (this.vsb.visible()) this.vsb.repositionThumb();
 
     this.updateBodyGrid();
     this.updateHeadGrid();
     this.updateBodyCells();
     this.updateHeadCells();
     this.updateResizeColumnButtons();
-
-    if (this.hsb.visible()) {
-      this.hsb.repositionThumb();
-    }
-
-    if (this.vsb.visible()) {
-      this.vsb.repositionThumb();
-    }
   }
 
   onClickColumnResizeButton(columnIndex: number, x: number) {
@@ -233,8 +224,8 @@ export class KonvaTable {
     this.tableState.setColumnWidth(columnIndex, Math.max(columnWidth, MIN_COLUMN_WIDTH));
 
     this.updateScrollbarVisibility();
-    this.resizeHead();
-    this.resizeBody();
+    this.updateHead();
+    this.updateBody();
 
     if (this.hsb.visible()) {
       this.hsb.updateThumb();
@@ -263,9 +254,14 @@ export class KonvaTable {
     this.bodyDimensionsWithScrollbars.height    = stageHeight - this.theme.rowHeight - this.theme.scrollBarThickness;
   }
 
-  resizeBody() {
-    const bodyWidth  = this.vsb.visible() ? this.bodyDimensionsWithScrollbars.width  : this.bodyDimensionsWithoutScrollbars.width;
-    const bodyHeight = this.hsb.visible() ? this.bodyDimensionsWithScrollbars.height : this.bodyDimensionsWithoutScrollbars.height;
+  updateBody() {
+    const bodyWidth = this.vsb.visible()
+      ? this.bodyDimensionsWithScrollbars.width
+      : this.bodyDimensionsWithoutScrollbars.width;
+
+    const bodyHeight = this.hsb.visible()
+      ? this.bodyDimensionsWithScrollbars.height
+      : this.bodyDimensionsWithoutScrollbars.height;
 
     this.tableState.setViewportDimensions({ width: bodyWidth, height: bodyHeight });
 
@@ -278,7 +274,7 @@ export class KonvaTable {
     });
   }
 
-  resizeHead() {
+  updateHead() {
     this.head.width(this.body.width());
 
     const tableDimensions = this.tableState.getTableDimensions();
