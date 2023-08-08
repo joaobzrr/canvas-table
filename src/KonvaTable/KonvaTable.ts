@@ -5,7 +5,7 @@ import {
   NodeAllocator,
   GlyphAtlas,
   Vector,
-  TableState
+  TableState,
 } from "./core";
 import {
   BodyCell,
@@ -34,6 +34,9 @@ export class KonvaTable {
   tableState: TableState;
   theme: Theme;
 
+  bodyDimensionsWithoutScrollbars = { width: 1, height : 1 };
+  bodyDimensionsWithScrollbars = { width: 1, height: 1 };
+
   body: Konva.Group;
   bodyLineGroup: Konva.Group;
   bodyCellGroup: Konva.Group;
@@ -48,10 +51,8 @@ export class KonvaTable {
   nodeAllocator: NodeAllocator;
 
   hsb: HorizontalScrollbar;
-  hsbIsVisible = false;
 
   vsb: VerticalScrollbar;
-  vsbIsVisible = false;
 
   constructor(options: KonvaTableOptions & { glyphAtlas: GlyphAtlas }) {
     this.stage = new Konva.Stage({ container: options.container });
@@ -129,21 +130,25 @@ export class KonvaTable {
     this.tableState.setTableData(columnDefs, dataRows);
     this.tableState.setScrollPosition({ x: 0, y: 0 });
 
+    this.updateBodyDimensions();
+    this.updateScrollbarVisibility();
     this.resizeBody();
     this.resizeHead();
 
-    this.updateHorizontalScrollbarVisibility();
-    this.hsb.y(this.stage.height() - this.theme.scrollBarThickness);
-    this.hsb.width(this.body.width());
-    this.hsb.updateThumb();
-    this.hsb.repositionThumb();
+    if (this.hsb.visible()) {
+      this.hsb.y(this.stage.height() - this.theme.scrollBarThickness);
+      this.hsb.width(this.body.width());
+      this.hsb.updateThumb();
+      this.hsb.repositionThumb();
+    }
 
-    this.updateVerticalScrollbarVisibility();
-    this.vsb.x(this.body.width());
-    this.vsb.height(this.body.height());
-    this.vsb.updateThumb();
-    this.vsb.repositionThumb();
-
+    if (this.vsb.visible()) {
+      this.vsb.x(this.body.width());
+      this.vsb.height(this.body.height());
+      this.vsb.updateThumb();
+      this.vsb.repositionThumb();
+    }
+    
     this.updateBodyGrid();
     this.updateHeadGrid();
     this.updateBodyCells();
@@ -154,21 +159,26 @@ export class KonvaTable {
   setStageDimensions(stageDimensions: Dimensions) {
     this.stage.size(stageDimensions);
 
+    this.updateBodyDimensions();
+    this.updateScrollbarVisibility();
     this.resizeBody();
     this.resizeHead();
 
-    this.updateHorizontalScrollbarVisibility();
-    const stageHeight = this.stage.height();
-    this.hsb.y(stageHeight - this.theme.scrollBarThickness);
-    this.hsb.width(this.body.width());
-    this.hsb.updateThumb();
-    this.hsb.repositionThumb();
+    if (this.hsb.visible()) {
+      const stageHeight = this.stage.height();
+      this.hsb.y(stageHeight - this.theme.scrollBarThickness);
+      this.hsb.width(this.body.width());
+      this.hsb.updateThumb();
+      this.hsb.repositionThumb();
+    }
 
-    this.updateVerticalScrollbarVisibility();
-    this.vsb.x(this.body.width());
-    this.vsb.height(this.body.height());
-    this.vsb.updateThumb();
-    this.vsb.repositionThumb();
+    if (this.vsb.visible()) {
+      this.updateScrollbarVisibility();
+      this.vsb.x(this.body.width());
+      this.vsb.height(this.body.height());
+      this.vsb.updateThumb();
+      this.vsb.repositionThumb();
+    }
 
     this.updateBodyGrid();
     this.updateHeadGrid();
@@ -193,11 +203,11 @@ export class KonvaTable {
     this.updateHeadCells();
     this.updateResizeColumnButtons();
 
-    if (this.hsb.parent) {
+    if (this.hsb.visible()) {
       this.hsb.repositionThumb();
     }
 
-    if (this.vsb.parent) {
+    if (this.vsb.visible()) {
       this.vsb.repositionThumb();
     }
   }
@@ -222,17 +232,16 @@ export class KonvaTable {
   resizeColumn(columnIndex: number, columnWidth: number) {
     this.tableState.setColumnWidth(columnIndex, Math.max(columnWidth, MIN_COLUMN_WIDTH));
 
+    this.updateScrollbarVisibility();
     this.resizeHead();
     this.resizeBody();
 
-    this.updateHorizontalScrollbarVisibility();
-    if (this.hsbIsVisible) {
+    if (this.hsb.visible()) {
       this.hsb.updateThumb();
       this.hsb.repositionThumb();
     }
 
-    this.updateVerticalScrollbarVisibility();
-    if (this.vsbIsVisible) {
+    if (this.vsb.visible()) {
       this.vsb.updateThumb();
       this.vsb.repositionThumb();
     }
@@ -244,22 +253,19 @@ export class KonvaTable {
     this.updateResizeColumnButtons();
   }
 
-  resizeBody() {
+  updateBodyDimensions() {
     const { width: stageWidth, height: stageHeight } = this.stage.size();
 
-    const { width: tableWidth, height: tableHeight } = this.tableState.tableDimensions;
+    this.bodyDimensionsWithoutScrollbars.width  = stageWidth;
+    this.bodyDimensionsWithScrollbars.width     = stageWidth - this.theme.scrollBarThickness;
 
-    const bodyWidthWithoutOverflow = stageWidth;
-    const bodyWidthWithOverflow = bodyWidthWithoutOverflow - this.theme.scrollBarThickness;
+    this.bodyDimensionsWithoutScrollbars.height = stageHeight - this.theme.rowHeight;
+    this.bodyDimensionsWithScrollbars.height    = stageHeight - this.theme.rowHeight - this.theme.scrollBarThickness;
+  }
 
-    const bodyHeightWithoutOverflow = stageHeight - this.theme.rowHeight;
-    const bodyHeightWithOverflow = bodyHeightWithoutOverflow - this.theme.scrollBarThickness;
-
-    this.hsbIsVisible = bodyWidthWithOverflow < tableWidth;
-    this.vsbIsVisible = bodyHeightWithOverflow < tableHeight;
-
-    const bodyWidth  = this.vsbIsVisible ? bodyWidthWithOverflow  : bodyWidthWithoutOverflow;
-    const bodyHeight = this.hsbIsVisible ? bodyHeightWithOverflow : bodyHeightWithoutOverflow;
+  resizeBody() {
+    const bodyWidth  = this.vsb.visible() ? this.bodyDimensionsWithScrollbars.width  : this.bodyDimensionsWithoutScrollbars.width;
+    const bodyHeight = this.hsb.visible() ? this.bodyDimensionsWithScrollbars.height : this.bodyDimensionsWithoutScrollbars.height;
 
     this.tableState.setViewportDimensions({ width: bodyWidth, height: bodyHeight });
 
@@ -285,19 +291,21 @@ export class KonvaTable {
     });
   }
 
-  updateHorizontalScrollbarVisibility() {
-    if (this.hsbIsVisible && !this.hsb.parent) {
-      this.layer.add(this.hsb);
-    } else if (!this.hsbIsVisible && this.hsb.parent) {
-      this.hsb.remove();
-    }
-  }
+  updateScrollbarVisibility() {
+    const { width: tableWidth, height: tableHeight } = this.tableState.tableDimensions;
 
-  updateVerticalScrollbarVisibility() {
-    if (this.vsbIsVisible && !this.vsb.parent) {
-      this.layer.add(this.vsb);
-    } else if (!this.vsbIsVisible && this.vsb.parent) {
-      this.vsb.remove();
+    const hsbShouldBeVisible = this.bodyDimensionsWithScrollbars.width < tableWidth;
+    if (hsbShouldBeVisible && !this.hsb.visible()) {
+      this.hsb.visible(true);
+    } else if (!hsbShouldBeVisible && this.hsb.visible()) {
+      this.hsb.visible(false);
+    }
+
+    const vsbShouldBeVisible = this.bodyDimensionsWithScrollbars.height < tableHeight;
+    if (vsbShouldBeVisible && !this.vsb.visible()) {
+      this.vsb.visible(true);
+    } else if (!vsbShouldBeVisible && this.vsb.parent) {
+      this.vsb.visible(false);
     }
   }
 
