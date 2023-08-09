@@ -211,8 +211,6 @@ export class KonvaTable {
     this.createDraggable({ x, y: 0 }, onDragMove);
   }
 
-  
-
   resizeColumn(columnIndex: number, columnWidth: number) {
     this.tableState.setColumnWidth(columnIndex, Math.max(columnWidth, MIN_COLUMN_WIDTH));
 

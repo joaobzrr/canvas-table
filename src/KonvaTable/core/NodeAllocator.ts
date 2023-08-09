@@ -1,11 +1,20 @@
-import { ObjectPool } from "./ObjectPool";
-import { BodyCell, HeadCell, Line, ResizeColumnButton } from "../components";
+import Konva from "konva";
 import { Theme } from "../types";
+import { BodyCell, HeadCell, Line, ResizeColumnButton } from "../components";
+import { ObjectPool } from "./ObjectPool";
+import { BodyCellFactory } from "./BodyCellFactory";
+import { HeadCellFactory } from "./HeadCellFactory";
+import { ResizeColumnButtonFactory } from "./ResizeColumnButtonFactory";
 
 export class NodeAllocator {
-  bodyCellPool: ObjectPool<BodyCell>;
-  headCellPool: ObjectPool<HeadCell>;
-  resizeColumnButtonPool: ObjectPool<ResizeColumnButton>;
+  bodyCellFactory: BodyCellFactory;
+  bodyCellPool: ObjectPool<Konva.Group>;
+
+  headCellFactory: HeadCellFactory;
+  headCellPool: ObjectPool<Konva.Group>;
+
+  resizeColumnButtonFactory: ResizeColumnButtonFactory;
+  resizeColumnButtonPool: ObjectPool<Konva.Rect>;
 
   lineImageCache: Map<string, ImageBitmap>;
   linePool: ObjectPool<Line>;
@@ -15,33 +24,25 @@ export class NodeAllocator {
   constructor(theme: Theme) {
     this.theme = theme;
 
+    this.bodyCellFactory = new BodyCellFactory(this.theme);
     this.bodyCellPool = new ObjectPool({
       initialSize: 1000,
-      make: () => new BodyCell({ theme: this.theme }),
-      reset: (cell: BodyCell) => {
-	cell.position({ x: 0, y: 0 });
-	return cell;
-      }
+      make: () => this.bodyCellFactory.make(),
+      reset: group => this.bodyCellFactory.reset(group)
     });
 
+    this.headCellFactory = new HeadCellFactory(this.theme);
     this.headCellPool = new ObjectPool({
-      initialSize: 20,
-      make: () => new HeadCell({ theme: this.theme }),
-      reset: (cell: HeadCell) => {
-	cell.position({ x: 0, y: 0 });
-	return cell;
-      }
+      initialSize: 30,
+      make: () => this.headCellFactory.make(),
+      reset: (group) => this.headCellFactory.reset(group)
     });
 
+    this.resizeColumnButtonFactory = new ResizeColumnButtonFactory(this.theme);
     this.resizeColumnButtonPool = new ObjectPool({
-      initialSize: 20,
-      make: () => new ResizeColumnButton({
-	height: this.theme.rowHeight
-      }),
-      reset: (button: ResizeColumnButton) => {
-	button.position({ x: 0, y: 0 });
-	return button;
-      }
+      initialSize: 30,
+      make: () => this.resizeColumnButtonFactory.make(),
+      reset: rect => this.resizeColumnButtonFactory.reset(rect)
     });
 
     this.lineImageCache = new Map();

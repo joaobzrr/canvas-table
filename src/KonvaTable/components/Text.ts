@@ -2,12 +2,12 @@ import Konva from "konva";
 import { Context } from "konva/lib/Context";
 import { ShapeConfig } from "konva/lib/Shape";
 import Graphemer from "graphemer";
-import { GlyphAtlas } from "../GlyphAtlas";
+import { GlyphAtlas } from "../core/GlyphAtlas";
 import { Utils } from "../Utils";
 import { Theme } from "../types";
 
 export interface TextConfig extends ShapeConfig {
-  text: string;
+  text?: string;
   fontConfig: "normal" | "bold" | "italic";
   padding?: number;
 }
@@ -16,8 +16,8 @@ export class Text extends Konva.Shape {
   static glyphAtlas: GlyphAtlas;
   static theme: Theme;
 
-  text: string;
   fontConfig: "normal" | "bold" | "italic";
+  text?: string;
   padding?: number;
 
   graphemer: Graphemer;
@@ -52,8 +52,12 @@ export class Text extends Konva.Shape {
   }
   
   drawShape(ctx: Context) {
+    const text = this.getAttr("textValue") as string;
+    if (!text) {
+      return;
+    }
+
     const glyphAtlas = Text.glyphAtlas;
-    const text       = this.text;
     const padding    = this.padding ?? 0;
 
     const bitmap      = glyphAtlas.getBitmap();
@@ -75,7 +79,7 @@ export class Text extends Konva.Shape {
     ctx.fillStyle = Text.theme.fontColor;
 
     while (requiredWidth + glyphWidth <= availableWidth) {
-      const codepoint = this.text.codePointAt(charIndex)!;
+      const codepoint = text.codePointAt(charIndex)!;
       const char = text.charAt(charIndex);
 
       const isPrintable = char !== " ";
@@ -106,9 +110,5 @@ export class Text extends Konva.Shape {
       requiredWidth += glyphWidth;
       glyphCount += 1;
     }
-  }
-
-  setText(text: string) {
-    this.text = text;
   }
 }
