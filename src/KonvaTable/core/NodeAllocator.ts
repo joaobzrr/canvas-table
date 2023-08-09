@@ -1,6 +1,6 @@
 import Konva from "konva";
 import { Theme } from "../types";
-import { BodyCell, HeadCell, Line, ResizeColumnButton } from "../components";
+import { Line } from "../components";
 import { ObjectPool } from "./ObjectPool";
 import { BodyCellFactory } from "./BodyCellFactory";
 import { HeadCellFactory } from "./HeadCellFactory";
