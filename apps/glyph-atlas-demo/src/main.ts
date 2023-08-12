@@ -1,27 +1,21 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
-import { hello } from "glyph-atlas";
+import { GlyphAtlas } from "glyph-atlas";
 
-hello();
+const glyphAtlas = new GlyphAtlas();
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+const chars = [];
+for (let i = 33; i < 255; i++) {
+  chars.push(String.fromCharCode(i));
+}
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+for (const char of chars) {
+  glyphAtlas.cacheGlyph(char, "Courier New", "32px");
+}
+
+for (const char of chars.slice(0, 128)) {
+  glyphAtlas.cacheGlyph(char, "Arial", "32px");
+}
+
+const body = document.querySelector("body");
+const canvas = (glyphAtlas as any).canvas as HTMLCanvasElement;
+canvas.style.border = "1px solid black";
+body!.appendChild(canvas);
