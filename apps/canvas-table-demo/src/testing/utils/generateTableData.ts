@@ -1,5 +1,5 @@
+import { ColumnDef } from "canvas-table";
 import { v4 as uuidv4 } from "uuid";
-import { ColumnDef } from "../../KonvaTable";
 import { randint } from "./randint";
 import { randstr } from "./randstr";
 

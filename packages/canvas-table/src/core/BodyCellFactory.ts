@@ -6,8 +6,6 @@ export class BodyCellFactory {
   constructor(private theme: Theme) {}
 
   make() {
-    debugger;
-
     const group = new Konva.Group();
     const text = new Text({
       padding: this.theme.cellPadding,

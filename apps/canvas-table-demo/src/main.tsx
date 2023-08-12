@@ -4,8 +4,8 @@ import App from './App.tsx'
 import './index.css'
 
 /*
-import { GlyphAtlas } from "./KonvaTable/GlyphAtlas";
-import { defaultTheme } from './KonvaTable/defaultTheme.ts';
+import { GlyphAtlas } from "./CanvasTable/GlyphAtlas";
+import { defaultTheme } from './CanvasTable/defaultTheme.ts';
 (async () => {
   GlyphAtlas.theme = defaultTheme;
   const atlas = await GlyphAtlas.create("Courier New", "30px");

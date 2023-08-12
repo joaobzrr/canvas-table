@@ -1,5 +1,5 @@
 import isObject from "lodash/isObject";
-import { VectorLike } from "./types";
+import { VectorLike } from "../types";
 
 export class Vector {
   x: number;

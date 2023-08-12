@@ -60,10 +60,10 @@ export class NodeAllocator {
     });
   }
 
-  public allocate(type: "bodyCell"): BodyCell;
-  public allocate(type: "headCell"): HeadCell;
+  public allocate(type: "bodyCell"): Konva.Group;
+  public allocate(type: "headCell"): Konva.Group;
   public allocate(type: "line"): Line;
-  public allocate(type: "resizeColumnButton"): ResizeColumnButton;
+  public allocate(type: "resizeColumnButton"): Konva.Rect;
   public allocate(type: string): any {
     switch (type) {
       case "bodyCell": {
@@ -84,10 +84,10 @@ export class NodeAllocator {
     }
   }
 
-  public free(type: "bodyCell", ...elements: BodyCell[]): void;
-  public free(type: "headCell", ...elements: HeadCell[]): void;
+  public free(type: "bodyCell", ...elements: Konva.Group[]): void;
+  public free(type: "headCell", ...elements: Konva.Group[]): void;
   public free(type: "line", ...elements: Line[]): void;
-  public free(type: "resizeColumnButton", ...elements: ResizeColumnButton[]): void;
+  public free(type: "resizeColumnButton", ...elements: Konva.Rect[]): void;
   public free(type: string, ...elements: any[]) {
     switch (type) {
       case "bodyCell": {

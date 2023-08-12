@@ -1,5 +1,5 @@
 import { Vector } from "./Vector";
-import { RectLike, VectorLike } from "./types";
+import { RectLike, VectorLike } from "../types";
 
 export class Rect {
   private _position: Vector;

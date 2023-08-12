@@ -47,7 +47,7 @@ export type TableRanges = {
   rowBottom:   number;
 }
 
-export type KonvaTableOptions = {
+export type CanvasTableOptions = {
   container:  string;
   columnDefs: ColumnDef[];
   dataRows:   DataRow[];

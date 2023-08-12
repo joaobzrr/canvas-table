@@ -8,18 +8,15 @@ import {
   TableState,
 } from "./core";
 import {
-  BodyCell,
-  HeadCell,
   HorizontalScrollbar,
   VerticalScrollbar,
   Text,
   Line,
-  ResizeColumnButton
 } from "./components";
 import { defaultTheme } from "./defaultTheme";
 import { MIN_COLUMN_WIDTH } from "./constants";
 import {
-  KonvaTableOptions,
+  CanvasTableOptions,
   ColumnDef,
   DataRow,
   Dimensions,
@@ -27,7 +24,7 @@ import {
   VectorLike
 } from "./types";
 
-export class KonvaTable {
+export class CanvasTable {
   stage: Konva.Stage;
   layer: Konva.Layer;
 
@@ -55,7 +52,7 @@ export class KonvaTable {
 
   draggables: Konva.Node[] = [];
 
-  constructor(options: KonvaTableOptions & { glyphAtlas: GlyphAtlas }) {
+  constructor(options: CanvasTableOptions & { glyphAtlas: GlyphAtlas }) {
     this.stage = new Konva.Stage({ container: options.container });
     this.layer = new Konva.Layer();
     this.stage.add(this.layer);
@@ -115,7 +112,7 @@ export class KonvaTable {
     this.stage.on("mouseup", () => this.clearDraggables());
   }
 
-  static async create(options: KonvaTableOptions) {
+  static async create(options: CanvasTableOptions) {
     const theme = options?.theme ?? defaultTheme;
     GlyphAtlas.theme = theme;
     Text.theme = theme;
@@ -125,7 +122,7 @@ export class KonvaTable {
 
     Text.glyphAtlas = glyphAtlas;
 
-    return new KonvaTable({ ...options, glyphAtlas });
+    return new CanvasTable({ ...options, glyphAtlas });
   }
 
   setTableData(columnDefs: ColumnDef[], dataRows: DataRow[]) {
@@ -445,7 +442,7 @@ export class KonvaTable {
     const tableRanges    = this.tableState.getTableRanges();
     const rowHeight      = this.tableState.getRowHeight();
 
-    const bodyCells = this.bodyCellGroup.children as BodyCell[];
+    const bodyCells = this.bodyCellGroup.children as Konva.Group[];
     this.bodyCellGroup.removeChildren();
     this.nodeAllocator.free("bodyCell", ...bodyCells);
 
@@ -477,7 +474,7 @@ export class KonvaTable {
     const tableRanges    = this.tableState.getTableRanges();
     const rowHeight      = this.tableState.getRowHeight();
 
-    const headCells = this.headCellGroup.children as HeadCell[];
+    const headCells = this.headCellGroup.children as Konva.Group[];
     this.nodeAllocator.free("headCell", ...headCells);
     this.headCellGroup.removeChildren();
 
@@ -503,7 +500,7 @@ export class KonvaTable {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges = this.tableState.getTableRanges();
 
-    const buttons = this.resizeColumnButtonGroup.children as ResizeColumnButton[];
+    const buttons = this.resizeColumnButtonGroup.children as Konva.Rect[];
     this.nodeAllocator.free("resizeColumnButton", ...buttons);
     this.resizeColumnButtonGroup.removeChildren();
 

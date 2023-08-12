@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { KonvaTable } from "./KonvaTable";
+import { CanvasTable } from "canvas-table";
 import { generateTableData } from "./testing/utils/generateTableData";
 import { useElementSize } from "./testing/hooks/useElementSize";
 import styles from "./App.module.css";
@@ -10,13 +10,13 @@ function App() {
 
   const [containerSize, containerRef] = useElementSize();
 
-  const konvaTableRef = useRef<KonvaTable>();
+  const konvaTableRef = useRef<CanvasTable>();
 
   useLayoutEffect(() => {
     (async () => {
       const tableData = generateTableData(100, 100);
 
-      konvaTableRef.current = await KonvaTable.create({
+      konvaTableRef.current = await CanvasTable.create({
         container: "container",
         columnDefs: tableData.columns,
         dataRows: tableData.data
