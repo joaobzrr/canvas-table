@@ -1,14 +1,14 @@
 {
-  "name": "canvas-table",
+  "name": "glyph-atlas",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/canvas-table.umd.cjs",
-  "module": "./dist/canvas-table.js",
+  "main": "./dist/glyph-atlas.umd.cjs",
+  "module": "./dist/glyph-atlas.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/canvas-table.js",
-      "require": "./dist/canvas-table.umd.cjs",
+      "import": "./dist/glyph-atlas.js",
+      "require": "./dist/glyph-atlas.umd.cjs",
       "types": "./dist/index.d.ts"
     }
   },
@@ -20,21 +20,17 @@
   "scripts": {
     "build": "tsc && vite build"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "graphemer": "^1.4.0",
-    "konva": "^9.2.0",
-    "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.197",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",
     "eslint": "^8.44.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.0",
     "vite-plugin-dts": "^3.5.2"
-  }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
