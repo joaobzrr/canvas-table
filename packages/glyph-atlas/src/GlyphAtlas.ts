@@ -1,10 +1,11 @@
-import { TextureNode, Rect, Size } from "./types";
+import { TextureNode, Rect, Size, FontStyle, GlyphData } from "./types";
 
 const INITIAL_PAGE_WIDTH  = 512;
 const INITIAL_PAGE_HEIGHT = 512;
 
 export class GlyphAtlas {
-  private canvas: HTMLCanvasElement;
+  public canvas: HTMLCanvasElement;
+
   private ctx: CanvasRenderingContext2D;
   private cache = new Map<string, TextureNode>();
 
@@ -30,15 +31,21 @@ export class GlyphAtlas {
     });
   }
 
-  cacheGlyph(char: string, fontFamily: string, fontSize: string) {
-    const key = `${fontFamily}-${fontSize}-${char}`;
+  public getGlyphData(
+    str:        string,
+    fontFamily: string,
+    fontSize:   string,
+    fontStyle?: FontStyle
+  ): GlyphData {
+    const key = `${fontFamily}-${fontSize}-${str}`;
     let cached = this.cache.get(key);
     if (cached) {
-      return cached;
+      return cached.glyphData;
     }
 
-    this.ctx.font = `${fontSize} ${fontFamily}`;
-    const metrics = this.ctx.measureText(char);
+    this.ctx.font = this.makeFontDescription(fontFamily, fontSize, fontStyle);
+
+    const metrics = this.ctx.measureText(str);
     const node = this.pack(this.root, {
       width: metrics.width,
       height: metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
@@ -47,14 +54,21 @@ export class GlyphAtlas {
       throw new Error("Atlas is full");
     }
 
-    const y = node.rect.y + metrics.actualBoundingBoxAscent;
-    this.ctx.fillText(char, node.rect.x, y);
+    node.glyphData.actualBoundingBoxAscent  = metrics.actualBoundingBoxAscent;
+    node.glyphData.actualBoundingBoxDescent = metrics.actualBoundingBoxDescent;
 
-    this.cache.set(char, node);
-    return node;
+    const x = node.glyphData.rect.x;
+    const y = node.glyphData.rect.y + metrics.actualBoundingBoxAscent;
+    this.ctx.fillText(str, x, y);
+
+    this.cache.set(str, node);
+    return node.glyphData;
   }
 
   private pack(node: TextureNode, size: Size): TextureNode | null {
+    const glyphData = node.glyphData;
+    const glyphRect = glyphData.rect;
+
     if (node.left && node.right) {
       const newNode = this.pack(node.left, size);
       if (newNode !== null) {
@@ -62,58 +76,84 @@ export class GlyphAtlas {
       }
       return this.pack(node.right, size);
     } else {
-      if (node.rect.width < size.width || node.rect.height < size.height) {
+      if (glyphRect.width < size.width || node.glyphData.rect.height < size.height) {
 	return null;
       }
 
-      if (node.rect.width  === size.width && node.rect.height === size.height) {
+      if (glyphRect.width === size.width && node.glyphData.rect.height === size.height) {
 	node.filled = true;
 	return node;
       }
 
-      const dw = node.rect.width  - size.width;
-      const dh = node.rect.height - size.height;
+      const dw = glyphRect.width  - size.width;
+      const dh = glyphRect.height - size.height;
       if (dw > dh) {
 	node.left = this.createNode({
-	  x: node.rect.x,
-	  y: node.rect.y + size.height,
+	  x: glyphRect.x,
+	  y: glyphRect.y + size.height,
 	  width: size.width,
 	  height: dh
 	});
 
 	node.right = this.createNode({
-	  x: node.rect.x + size.width,
-	  y: node.rect.y,
+	  x: glyphRect.x + size.width,
+	  y: glyphRect.y,
 	  width: dw,
-	  height: node.rect.height
+	  height: glyphRect.height
 	});
       } else {
 	node.left = this.createNode({
-	  x: node.rect.x,
-	  y: node.rect.y + size.height,
-	  width: node.rect.width,
+	  x: glyphRect.x,
+	  y: glyphRect.y + size.height,
+	  width: glyphRect.width,
 	  height: dh
 	});
 
 	node.right = this.createNode({
-	  x: node.rect.x + size.width,
-	  y: node.rect.y,
+	  x: glyphRect.x + size.width,
+	  y: glyphRect.y,
 	  width: dw,
 	  height: size.height
 	});
       }
     }
 
+    glyphRect.width  = size.width;
+    glyphRect.height = size.height;
     node.filled = true;
     return node;
   }
 
   private createNode(rect: Rect): TextureNode {
     return {
-      rect,
+      glyphData: {
+	rect,
+	actualBoundingBoxAscent: 0,
+	actualBoundingBoxDescent: 0,
+      },
       left: null,
       right: null,
       filled: false
     };
+  }
+
+  private makeFontDescription(fontFamily: string, fontSize: string, fontStyle?: string) {
+    let font = `${fontSize} ${fontFamily}`;
+    if (!fontStyle) {
+      return font;
+    }
+
+    switch (fontStyle) {
+      case "bold": {
+	font = "bold " + font;
+      } break;
+      case "italic": {
+	font = "italic " + font;
+      } break;
+      case "both": {
+	font = "italic bold " + font;
+      } break;
+    }
+    return font;
   }
 }

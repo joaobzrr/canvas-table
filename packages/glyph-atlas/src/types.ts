@@ -1,8 +1,14 @@
 export type TextureNode = {
-  rect: Rect;
+  glyphData: GlyphData;
   left: TextureNode | null;
   right: TextureNode | null;
   filled: boolean;
+}
+
+export type GlyphData = {
+  rect: Rect;
+  actualBoundingBoxAscent: number;
+  actualBoundingBoxDescent: number;
 }
 
 export type Rect = {
@@ -16,3 +22,5 @@ export type Size = {
   width: number;
   height: number;
 }
+
+export type FontStyle = "normal" | "bold" | "italic" | "both";
