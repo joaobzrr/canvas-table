@@ -20,7 +20,7 @@ export class GlyphAtlas {
       throw new Error("Failed to create context");
     }
     this.ctx = ctx;
-    this.ctx.textBaseline = "top"; // Not correct
+    this.ctx.textBaseline = "alphabetic";
 
     this.root = this.createNode({
       x: 0,
@@ -47,8 +47,11 @@ export class GlyphAtlas {
       throw new Error("Atlas is full");
     }
 
-    this.ctx.fillText(char, node.rect.x, node.rect.y);
+    const y = node.rect.y + metrics.actualBoundingBoxAscent;
+    this.ctx.fillText(char, node.rect.x, y);
+
     this.cache.set(char, node);
+    return node;
   }
 
   private pack(node: TextureNode, size: Size): TextureNode | null {
