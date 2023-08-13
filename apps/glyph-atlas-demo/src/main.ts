@@ -32,9 +32,10 @@ function main() {
   body.appendChild(screenCanvas);
 
   const ctx = screenCanvas.getContext("2d")!;
+  ctx.imageSmoothingEnabled = false; // @Important
 
   const fontFamily = "Arial";
-  const fontSize = "20px";
+  const fontSize = "40px";
   const fontStyle = "normal";
 
   const text = "abcdefghijklmnopqrstuvwxyzé";
@@ -64,6 +65,9 @@ function main() {
 
     originX += glyphData.rect.width;
   }
+
+  ctx.font = glyphAtlas.makeFontDescription(fontFamily, fontSize, fontStyle);
+  ctx.fillText(text, 0, 150);
 }
 
 main();

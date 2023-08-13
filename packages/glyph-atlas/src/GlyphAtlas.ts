@@ -137,7 +137,7 @@ export class GlyphAtlas {
     };
   }
 
-  private makeFontDescription(fontFamily: string, fontSize: string, fontStyle?: string) {
+  public makeFontDescription(fontFamily: string, fontSize: string, fontStyle?: string) {
     let font = `${fontSize} ${fontFamily}`;
     if (!fontStyle) {
       return font;
