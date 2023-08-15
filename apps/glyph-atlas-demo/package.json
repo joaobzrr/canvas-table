@@ -13,6 +13,7 @@
     "vite": "^4.4.5"
   },
   "dependencies": {
-    "glyph-atlas": "workspace:^"
+    "glyph-atlas": "workspace:^",
+    "graphemer": "^1.4.0"
   }
 }

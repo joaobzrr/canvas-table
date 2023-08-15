@@ -61,6 +61,9 @@ importers:
       glyph-atlas:
         specifier: workspace:^
         version: link:../../packages/glyph-atlas
+      graphemer:
+        specifier: ^1.4.0
+        version: 1.4.0
     devDependencies:
       typescript:
         specifier: ^5.0.2

@@ -1,6 +1,6 @@
 import { TextureNode, Rect, Size, FontStyle, GlyphData } from "./types";
 
-const INITIAL_PAGE_WIDTH  = 512;
+const INITIAL_PAGE_WIDTH = 512;
 const INITIAL_PAGE_HEIGHT = 512;
 
 export class GlyphAtlas {
@@ -13,7 +13,7 @@ export class GlyphAtlas {
 
   constructor() {
     this.canvas = document.createElement("canvas");
-    this.canvas.width  = INITIAL_PAGE_WIDTH;
+    this.canvas.width = INITIAL_PAGE_WIDTH;
     this.canvas.height = INITIAL_PAGE_HEIGHT;
 
     const ctx = this.canvas.getContext("2d");
@@ -32,9 +32,9 @@ export class GlyphAtlas {
   }
 
   public getGlyphData(
-    str:        string,
+    str: string,
     fontFamily: string,
-    fontSize:   string,
+    fontSize: string,
     fontStyle?: FontStyle
   ): GlyphData {
     const key = `${fontFamily}-${fontSize}-${str}`;
@@ -54,7 +54,7 @@ export class GlyphAtlas {
       throw new Error("Atlas is full");
     }
 
-    node.glyphData.actualBoundingBoxAscent  = metrics.actualBoundingBoxAscent;
+    node.glyphData.actualBoundingBoxAscent = metrics.actualBoundingBoxAscent;
     node.glyphData.actualBoundingBoxDescent = metrics.actualBoundingBoxDescent;
 
     const x = node.glyphData.rect.x;
@@ -72,53 +72,58 @@ export class GlyphAtlas {
     if (node.left && node.right) {
       const newNode = this.pack(node.left, size);
       if (newNode !== null) {
-	return newNode;
+        return newNode;
       }
+
       return this.pack(node.right, size);
     } else {
+      if (node.filled) {
+        return null;
+      }
+
       if (glyphRect.width < size.width || node.glyphData.rect.height < size.height) {
-	return null;
+        return null;
       }
 
       if (glyphRect.width === size.width && node.glyphData.rect.height === size.height) {
-	node.filled = true;
-	return node;
+        node.filled = true;
+        return node;
       }
 
-      const dw = glyphRect.width  - size.width;
+      const dw = glyphRect.width - size.width;
       const dh = glyphRect.height - size.height;
       if (dw > dh) {
-	node.left = this.createNode({
-	  x: glyphRect.x,
-	  y: glyphRect.y + size.height,
-	  width: size.width,
-	  height: dh
-	});
+        node.left = this.createNode({
+          x: glyphRect.x,
+          y: glyphRect.y + size.height,
+          width: size.width,
+          height: dh
+        });
 
-	node.right = this.createNode({
-	  x: glyphRect.x + size.width,
-	  y: glyphRect.y,
-	  width: dw,
-	  height: glyphRect.height
-	});
+        node.right = this.createNode({
+          x: glyphRect.x + size.width,
+          y: glyphRect.y,
+          width: dw,
+          height: glyphRect.height
+        });
       } else {
-	node.left = this.createNode({
-	  x: glyphRect.x,
-	  y: glyphRect.y + size.height,
-	  width: glyphRect.width,
-	  height: dh
-	});
+        node.left = this.createNode({
+          x: glyphRect.x,
+          y: glyphRect.y + size.height,
+          width: glyphRect.width,
+          height: dh
+        });
 
-	node.right = this.createNode({
-	  x: glyphRect.x + size.width,
-	  y: glyphRect.y,
-	  width: dw,
-	  height: size.height
-	});
+        node.right = this.createNode({
+          x: glyphRect.x + size.width,
+          y: glyphRect.y,
+          width: dw,
+          height: size.height
+        });
       }
     }
 
-    glyphRect.width  = size.width;
+    glyphRect.width = size.width;
     glyphRect.height = size.height;
     node.filled = true;
     return node;
@@ -127,9 +132,9 @@ export class GlyphAtlas {
   private createNode(rect: Rect): TextureNode {
     return {
       glyphData: {
-	rect,
-	actualBoundingBoxAscent: 0,
-	actualBoundingBoxDescent: 0,
+        rect,
+        actualBoundingBoxAscent: 0,
+        actualBoundingBoxDescent: 0,
       },
       left: null,
       right: null,
@@ -145,13 +150,13 @@ export class GlyphAtlas {
 
     switch (fontStyle) {
       case "bold": {
-	font = "bold " + font;
+        font = "bold " + font;
       } break;
       case "italic": {
-	font = "italic " + font;
+        font = "italic " + font;
       } break;
       case "both": {
-	font = "italic bold " + font;
+        font = "italic bold " + font;
       } break;
     }
     return font;
