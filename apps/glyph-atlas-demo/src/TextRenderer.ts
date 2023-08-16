@@ -3,34 +3,68 @@ import Graphemer from "graphemer";
 
 export class TextRenderer {
   private glyphAtlas: GlyphAtlas;
-  private graphemer: Graphemer;
 
   constructor() {
     this.glyphAtlas = new GlyphAtlas();
-    this.graphemer = new Graphemer();
   }
 
   render(
     ctx: CanvasRenderingContext2D,
-    text: string,
     font: Font,
+    str: string,
     x: number,
-    y: number
+    y: number,
+    maxWidth = Infinity,
+    ellipsis = false
   ) {
-    let offsetX = x;
+    let availableContentWidth = maxWidth;
+    if (ellipsis && maxWidth !== Infinity) {
+      const glyphData = this.glyphAtlas.cache(".", font);
+      const ellipsisWidth = glyphData.rect.width * 3;
+      availableContentWidth = Math.max(maxWidth - ellipsisWidth, 0);
+    }
 
-    for (const char of this.graphemer.iterateGraphemes(text)) {
-      const glyphData = this.glyphAtlas.getGlyphData(char, font);
+    let usedWidth = 0;
+    let stringIndex = 0;
+    let doEllipsis = false;
+
+    while (true) {
+      const nextStringIndex = Graphemer.nextBreak(str, stringIndex);
+      if (nextStringIndex === stringIndex) {
+        break;
+      }
+      const grapheme = str.slice(stringIndex, nextStringIndex);
+      stringIndex = nextStringIndex;
+
+      const glyphData = this.glyphAtlas.cache(grapheme, font);
+      const glyphRect = glyphData.rect;
+      if (usedWidth + glyphRect.width > availableContentWidth) {
+        doEllipsis = true;
+        break;
+      }
+
+      const screenX = x + usedWidth;
+      const screenY = y - glyphData.actualBoundingBoxAscent;
+      ctx.drawImage(this.glyphAtlas.canvas, glyphRect.x, glyphRect.y, glyphRect.width, glyphRect.height, screenX, screenY, glyphRect.width, glyphRect.height);
+
+      usedWidth += glyphRect.width;
+    }
+
+    if (doEllipsis) {
+      const glyphData = this.glyphAtlas.cache(".", font);
       const glyphRect = glyphData.rect;
 
-      let offsetY = y - glyphData.actualBoundingBoxAscent;
+      const screenY = y - glyphData.actualBoundingBoxAscent;
+      for (let i = 0; i < 3; i++) {
+        if (usedWidth + glyphRect.width > maxWidth) {
+          break;
+        }
 
-      ctx.drawImage(
-        this.glyphAtlas.canvas,
-        glyphRect.x, glyphRect.y, glyphRect.width, glyphRect.height,
-        offsetX, offsetY, glyphRect.width, glyphRect.height);
+        const screenX = x + usedWidth;
+        ctx.drawImage(this.glyphAtlas.canvas, glyphRect.x, glyphRect.y, glyphRect.width, glyphRect.height, screenX, screenY, glyphRect.width, glyphRect.height);
 
-      offsetX += glyphData.rect.width;
+        usedWidth += glyphRect.width;
+      }
     }
   }
 }

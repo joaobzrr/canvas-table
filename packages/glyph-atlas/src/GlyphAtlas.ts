@@ -7,7 +7,7 @@ export class GlyphAtlas {
   public canvas: HTMLCanvasElement;
 
   private ctx: CanvasRenderingContext2D;
-  private cache = new Map<string, TextureNode>();
+  private nodeCache = new Map<string, TextureNode>();
 
   private root: TextureNode;
 
@@ -31,9 +31,9 @@ export class GlyphAtlas {
     });
   }
 
-  public getGlyphData(str: string, font: Font): GlyphData {
-    const key = `${font.family}-${font.size}-${str}`;
-    let cached = this.cache.get(key);
+  public cache(str: string, font: Font): GlyphData {
+    const key = `${font.family},${font.size},${str}`;
+    let cached = this.nodeCache.get(key);
     if (cached) {
       return cached.glyphData;
     }
@@ -57,7 +57,7 @@ export class GlyphAtlas {
     const y = node.glyphData.rect.y + metrics.actualBoundingBoxAscent;
     this.ctx.fillText(str, x, y);
 
-    this.cache.set(str, node);
+    this.nodeCache.set(key, node);
     return node.glyphData;
   }
 
