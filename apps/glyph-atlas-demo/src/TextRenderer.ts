@@ -1,4 +1,4 @@
-import { GlyphAtlas, FontStyle } from "glyph-atlas";
+import { GlyphAtlas, Font } from "glyph-atlas";
 import Graphemer from "graphemer";
 
 export class TextRenderer {
@@ -13,15 +13,14 @@ export class TextRenderer {
   render(
     ctx: CanvasRenderingContext2D,
     text: string,
-    fontFamily: string,
-    fontSize: string,
-    fontStyle: FontStyle,
+    font: Font,
     x: number,
     y: number
   ) {
     let offsetX = x;
+
     for (const char of this.graphemer.iterateGraphemes(text)) {
-      const glyphData = this.glyphAtlas.getGlyphData(char, fontFamily, fontSize, fontStyle);
+      const glyphData = this.glyphAtlas.getGlyphData(char, font);
       const glyphRect = glyphData.rect;
 
       let offsetY = y - glyphData.actualBoundingBoxAscent;

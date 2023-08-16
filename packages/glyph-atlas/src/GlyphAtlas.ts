@@ -1,4 +1,4 @@
-import { TextureNode, Rect, Size, FontStyle, GlyphData } from "./types";
+import { TextureNode, Rect, Size, Font, GlyphData } from "./types";
 
 const INITIAL_PAGE_WIDTH = 512;
 const INITIAL_PAGE_HEIGHT = 512;
@@ -31,19 +31,15 @@ export class GlyphAtlas {
     });
   }
 
-  public getGlyphData(
-    str: string,
-    fontFamily: string,
-    fontSize: string,
-    fontStyle?: FontStyle
-  ): GlyphData {
-    const key = `${fontFamily}-${fontSize}-${str}`;
+  public getGlyphData(str: string, font: Font): GlyphData {
+    const key = `${font.family}-${font.size}-${str}`;
     let cached = this.cache.get(key);
     if (cached) {
       return cached.glyphData;
     }
 
-    this.ctx.font = this.makeFontDescription(fontFamily, fontSize, fontStyle);
+    this.ctx.font = this.makeFontDescription(font.family, font.size, font.style);
+    this.ctx.fillStyle = font.color;
 
     const metrics = this.ctx.measureText(str);
     const node = this.pack(this.root, {

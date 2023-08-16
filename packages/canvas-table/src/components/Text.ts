@@ -39,8 +39,8 @@ export class Text extends Konva.Shape {
       throw new Error("Index out of bounds");
     }
 
-    if (index === str.length -1) {
-      return str.length -1;
+    if (index === str.length - 1) {
+      return str.length - 1;
     }
 
     const nextCodePoint = str.codePointAt(index + 1)!;
@@ -50,7 +50,7 @@ export class Text extends Konva.Shape {
 
     return index + 1;
   }
-  
+
   drawShape(ctx: Context) {
     const text = this.getAttr("textValue") as string;
     if (!text) {
@@ -58,10 +58,10 @@ export class Text extends Konva.Shape {
     }
 
     const glyphAtlas = Text.glyphAtlas;
-    const padding    = this.padding ?? 0;
+    const padding = this.padding ?? 0;
 
-    const bitmap      = glyphAtlas.getBitmap();
-    const glyphWidth  = glyphAtlas.getGlyphWidth();
+    const bitmap = glyphAtlas.getBitmap();
+    const glyphWidth = glyphAtlas.getGlyphWidth();
     const glyphHeight = glyphAtlas.getGlyphHeight();
 
     const availableWidth = this.width() - padding * 2;
@@ -74,7 +74,7 @@ export class Text extends Konva.Shape {
     ctx.textBaseline = "top";
     ctx.font = Utils.serializeFontSpecifier({
       fontFamily: Text.theme.fontFamily,
-      fontSize:   Text.theme.fontSize,
+      fontSize: Text.theme.fontSize,
     });
     ctx.fillStyle = Text.theme.fontColor;
 
@@ -84,26 +84,26 @@ export class Text extends Konva.Shape {
 
       const isPrintable = char !== " ";
       if (isPrintable) {
-	const x = glyphCount * glyphWidth + padding;
+        const x = glyphCount * glyphWidth + padding;
 
-	if (codepoint <= 0xFF) {
-	  const rect = glyphAtlas.getGlyphBitmapRect(this.fontConfig, char);
-	  ctx.drawImage(bitmap, rect.x, rect.y, rect.width, rect.height, x, y, glyphWidth, glyphHeight);
-	} else {
-	  ctx.fillText(char, x, y, glyphWidth);
-	}
+        if (codepoint <= 0xFF) {
+          const rect = glyphAtlas.getGlyphBitmapRect(this.fontConfig, char);
+          ctx.drawImage(bitmap, rect.x, rect.y, rect.width, rect.height, x, y, glyphWidth, glyphHeight);
+        } else {
+          ctx.fillText(char, x, y, glyphWidth);
+        }
       }
 
       const isSingleCodePoint = codepoint <= 0xFFFF;
       let nextCharIndex: number;
       if (isSingleCodePoint) {
-	nextCharIndex = Text.nextCodePoint(text, charIndex);
+        nextCharIndex = Text.nextCodePoint(text, charIndex);
       } else {
-	nextCharIndex = Graphemer.nextBreak(text, charIndex);
+        nextCharIndex = Graphemer.nextBreak(text, charIndex);
       }
 
       if (nextCharIndex === charIndex) {
-	break;
+        break;
       }
       charIndex = nextCharIndex;
 

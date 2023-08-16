@@ -23,4 +23,11 @@ export type Size = {
   height: number;
 }
 
+export type Font = {
+  family: string;
+  size: string;
+  style: FontStyle
+  color: string;
+}
+
 export type FontStyle = "normal" | "bold" | "italic" | "both";
