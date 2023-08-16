@@ -1,9 +1,9 @@
-import { randint } from "./randint";
+import { choice } from "./choice";
 
-export function randstr(length: number) {
+export function randstr(charset: string[], length: number) {
   const chars = [];
   for (let i = 0; i < length; i++) {
-      chars.push(String.fromCharCode(randint(97, 122)));
+    chars.push(choice(charset));
   }
   const result = chars.join("");
   return result;
