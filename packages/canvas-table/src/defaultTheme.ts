@@ -10,5 +10,5 @@ export const defaultTheme: Theme = {
   scrollBarThumbColor: "#928374",
   fontSize: "14px",
   fontColor: "#EBDBB2",
-  fontFamily: "Monospace"
+  fontFamily: "Arial"
 };

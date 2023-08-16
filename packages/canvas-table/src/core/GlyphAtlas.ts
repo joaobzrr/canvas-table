@@ -1,100 +1,202 @@
-import { Utils } from "../Utils";
-import { FontConfig, FontSpecifier, Theme } from "../types";
+export type GlyphAtlasOptions = {
+  textureWidth?:  number;
+  textureHeight?: number;
+}
+
+export type TextureNode = {
+  glyphData: GlyphData;
+  left: TextureNode | null;
+  right: TextureNode | null;
+  filled: boolean;
+}
+
+export type GlyphData = {
+  rect: Rect;
+  actualBoundingBoxAscent: number;
+  actualBoundingBoxDescent: number;
+}
+
+export type Rect = {
+  x: number,
+  y: number,
+  width: number,
+  height: number
+}
+
+export type Size = {
+  width: number;
+  height: number;
+}
+
+export type Font = {
+  family: string;
+  size: string;
+  style: FontStyle
+  color: string;
+}
+
+export type FontStyle = "normal" | "bold" | "italic" | "both";
+
+const DEFAULT_PAGE_WIDTH = 1024;
+const DEFAULT_PAGE_HEIGHT = 1024;
 
 export class GlyphAtlas {
-  static fontConfigs: FontConfig[] = [
-    {
-      configName: "normal"
-    },
-    {
-      configName: "bold",
-      fontWeight: "bold"
-    },
-    {
-      configName: "italic",
-      fontStyle: "italic"
+  public canvas: HTMLCanvasElement;
+
+  private ctx: CanvasRenderingContext2D;
+  private nodeCache = new Map<string, TextureNode>();
+
+  private root: TextureNode;
+
+  private textureWidth: number;
+  private textureHeight: number;
+
+  constructor(options?: GlyphAtlasOptions) {
+    this.canvas = document.createElement("canvas");
+    this.textureWidth  = options?.textureWidth  ?? DEFAULT_PAGE_WIDTH;
+    this.textureHeight = options?.textureHeight ?? DEFAULT_PAGE_HEIGHT;
+    this.canvas.width  = this.textureWidth;
+    this.canvas.height = this.textureHeight;
+
+    const ctx = this.canvas.getContext("2d");
+    if (!ctx) {
+      throw new Error("Failed to create context");
     }
-  ];
+    this.ctx = ctx;
+    this.ctx.textBaseline = "alphabetic";
 
-  static latinChars = Array.from({ length: 255 }, (_, i) => {
-    return String.fromCharCode(i);
-  }).join("");
-
-  static theme: Theme;
-
-  bitmap: ImageBitmap;
-  glyphWidth: number;
-  glyphHeight: number;
-
-  constructor(bitmap: ImageBitmap, glyphWidth: number, glyphHeight: number) {
-    this.bitmap = bitmap;
-    this.glyphWidth = glyphWidth;
-    this.glyphHeight = glyphHeight;
+    this.root = this.createNode({
+      x: 0,
+      y: 0,
+      width: this.textureWidth,
+      height: this.textureHeight
+    });
   }
 
-  static async create(fontFamily: string, fontSize: string) {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d")!;
-    if (!ctx) {
-      throw new Error("Failed to instantiate context");
+  public cache(str: string, font: Font): GlyphData {
+    const key = `${font.family},${font.size},${font.style},${font.color},${str}`;
+    let cached = this.nodeCache.get(key);
+    if (cached) {
+      return cached.glyphData;
     }
 
-    function setupContext(specifier: FontSpecifier) {
-      ctx.font = Utils.serializeFontSpecifier(specifier);
-      ctx.fillStyle = GlyphAtlas.theme.fontColor;
-      ctx.textBaseline = "alphabetic";
+    this.ctx.font = this.makeFontDescription(font.family, font.size, font.style);
+    this.ctx.fillStyle = font.color;
+
+    const metrics = this.ctx.measureText(str);
+    const node = this.pack(this.root, {
+      width: metrics.width,
+      height: metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
+    });
+    if (!node) {
+      throw new Error("Atlas is full");
     }
 
-    setupContext({ fontFamily, fontSize });
+    node.glyphData.actualBoundingBoxAscent = metrics.actualBoundingBoxAscent;
+    node.glyphData.actualBoundingBoxDescent = metrics.actualBoundingBoxDescent;
 
-    const metrics = ctx.measureText(GlyphAtlas.latinChars);
-    const glyphWidth = ctx.measureText("M").width;
-    const glyphHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+    const x = node.glyphData.rect.x;
+    const y = node.glyphData.rect.y + metrics.actualBoundingBoxAscent;
+    this.ctx.fillText(str, x, y);
 
-    // @Note Changing the canvas dimensions resets the context
-    canvas.width = metrics.width;
-    canvas.height = glyphHeight * GlyphAtlas.fontConfigs.length;
+    this.nodeCache.set(key, node);
+    return node.glyphData;
+  }
 
-    for (const [index, config] of GlyphAtlas.fontConfigs.entries()) {
-      setupContext({ ...config, fontFamily, fontSize });
+  private pack(node: TextureNode, size: Size): TextureNode | null {
+    const glyphData = node.glyphData;
+    const glyphRect = glyphData.rect;
 
-      const y = (index * glyphHeight) + metrics.fontBoundingBoxAscent;
+    if (node.left && node.right) {
+      const newNode = this.pack(node.left, size);
+      if (newNode !== null) {
+        return newNode;
+      }
 
-      for (let i = 0; i < GlyphAtlas.latinChars.length; i++) {
-          const x = i * glyphWidth;
-          ctx.fillText(GlyphAtlas.latinChars.charAt(i), x, y);
+      return this.pack(node.right, size);
+    } else {
+      if (node.filled) {
+        return null;
+      }
+
+      if (glyphRect.width < size.width || node.glyphData.rect.height < size.height) {
+        return null;
+      }
+
+      if (glyphRect.width === size.width && node.glyphData.rect.height === size.height) {
+        node.filled = true;
+        return node;
+      }
+
+      const dw = glyphRect.width - size.width;
+      const dh = glyphRect.height - size.height;
+      if (dw > dh) {
+        node.left = this.createNode({
+          x: glyphRect.x,
+          y: glyphRect.y + size.height,
+          width: size.width,
+          height: dh
+        });
+
+        node.right = this.createNode({
+          x: glyphRect.x + size.width,
+          y: glyphRect.y,
+          width: dw,
+          height: glyphRect.height
+        });
+      } else {
+        node.left = this.createNode({
+          x: glyphRect.x,
+          y: glyphRect.y + size.height,
+          width: glyphRect.width,
+          height: dh
+        });
+
+        node.right = this.createNode({
+          x: glyphRect.x + size.width,
+          y: glyphRect.y,
+          width: dw,
+          height: size.height
+        });
       }
     }
 
-    const bitmap = await createImageBitmap(canvas);
-    return new GlyphAtlas(bitmap, glyphWidth, glyphHeight);
+    glyphRect.width = size.width;
+    glyphRect.height = size.height;
+    node.filled = true;
+    return node;
   }
 
-  getGlyphBitmapRect(configName: string, char: string) {
-    const configIndex = GlyphAtlas.fontConfigs.findIndex(
-      config => config.configName === configName);
-
-    if (configIndex === -1) {
-      throw new Error(`Font config named ${configName} does not exist`);
-    }
-
+  private createNode(rect: Rect): TextureNode {
     return {
-      x: char.charCodeAt(0) * this.glyphWidth,
-      y: configIndex * this.glyphHeight,
-      width: this.glyphWidth,
-      height: this.glyphHeight
+      glyphData: {
+        rect,
+        actualBoundingBoxAscent: 0,
+        actualBoundingBoxDescent: 0,
+      },
+      left: null,
+      right: null,
+      filled: false
     };
   }
 
-  getBitmap() {
-    return this.bitmap;
-  }
+  public makeFontDescription(fontFamily: string, fontSize: string, fontStyle?: string) {
+    let font = `${fontSize} ${fontFamily}`;
+    if (!fontStyle) {
+      return font;
+    }
 
-  getGlyphWidth() {
-    return this.glyphWidth;
-  }
-  
-  getGlyphHeight() {
-    return this.glyphHeight;
+    switch (fontStyle) {
+      case "bold": {
+        font = "bold " + font;
+      } break;
+      case "italic": {
+        font = "italic " + font;
+      } break;
+      case "both": {
+        font = "italic bold " + font;
+      } break;
+    }
+    return font;
   }
 }

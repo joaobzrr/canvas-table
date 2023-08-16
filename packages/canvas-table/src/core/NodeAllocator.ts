@@ -5,6 +5,7 @@ import { ObjectPool } from "./ObjectPool";
 import { BodyCellFactory } from "./BodyCellFactory";
 import { HeadCellFactory } from "./HeadCellFactory";
 import { ResizeColumnButtonFactory } from "./ResizeColumnButtonFactory";
+import { TextRenderer } from "./TextRenderer";
 
 export class NodeAllocator {
   bodyCellFactory: BodyCellFactory;
@@ -19,19 +20,23 @@ export class NodeAllocator {
   lineImageCache: Map<string, ImageBitmap>;
   linePool: ObjectPool<Line>;
 
+  textRenderer: TextRenderer;
+
   theme: Theme;
 
   constructor(theme: Theme) {
     this.theme = theme;
 
-    this.bodyCellFactory = new BodyCellFactory(this.theme);
+    this.textRenderer = new TextRenderer();
+
+    this.bodyCellFactory = new BodyCellFactory(this.textRenderer, this.theme);
     this.bodyCellPool = new ObjectPool({
       initialSize: 1000,
       make: () => this.bodyCellFactory.make(),
       reset: group => this.bodyCellFactory.reset(group)
     });
 
-    this.headCellFactory = new HeadCellFactory(this.theme);
+    this.headCellFactory = new HeadCellFactory(this.textRenderer, this.theme);
     this.headCellPool = new ObjectPool({
       initialSize: 30,
       make: () => this.headCellFactory.make(),

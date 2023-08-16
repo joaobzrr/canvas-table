@@ -3,14 +3,12 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { throttle } from "lodash";
 import {
   NodeAllocator,
-  GlyphAtlas,
   Vector,
   TableState,
 } from "./core";
 import {
   HorizontalScrollbar,
   VerticalScrollbar,
-  Text,
   Line,
 } from "./components";
 import { defaultTheme } from "./defaultTheme";
@@ -52,7 +50,7 @@ export class CanvasTable {
 
   draggables: Konva.Node[] = [];
 
-  constructor(options: CanvasTableOptions & { glyphAtlas: GlyphAtlas }) {
+  constructor(options: CanvasTableOptions) {
     this.stage = new Konva.Stage({ container: options.container });
     this.layer = new Konva.Layer();
     this.stage.add(this.layer);
@@ -113,16 +111,7 @@ export class CanvasTable {
   }
 
   static async create(options: CanvasTableOptions) {
-    const theme = options?.theme ?? defaultTheme;
-    GlyphAtlas.theme = theme;
-    Text.theme = theme;
-
-    const { fontFamily, fontSize } = theme;
-    const glyphAtlas = await GlyphAtlas.create(fontFamily, fontSize);
-
-    Text.glyphAtlas = glyphAtlas;
-
-    return new CanvasTable({ ...options, glyphAtlas });
+    return new CanvasTable({ ...options });
   }
 
   setTableData(columnDefs: ColumnDef[], dataRows: DataRow[]) {
