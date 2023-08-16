@@ -9,6 +9,7 @@ import {
 
 const DEFAULT_PAGE_WIDTH = 1024;
 const DEFAULT_PAGE_HEIGHT = 1024;
+const GLYPH_PADDING = 1;
 
 export class GlyphAtlas {
   public canvas: HTMLCanvasElement;
@@ -35,7 +36,7 @@ export class GlyphAtlas {
     this.ctx = ctx;
     this.ctx.textBaseline = "alphabetic";
 
-    this.root = this.createNode({
+    this.root = this.makeNode({
       x: 0,
       y: 0,
       width: this.textureWidth,
@@ -47,23 +48,25 @@ export class GlyphAtlas {
     const key = `${font.family},${font.size},${font.style},${font.color},${str}`;
     let cached = this.nodeCache.get(key);
     if (cached) {
-      return cached.glyphData;
+      return cached.glyphData!;
     }
 
     this.ctx.font = this.makeFontDescription(font.family, font.size, font.style);
     this.ctx.fillStyle = font.color;
 
     const metrics = this.ctx.measureText(str);
-    const node = this.pack(this.root, {
+    const size = {
       width: metrics.width,
       height: metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
-    });
+    };
+    const node = this.pack(this.root, size, GLYPH_PADDING);
     if (!node) {
       throw new Error("Atlas is full");
     }
 
-    node.glyphData.actualBoundingBoxAscent = metrics.actualBoundingBoxAscent;
-    node.glyphData.actualBoundingBoxDescent = metrics.actualBoundingBoxDescent;
+    node.glyphData = {} as GlyphData;
+    node.glyphData.rect = this.makeGlyphRect(node.rect, GLYPH_PADDING);
+    node.glyphData.verticalShift = metrics.actualBoundingBoxAscent;
 
     const x = node.glyphData.rect.x;
     const y = node.glyphData.rect.y + metrics.actualBoundingBoxAscent;
@@ -73,80 +76,89 @@ export class GlyphAtlas {
     return node.glyphData;
   }
 
-  private pack(node: TextureNode, size: Size): TextureNode | null {
-    const glyphData = node.glyphData;
-    const glyphRect = glyphData.rect;
+  private pack(node: TextureNode, size: Size, padding: number) {
+    return this.doPack(node, {
+      width: size.width + padding * 2,
+      height: size.height + padding * 2
+    });
+  }
 
+  private doPack(node: TextureNode, size: Size): TextureNode | null {
     if (node.left && node.right) {
-      const newNode = this.pack(node.left, size);
+      const newNode = this.doPack(node.left, size);
       if (newNode !== null) {
         return newNode;
       }
 
-      return this.pack(node.right, size);
+      return this.doPack(node.right, size);
     } else {
       if (node.filled) {
         return null;
       }
 
-      if (glyphRect.width < size.width || node.glyphData.rect.height < size.height) {
+      if (node.rect.width < size.width || node.rect.height < size.height) {
         return null;
       }
 
-      if (glyphRect.width === size.width && node.glyphData.rect.height === size.height) {
+      if (node.rect.width === size.width && node.rect.height === size.height) {
         node.filled = true;
         return node;
       }
 
-      const dw = glyphRect.width - size.width;
-      const dh = glyphRect.height - size.height;
+      const dw = node.rect.width - size.width;
+      const dh = node.rect.height - size.height;
       if (dw > dh) {
-        node.left = this.createNode({
-          x: glyphRect.x,
-          y: glyphRect.y + size.height,
+        node.left = this.makeNode({
+          x: node.rect.x,
+          y: node.rect.y + size.height,
           width: size.width,
           height: dh
         });
 
-        node.right = this.createNode({
-          x: glyphRect.x + size.width,
-          y: glyphRect.y,
+        node.right = this.makeNode({
+          x: node.rect.x + size.width,
+          y: node.rect.y,
           width: dw,
-          height: glyphRect.height
+          height: node.rect.height
         });
       } else {
-        node.left = this.createNode({
-          x: glyphRect.x,
-          y: glyphRect.y + size.height,
-          width: glyphRect.width,
+        node.left = this.makeNode({
+          x: node.rect.x,
+          y: node.rect.y + size.height,
+          width: node.rect.width,
           height: dh
         });
 
-        node.right = this.createNode({
-          x: glyphRect.x + size.width,
-          y: glyphRect.y,
+        node.right = this.makeNode({
+          x: node.rect.x + size.width,
+          y: node.rect.y,
           width: dw,
           height: size.height
         });
       }
     }
 
-    glyphRect.width = size.width;
-    glyphRect.height = size.height;
+    node.rect.width = size.width;
+    node.rect.height = size.height;
     node.filled = true;
     return node;
   }
 
-  private createNode(rect: Rect): TextureNode {
+  private makeNode(rect: Rect): TextureNode {
     return {
-      glyphData: {
-        rect,
-        actualBoundingBoxAscent: 0,
-        actualBoundingBoxDescent: 0,
-      },
+      rect,
       left: null,
       right: null,
       filled: false
+    };
+  }
+
+  private makeGlyphRect(rect: Rect, padding: number): Rect {
+    return {
+      x: rect.x + padding,
+      y: rect.y + padding,
+      width: rect.width - padding * 2,
+      height: rect.height - padding * 2
     };
   }
 

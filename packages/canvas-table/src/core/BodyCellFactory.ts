@@ -10,7 +10,7 @@ export class BodyCellFactory {
   ) { }
 
   public make() {
-    const group = new Konva.Group();
+    const group = new Konva.Group({ listening: false });
 
     const textShape = new Konva.Shape();
     textShape.sceneFunc((ctx: Context) => {

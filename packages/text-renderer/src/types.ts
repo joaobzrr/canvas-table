@@ -4,16 +4,16 @@ export type GlyphAtlasOptions = {
 }
 
 export type TextureNode = {
-  glyphData: GlyphData;
+  rect: Rect;
   left: TextureNode | null;
   right: TextureNode | null;
   filled: boolean;
+  glyphData?: GlyphData;
 }
 
 export type GlyphData = {
   rect: Rect;
-  actualBoundingBoxAscent: number;
-  actualBoundingBoxDescent: number;
+  verticalShift: number;
 }
 
 export type Rect = {

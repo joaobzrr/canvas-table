@@ -22,7 +22,7 @@ function main() {
 
   const font: Font = {
     family: "Arial",
-    size: "20px",
+    size: "17px",
     style: "normal",
     color: "black"
   };

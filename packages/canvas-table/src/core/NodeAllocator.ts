@@ -55,12 +55,12 @@ export class NodeAllocator {
     this.linePool = new ObjectPool({
       initialSize: 300,
       make: () => new Line({
-	imageCache: this.lineImageCache,
-	listening: false
+        imageCache: this.lineImageCache,
+        listening: false
       }),
       reset: (line: Line) => {
-	line.position({ x: 0, y: 0 });
-	return line;
+        line.position({ x: 0, y: 0 });
+        return line;
       }
     });
   }
@@ -72,19 +72,19 @@ export class NodeAllocator {
   public allocate(type: string): any {
     switch (type) {
       case "bodyCell": {
-	return this.bodyCellPool.allocate();
+        return this.bodyCellPool.allocate();
       }
       case "headCell": {
-	return this.headCellPool.allocate();
+        return this.headCellPool.allocate();
       }
       case "line": {
-	return this.linePool.allocate();
+        return this.linePool.allocate();
       }
       case "resizeColumnButton": {
-	return this.resizeColumnButtonPool.allocate();
+        return this.resizeColumnButtonPool.allocate();
       }
       default: {
-	throw new Error(`Unknown node type "${type}"`);
+        throw new Error(`Unknown node type "${type}"`);
       }
     }
   }
@@ -96,19 +96,19 @@ export class NodeAllocator {
   public free(type: string, ...elements: any[]) {
     switch (type) {
       case "bodyCell": {
-	this.bodyCellPool.free(...elements);
+        this.bodyCellPool.free(...elements);
       } break;
       case "headCell": {
-	this.headCellPool.free(...elements);
+        this.headCellPool.free(...elements);
       } break;
       case "line": {
-	this.linePool.free(...elements);
+        this.linePool.free(...elements);
       } break;
       case "resizeColumnButton": {
-	this.resizeColumnButtonPool.free(...elements);
+        this.resizeColumnButtonPool.free(...elements);
       } break;
       default: {
-	throw new Error(`Unknown node type "${type}"`);
+        throw new Error(`Unknown node type "${type}"`);
       }
     }
   }

@@ -52,7 +52,7 @@ export class TextRenderer {
       }
 
       const screenX = x + usedWidth;
-      const screenY = y - glyphData.actualBoundingBoxAscent;
+      const screenY = y - glyphData.verticalShift;
       ctx.drawImage(this.glyphAtlas.canvas, glyphRect.x, glyphRect.y, glyphRect.width, glyphRect.height, screenX, screenY, glyphRect.width, glyphRect.height);
 
       usedWidth += glyphRect.width;
@@ -62,7 +62,7 @@ export class TextRenderer {
       const glyphData = this.glyphAtlas.cache(".", font);
       const glyphRect = glyphData.rect;
 
-      const screenY = y - glyphData.actualBoundingBoxAscent;
+      const screenY = y - glyphData.verticalShift;
       for (let i = 0; i < 3; i++) {
         if (usedWidth + glyphRect.width > maxWidth) {
           break;
