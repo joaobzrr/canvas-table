@@ -1,3 +1,8 @@
+export type GlyphAtlasOptions = {
+  textureWidth?:  number;
+  textureHeight?: number;
+}
+
 export type TextureNode = {
   glyphData: GlyphData;
   left: TextureNode | null;

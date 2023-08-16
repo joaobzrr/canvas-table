@@ -1,7 +1,7 @@
-import { TextureNode, Rect, Size, Font, GlyphData } from "./types";
+import { GlyphAtlasOptions, TextureNode, Rect, Size, Font, GlyphData } from "./types";
 
-const INITIAL_PAGE_WIDTH = 512;
-const INITIAL_PAGE_HEIGHT = 512;
+const DEFAULT_PAGE_WIDTH = 1024;
+const DEFAULT_PAGE_HEIGHT = 1024;
 
 export class GlyphAtlas {
   public canvas: HTMLCanvasElement;
@@ -11,10 +11,15 @@ export class GlyphAtlas {
 
   private root: TextureNode;
 
-  constructor() {
+  private textureWidth: number;
+  private textureHeight: number;
+
+  constructor(options?: GlyphAtlasOptions) {
     this.canvas = document.createElement("canvas");
-    this.canvas.width = INITIAL_PAGE_WIDTH;
-    this.canvas.height = INITIAL_PAGE_HEIGHT;
+    this.textureWidth  = options?.textureWidth  ?? DEFAULT_PAGE_WIDTH;
+    this.textureHeight = options?.textureHeight ?? DEFAULT_PAGE_HEIGHT;
+    this.canvas.width  = this.textureWidth;
+    this.canvas.height = this.textureHeight;
 
     const ctx = this.canvas.getContext("2d");
     if (!ctx) {
@@ -26,8 +31,8 @@ export class GlyphAtlas {
     this.root = this.createNode({
       x: 0,
       y: 0,
-      width: INITIAL_PAGE_WIDTH,
-      height: INITIAL_PAGE_HEIGHT
+      width: this.textureWidth,
+      height: this.textureHeight
     });
   }
 

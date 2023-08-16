@@ -5,7 +5,10 @@ export class TextRenderer {
   private glyphAtlas: GlyphAtlas;
 
   constructor() {
-    this.glyphAtlas = new GlyphAtlas();
+    this.glyphAtlas = new GlyphAtlas({
+      textureWidth: 512,
+      textureHeight: 512
+    });
   }
 
   render(
