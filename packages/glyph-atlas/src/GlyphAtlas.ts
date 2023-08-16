@@ -37,7 +37,7 @@ export class GlyphAtlas {
   }
 
   public cache(str: string, font: Font): GlyphData {
-    const key = `${font.family},${font.size},${str}`;
+    const key = `${font.family},${font.size},${font.style},${font.color},${str}`;
     let cached = this.nodeCache.get(key);
     if (cached) {
       return cached.glyphData;
@@ -63,6 +63,8 @@ export class GlyphAtlas {
     this.ctx.fillText(str, x, y);
 
     this.nodeCache.set(key, node);
+    console.log(this.nodeCache)
+
     return node.glyphData;
   }
 
