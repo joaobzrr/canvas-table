@@ -70,8 +70,6 @@ export class GlyphAtlas {
     this.ctx.fillText(str, x, y);
 
     this.nodeCache.set(key, node);
-    console.log(this.nodeCache)
-
     return node.glyphData;
   }
 

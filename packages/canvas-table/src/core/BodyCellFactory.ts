@@ -1,6 +1,6 @@
 import Konva from "konva";
+import { TextRenderer } from "text-renderer";
 import { Context } from "konva/lib/Context";
-import { TextRenderer } from "../core/TextRenderer";
 import { Theme } from "../types";
 
 export class BodyCellFactory {
@@ -13,7 +13,6 @@ export class BodyCellFactory {
     const group = new Konva.Group();
 
     const textShape = new Konva.Shape();
-
     textShape.sceneFunc((ctx: Context) => {
       const text = textShape.getAttr("textValue") as string;
       if (!text) {

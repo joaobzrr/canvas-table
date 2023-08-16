@@ -83,6 +83,9 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
+      text-renderer:
+        specifier: workspace:^
+        version: link:../text-renderer
     devDependencies:
       '@types/lodash':
         specifier: ^4.14.197

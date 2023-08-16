@@ -1,6 +1,6 @@
-import Graphemer from "graphemer";
-import { GlyphAtlas, } from "./GlyphAtlas";
+import { GlyphAtlas } from "./GlyphAtlas";
 import { Font } from "./types";
+import Graphemer from "graphemer";
 
 export class TextRenderer {
   private glyphAtlas: GlyphAtlas;
@@ -21,6 +21,10 @@ export class TextRenderer {
     maxWidth = Infinity,
     ellipsis = false
   ) {
+    const fontMetrics = ctx.measureText("M");
+    const textHeight = fontMetrics.fontBoundingBoxAscent + fontMetrics.fontBoundingBoxDescent;
+    y += textHeight / 2;
+
     let availableContentWidth = maxWidth;
     if (ellipsis && maxWidth !== Infinity) {
       const glyphData = this.glyphAtlas.cache(".", font);

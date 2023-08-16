@@ -1,6 +1,6 @@
 import Konva from "konva";
+import { TextRenderer } from "text-renderer";
 import { Context } from "konva/lib/Context";
-import { TextRenderer } from "../core/TextRenderer";
 import { Theme } from "../types";
 
 export class HeadCellFactory {

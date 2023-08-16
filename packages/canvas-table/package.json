@@ -27,7 +27,8 @@
   "dependencies": {
     "graphemer": "^1.4.0",
     "konva": "^9.2.0",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "text-renderer": "workspace:^"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.197",

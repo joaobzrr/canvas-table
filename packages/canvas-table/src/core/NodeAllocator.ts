@@ -1,11 +1,11 @@
 import Konva from "konva";
+import { TextRenderer } from "text-renderer";
 import { Theme } from "../types";
 import { Line } from "../components";
 import { ObjectPool } from "./ObjectPool";
 import { BodyCellFactory } from "./BodyCellFactory";
 import { HeadCellFactory } from "./HeadCellFactory";
 import { ResizeColumnButtonFactory } from "./ResizeColumnButtonFactory";
-import { TextRenderer } from "./TextRenderer";
 
 export class NodeAllocator {
   bodyCellFactory: BodyCellFactory;
