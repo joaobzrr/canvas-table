@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { randint } from "./randint";
 import { randstr } from "./randstr";
 
-const charset = Array.from("世界中で深刻な関心を引き起こしています");
+const charset = Array.from("abcdefghijklmnopqrstuvwxyz世界中で深刻な関心を引き起こしています");
 
 export function generateTableData<T extends Record<string, string>>(
   rows: number,
