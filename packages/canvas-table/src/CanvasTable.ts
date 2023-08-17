@@ -29,7 +29,7 @@ export class CanvasTable {
   tableState: TableState;
   theme: Theme;
 
-  bodyDimensionsWithoutScrollbars = { width: 1, height : 1 };
+  bodyDimensionsWithoutScrollbars = { width: 1, height: 1 };
   bodyDimensionsWithScrollbars = { width: 1, height: 1 };
 
   body: Konva.Group;
@@ -132,7 +132,7 @@ export class CanvasTable {
     this.vsb.height(this.body.height());
     this.vsb.updateThumb();
     this.vsb.repositionThumb();
-    
+
     this.updateBodyGrid();
     this.updateHeadGrid();
     this.updateBodyCells();
@@ -169,7 +169,7 @@ export class CanvasTable {
   onWheel(event: KonvaEventObject<WheelEvent>) {
     const { x: scrollLeft, y: scrollTop } = this.tableState.scrollPosition;
     const newScrollLeft = scrollLeft + event.evt.deltaX;
-    const newScrollTop  = scrollTop + event.evt.deltaY;
+    const newScrollTop = scrollTop + event.evt.deltaY;
     const newScrollPosition = new Vector(newScrollLeft, newScrollTop);
     this.tableState.setScrollPosition(newScrollPosition);
 
@@ -190,15 +190,17 @@ export class CanvasTable {
       const scrollPosition = this.tableState.getScrollPosition();
       const draggable = event.target;
       const dragX = draggable.x() + scrollPosition.x;
-      const columnWidth = dragX - columnState.position
-      this.resizeColumn(columnIndex, columnWidth);
+      const columnWidth = Math.max(dragX - columnState.position, MIN_COLUMN_WIDTH);
+      if (columnWidth !== columnState.width) {
+        this.resizeColumn(columnIndex, columnWidth);
+      }
     }, 16);
 
     this.createDraggable({ x, y: 0 }, onDragMove);
   }
 
   resizeColumn(columnIndex: number, columnWidth: number) {
-    this.tableState.setColumnWidth(columnIndex, Math.max(columnWidth, MIN_COLUMN_WIDTH));
+    this.tableState.setColumnWidth(columnIndex, columnWidth);
 
     this.updateScrollbarVisibility();
     this.updateBody();
@@ -220,11 +222,11 @@ export class CanvasTable {
   updateBodyDimensions() {
     const { width: stageWidth, height: stageHeight } = this.stage.size();
 
-    this.bodyDimensionsWithoutScrollbars.width  = stageWidth;
-    this.bodyDimensionsWithScrollbars.width     = stageWidth - this.theme.scrollBarThickness;
+    this.bodyDimensionsWithoutScrollbars.width = stageWidth;
+    this.bodyDimensionsWithScrollbars.width = stageWidth - this.theme.scrollBarThickness;
 
     this.bodyDimensionsWithoutScrollbars.height = stageHeight - this.theme.rowHeight;
-    this.bodyDimensionsWithScrollbars.height    = stageHeight - this.theme.rowHeight - this.theme.scrollBarThickness;
+    this.bodyDimensionsWithScrollbars.height = stageHeight - this.theme.rowHeight - this.theme.scrollBarThickness;
   }
 
   updateBody() {
@@ -279,10 +281,10 @@ export class CanvasTable {
   }
 
   updateBodyGrid() {
-    const scrollPosition     = this.tableState.getScrollPosition();
-    const tableDimensions    = this.tableState.getTableDimensions();
+    const scrollPosition = this.tableState.getScrollPosition();
+    const tableDimensions = this.tableState.getTableDimensions();
     const viewportDimensions = this.tableState.getViewportDimensions();
-    const tableRanges        = this.tableState.getTableRanges();
+    const tableRanges = this.tableState.getTableRanges();
 
     const lines = this.bodyLineGroup.children as Line[];
     this.bodyLineGroup.removeChildren();
@@ -296,10 +298,10 @@ export class CanvasTable {
 
       const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
-	x: 0,
-	y,
-	width: hLineLength,
-	height: 1,
+        x: 0,
+        y,
+        width: hLineLength,
+        height: 1,
         fill: this.theme.tableBorderColor
       });
       this.bodyLineGroup.add(line);
@@ -309,11 +311,11 @@ export class CanvasTable {
     if (viewportDimensions.height > tableDimensions.height) {
       const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
-	x: 0,
-	y: tableDimensions.height,
-	width: hLineLength,
-	height: 1,
-	fill: this.theme.tableBorderColor
+        x: 0,
+        y: tableDimensions.height,
+        width: hLineLength,
+        height: 1,
+        fill: this.theme.tableBorderColor
       });
       this.bodyLineGroup.add(line);
     }
@@ -327,11 +329,11 @@ export class CanvasTable {
 
       const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
-	x,
-	y: 0,
-	width: 1,
-	height: vLineLength,
-	fill: this.theme.tableBorderColor
+        x,
+        y: 0,
+        width: 1,
+        height: vLineLength,
+        fill: this.theme.tableBorderColor
       });
       this.bodyLineGroup.add(line);
     }
@@ -340,10 +342,10 @@ export class CanvasTable {
     if (viewportDimensions.width > tableDimensions.width) {
       const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
-	x: tableDimensions.width,
-	y: 0,
-	width: 1,
-	height: vLineLength,
+        x: tableDimensions.width,
+        y: 0,
+        width: 1,
+        height: vLineLength,
         fill: this.theme.tableBorderColor,
       });
       this.bodyLineGroup.add(line);
@@ -351,10 +353,10 @@ export class CanvasTable {
   }
 
   updateHeadGrid() {
-    const scrollPosition     = this.tableState.getScrollPosition();
-    const tableDimensions    = this.tableState.getTableDimensions();
+    const scrollPosition = this.tableState.getScrollPosition();
+    const tableDimensions = this.tableState.getTableDimensions();
     const viewportDimensions = this.tableState.getViewportDimensions();
-    const tableRanges        = this.tableState.getTableRanges();
+    const tableRanges = this.tableState.getTableRanges();
 
     const lines = this.headLineGroup.children as Line[];
     this.headLineGroup.removeChildren();
@@ -364,11 +366,11 @@ export class CanvasTable {
     {
       const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
-	x: 0,
-	y: this.head.height(),
-	width: this.head.width(),
-	height: 1,
-	fill: this.theme.tableBorderColor
+        x: 0,
+        y: this.head.height(),
+        width: this.head.width(),
+        height: 1,
+        fill: this.theme.tableBorderColor
       });
       this.headLineGroup.add(line);
     }
@@ -381,9 +383,9 @@ export class CanvasTable {
 
       const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
-	x,
-	width: 1,
-	height: this.theme.rowHeight,
+        x,
+        width: 1,
+        height: this.theme.rowHeight,
         fill: this.theme.tableBorderColor,
       });
       this.headLineGroup.add(line);
@@ -393,9 +395,9 @@ export class CanvasTable {
     if (viewportDimensions.width > tableDimensions.width) {
       const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
-	x: tableDimensions.width,
-	width: 1,
-	height: this.theme.rowHeight,
+        x: tableDimensions.width,
+        width: 1,
+        height: this.theme.rowHeight,
         fill: this.theme.tableBorderColor
       });
       this.headLineGroup.add(line);
@@ -405,10 +407,10 @@ export class CanvasTable {
     {
       const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
-	x: this.head.width(),
-	width: 1,
-	height: this.head.height(),
-	fill: this.theme.tableBorderColor
+        x: this.head.width(),
+        width: 1,
+        height: this.head.height(),
+        fill: this.theme.tableBorderColor
       });
       this.headLineGroup.add(line);
     }
@@ -417,9 +419,9 @@ export class CanvasTable {
     if (viewportDimensions.width > tableDimensions.width) {
       const line = this.nodeAllocator.allocate("line");
       line.setAttrs({
-	x: tableDimensions.width,
-	width: 1,
-	height: this.theme.rowHeight,
+        x: tableDimensions.width,
+        width: 1,
+        height: this.theme.rowHeight,
         fill: this.theme.tableBorderColor
       });
       this.headLineGroup.add(line);
@@ -428,8 +430,8 @@ export class CanvasTable {
 
   updateBodyCells() {
     const scrollPosition = this.tableState.getScrollPosition();
-    const tableRanges    = this.tableState.getTableRanges();
-    const rowHeight      = this.tableState.getRowHeight();
+    const tableRanges = this.tableState.getTableRanges();
+    const rowHeight = this.tableState.getRowHeight();
 
     const bodyCells = this.bodyCellGroup.children as Konva.Group[];
     this.bodyCellGroup.removeChildren();
@@ -445,23 +447,23 @@ export class CanvasTable {
         const x = columnState.position - scrollPosition.x;
 
         const cell = this.nodeAllocator.allocate("bodyCell");
-	this.bodyCellGroup.add(cell);
+        this.bodyCellGroup.add(cell);
 
-	cell.setAttrs(({
-	  x, y,
-	  width: columnState.width,
-	  height: rowHeight,
-	  text: dataRow[columnState.field],
-	  theme: this.theme
-	}));
+        cell.setAttrs(({
+          x, y,
+          width: columnState.width,
+          height: rowHeight,
+          text: dataRow[columnState.field],
+          theme: this.theme
+        }));
       }
     }
   }
 
   updateHeadCells() {
     const scrollPosition = this.tableState.getScrollPosition();
-    const tableRanges    = this.tableState.getTableRanges();
-    const rowHeight      = this.tableState.getRowHeight();
+    const tableRanges = this.tableState.getTableRanges();
+    const rowHeight = this.tableState.getRowHeight();
 
     const headCells = this.headCellGroup.children as Konva.Group[];
     this.nodeAllocator.free("headCell", ...headCells);
@@ -476,11 +478,11 @@ export class CanvasTable {
       this.headCellGroup.add(cell);
 
       cell.setAttrs({
-	x,
-	width: columnState.width,
-	height: rowHeight,
-	text: columnState.title,
-	theme: this.theme,
+        x,
+        width: columnState.width,
+        height: rowHeight,
+        text: columnState.title,
+        theme: this.theme,
       });
     }
   }
@@ -490,8 +492,8 @@ export class CanvasTable {
     const tableRanges = this.tableState.getTableRanges();
 
     const buttons = this.resizeColumnButtonGroup.children as Konva.Rect[];
-    this.nodeAllocator.free("resizeColumnButton", ...buttons);
     this.resizeColumnButtonGroup.removeChildren();
+    this.nodeAllocator.free("resizeColumnButton", ...buttons);
 
     const { columnLeft, columnRight } = tableRanges;
     for (let j = columnLeft; j < columnRight; j++) {
@@ -502,11 +504,9 @@ export class CanvasTable {
       this.resizeColumnButtonGroup.add(button);
 
       button.setAttrs({
-	centerx,
-	y: 0,
-	onMouseDown: () => {
-	  this.onClickColumnResizeButton(j, centerx);
-	}
+        centerx,
+        y: 0,
+        onMouseDown: () => this.onClickColumnResizeButton(j, centerx),
       });
     }
   }

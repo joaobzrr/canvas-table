@@ -40,7 +40,7 @@ export class NodeAllocator {
     this.headCellPool = new ObjectPool({
       initialSize: 30,
       make: () => this.headCellFactory.make(),
-      reset: (group) => this.headCellFactory.reset(group)
+      reset: group => this.headCellFactory.reset(group)
     });
 
     this.resizeColumnButtonFactory = new ResizeColumnButtonFactory(this.theme);

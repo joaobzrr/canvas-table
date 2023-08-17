@@ -40,6 +40,7 @@ export class BodyCellFactory {
     group.on("textChange", event => {
       textShape.setAttr("textValue", (event as any).newVal);
     });
+
     return group;
   }
 
