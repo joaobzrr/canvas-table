@@ -68,3 +68,8 @@ export type FontConfig = {
 };
 
 export type Nullable<T> = T | undefined | null;
+
+export type Factory<T extends object> = {
+  make: () => T;
+  reset: (o: T) => T;
+}

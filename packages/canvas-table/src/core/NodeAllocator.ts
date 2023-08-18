@@ -1,11 +1,14 @@
 import Konva from "konva";
 import { TextRenderer } from "text-renderer";
-import { Theme } from "../types";
-import { Line } from "../components";
 import { ObjectPool } from "./ObjectPool";
-import { BodyCellFactory } from "./BodyCellFactory";
-import { HeadCellFactory } from "./HeadCellFactory";
-import { ResizeColumnButtonFactory } from "./ResizeColumnButtonFactory";
+import { Line } from "../components";
+import {
+  BodyCellFactory,
+  HeadCellFactory,
+  ResizeColumnButtonFactory,
+  LineFactory
+} from "../factories";
+import { Theme } from "../types";
 
 export class NodeAllocator {
   bodyCellFactory: BodyCellFactory;
@@ -17,7 +20,7 @@ export class NodeAllocator {
   resizeColumnButtonFactory: ResizeColumnButtonFactory;
   resizeColumnButtonPool: ObjectPool<Konva.Rect>;
 
-  lineImageCache: Map<string, ImageBitmap>;
+  lineFactory: LineFactory;
   linePool: ObjectPool<Line>;
 
   textRenderer: TextRenderer;
@@ -32,36 +35,26 @@ export class NodeAllocator {
     this.bodyCellFactory = new BodyCellFactory(this.textRenderer, this.theme);
     this.bodyCellPool = new ObjectPool({
       initialSize: 1000,
-      make: () => this.bodyCellFactory.make(),
-      reset: group => this.bodyCellFactory.reset(group)
+      factory: this.bodyCellFactory
     });
 
     this.headCellFactory = new HeadCellFactory(this.textRenderer, this.theme);
     this.headCellPool = new ObjectPool({
       initialSize: 30,
-      make: () => this.headCellFactory.make(),
-      reset: group => this.headCellFactory.reset(group)
+      factory: this.headCellFactory
     });
 
     this.resizeColumnButtonFactory = new ResizeColumnButtonFactory(this.theme);
     this.resizeColumnButtonPool = new ObjectPool({
       initialSize: 30,
-      make: () => this.resizeColumnButtonFactory.make(),
-      reset: rect => this.resizeColumnButtonFactory.reset(rect)
+      factory: this.resizeColumnButtonFactory
     });
 
-    this.lineImageCache = new Map();
+    this.lineFactory = new LineFactory();
 
     this.linePool = new ObjectPool({
       initialSize: 300,
-      make: () => new Line({
-        imageCache: this.lineImageCache,
-        listening: false
-      }),
-      reset: (line: Line) => {
-        line.position({ x: 0, y: 0 });
-        return line;
-      }
+      factory: this.lineFactory
     });
   }
 
