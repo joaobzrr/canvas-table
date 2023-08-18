@@ -23,7 +23,7 @@ import {
   Theme,
   VectorLike
 } from "./types";
-import { LineFactory, ResizeColumnButtonFactory } from "./factories";
+import { ResizeColumnButtonFactory } from "./factories";
 import { TextRenderer } from "text-renderer";
 import { NodeManager } from "./core/NodeManager";
 
@@ -94,10 +94,16 @@ export class CanvasTable {
 
     this.textRenderer = new TextRenderer();
 
-    const lineFactory = new LineFactory();
     const linePool = new ObjectPool({
       initialSize: 300,
-      factory: lineFactory
+      factory: {
+        make: () => {
+          return new Line({ listening: false })
+        },
+        reset: (line: Line) => {
+          return line.position({ x: 0, y: 0 });
+        }
+      }
     });
     this.bodyLineManager = new NodeManager(linePool);
     this.body.add(this.bodyLineManager.getGroup());

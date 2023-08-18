@@ -1,4 +1,5 @@
 import Konva from "konva";
+import { ResizeColumnButton } from "../components";
 import { RESIZE_COLUMN_BUTTON_SIDE } from "../constants";
 import { Theme } from "../types";
 
@@ -6,32 +7,10 @@ export class ResizeColumnButtonFactory {
   constructor(private theme: Theme) {}
 
   make() {
-    const button = new Konva.Rect({
+    return new ResizeColumnButton({
       width: (RESIZE_COLUMN_BUTTON_SIDE * 2) + 1,
       height: this.theme.rowHeight
     });
-
-    button.on("mouseenter", () => {
-      button.getStage()!.container().style.cursor = "col-resize";
-    });
-
-    button.on("mouseleave", () => {
-      button.getStage()!.container().style.cursor = "default";
-    });
-
-    button.on("onMouseDownChange", event => {
-      const mouseDownHandler = (event as any).newVal;
-      button.setAttr("mouseDownHandler", mouseDownHandler);
-      button.on("mousedown", mouseDownHandler);
-    });
-
-    button.on("centerxChange", event => {
-      const centerx = (event as any).newVal;
-      const newX = centerx - button.width() / 2;
-      button.x(newX);
-    });
-
-    return button;
   }
 
   reset(button: Konva.Rect) {
