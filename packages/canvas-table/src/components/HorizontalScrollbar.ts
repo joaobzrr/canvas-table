@@ -1,26 +1,25 @@
 import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
-import { NodeAllocator, TableState, Rect } from "../core";
+import { TableState, Rect } from "../core";
 import { Utils } from "../Utils";
 import { Theme } from "../types";
 import { Line } from "./Line";
 
 export interface HorizontalScrollbarConfig extends GroupConfig {
   tableState: TableState;
-  nodeAllocator: NodeAllocator;
   theme: Theme
 }
 
 export class HorizontalScrollbar extends Konva.Group {
   private tableState: TableState;
-  private nodeAllocator: NodeAllocator;
   private theme: Theme;
 
   private bar:   Konva.Rect;
   private thumb: Konva.Rect;
   private track: Rect;
 
-  private borderGroup: Konva.Group;
+  private topBorder:   Line;
+  private rightBorder: Line;
 
   private maxThumbLeft = 0;
 
@@ -30,8 +29,6 @@ export class HorizontalScrollbar extends Konva.Group {
     this.tableState = config.tableState;
     this.theme = config.theme;
 
-    this.nodeAllocator = new NodeAllocator(this.theme);
-
     this.bar = new Konva.Rect({ fill: this.theme.scrollBarTrackColor });
     this.add(this.bar);
 
@@ -40,8 +37,11 @@ export class HorizontalScrollbar extends Konva.Group {
     this.thumb = new Konva.Rect({ fill: this.theme.scrollBarThumbColor });
     this.add(this.thumb);
 
-    this.borderGroup = new Konva.Group();
-    this.add(this.borderGroup);
+    this.topBorder = new Line();
+    this.add(this.topBorder);
+
+    this.rightBorder = new Line();
+    this.add(this.rightBorder);
 
     this.on("widthChange heightChange", this.onResize.bind(this));
   }
@@ -102,25 +102,17 @@ export class HorizontalScrollbar extends Konva.Group {
   }
 
   private updateBorders() {
-    const lines = this.borderGroup.children as Line[];
-    this.borderGroup.removeChildren();
-    this.nodeAllocator.free("line", ...lines);
-
-    const topBorder = this.nodeAllocator.allocate("line");
-    topBorder.setAttrs({
+    this.topBorder.setAttrs({
       width: this.width(),
       height: 1,
       fill: this.theme.tableBorderColor,
     });
-    this.borderGroup.add(topBorder);
 
-    const rightBorder = this.nodeAllocator.allocate("line");
-    rightBorder.setAttrs({
+    this.rightBorder.setAttrs({
       x: this.width(),
       width: 1,
       height: this.height(),
       fill: this.theme.tableBorderColor,
     });
-    this.borderGroup.add(rightBorder);
   }
 }

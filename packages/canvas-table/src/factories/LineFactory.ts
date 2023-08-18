@@ -1,17 +1,11 @@
 import { Line } from "../components/Line";
 
 export class LineFactory {
-  private lineImageCache: Map<string, ImageBitmap>;
-
   constructor() {
-    this.lineImageCache = new Map();
   }
 
   make() {
-    return new Line({
-      imageCache: this.lineImageCache,
-      listening: false
-    });
+    return new Line({ listening: false });
   }
 
   reset(line: Line) {

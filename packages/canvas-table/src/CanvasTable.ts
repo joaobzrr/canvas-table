@@ -2,9 +2,9 @@ import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { throttle } from "lodash";
 import {
-  NodeAllocator,
   Vector,
   TableState,
+  ObjectPool,
 } from "./core";
 import {
   HorizontalScrollbar,
@@ -21,6 +21,9 @@ import {
   Theme,
   VectorLike
 } from "./types";
+import { BodyCellFactory, HeadCellFactory, LineFactory, ResizeColumnButtonFactory } from "./factories";
+import { TextRenderer } from "text-renderer";
+import { NodeManager } from "./core/NodeManager";
 
 export class CanvasTable {
   stage: Konva.Stage;
@@ -30,20 +33,20 @@ export class CanvasTable {
   theme: Theme;
 
   bodyDimensionsWithoutScrollbars = { width: 1, height: 1 };
-  bodyDimensionsWithScrollbars = { width: 1, height: 1 };
+  bodyDimensionsWithScrollbars    = { width: 1, height: 1 };
 
   body: Konva.Group;
-  bodyLineGroup: Konva.Group;
-  bodyCellGroup: Konva.Group;
+  bodyCellManager: NodeManager<Konva.Group>;
+  bodyLineManager: NodeManager<Line>;
 
   head: Konva.Group;
   header: Konva.Group;
-  headLineGroup: Konva.Group;
-  headCellGroup: Konva.Group;
+  headCellManager: NodeManager<Konva.Group>;
+  headLineManager: NodeManager<Line>;
 
-  resizeColumnButtonGroup: Konva.Group;
+  resizeColumnButtonManager: NodeManager<Konva.Rect>;
 
-  nodeAllocator: NodeAllocator;
+  textRenderer: TextRenderer;
 
   hsb: HorizontalScrollbar;
   vsb: VerticalScrollbar;
@@ -65,32 +68,48 @@ export class CanvasTable {
     this.body = new Konva.Group({ y: this.theme.rowHeight });
     this.layer.add(this.body);
 
-    this.bodyLineGroup = new Konva.Group();
-    this.body.add(this.bodyLineGroup);
-
-    this.bodyCellGroup = new Konva.Group();
-    this.body.add(this.bodyCellGroup);
-
     this.head = new Konva.Group({ height: this.theme.rowHeight });
     this.layer.add(this.head);
 
     this.header = new Konva.Group({ height: this.theme.rowHeight });
     this.head.add(this.header);
 
-    this.headLineGroup = new Konva.Group();
-    this.head.add(this.headLineGroup);
+    this.textRenderer = new TextRenderer();
 
-    this.headCellGroup = new Konva.Group();
-    this.header.add(this.headCellGroup);
+    const lineFactory = new LineFactory();
+    const linePool = new ObjectPool({
+      initialSize: 300,
+      factory: lineFactory
+    });
+    this.bodyLineManager = new NodeManager(linePool);
+    this.body.add(this.bodyLineManager.getGroup());
 
-    this.resizeColumnButtonGroup = new Konva.Group();
-    this.head.add(this.resizeColumnButtonGroup);
+    this.headLineManager = new NodeManager(linePool);
+    this.head.add(this.headLineManager.getGroup());
 
-    this.nodeAllocator = new NodeAllocator(this.theme);
+    const bodyCellPool = new ObjectPool({
+      initialSize: 1000,
+      factory: new BodyCellFactory(this.textRenderer, this.theme)
+    });
+    this.bodyCellManager = new NodeManager(bodyCellPool);
+    this.body.add(this.bodyCellManager.getGroup());
+
+    const headCellPool = new ObjectPool({
+      initialSize: 30,
+      factory: new HeadCellFactory(this.textRenderer, this.theme)
+    });
+    this.headCellManager = new NodeManager(headCellPool);
+    this.header.add(this.headCellManager.getGroup());
+
+    const resizeColumnButtonGroupPool = new ObjectPool({
+      initialSize: 30,
+      factory: new ResizeColumnButtonFactory(this.theme)
+    });
+    this.resizeColumnButtonManager = new NodeManager(resizeColumnButtonGroupPool);
+    this.head.add(this.resizeColumnButtonManager.getGroup());
 
     this.hsb = new HorizontalScrollbar({
       tableState: this.tableState,
-      nodeAllocator: this.nodeAllocator,
       theme: this.theme,
       y: this.theme.rowHeight,
       height: this.theme.scrollBarThickness
@@ -99,7 +118,6 @@ export class CanvasTable {
 
     this.vsb = new VerticalScrollbar({
       tableState: this.tableState,
-      nodeAllocator: this.nodeAllocator,
       theme: this.theme,
       y: this.theme.rowHeight,
       width: this.theme.scrollBarThickness
@@ -286,9 +304,7 @@ export class CanvasTable {
     const viewportDimensions = this.tableState.getViewportDimensions();
     const tableRanges = this.tableState.getTableRanges();
 
-    const lines = this.bodyLineGroup.children as Line[];
-    this.bodyLineGroup.removeChildren();
-    this.nodeAllocator.free("line", ...lines);
+    this.bodyLineManager.clear();
 
     const hLineLength = Math.min(this.body.width(), tableDimensions.width);
 
@@ -296,7 +312,7 @@ export class CanvasTable {
     for (let i = tableRanges.rowTop + 1; i < tableRanges.rowBottom; i++) {
       const y = i * this.theme.rowHeight - scrollPosition.y;
 
-      const line = this.nodeAllocator.allocate("line");
+      const line = this.bodyLineManager.get();
       line.setAttrs({
         x: 0,
         y,
@@ -304,12 +320,11 @@ export class CanvasTable {
         height: 1,
         fill: this.theme.tableBorderColor
       });
-      this.bodyLineGroup.add(line);
     }
 
     // Draw last body horizontal line
     if (viewportDimensions.height > tableDimensions.height) {
-      const line = this.nodeAllocator.allocate("line");
+      const line = this.bodyLineManager.get();
       line.setAttrs({
         x: 0,
         y: tableDimensions.height,
@@ -317,7 +332,6 @@ export class CanvasTable {
         height: 1,
         fill: this.theme.tableBorderColor
       });
-      this.bodyLineGroup.add(line);
     }
 
     const vLineLength = Math.min(this.body.height(), tableDimensions.height);
@@ -327,7 +341,7 @@ export class CanvasTable {
       const columnState = this.tableState.getColumnState(j);
       const x = columnState.position - scrollPosition.x;
 
-      const line = this.nodeAllocator.allocate("line");
+      const line = this.bodyLineManager.get();
       line.setAttrs({
         x,
         y: 0,
@@ -335,12 +349,11 @@ export class CanvasTable {
         height: vLineLength,
         fill: this.theme.tableBorderColor
       });
-      this.bodyLineGroup.add(line);
     }
 
     // Draw last body vertical line
     if (viewportDimensions.width > tableDimensions.width) {
-      const line = this.nodeAllocator.allocate("line");
+      const line = this.bodyLineManager.get();
       line.setAttrs({
         x: tableDimensions.width,
         y: 0,
@@ -348,7 +361,6 @@ export class CanvasTable {
         height: vLineLength,
         fill: this.theme.tableBorderColor,
       });
-      this.bodyLineGroup.add(line);
     }
   }
 
@@ -358,13 +370,11 @@ export class CanvasTable {
     const viewportDimensions = this.tableState.getViewportDimensions();
     const tableRanges = this.tableState.getTableRanges();
 
-    const lines = this.headLineGroup.children as Line[];
-    this.headLineGroup.removeChildren();
-    this.nodeAllocator.free("line", ...lines);
+    this.headLineManager.clear();
 
     // Draw bottom head border
     {
-      const line = this.nodeAllocator.allocate("line");
+      const line = this.headLineManager.get();
       line.setAttrs({
         x: 0,
         y: this.head.height(),
@@ -372,7 +382,6 @@ export class CanvasTable {
         height: 1,
         fill: this.theme.tableBorderColor
       });
-      this.headLineGroup.add(line);
     }
 
     // Draw head vertical lines
@@ -381,50 +390,46 @@ export class CanvasTable {
       const columnState = this.tableState.getColumnState(j);
       const x = columnState.position - scrollPosition.x;
 
-      const line = this.nodeAllocator.allocate("line");
+      const line = this.headLineManager.get();
       line.setAttrs({
         x,
         width: 1,
         height: this.theme.rowHeight,
         fill: this.theme.tableBorderColor,
       });
-      this.headLineGroup.add(line);
     }
 
     // Draw right header border
     if (viewportDimensions.width > tableDimensions.width) {
-      const line = this.nodeAllocator.allocate("line");
+      const line = this.headLineManager.get();
       line.setAttrs({
         x: tableDimensions.width,
         width: 1,
         height: this.theme.rowHeight,
         fill: this.theme.tableBorderColor
       });
-      this.headLineGroup.add(line);
     }
 
     // Draw right head border
     {
-      const line = this.nodeAllocator.allocate("line");
+      const line = this.headLineManager.get();
       line.setAttrs({
         x: this.head.width(),
         width: 1,
         height: this.head.height(),
         fill: this.theme.tableBorderColor
       });
-      this.headLineGroup.add(line);
     }
 
     // Draw right header border
     if (viewportDimensions.width > tableDimensions.width) {
-      const line = this.nodeAllocator.allocate("line");
+      const line = this.headLineManager.get();
       line.setAttrs({
         x: tableDimensions.width,
         width: 1,
         height: this.theme.rowHeight,
         fill: this.theme.tableBorderColor
       });
-      this.headLineGroup.add(line);
     }
   }
 
@@ -433,9 +438,7 @@ export class CanvasTable {
     const tableRanges = this.tableState.getTableRanges();
     const rowHeight = this.tableState.getRowHeight();
 
-    const bodyCells = this.bodyCellGroup.children as Konva.Group[];
-    this.bodyCellGroup.removeChildren();
-    this.nodeAllocator.free("bodyCell", ...bodyCells);
+    this.bodyCellManager.clear();
 
     const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
     for (let rowIndex = rowTop; rowIndex < rowBottom; rowIndex++) {
@@ -446,9 +449,7 @@ export class CanvasTable {
         const columnState = this.tableState.getColumnState(colIndex);
         const x = columnState.position - scrollPosition.x;
 
-        const cell = this.nodeAllocator.allocate("bodyCell");
-        this.bodyCellGroup.add(cell);
-
+        const cell = this.bodyCellManager.get();
         cell.setAttrs(({
           x, y,
           width: columnState.width,
@@ -465,18 +466,14 @@ export class CanvasTable {
     const tableRanges = this.tableState.getTableRanges();
     const rowHeight = this.tableState.getRowHeight();
 
-    const headCells = this.headCellGroup.children as Konva.Group[];
-    this.nodeAllocator.free("headCell", ...headCells);
-    this.headCellGroup.removeChildren();
+    this.headCellManager.clear();
 
     const { columnLeft, columnRight } = tableRanges;
     for (let j = columnLeft; j < columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
       const x = columnState.position - scrollPosition.x;
 
-      const cell = this.nodeAllocator.allocate("headCell");
-      this.headCellGroup.add(cell);
-
+      const cell = this.headCellManager.get();
       cell.setAttrs({
         x,
         width: columnState.width,
@@ -491,18 +488,14 @@ export class CanvasTable {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges = this.tableState.getTableRanges();
 
-    const buttons = this.resizeColumnButtonGroup.children as Konva.Rect[];
-    this.resizeColumnButtonGroup.removeChildren();
-    this.nodeAllocator.free("resizeColumnButton", ...buttons);
+    this.resizeColumnButtonManager.clear();
 
     const { columnLeft, columnRight } = tableRanges;
     for (let j = columnLeft; j < columnRight; j++) {
       const columnState = this.tableState.getColumnState(j);
       const centerx = columnState.position + columnState.width - scrollPosition.x;
 
-      const button = this.nodeAllocator.allocate("resizeColumnButton");
-      this.resizeColumnButtonGroup.add(button);
-
+      const button = this.resizeColumnButtonManager.get();
       button.setAttrs({
         centerx,
         y: 0,

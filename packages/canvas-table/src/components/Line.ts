@@ -3,17 +3,14 @@ import { ShapeConfig } from "konva/lib/Shape";
 import { ImageConfig } from "konva/lib/shapes/Image";
 
 export interface LineConfig extends Omit<ImageConfig, "image"> {
-  imageCache: Map<string, ImageBitmap>;
   fill?: ShapeConfig["fill"];
 }
 
 export class Line extends Konva.Image {
-  imageCache: Map<string, ImageBitmap>;
+  private static imageCache = new Map<string, ImageBitmap>;
 
-  constructor(config: LineConfig) {
+  constructor(config?: LineConfig) {
     super({ ...config, image: undefined });
-
-    this.imageCache = config.imageCache;
 
     this.updateImage();
     this.on("widthChange heightChange fillChange", this.updateImage);
@@ -25,7 +22,7 @@ export class Line extends Konva.Image {
     }
 
     const key = `${this.width()}-${this.height()}-${this.fill()}`;
-    let image = this.imageCache.get(key);
+    let image = Line.imageCache.get(key);
     if (image) {
       this.image(image);
       return;
@@ -44,7 +41,7 @@ export class Line extends Konva.Image {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     image = await createImageBitmap(canvas);
-    this.imageCache.set(key, image);
+    Line.imageCache.set(key, image);
 
     this.image(image);
   }
