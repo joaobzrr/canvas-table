@@ -1,6 +1,6 @@
 import Konva from "konva";
 import { TextRenderer } from "text-renderer";
-import { Context } from "konva/lib/Context";
+import { Text } from "../components";
 import { Theme } from "../types";
 
 export class BodyCellFactory {
@@ -12,33 +12,15 @@ export class BodyCellFactory {
   public make() {
     const group = new Konva.Group({ listening: false });
 
-    const textShape = new Konva.Shape();
-    textShape.sceneFunc((ctx: Context) => {
-      const text = textShape.getAttr("textValue") as string;
-      if (!text) {
-        return;
-      }
-
-      const font = {
-        family: this.theme.fontFamily,
-        size: this.theme.fontSize,
-        style: "normal" as const,
-        color: this.theme.fontColor
-      };
-
-      const x = this.theme.cellPadding;
-      const y = textShape.height() / 2;
-      const maxWidth = textShape.width() - this.theme.cellPadding * 2;
-
-      this.textRenderer.render(
-        ctx as unknown as CanvasRenderingContext2D,
-        font, text, x, y, maxWidth, true);
+    const text = new Text({
+      renderer: this.textRenderer,
+      theme: this.theme
     });
+    group.add(text);
 
-    group.add(textShape);
-    group.on("widthChange heightChange", () => textShape.size(group.size()));
+    group.on("widthChange heightChange", () => text.size(group.size()));
     group.on("textChange", event => {
-      textShape.setAttr("textValue", (event as any).newVal);
+      text.setAttr("textValue", (event as any).newVal);
     });
 
     return group;

@@ -7,6 +7,8 @@ import {
   ObjectPool,
 } from "./core";
 import {
+  BodyCell,
+  HeadCell,
   HorizontalScrollbar,
   VerticalScrollbar,
   Line,
@@ -21,7 +23,7 @@ import {
   Theme,
   VectorLike
 } from "./types";
-import { BodyCellFactory, HeadCellFactory, LineFactory, ResizeColumnButtonFactory } from "./factories";
+import { LineFactory, ResizeColumnButtonFactory } from "./factories";
 import { TextRenderer } from "text-renderer";
 import { NodeManager } from "./core/NodeManager";
 
@@ -36,12 +38,12 @@ export class CanvasTable {
   bodyDimensionsWithScrollbars    = { width: 1, height: 1 };
 
   body: Konva.Group;
-  bodyCellManager: NodeManager<Konva.Group>;
+  bodyCellManager: NodeManager<BodyCell>;
   bodyLineManager: NodeManager<Line>;
 
   head: Konva.Group;
   header: Konva.Group;
-  headCellManager: NodeManager<Konva.Group>;
+  headCellManager: NodeManager<HeadCell>;
   headLineManager: NodeManager<Line>;
 
   resizeColumnButtonManager: NodeManager<Konva.Rect>;
@@ -74,40 +76,6 @@ export class CanvasTable {
     this.header = new Konva.Group({ height: this.theme.rowHeight });
     this.head.add(this.header);
 
-    this.textRenderer = new TextRenderer();
-
-    const lineFactory = new LineFactory();
-    const linePool = new ObjectPool({
-      initialSize: 300,
-      factory: lineFactory
-    });
-    this.bodyLineManager = new NodeManager(linePool);
-    this.body.add(this.bodyLineManager.getGroup());
-
-    this.headLineManager = new NodeManager(linePool);
-    this.head.add(this.headLineManager.getGroup());
-
-    const bodyCellPool = new ObjectPool({
-      initialSize: 1000,
-      factory: new BodyCellFactory(this.textRenderer, this.theme)
-    });
-    this.bodyCellManager = new NodeManager(bodyCellPool);
-    this.body.add(this.bodyCellManager.getGroup());
-
-    const headCellPool = new ObjectPool({
-      initialSize: 30,
-      factory: new HeadCellFactory(this.textRenderer, this.theme)
-    });
-    this.headCellManager = new NodeManager(headCellPool);
-    this.header.add(this.headCellManager.getGroup());
-
-    const resizeColumnButtonGroupPool = new ObjectPool({
-      initialSize: 30,
-      factory: new ResizeColumnButtonFactory(this.theme)
-    });
-    this.resizeColumnButtonManager = new NodeManager(resizeColumnButtonGroupPool);
-    this.head.add(this.resizeColumnButtonManager.getGroup());
-
     this.hsb = new HorizontalScrollbar({
       tableState: this.tableState,
       theme: this.theme,
@@ -123,6 +91,62 @@ export class CanvasTable {
       width: this.theme.scrollBarThickness
     });
     this.layer.add(this.vsb);
+
+    this.textRenderer = new TextRenderer();
+
+    const lineFactory = new LineFactory();
+    const linePool = new ObjectPool({
+      initialSize: 300,
+      factory: lineFactory
+    });
+    this.bodyLineManager = new NodeManager(linePool);
+    this.body.add(this.bodyLineManager.getGroup());
+
+    this.headLineManager = new NodeManager(linePool);
+    this.head.add(this.headLineManager.getGroup());
+
+    const bodyCellPool = new ObjectPool({
+      initialSize: 1000,
+      factory: {
+        make: () => new BodyCell({
+          textRenderer: this.textRenderer,
+          theme: this.theme
+        }),
+        reset: (cell: BodyCell) => {
+          return cell.setAttrs({
+            x: 0,
+            y: 0
+          });
+        }
+      }
+    });
+    this.bodyCellManager = new NodeManager(bodyCellPool);
+    this.body.add(this.bodyCellManager.getGroup());
+
+    const headCellPool = new ObjectPool({
+      initialSize: 30,
+      factory: {
+        make: () => new HeadCell({
+          textRenderer: this.textRenderer,
+          theme: this.theme
+        }),
+        reset: (cell: HeadCell) => {
+          return cell.setAttrs({
+            x: 0,
+            y: 0
+          })
+        }
+      }
+    });
+    this.headCellManager = new NodeManager(headCellPool);
+    this.header.add(this.headCellManager.getGroup());
+
+    const resizeColumnButtonGroupPool = new ObjectPool({
+      initialSize: 30,
+      factory: new ResizeColumnButtonFactory(this.theme)
+    });
+    this.resizeColumnButtonManager = new NodeManager(resizeColumnButtonGroupPool);
+    this.head.add(this.resizeColumnButtonManager.getGroup());
 
     this.stage.on("wheel", throttle((event => this.onWheel(event)), 16));
     this.stage.on("mouseup", () => this.clearDraggables());
