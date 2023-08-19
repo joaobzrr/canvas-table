@@ -381,14 +381,14 @@ export class CanvasTable {
   private updateScrollbarVisibility() {
     const { width: tableWidth, height: tableHeight } = this.tableState.tableDimensions;
 
-    const hsbShouldBeVisible = this.bodyDimensionsWithScrollbars.width < tableWidth;
+    const hsbShouldBeVisible = this.bodyDimensionsWithoutScrollbars.width < tableWidth;
     if (hsbShouldBeVisible && !this.hsb.visible()) {
       this.hsb.visible(true);
     } else if (!hsbShouldBeVisible && this.hsb.visible()) {
       this.hsb.visible(false);
     }
 
-    const vsbShouldBeVisible = this.bodyDimensionsWithScrollbars.height < tableHeight;
+    const vsbShouldBeVisible = this.bodyDimensionsWithoutScrollbars.height < tableHeight;
     if (vsbShouldBeVisible && !this.vsb.visible()) {
       this.vsb.visible(true);
     } else if (!vsbShouldBeVisible && this.vsb.parent) {
