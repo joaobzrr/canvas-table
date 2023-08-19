@@ -10,23 +10,28 @@ function App() {
 
   const [containerSize, containerRef] = useElementSize();
 
-  const konvaTableRef = useRef<CanvasTable>();
+  const canvasTableRef = useRef<CanvasTable>();
 
   useLayoutEffect(() => {
-    (async () => {
+    let canvasTable = canvasTableRef.current as CanvasTable;
+    if (!canvasTable) {
       const tableData = generateTableData(100, 100);
-
-      konvaTableRef.current = await CanvasTable.create({
+      canvasTable = new CanvasTable({
         container: "container",
         columnDefs: tableData.columns,
         dataRows: tableData.data
       });
-    })();
+      canvasTableRef.current = canvasTable;
+    }
+
+    canvasTable.setupGlobalEventListeners();
+    return () => canvasTable.teardownGlobalEventListeners();
   }, []);
 
   useEffect(() => {
-    if (konvaTableRef.current) {
-      konvaTableRef.current.setStageDimensions(containerSize);
+    const canvasTable = canvasTableRef.current;
+    if (canvasTable) {
+      canvasTable.setStageDimensions(containerSize);
     }
   }, [containerSize]);
 
@@ -42,29 +47,30 @@ function App() {
     }
 
     const tableData = generateTableData(rows, cols);
-    konvaTableRef.current?.setTableData(tableData.columns, tableData.data);
+    const canvasTable = canvasTableRef.current as CanvasTable;
+    canvasTable.setTableData(tableData.columns, tableData.data);
   }
 
   return (
     <div className={styles.app}>
       <div style={{ margin: "10px 0" }}>
-	<label style={{ marginRight: "10px" }}>Rows:</label>
-	<input
-	  ref={rowInputRef}
-	  type="text"
-	  style={{ marginRight: "10px" }}
-	/>
-	<label style={{ marginRight: "10px" }}>Columns:</label>
-	<input
-	  ref={colInputRef}
-	  type="text"
-	  style={{ marginRight: "10px" }}
-	/>
-	<button
-	  onClick={generate}
-	>
-	  Generate
-	</button>
+        <label style={{ marginRight: "10px" }}>Rows:</label>
+        <input
+          ref={rowInputRef}
+          type="text"
+          style={{ marginRight: "10px" }}
+        />
+        <label style={{ marginRight: "10px" }}>Columns:</label>
+        <input
+          ref={colInputRef}
+          type="text"
+          style={{ marginRight: "10px" }}
+        />
+        <button
+          onClick={generate}
+        >
+          Generate
+        </button>
       </div>
       <div id="container" ref={containerRef} className={styles.container} />
     </div>

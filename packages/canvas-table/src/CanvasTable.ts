@@ -175,13 +175,18 @@ export class CanvasTable {
 
     this.stage.on("wheel", throttle((event => this.onWheel(event)), 16));
 
-    // @Note: We might need to provide a public method to remove these
-    document.addEventListener("mousemove", throttle(this.onMouseMove.bind(this), 16));
-    document.addEventListener("mouseup", this.onMouseUp.bind(this));
+    this.onMouseMove = throttle(this.onMouseMove.bind(this), 16);
+    this.onMouseUp = this.onMouseUp.bind(this);
   }
 
-  static async create(options: CanvasTableOptions) {
-    return new CanvasTable({ ...options });
+  public setupGlobalEventListeners() {
+    document.addEventListener("mousemove", throttle(this.onMouseMove, 16));
+    document.addEventListener("mouseup", this.onMouseUp);
+  }
+
+  public teardownGlobalEventListeners() {
+    document.removeEventListener("mousemove", this.onMouseMove);
+    document.removeEventListener("mouseup", this.onMouseUp);
   }
 
   public setTableData(columnDefs: ColumnDef[], dataRows: DataRow[]) {
