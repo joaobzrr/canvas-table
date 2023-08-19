@@ -4,6 +4,7 @@ import { TableState, Rect } from "../core";
 import { Utils } from "../Utils";
 import { Theme, VectorLike } from "../types";
 import { Line } from "./Line";
+import { MIN_THUMB_LENGTH } from "../constants";
 
 export interface HorizontalScrollbarConfig extends GroupConfig {
   tableState: TableState;
@@ -64,7 +65,8 @@ export class HorizontalScrollbar extends Konva.Group {
     const { width: viewportWidth } = this.tableState.viewportDimensions;
     const { width: scrollWidth } = this.tableState.scrollDimensions;
 
-    const thumbWidth = (viewportWidth / scrollWidth) * this.track.width;
+    let thumbWidth = (viewportWidth / scrollWidth) * this.track.width;
+    thumbWidth = Math.max(thumbWidth, MIN_THUMB_LENGTH);
 
     this.thumb.setAttrs({
       y: this.track.y,

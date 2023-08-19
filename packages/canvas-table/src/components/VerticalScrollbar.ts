@@ -4,6 +4,7 @@ import { TableState, Rect } from "../core";
 import { Utils } from "../Utils";
 import { Theme, VectorLike } from "../types";
 import { Line } from "./Line";
+import { MIN_THUMB_LENGTH } from "../constants";
 
 export interface VerticalScrollbarConfig extends GroupConfig {
   tableState: TableState;
@@ -75,7 +76,8 @@ export class VerticalScrollbar extends Konva.Group {
     const { height: viewportHeight } = this.tableState.viewportDimensions;
     const { height: scrollHeight } = this.tableState.scrollDimensions;
 
-    const thumbHeight = (viewportHeight / scrollHeight) * this.track.height;
+    let thumbHeight = (viewportHeight / scrollHeight) * this.track.height;
+    thumbHeight = Math.max(thumbHeight, MIN_THUMB_LENGTH);
 
     this.thumb.setAttrs({
       x: this.track.x,
