@@ -4,12 +4,15 @@ import { RESIZE_COLUMN_BUTTON_SIDE } from "../constants";
 import { Theme } from "../types";
 
 export class ResizeColumnButtonFactory {
-  constructor(private theme: Theme) {}
+  constructor(
+    private onMouseDown: (columnIndex: number) => void,
+    private theme: Theme) {}
 
   make() {
     return new ResizeColumnButton({
       width: (RESIZE_COLUMN_BUTTON_SIDE * 2) + 1,
-      height: this.theme.rowHeight
+      height: this.theme.rowHeight,
+      onMouseDown: this.onMouseDown
     });
   }
 

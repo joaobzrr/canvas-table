@@ -149,7 +149,9 @@ export class CanvasTable {
 
     const resizeColumnButtonGroupPool = new ObjectPool({
       initialSize: 30,
-      factory: new ResizeColumnButtonFactory(this.theme)
+      factory: new ResizeColumnButtonFactory(
+        this.onClickColumnResizeButton.bind(this),
+        this.theme)
     });
     this.resizeColumnButtonManager = new NodeManager(resizeColumnButtonGroupPool);
     this.head.add(this.resizeColumnButtonManager.getGroup());
@@ -231,19 +233,22 @@ export class CanvasTable {
     this.updateResizeColumnButtons();
   }
 
-  onClickColumnResizeButton(columnIndex: number, x: number) {
+  onClickColumnResizeButton(columnIndex: number) {
     const columnState = this.tableState.getColumnState(columnIndex);
 
     const onDragMove = throttle((event: KonvaEventObject<MouseEvent>) => {
       const scrollPosition = this.tableState.getScrollPosition();
+
       const draggable = event.target;
-      const dragX = draggable.x() + scrollPosition.x;
-      const columnWidth = Math.max(dragX - columnState.position, MIN_COLUMN_WIDTH);
+      let columnWidth = draggable.x() - (columnState.position - scrollPosition.x);
+      columnWidth = Math.max(columnWidth, MIN_COLUMN_WIDTH);
       if (columnWidth !== columnState.width) {
         this.resizeColumn(columnIndex, columnWidth);
       }
     }, 16);
 
+    const scrollPosition = this.tableState.getScrollPosition();
+    const x = (columnState.position + columnState.width) - scrollPosition.x;
     this.createDraggable({ x, y: 0 }, onDragMove);
   }
 
@@ -527,9 +532,9 @@ export class CanvasTable {
 
       const button = this.resizeColumnButtonManager.get();
       button.setAttrs({
-        centerx,
         y: 0,
-        onMouseDown: () => this.onClickColumnResizeButton(j, centerx),
+        centerx,
+        columnIndex: j
       });
     }
   }
