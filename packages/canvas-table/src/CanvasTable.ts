@@ -68,7 +68,7 @@ export class CanvasTable {
     element.appendChild(this.wrapper);
 
     this.stage = new Konva.Stage({ container: this.wrapper });
-    this.layer = new Konva.Layer();
+    this.layer = new Konva.Layer({ imageSmoothingEnabled: false });
     this.stage.add(this.layer);
 
     this.theme = defaultTheme;
