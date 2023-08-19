@@ -28,32 +28,34 @@ import { TextRenderer } from "text-renderer";
 import { NodeManager } from "./core/NodeManager";
 
 export class CanvasTable {
-  stage: Konva.Stage;
-  layer: Konva.Layer;
+  private stage: Konva.Stage;
+  private layer: Konva.Layer;
 
-  tableState: TableState;
-  theme: Theme;
+  private tableState: TableState;
+  private theme: Theme;
 
-  bodyDimensionsWithoutScrollbars = { width: 1, height: 1 };
-  bodyDimensionsWithScrollbars    = { width: 1, height: 1 };
+  private bodyDimensionsWithoutScrollbars = { width: 1, height: 1 };
+  private bodyDimensionsWithScrollbars    = { width: 1, height: 1 };
 
-  body: Konva.Group;
-  bodyCellManager: NodeManager<BodyCell>;
-  bodyLineManager: NodeManager<Line>;
+  private body: Konva.Group;
+  private bodyCellManager: NodeManager<BodyCell>;
+  private bodyLineManager: NodeManager<Line>;
 
-  head: Konva.Group;
-  header: Konva.Group;
-  headCellManager: NodeManager<HeadCell>;
-  headLineManager: NodeManager<Line>;
+  private head: Konva.Group;
+  private header: Konva.Group;
+  private headCellManager: NodeManager<HeadCell>;
+  private headLineManager: NodeManager<Line>;
 
-  resizeColumnButtonManager: NodeManager<Konva.Rect>;
+  private resizeColumnButtonManager: NodeManager<Konva.Rect>;
 
-  textRenderer: TextRenderer;
+  private textRenderer: TextRenderer;
 
-  hsb: HorizontalScrollbar;
-  vsb: VerticalScrollbar;
+  private hsb: HorizontalScrollbar;
+  private vsb: VerticalScrollbar;
 
-  draggables: Konva.Node[] = [];
+  private columnBeingResized: number | null = null;
+
+  private draggables: Konva.Node[] = [];
 
   constructor(options: CanvasTableOptions) {
     this.stage = new Konva.Stage({ container: options.container });
@@ -157,7 +159,10 @@ export class CanvasTable {
     this.head.add(this.resizeColumnButtonManager.getGroup());
 
     this.stage.on("wheel", throttle((event => this.onWheel(event)), 16));
-    this.stage.on("mouseup", () => this.clearDraggables());
+
+    // @Note: We might need to provide a public method to remove these
+    document.addEventListener("mousemove", this.onMouseMove.bind(this));
+    document.addEventListener("mouseup", this.onMouseUp.bind(this));
   }
 
   static async create(options: CanvasTableOptions) {
@@ -233,23 +238,30 @@ export class CanvasTable {
     this.updateResizeColumnButtons();
   }
 
-  onClickColumnResizeButton(columnIndex: number) {
-    const columnState = this.tableState.getColumnState(columnIndex);
-
-    const onDragMove = throttle((event: KonvaEventObject<MouseEvent>) => {
+  onMouseMove(_event: MouseEvent) {
+    if (this.columnBeingResized !== null) {
       const scrollPosition = this.tableState.getScrollPosition();
+      const columnState = this.tableState.getColumnState(this.columnBeingResized);
+      const viewportColumnPosition = columnState.position - scrollPosition.x;
 
-      const draggable = event.target;
-      let columnWidth = draggable.x() - (columnState.position - scrollPosition.x);
+      const mouseX = this.stage.getPointerPosition()!.x;
+      let columnWidth = mouseX - viewportColumnPosition;
       columnWidth = Math.max(columnWidth, MIN_COLUMN_WIDTH);
-      if (columnWidth !== columnState.width) {
-        this.resizeColumn(columnIndex, columnWidth);
-      }
-    }, 16);
 
-    const scrollPosition = this.tableState.getScrollPosition();
-    const x = (columnState.position + columnState.width) - scrollPosition.x;
-    this.createDraggable({ x, y: 0 }, onDragMove);
+      if (columnWidth !== columnState.width) {
+        this.resizeColumn(this.columnBeingResized, columnWidth);
+      }
+    }
+  }
+
+  onMouseUp(_event: MouseEvent) {
+    if (this.columnBeingResized !== null) {
+      this.columnBeingResized = null;
+    }
+  }
+
+  onClickColumnResizeButton(columnIndex: number) {
+    this.columnBeingResized = columnIndex;
   }
 
   resizeColumn(columnIndex: number, columnWidth: number) {
@@ -531,11 +543,7 @@ export class CanvasTable {
       const centerx = columnState.position + columnState.width - scrollPosition.x;
 
       const button = this.resizeColumnButtonManager.get();
-      button.setAttrs({
-        y: 0,
-        centerx,
-        columnIndex: j
-      });
+      button.setAttrs({ centerx, columnIndex: j });
     }
   }
 

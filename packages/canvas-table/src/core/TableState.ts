@@ -12,12 +12,12 @@ export class TableState {
   columnStates = [] as ColumnState[];
   dataRows = [] as DataRow[];
 
-  scrollPosition           = { x: 0, y: 0 };
+  scrollPosition = { x: 0, y: 0 };
   normalizedScrollPosition = { x: 0, y: 0 };
-  maximumScrollPosition    = { x: 0, y: 0 };
+  maximumScrollPosition = { x: 0, y: 0 };
 
-  tableDimensions    = { width: 1, height: 1 };
-  scrollDimensions   = { width: 1, height: 1 };
+  tableDimensions = { width: 1, height: 1 };
+  scrollDimensions = { width: 1, height: 1 };
   viewportDimensions = { width: 1, height: 1 };
 
   tableRanges = { columnLeft: 0, columnRight: 0, rowTop: 0, rowBottom: 0 }
@@ -59,7 +59,7 @@ export class TableState {
     const columnToResize = this.getColumnState(columnIndex);
     columnToResize.width = width;
 
-      // @Note Recalculate the position of columns after the one being resized
+    // @Note Recalculate the position of columns after the one being resized
     let total = columnToResize.position + columnToResize.width;
     for (let j = columnIndex + 1; j < this.numOfCols; j++) {
       const columnState = this.getColumnState(j);
@@ -124,7 +124,7 @@ export class TableState {
   }
 
   public setViewportDimensions(viewportDimensions: Dimensions) {
-    this.viewportDimensions =  { ...viewportDimensions };
+    this.viewportDimensions = { ...viewportDimensions };
     this.scrollDimensions = this.calculateScrollDimensions();
     this.maximumScrollPosition = this.calculateMaximumScrollPosition();
 
@@ -135,12 +135,16 @@ export class TableState {
     return { ...this.tableRanges };
   }
 
+  public scrollToViewportPosition(position: VectorLike) {
+    return new Vector(position).sub(this.scrollPosition);
+  }
+
   private calculateTableRanges(): TableRanges {
     const { x: scrollLeft, y: scrollTop } = this.scrollPosition;
     const { width: viewportWidth, height: viewportHeight } = this.viewportDimensions;
 
-    const scrollRight  = scrollLeft + viewportWidth;
-    const scrollBottom = scrollTop  + viewportHeight;
+    const scrollRight = scrollLeft + viewportWidth;
+    const scrollBottom = scrollTop + viewportHeight;
 
     let columnLeft = this.findColumnIndexAtXCoordinate(scrollLeft);
     if (columnLeft === -1) columnLeft = 0;
@@ -148,7 +152,7 @@ export class TableState {
     let columnRight = this.findColumnIndexAtXCoordinate(scrollRight, columnLeft);
     columnRight = columnRight !== -1 ? columnRight + 1 : this.numOfCols;
 
-    const rowTop    = Math.floor(scrollTop / this.rowHeight);
+    const rowTop = Math.floor(scrollTop / this.rowHeight);
     const rowBottom = Math.min(Math.ceil(scrollBottom / this.rowHeight), this.numOfRows);
 
     return {
@@ -184,7 +188,7 @@ export class TableState {
     const { width: scrollWidth, height: scrollHeight } = this.scrollDimensions
     const { width: viewportWidth, height: viewportHeight } = this.viewportDimensions;
 
-    const x = scrollWidth  - viewportWidth;
+    const x = scrollWidth - viewportWidth;
     const y = scrollHeight - viewportHeight;
 
     return { x, y };
@@ -203,9 +207,9 @@ export class TableState {
     const { width: tableWidth, height: tableHeight } = this.tableDimensions;
     const { width: viewportWidth, height: viewportHeight } = this.viewportDimensions;
 
-    const width  = Math.max(tableWidth, viewportWidth);
+    const width = Math.max(tableWidth, viewportWidth);
     const height = Math.max(tableHeight, viewportHeight);
-    
+
     return { width, height };
   }
 
