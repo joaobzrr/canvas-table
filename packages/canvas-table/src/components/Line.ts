@@ -10,7 +10,11 @@ export class Line extends Konva.Image {
   private static imageCache = new Map<string, ImageBitmap>;
 
   constructor(config?: LineConfig) {
-    super({ ...config, image: undefined });
+    super({
+      ...config,
+      image: undefined,
+      listening: false
+    });
 
     this.updateImage();
     this.on("widthChange heightChange fillChange", this.updateImage);

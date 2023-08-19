@@ -12,6 +12,7 @@ import {
   HorizontalScrollbar,
   VerticalScrollbar,
   Line,
+  ResizeColumnButton,
 } from "./components";
 import { defaultTheme } from "./defaultTheme";
 import { MIN_COLUMN_WIDTH } from "./constants";
@@ -55,8 +56,7 @@ export class CanvasTable {
   private vsb: VerticalScrollbar;
 
   private columnBeingResized: number | null = null;
-
-  private draggables: Konva.Node[] = [];
+  private columnBeingHovered: number | null = null;
 
   constructor(options: CanvasTableOptions) {
     const element = document.getElementById(options.container);
@@ -109,7 +109,7 @@ export class CanvasTable {
       initialSize: 300,
       factory: {
         make: () => {
-          return new Line({ listening: false })
+          return new Line()
         },
         reset: (line: Line) => {
           return line.position({ x: 0, y: 0 });
@@ -182,7 +182,7 @@ export class CanvasTable {
     return new CanvasTable({ ...options });
   }
 
-  setTableData(columnDefs: ColumnDef[], dataRows: DataRow[]) {
+  public setTableData(columnDefs: ColumnDef[], dataRows: DataRow[]) {
     this.tableState.setTableData(columnDefs, dataRows);
     this.tableState.setScrollPosition({ x: 0, y: 0 });
 
@@ -208,7 +208,7 @@ export class CanvasTable {
     this.updateResizeColumnButtons();
   }
 
-  setStageDimensions(stageDimensions: Dimensions) {
+  public setStageDimensions(stageDimensions: Dimensions) {
     this.stage.size(stageDimensions);
 
     this.updateBodyDimensions();
@@ -234,7 +234,7 @@ export class CanvasTable {
     this.updateResizeColumnButtons();
   }
 
-  onWheel(event: KonvaEventObject<WheelEvent>) {
+  private onWheel(event: KonvaEventObject<WheelEvent>) {
     const { x: scrollLeft, y: scrollTop } = this.tableState.scrollPosition;
     const newScrollLeft = scrollLeft + event.evt.deltaX;
     const newScrollTop = scrollTop + event.evt.deltaY;
@@ -251,38 +251,67 @@ export class CanvasTable {
     this.updateResizeColumnButtons();
   }
 
-  onMouseMove(event: MouseEvent) {
+  private onMouseMove(event: MouseEvent) {
     const canvasBoundingClientRect = this.wrapper.getBoundingClientRect();
     const canvasOffsetX = canvasBoundingClientRect.x;
-
-    if (this.columnBeingResized !== null) {
-      const scrollPosition = this.tableState.getScrollPosition();
-      const columnState = this.tableState.getColumnState(this.columnBeingResized);
-      const viewportColumnPosition = columnState.position - scrollPosition.x;
-
-      const mouseX = event.clientX - canvasOffsetX;
-      let columnWidth = mouseX - viewportColumnPosition;
-      columnWidth = Math.max(columnWidth, MIN_COLUMN_WIDTH);
-
-      if (columnWidth !== columnState.width) {
-        this.resizeColumn(this.columnBeingResized, columnWidth);
-      }
-    }
+    const canvasOffsetY = canvasBoundingClientRect.y;
+    const mousePos = {
+      x: event.clientX - canvasOffsetX,
+      y: event.clientY - canvasOffsetY
+    };
+    this.hoverResizeColumnButton(mousePos);
+    this.resizeColumn(mousePos);
   }
 
-  onMouseUp(_event: MouseEvent) {
+  private onMouseUp(_event: MouseEvent) {
     if (this.columnBeingResized !== null) {
       this.columnBeingResized = null;
       this.updateResizeColumnButtons();
     }
   }
 
-  onClickColumnResizeButton(columnIndex: number) {
-    this.columnBeingResized = columnIndex;
+  private hoverResizeColumnButton(mousePos: VectorLike) {
+    const resizeColumnButtonGroup = this.resizeColumnButtonManager.getGroup();
+
+    let columnIndex = null;
+    for (const node of resizeColumnButtonGroup.children!) {
+      const button = node as ResizeColumnButton;
+      if (button.intersects(mousePos)) {
+        columnIndex = button.getAttr("columnIndex") as number;
+      }
+    }
+
+    if (columnIndex === this.columnBeingHovered) {
+      return;
+    }
+
+    this.columnBeingHovered = columnIndex;
+    if (this.columnBeingHovered !== null) {
+      this.stage.container().style.cursor = "col-resize";
+    } else {
+      this.stage.container().style.cursor = "default";
+    }
+
+    this.updateResizeColumnButtons();
   }
 
-  resizeColumn(columnIndex: number, columnWidth: number) {
-    this.tableState.setColumnWidth(columnIndex, columnWidth);
+  private resizeColumn(mousePos: VectorLike) {
+    if (this.columnBeingResized === null) {
+      return;
+    }
+
+    const scrollPosition = this.tableState.getScrollPosition();
+    const columnState = this.tableState.getColumnState(this.columnBeingResized);
+    const viewportColumnPosition = columnState.position - scrollPosition.x;
+
+    let columnWidth = mousePos.x - viewportColumnPosition;
+    columnWidth = Math.max(columnWidth, MIN_COLUMN_WIDTH);
+
+    if (columnWidth === columnState.width) {
+      return;
+    }
+
+    this.tableState.setColumnWidth(this.columnBeingResized, columnWidth);
 
     this.updateScrollbarVisibility();
     this.updateBody();
@@ -301,7 +330,7 @@ export class CanvasTable {
     this.updateResizeColumnButtons();
   }
 
-  updateBodyDimensions() {
+  private updateBodyDimensions() {
     const { width: stageWidth, height: stageHeight } = this.stage.size();
 
     this.bodyDimensionsWithoutScrollbars.width = stageWidth;
@@ -311,7 +340,7 @@ export class CanvasTable {
     this.bodyDimensionsWithScrollbars.height = stageHeight - this.theme.rowHeight - this.theme.scrollBarThickness;
   }
 
-  updateBody() {
+  private updateBody() {
     const bodyWidth = this.vsb.visible()
       ? this.bodyDimensionsWithScrollbars.width
       : this.bodyDimensionsWithoutScrollbars.width;
@@ -331,7 +360,7 @@ export class CanvasTable {
     });
   }
 
-  updateHead() {
+  private updateHead() {
     this.head.width(this.body.width());
 
     const tableDimensions = this.tableState.getTableDimensions();
@@ -344,7 +373,7 @@ export class CanvasTable {
     });
   }
 
-  updateScrollbarVisibility() {
+  private updateScrollbarVisibility() {
     const { width: tableWidth, height: tableHeight } = this.tableState.tableDimensions;
 
     const hsbShouldBeVisible = this.bodyDimensionsWithScrollbars.width < tableWidth;
@@ -362,7 +391,7 @@ export class CanvasTable {
     }
   }
 
-  updateBodyGrid() {
+  private updateBodyGrid() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableDimensions = this.tableState.getTableDimensions();
     const viewportDimensions = this.tableState.getViewportDimensions();
@@ -428,7 +457,7 @@ export class CanvasTable {
     }
   }
 
-  updateHeadGrid() {
+  private updateHeadGrid() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableDimensions = this.tableState.getTableDimensions();
     const viewportDimensions = this.tableState.getViewportDimensions();
@@ -497,7 +526,7 @@ export class CanvasTable {
     }
   }
 
-  updateBodyCells() {
+  private updateBodyCells() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges = this.tableState.getTableRanges();
     const rowHeight = this.tableState.getRowHeight();
@@ -525,7 +554,7 @@ export class CanvasTable {
     }
   }
 
-  updateHeadCells() {
+  private updateHeadCells() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges = this.tableState.getTableRanges();
     const rowHeight = this.tableState.getRowHeight();
@@ -548,7 +577,7 @@ export class CanvasTable {
     }
   }
 
-  updateResizeColumnButtons() {
+  private updateResizeColumnButtons() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges = this.tableState.getTableRanges();
 
@@ -560,28 +589,21 @@ export class CanvasTable {
       const centerx = columnState.position + columnState.width - scrollPosition.x;
 
       const button = this.resizeColumnButtonManager.get();
+
+      let state: string | undefined;
+      if (j === this.columnBeingResized) {
+        state = "active";
+      } else if (j === this.columnBeingHovered) {
+        state = "hover";
+      } else {
+        state = "normal";
+      }
+
       button.setAttrs({
         centerx,
         columnIndex: j,
-        active: j === this.columnBeingResized
+        state
       });
     }
-  }
-
-  createDraggable(position: VectorLike, handler: (event: KonvaEventObject<MouseEvent>) => void) {
-    const draggable = new Konva.Rect();
-    draggable.position(position);
-    draggable.on("dragmove", handler);
-    draggable.on("dragend", () => draggable.destroy());
-
-    this.layer.add(draggable);
-    this.draggables.push(draggable);
-
-    draggable.startDrag();
-  }
-
-  clearDraggables() {
-    this.draggables.forEach(draggable => draggable.destroy());
-    this.draggables = [];
   }
 }

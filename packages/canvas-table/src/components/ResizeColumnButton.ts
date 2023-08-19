@@ -15,16 +15,6 @@ export class ResizeColumnButton extends Konva.Rect {
       opacity: 0,
     });
 
-    this.on("mouseenter", () => {
-      this.getStage()!.container().style.cursor = "col-resize";
-      this.opacity(0.6);
-    });
-
-    this.on("mouseleave", () => {
-      this.getStage()!.container().style.cursor = "default";
-      this.opacity(0);
-    });
-
     this.on("mousedown", () => {
       const columnIndex = this.getAttr("columnIndex") as number;
       if (columnIndex !== undefined) {
@@ -40,9 +30,23 @@ export class ResizeColumnButton extends Konva.Rect {
       }
     });
 
-    this.on("activeChange", event => {
-      const active = (event as any).newVal as boolean | undefined;
-      this.opacity(active ? 0.6 : 0);
+    this.on("stateChange", event => {
+      const state = (event as any).newVal as string;
+      if (!state) {
+        this.opacity(0);
+        return;
+      }
+
+      switch (state) {
+        case "normal": break;
+        case "hover":
+        case "active": {
+          this.opacity(0.6);
+        } break;
+        default: {
+          console.warn(`Unknown state '${state}'`);
+        } break;
+      }
     });
   }
 }

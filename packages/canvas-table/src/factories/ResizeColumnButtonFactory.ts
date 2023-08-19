@@ -27,15 +27,14 @@ export class ResizeColumnButtonFactory {
     return button.setAttrs({
       x: 0,
       y: 0,
+      state: undefined,
 
       // @Note We previously forgot to set this back to zero. This
       // caused the 'centerxChange' event handler to not fire in
       // some circumstances which, in turn, would cause the button
       // to get stuck at the top left corner of the screen.
       centerx: undefined,
-
       columnIndex: undefined,
-      active: undefined,
     });
   }
 }
