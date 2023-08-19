@@ -235,6 +235,11 @@ export class CanvasTable {
   }
 
   private onWheel(event: KonvaEventObject<WheelEvent>) {
+    // @Note Prevent scrolling while resizing a column
+    if (this.columnBeingResized !== null) {
+      return;
+    }
+
     const { x: scrollLeft, y: scrollTop } = this.tableState.scrollPosition;
     const newScrollLeft = scrollLeft + event.evt.deltaX;
     const newScrollTop = scrollTop + event.evt.deltaY;
