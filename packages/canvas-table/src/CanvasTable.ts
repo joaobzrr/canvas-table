@@ -28,6 +28,7 @@ import { NodeManager } from "./core/NodeManager";
 import { ResizeColumnButtonFactory } from "./factories";
 
 export class CanvasTable {
+  private wrapper: HTMLDivElement;
   private stage: Konva.Stage;
   private layer: Konva.Layer;
 
@@ -58,7 +59,15 @@ export class CanvasTable {
   private draggables: Konva.Node[] = [];
 
   constructor(options: CanvasTableOptions) {
-    this.stage = new Konva.Stage({ container: options.container });
+    const element = document.getElementById(options.container);
+    if (!element) {
+      throw new Error(`Element with id '${options.container}' does not exist`);
+    }
+
+    this.wrapper = document.createElement("div");
+    element.appendChild(this.wrapper);
+
+    this.stage = new Konva.Stage({ container: this.wrapper });
     this.layer = new Konva.Layer();
     this.stage.add(this.layer);
 
@@ -165,8 +174,8 @@ export class CanvasTable {
     this.stage.on("wheel", throttle((event => this.onWheel(event)), 16));
 
     // @Note: We might need to provide a public method to remove these
-    this.stage.on("mousemove", throttle(this.onMouseMove.bind(this), 16));
-    this.stage.on("mouseup", this.onMouseUp.bind(this));
+    document.addEventListener("mousemove", throttle(this.onMouseMove.bind(this), 16));
+    document.addEventListener("mouseup", this.onMouseUp.bind(this));
   }
 
   static async create(options: CanvasTableOptions) {
@@ -242,13 +251,16 @@ export class CanvasTable {
     this.updateResizeColumnButtons();
   }
 
-  onMouseMove(_event: KonvaEventObject<MouseEvent>) {
+  onMouseMove(event: MouseEvent) {
+    const canvasBoundingClientRect = this.wrapper.getBoundingClientRect();
+    const canvasOffsetX = canvasBoundingClientRect.x;
+
     if (this.columnBeingResized !== null) {
       const scrollPosition = this.tableState.getScrollPosition();
       const columnState = this.tableState.getColumnState(this.columnBeingResized);
       const viewportColumnPosition = columnState.position - scrollPosition.x;
 
-      const mouseX = this.stage.getPointerPosition()!.x;
+      const mouseX = event.clientX - canvasOffsetX;
       let columnWidth = mouseX - viewportColumnPosition;
       columnWidth = Math.max(columnWidth, MIN_COLUMN_WIDTH);
 
@@ -258,7 +270,7 @@ export class CanvasTable {
     }
   }
 
-  onMouseUp(_event: KonvaEventObject<MouseEvent>) {
+  onMouseUp(_event: MouseEvent) {
     if (this.columnBeingResized !== null) {
       this.columnBeingResized = null;
       this.updateResizeColumnButtons();
