@@ -84,7 +84,7 @@ export class CanvasTable {
     this.head = new Konva.Group({ height: this.theme.rowHeight });
     this.layer.add(this.head);
 
-    this.header = new Konva.Group({ height: this.theme.rowHeight });
+    this.header = new Konva.Group({ height: this.head.height() });
     this.head.add(this.header);
 
     this.hsb = new HorizontalScrollbar({
