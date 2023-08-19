@@ -59,9 +59,11 @@ export class GlyphAtlas {
       width: metrics.width,
       height: metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
     };
-    const node = this.pack(this.root, size, GLYPH_PADDING);
+
+    let node = this.pack(this.root, size, GLYPH_PADDING);
     if (!node) {
-      throw new Error("Atlas is full");
+      this.clear();
+      node = this.pack(this.root, size, GLYPH_PADDING)!;
     }
 
     node.glyphData = {} as GlyphData;
@@ -77,10 +79,9 @@ export class GlyphAtlas {
   }
 
   private pack(node: TextureNode, size: Size, padding: number) {
-    return this.doPack(node, {
-      width: size.width + padding * 2,
-      height: size.height + padding * 2
-    });
+    const width  = size.width  + padding * 2;
+    const height = size.height + padding * 2;
+    return this.doPack(node, { width, height });
   }
 
   private doPack(node: TextureNode, size: Size): TextureNode | null {
@@ -142,6 +143,16 @@ export class GlyphAtlas {
     node.rect.height = size.height;
     node.filled = true;
     return node;
+  }
+
+  private clear() {
+    this.ctx.clearRect(0, 0, this.textureWidth, this.textureHeight);
+    this.root = this.makeNode({
+      x: 0,
+      y: 0,
+      width: this.textureWidth,
+      height: this.textureHeight
+    });
   }
 
   private makeNode(rect: Rect): TextureNode {
