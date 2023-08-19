@@ -2,17 +2,19 @@ import Konva from "konva";
 import { GroupConfig } from "konva/lib/Group";
 import { TableState, Rect } from "../core";
 import { Utils } from "../Utils";
-import { Theme } from "../types";
+import { Theme, VectorLike } from "../types";
 import { Line } from "./Line";
 
 export interface HorizontalScrollbarConfig extends GroupConfig {
   tableState: TableState;
   theme: Theme
+  onDragThumb: (scrollPosition: VectorLike) => void;
 }
 
 export class HorizontalScrollbar extends Konva.Group {
   private tableState: TableState;
   private theme: Theme;
+  private onDragThumb: (scrollPosition: VectorLike) => void;
 
   private bar:   Konva.Rect;
   private thumb: Konva.Rect;
@@ -28,13 +30,18 @@ export class HorizontalScrollbar extends Konva.Group {
 
     this.tableState = config.tableState;
     this.theme = config.theme;
+    this.onDragThumb = config.onDragThumb;
 
     this.bar = new Konva.Rect({ fill: this.theme.scrollBarTrackColor });
     this.add(this.bar);
 
     this.track = Rect.create();
 
-    this.thumb = new Konva.Rect({ fill: this.theme.scrollBarThumbColor });
+    this.thumb = new Konva.Rect({
+      fill: this.theme.scrollBarThumbColor,
+      draggable: true
+    });
+    this.thumb.on("dragmove", this.dragThumb.bind(this));
     this.add(this.thumb);
 
     this.topBorder = new Line();
@@ -114,5 +121,24 @@ export class HorizontalScrollbar extends Konva.Group {
       height: this.height(),
       fill: this.theme.tableBorderColor,
     });
+  }
+
+  private dragThumb() {
+    // @Note Reset y coordinate
+    this.thumb.y(this.track.y)
+
+    const minX = this.track.x;
+    const maxX = this.maxThumbLeft;
+
+    if (this.thumb.x() < minX) {
+      this.thumb.x(minX);
+    } else if (this.thumb.x() > maxX) {
+      this.thumb.x(maxX);
+    }
+
+    const maxScrollLeft = this.tableState.getMaximumScrollPosition().x;
+    const scrollLeft = Utils.scale(this.thumb.x(), minX, maxX, 0, maxScrollLeft);
+    const scrollTop = this.tableState.getScrollPosition().y;
+    this.onDragThumb({ x: scrollLeft, y: scrollTop });
   }
 }

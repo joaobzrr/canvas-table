@@ -91,7 +91,8 @@ export class CanvasTable {
       tableState: this.tableState,
       theme: this.theme,
       y: this.theme.rowHeight,
-      height: this.theme.scrollBarThickness
+      height: this.theme.scrollBarThickness,
+      onDragThumb: throttle(scrollPosition => this.scroll(scrollPosition), 16)
     });
     this.layer.add(this.hsb);
 
@@ -99,7 +100,8 @@ export class CanvasTable {
       tableState: this.tableState,
       theme: this.theme,
       y: this.theme.rowHeight,
-      width: this.theme.scrollBarThickness
+      width: this.theme.scrollBarThickness,
+      onDragThumb: throttle(scrollPosition => this.scroll(scrollPosition), 16)
     });
     this.layer.add(this.vsb);
 
@@ -273,6 +275,16 @@ export class CanvasTable {
       this.columnBeingResized = null;
       this.updateResizeColumnButtons();
     }
+  }
+
+  private scroll(scrollPosition: VectorLike) {
+    this.tableState.setScrollPosition(scrollPosition);
+
+    this.updateBodyGrid();
+    this.updateHeadGrid();
+    this.updateBodyCells();
+    this.updateHeadCells();
+    this.updateResizeColumnButtons();
   }
 
   private hoverResizeColumnButton(mousePos: VectorLike) {
