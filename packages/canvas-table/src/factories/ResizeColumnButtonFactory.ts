@@ -1,27 +1,29 @@
 import Konva from "konva";
 import { ResizeColumnButton } from "../components";
-import { RESIZE_COLUMN_BUTTON_SIDE } from "../constants";
 import { Theme } from "../types";
 
+export type ResizeColumnButtonFactoryParams = {
+  theme: Theme;
+  onMouseDown: (columnIndex: number) => void;
+}
+
 export class ResizeColumnButtonFactory {
-  constructor(
-    private onMouseDown: (columnIndex: number) => void,
-    private theme: Theme) {}
+  private theme: Theme;
+  private onMouseDown: (columnIndex: number) => void;
+
+  constructor(params: ResizeColumnButtonFactoryParams) {
+    this.theme = params.theme;
+    this.onMouseDown = params.onMouseDown;
+  }
 
   make() {
     return new ResizeColumnButton({
-      width: (RESIZE_COLUMN_BUTTON_SIDE * 2) + 1,
       height: this.theme.rowHeight,
       onMouseDown: this.onMouseDown
     });
   }
 
   reset(button: Konva.Rect) {
-    const mouseDownHandler = button.getAttr("mouseDownHandler");
-    if (mouseDownHandler) {
-      button.off("mousedown", mouseDownHandler);
-    }
-    
     return button.setAttrs({
       x: 0,
       y: 0,
@@ -30,9 +32,10 @@ export class ResizeColumnButtonFactory {
       // caused the 'centerxChange' event handler to not fire in
       // some circumstances which, in turn, would cause the button
       // to get stuck at the top left corner of the screen.
-      centerx: 0,
+      centerx: undefined,
 
-      mouseDownHandler: undefined
+      columnIndex: undefined,
+      active: undefined,
     });
   }
 }

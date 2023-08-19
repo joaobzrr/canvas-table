@@ -23,9 +23,9 @@ import {
   Theme,
   VectorLike
 } from "./types";
-import { ResizeColumnButtonFactory } from "./factories";
 import { TextRenderer } from "text-renderer";
 import { NodeManager } from "./core/NodeManager";
+import { ResizeColumnButtonFactory } from "./factories";
 
 export class CanvasTable {
   private stage: Konva.Stage;
@@ -149,20 +149,24 @@ export class CanvasTable {
     this.headCellManager = new NodeManager(headCellPool);
     this.header.add(this.headCellManager.getGroup());
 
-    const resizeColumnButtonGroupPool = new ObjectPool({
-      initialSize: 30,
-      factory: new ResizeColumnButtonFactory(
-        this.onClickColumnResizeButton.bind(this),
-        this.theme)
+    const resizeColumnButtonFactory = new ResizeColumnButtonFactory({
+      theme: this.theme,
+      onMouseDown: columnIndex => {
+        this.columnBeingResized = columnIndex
+      }
     });
-    this.resizeColumnButtonManager = new NodeManager(resizeColumnButtonGroupPool);
+    const resizeColumnButtonPool = new ObjectPool({
+      initialSize: 30,
+      factory: resizeColumnButtonFactory
+    });
+    this.resizeColumnButtonManager = new NodeManager(resizeColumnButtonPool);
     this.head.add(this.resizeColumnButtonManager.getGroup());
 
     this.stage.on("wheel", throttle((event => this.onWheel(event)), 16));
 
     // @Note: We might need to provide a public method to remove these
-    document.addEventListener("mousemove", this.onMouseMove.bind(this));
-    document.addEventListener("mouseup", this.onMouseUp.bind(this));
+    this.stage.on("mousemove", throttle(this.onMouseMove.bind(this), 16));
+    this.stage.on("mouseup", this.onMouseUp.bind(this));
   }
 
   static async create(options: CanvasTableOptions) {
@@ -238,7 +242,7 @@ export class CanvasTable {
     this.updateResizeColumnButtons();
   }
 
-  onMouseMove(_event: MouseEvent) {
+  onMouseMove(_event: KonvaEventObject<MouseEvent>) {
     if (this.columnBeingResized !== null) {
       const scrollPosition = this.tableState.getScrollPosition();
       const columnState = this.tableState.getColumnState(this.columnBeingResized);
@@ -254,9 +258,10 @@ export class CanvasTable {
     }
   }
 
-  onMouseUp(_event: MouseEvent) {
+  onMouseUp(_event: KonvaEventObject<MouseEvent>) {
     if (this.columnBeingResized !== null) {
       this.columnBeingResized = null;
+      this.updateResizeColumnButtons();
     }
   }
 
@@ -543,7 +548,11 @@ export class CanvasTable {
       const centerx = columnState.position + columnState.width - scrollPosition.x;
 
       const button = this.resizeColumnButtonManager.get();
-      button.setAttrs({ centerx, columnIndex: j });
+      button.setAttrs({
+        centerx,
+        columnIndex: j,
+        active: j === this.columnBeingResized
+      });
     }
   }
 
