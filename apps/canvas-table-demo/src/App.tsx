@@ -31,7 +31,7 @@ function App() {
   useEffect(() => {
     const canvasTable = canvasTableRef.current;
     if (canvasTable) {
-      canvasTable.setStageDimensions(containerSize);
+      canvasTable.resize(containerSize);
     }
   }, [containerSize]);
 
@@ -48,7 +48,10 @@ function App() {
 
     const tableData = generateTableData(rows, cols);
     const canvasTable = canvasTableRef.current as CanvasTable;
-    canvasTable.setTableData(tableData.columns, tableData.data);
+    canvasTable.config({
+      columnDefs: tableData.columns,
+      dataRows: tableData.data
+    });
   }
 
   return (

@@ -17,10 +17,8 @@ import { defaultTheme } from "./defaultTheme";
 import { MIN_COLUMN_WIDTH } from "./constants";
 import {
   CanvasTableOptions,
-  ColumnDef,
-  DataRow,
   Dimensions,
-  Theme,
+  TableConfig,
   VectorLike
 } from "./types";
 import { TextRenderer } from "text-renderer";
@@ -33,7 +31,6 @@ export class CanvasTable {
   private layer: Konva.Layer;
 
   private tableState: TableState;
-  private theme: Theme;
 
   private body: Konva.Group;
   private bodyCellManager: NodeManager<BodyCell>;
@@ -55,9 +52,11 @@ export class CanvasTable {
   private columnBeingHovered: number | null = null;
 
   constructor(options: CanvasTableOptions) {
-    const element = document.getElementById(options.container);
+    const { container, ...config } = options;
+
+    const element = document.getElementById(container);
     if (!element) {
-      throw new Error(`Element with id '${options.container}' does not exist`);
+      throw new Error(`Element with id '${container}' does not exist`);
     }
 
     this.wrapper = document.createElement("div");
@@ -67,17 +66,13 @@ export class CanvasTable {
     this.layer = new Konva.Layer({ imageSmoothingEnabled: false });
     this.stage.add(this.layer);
 
-    this.theme = defaultTheme;
+    const theme = options.theme ?? defaultTheme;
+    this.tableState = new TableState({ ...config, theme });
 
-    this.tableState = new TableState();
-    this.tableState.setRowHeight(defaultTheme.rowHeight);
-
-    this.tableState.setTableData(options.columnDefs, options.dataRows);
-
-    this.body = new Konva.Group({ y: this.theme.rowHeight });
+    this.body = new Konva.Group({ y: theme.rowHeight });
     this.layer.add(this.body);
 
-    this.head = new Konva.Group({ height: this.theme.rowHeight });
+    this.head = new Konva.Group({ height: theme.rowHeight });
     this.layer.add(this.head);
 
     this.header = new Konva.Group({ height: this.head.height() });
@@ -90,18 +85,18 @@ export class CanvasTable {
 
     this.hsb = new HorizontalScrollbar({
       tableState: this.tableState,
-      theme: this.theme,
-      y: this.theme.rowHeight,
-      height: this.theme.scrollBarThickness,
+      theme: theme,
+      y: theme.rowHeight,
+      height: theme.scrollBarThickness,
       onDragThumb
     });
     this.layer.add(this.hsb);
 
     this.vsb = new VerticalScrollbar({
       tableState: this.tableState,
-      theme: this.theme,
-      y: this.theme.rowHeight,
-      width: this.theme.scrollBarThickness,
+      theme: theme,
+      y: theme.rowHeight,
+      width: theme.scrollBarThickness,
       onDragThumb
     });
     this.layer.add(this.vsb);
@@ -128,16 +123,8 @@ export class CanvasTable {
     const bodyCellPool = new ObjectPool({
       initialSize: 1000,
       factory: {
-        make: () => new BodyCell({
-          textRenderer: this.textRenderer,
-          theme: this.theme
-        }),
-        reset: (cell: BodyCell) => {
-          return cell.setAttrs({
-            x: 0,
-            y: 0
-          });
-        }
+        make: () => new BodyCell({ textRenderer: this.textRenderer, theme }),
+        reset: (cell: BodyCell) => cell.setAttrs({ x: 0, y: 0 })
       }
     });
     this.bodyCellManager = new NodeManager(bodyCellPool);
@@ -146,23 +133,15 @@ export class CanvasTable {
     const headCellPool = new ObjectPool({
       initialSize: 30,
       factory: {
-        make: () => new HeadCell({
-          textRenderer: this.textRenderer,
-          theme: this.theme
-        }),
-        reset: (cell: HeadCell) => {
-          return cell.setAttrs({
-            x: 0,
-            y: 0
-          })
-        }
+        make: () => new HeadCell({ textRenderer: this.textRenderer, theme }),
+        reset: (cell: HeadCell) => cell.setAttrs({ x: 0, y: 0 })
       }
     });
     this.headCellManager = new NodeManager(headCellPool);
     this.header.add(this.headCellManager.getGroup());
 
     const resizeColumnButtonFactory = new ResizeColumnButtonFactory({
-      theme: this.theme,
+      theme,
       onMouseDown: columnIndex => {
         this.columnBeingResized = columnIndex
       }
@@ -180,14 +159,15 @@ export class CanvasTable {
     this.onMouseUp = this.onMouseUp.bind(this);
   }
 
-  public setTableData(columnDefs: ColumnDef[], dataRows: DataRow[]) {
-    this.tableState.setTableData(columnDefs, dataRows);
+  public config(config: TableConfig) {
+    const theme = config.theme ?? defaultTheme;
+    this.tableState.config({ ...config, theme });
     this.tableState.setScrollPosition({ x: 0, y: 0 });
     this.reflow();
     this.repaint();
   }
 
-  public setStageDimensions(stageDimensions: Dimensions) {
+  public resize(stageDimensions: Dimensions) {
     this.stage.size(stageDimensions);
     this.reflow();
     this.repaint();
@@ -209,7 +189,7 @@ export class CanvasTable {
       return;
     }
 
-    const { x: scrollLeft, y: scrollTop } = this.tableState.scrollPosition;
+    const { x: scrollLeft, y: scrollTop } = this.tableState.getScrollPosition();
     const newScrollLeft = scrollLeft + event.evt.deltaX;
     const newScrollTop = scrollTop + event.evt.deltaY;
     const newScrollPosition = new Vector(newScrollLeft, newScrollTop);
@@ -280,7 +260,7 @@ export class CanvasTable {
   private reflow() {
     const { width: stageWidth, height: stageHeight } = this.stage.size();
     const { width: tableWidth, height: tableHeight } = this.tableState.getTableDimensions();
-    const { rowHeight, scrollBarThickness } = this.theme;
+    const { rowHeight, scrollBarThickness } = this.tableState.getTheme();
 
     const bodyWidthWithoutScrollbars = stageWidth;
     const bodyHeightWithoutScrollbars = stageHeight - rowHeight;
@@ -331,7 +311,7 @@ export class CanvasTable {
       height: this.header.height(),
     });
 
-    this.hsb.y(this.stage.height() - this.theme.scrollBarThickness);
+    this.hsb.y(this.stage.height() - scrollBarThickness);
     this.hsb.width(this.body.width());
     this.hsb.reflow();
 
@@ -345,6 +325,7 @@ export class CanvasTable {
     const tableDimensions = this.tableState.getTableDimensions();
     const viewportDimensions = this.tableState.getViewportDimensions();
     const tableRanges = this.tableState.getTableRanges();
+    const { rowHeight, tableBorderColor } = this.tableState.getTheme();
 
     this.bodyLineManager.clear();
 
@@ -352,7 +333,7 @@ export class CanvasTable {
 
     // Draw body horizontal lines
     for (let i = tableRanges.rowTop + 1; i < tableRanges.rowBottom; i++) {
-      const y = i * this.theme.rowHeight - scrollPosition.y;
+      const y = i * rowHeight - scrollPosition.y;
 
       const line = this.bodyLineManager.get();
       line.setAttrs({
@@ -360,7 +341,7 @@ export class CanvasTable {
         y,
         width: hLineLength,
         height: 1,
-        fill: this.theme.tableBorderColor
+        fill: tableBorderColor
       });
     }
 
@@ -372,7 +353,7 @@ export class CanvasTable {
         y: tableDimensions.height,
         width: hLineLength,
         height: 1,
-        fill: this.theme.tableBorderColor
+        fill: tableBorderColor
       });
     }
 
@@ -389,7 +370,7 @@ export class CanvasTable {
         y: 0,
         width: 1,
         height: vLineLength,
-        fill: this.theme.tableBorderColor
+        fill: tableBorderColor
       });
     }
 
@@ -401,7 +382,7 @@ export class CanvasTable {
         y: 0,
         width: 1,
         height: vLineLength,
-        fill: this.theme.tableBorderColor,
+        fill: tableBorderColor,
       });
     }
   }
@@ -411,6 +392,7 @@ export class CanvasTable {
     const tableDimensions = this.tableState.getTableDimensions();
     const viewportDimensions = this.tableState.getViewportDimensions();
     const tableRanges = this.tableState.getTableRanges();
+    const { rowHeight, tableBorderColor } = this.tableState.getTheme();
 
     this.headLineManager.clear();
 
@@ -422,7 +404,7 @@ export class CanvasTable {
         y: this.head.height(),
         width: this.head.width(),
         height: 1,
-        fill: this.theme.tableBorderColor
+        fill: tableBorderColor
       });
     }
 
@@ -436,8 +418,8 @@ export class CanvasTable {
       line.setAttrs({
         x,
         width: 1,
-        height: this.theme.rowHeight,
-        fill: this.theme.tableBorderColor,
+        height: rowHeight,
+        fill: tableBorderColor,
       });
     }
 
@@ -447,8 +429,8 @@ export class CanvasTable {
       line.setAttrs({
         x: tableDimensions.width,
         width: 1,
-        height: this.theme.rowHeight,
-        fill: this.theme.tableBorderColor
+        height: rowHeight,
+        fill: tableBorderColor
       });
     }
 
@@ -459,7 +441,7 @@ export class CanvasTable {
         x: this.head.width(),
         width: 1,
         height: this.head.height(),
-        fill: this.theme.tableBorderColor
+        fill: tableBorderColor
       });
     }
 
@@ -469,8 +451,8 @@ export class CanvasTable {
       line.setAttrs({
         x: tableDimensions.width,
         width: 1,
-        height: this.theme.rowHeight,
-        fill: this.theme.tableBorderColor
+        height: rowHeight,
+        fill: tableBorderColor
       });
     }
   }
@@ -478,7 +460,7 @@ export class CanvasTable {
   private drawBodyCells() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges = this.tableState.getTableRanges();
-    const rowHeight = this.tableState.getRowHeight();
+    const { rowHeight } = this.tableState.getTheme();
 
     this.bodyCellManager.clear();
 
@@ -497,7 +479,6 @@ export class CanvasTable {
           width: columnState.width,
           height: rowHeight,
           text: dataRow[columnState.field],
-          theme: this.theme
         }));
       }
     }
@@ -506,7 +487,7 @@ export class CanvasTable {
   private drawHeadCells() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges = this.tableState.getTableRanges();
-    const rowHeight = this.tableState.getRowHeight();
+    const { rowHeight } = this.tableState.getTheme();
 
     this.headCellManager.clear();
 
@@ -521,7 +502,6 @@ export class CanvasTable {
         width: columnState.width,
         height: rowHeight,
         text: columnState.title,
-        theme: this.theme,
       });
     }
   }

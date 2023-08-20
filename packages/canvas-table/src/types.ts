@@ -47,11 +47,14 @@ export type TableRanges = {
   rowBottom:   number;
 }
 
-export type CanvasTableOptions = {
-  container:  string;
+export type TableConfig = {
   columnDefs: ColumnDef[];
   dataRows:   DataRow[];
   theme?:     Theme;
+}
+
+export type CanvasTableOptions = TableConfig & {
+  container:  string;
 }
 
 export type FontSpecifier = {

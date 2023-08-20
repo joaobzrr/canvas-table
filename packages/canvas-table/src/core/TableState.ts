@@ -1,50 +1,51 @@
 import { Vector } from "./Vector";
 import {
-  ColumnDef,
   ColumnState,
   DataRow,
   Dimensions,
+  TableConfig,
   TableRanges,
+  Theme,
   VectorLike
 } from "../types";
 
 export class TableState {
-  columnStates = [] as ColumnState[];
-  dataRows = [] as DataRow[];
+  private columnStates = [] as ColumnState[];
+  private dataRows = [] as DataRow[];
 
-  scrollPosition = { x: 0, y: 0 };
-  normalizedScrollPosition = { x: 0, y: 0 };
-  maximumScrollPosition = { x: 0, y: 0 };
+  private scrollPosition = { x: 0, y: 0 };
+  private normalizedScrollPosition = { x: 0, y: 0 };
+  private maximumScrollPosition = { x: 0, y: 0 };
 
-  tableDimensions = { width: 1, height: 1 };
-  scrollDimensions = { width: 1, height: 1 };
-  viewportDimensions = { width: 1, height: 1 };
+  private tableDimensions = { width: 1, height: 1 };
+  private scrollDimensions = { width: 1, height: 1 };
+  private viewportDimensions = { width: 1, height: 1 };
 
-  tableRanges = { columnLeft: 0, columnRight: 0, rowTop: 0, rowBottom: 0 }
+  private tableRanges = { columnLeft: 0, columnRight: 0, rowTop: 0, rowBottom: 0 }
 
-  rowHeight = 1;
+  private theme!: Theme;
 
-  get numOfRows() {
-    return this.dataRows.length;
+  constructor(config: TableConfig) {
+    this.config(config);
   }
 
-  get numOfCols() {
-    return this.columnStates.length;
-  }
-
-  public setTableData(columnDefs: ColumnDef[], dataRows: DataRow[]) {
+  public config(config: TableConfig) {
     const columnStates = [];
     let total = 0;
-    for (const columnDef of columnDefs) {
+    for (const columnDef of config.columnDefs) {
       columnStates.push({ ...columnDef, position: total });
       total += columnDef.width;
     }
-
     this.columnStates = columnStates;
-    this.dataRows = dataRows;
+    this.dataRows = config.dataRows;
+    this.theme = config.theme;
 
     this.tableDimensions = this.calculateTableDimensions();
     this.tableRanges = this.calculateTableRanges();
+  }
+
+  public getTheme() {
+    return { ...this.theme };
   }
 
   public getColumnState(columnIndex: number) {
@@ -80,14 +81,6 @@ export class TableState {
       throw new Error("Index out of bounds");
     }
     return dataRow;
-  }
-
-  public getRowHeight() {
-    return this.rowHeight;
-  }
-
-  public setRowHeight(rowHeight: number) {
-    this.rowHeight = rowHeight;
   }
 
   public getScrollPosition() {
@@ -140,8 +133,13 @@ export class TableState {
   }
 
   private calculateTableRanges(): TableRanges {
+    if (!this.theme) {
+      throw new Error("A theme has not been set");
+    }
+
     const { x: scrollLeft, y: scrollTop } = this.scrollPosition;
     const { width: viewportWidth, height: viewportHeight } = this.viewportDimensions;
+    const { rowHeight } = this.theme;
 
     const scrollRight = scrollLeft + viewportWidth;
     const scrollBottom = scrollTop + viewportHeight;
@@ -152,8 +150,8 @@ export class TableState {
     let columnRight = this.findColumnIndexAtXCoordinate(scrollRight, columnLeft);
     columnRight = columnRight !== -1 ? columnRight + 1 : this.numOfCols;
 
-    const rowTop = Math.floor(scrollTop / this.rowHeight);
-    const rowBottom = Math.min(Math.ceil(scrollBottom / this.rowHeight), this.numOfRows);
+    const rowTop = Math.floor(scrollTop / rowHeight);
+    const rowBottom = Math.min(Math.ceil(scrollBottom / rowHeight), this.numOfRows);
 
     return {
       columnLeft,
@@ -195,11 +193,13 @@ export class TableState {
   }
 
   private calculateTableDimensions() {
+    if (!this.theme) {
+      throw new Error("A theme has not been set");
+    }
+
     const lastColumnState = this.columnStates[this.numOfCols - 1];
     const width = lastColumnState.position + lastColumnState.width;
-
-    const height = this.numOfRows * this.rowHeight;
-
+    const height = this.numOfRows * this.theme.rowHeight;
     return { width, height };
   }
 
@@ -223,5 +223,13 @@ export class TableState {
       : 0;
 
     return new Vector(x, y).data();
+  }
+
+  get numOfRows() {
+    return this.dataRows.length;
+  }
+
+  get numOfCols() {
+    return this.columnStates.length;
   }
 }
