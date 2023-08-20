@@ -12,7 +12,6 @@ import {
   HorizontalScrollbar,
   VerticalScrollbar,
   Line,
-  ResizeColumnButton,
 } from "./components";
 import { defaultTheme } from "./defaultTheme";
 import { MIN_COLUMN_WIDTH } from "./constants";
@@ -35,9 +34,6 @@ export class CanvasTable {
 
   private tableState: TableState;
   private theme: Theme;
-
-  private bodyDimensionsWithoutScrollbars = { width: 1, height: 1 };
-  private bodyDimensionsWithScrollbars    = { width: 1, height: 1 };
 
   private body: Konva.Group;
   private bodyCellManager: NodeManager<BodyCell>;
@@ -87,12 +83,17 @@ export class CanvasTable {
     this.header = new Konva.Group({ height: this.head.height() });
     this.head.add(this.header);
 
+    const onDragThumb = throttle((scrollPosition: VectorLike) => {
+      this.tableState.setScrollPosition(scrollPosition);
+      this.repaint();
+    }, 16);
+
     this.hsb = new HorizontalScrollbar({
       tableState: this.tableState,
       theme: this.theme,
       y: this.theme.rowHeight,
       height: this.theme.scrollBarThickness,
-      onDragThumb: throttle(scrollPosition => this.scroll(scrollPosition), 16)
+      onDragThumb
     });
     this.layer.add(this.hsb);
 
@@ -101,7 +102,7 @@ export class CanvasTable {
       theme: this.theme,
       y: this.theme.rowHeight,
       width: this.theme.scrollBarThickness,
-      onDragThumb: throttle(scrollPosition => this.scroll(scrollPosition), 16)
+      onDragThumb
     });
     this.layer.add(this.vsb);
 
@@ -179,6 +180,19 @@ export class CanvasTable {
     this.onMouseUp = this.onMouseUp.bind(this);
   }
 
+  public setTableData(columnDefs: ColumnDef[], dataRows: DataRow[]) {
+    this.tableState.setTableData(columnDefs, dataRows);
+    this.tableState.setScrollPosition({ x: 0, y: 0 });
+    this.reflow();
+    this.repaint();
+  }
+
+  public setStageDimensions(stageDimensions: Dimensions) {
+    this.stage.size(stageDimensions);
+    this.reflow();
+    this.repaint();
+  }
+
   public setupGlobalEventListeners() {
     document.addEventListener("mousemove", throttle(this.onMouseMove, 16));
     document.addEventListener("mouseup", this.onMouseUp);
@@ -187,58 +201,6 @@ export class CanvasTable {
   public teardownGlobalEventListeners() {
     document.removeEventListener("mousemove", this.onMouseMove);
     document.removeEventListener("mouseup", this.onMouseUp);
-  }
-
-  public setTableData(columnDefs: ColumnDef[], dataRows: DataRow[]) {
-    this.tableState.setTableData(columnDefs, dataRows);
-    this.tableState.setScrollPosition({ x: 0, y: 0 });
-
-    this.updateBodyDimensions();
-    this.updateScrollbarVisibility();
-    this.updateBody();
-    this.updateHead();
-
-    this.hsb.y(this.stage.height() - this.theme.scrollBarThickness);
-    this.hsb.width(this.body.width());
-    this.hsb.updateThumb();
-    this.hsb.repositionThumb();
-
-    this.vsb.x(this.body.width());
-    this.vsb.height(this.body.height());
-    this.vsb.updateThumb();
-    this.vsb.repositionThumb();
-
-    this.updateBodyGrid();
-    this.updateHeadGrid();
-    this.updateBodyCells();
-    this.updateHeadCells();
-    this.updateResizeColumnButtons();
-  }
-
-  public setStageDimensions(stageDimensions: Dimensions) {
-    this.stage.size(stageDimensions);
-
-    this.updateBodyDimensions();
-    this.updateScrollbarVisibility();
-    this.updateBody();
-    this.updateHead();
-
-    const stageHeight = this.stage.height();
-    this.hsb.y(stageHeight - this.theme.scrollBarThickness);
-    this.hsb.width(this.body.width());
-    this.hsb.updateThumb();
-    this.hsb.repositionThumb();
-
-    this.vsb.x(this.body.width());
-    this.vsb.height(this.body.height());
-    this.vsb.updateThumb();
-    this.vsb.repositionThumb();
-
-    this.updateBodyGrid();
-    this.updateHeadGrid();
-    this.updateBodyCells();
-    this.updateHeadCells();
-    this.updateResizeColumnButtons();
   }
 
   private onWheel(event: KonvaEventObject<WheelEvent>) {
@@ -252,15 +214,7 @@ export class CanvasTable {
     const newScrollTop = scrollTop + event.evt.deltaY;
     const newScrollPosition = new Vector(newScrollLeft, newScrollTop);
     this.tableState.setScrollPosition(newScrollPosition);
-
-    this.hsb.repositionThumb();
-    this.vsb.repositionThumb();
-
-    this.updateBodyGrid();
-    this.updateHeadGrid();
-    this.updateBodyCells();
-    this.updateHeadCells();
-    this.updateResizeColumnButtons();
+    this.repaint();
   }
 
   private onMouseMove(event: MouseEvent) {
@@ -271,105 +225,90 @@ export class CanvasTable {
       x: event.clientX - canvasOffsetX,
       y: event.clientY - canvasOffsetY
     };
-    this.hoverResizeColumnButton(mousePos);
-    this.resizeColumn(mousePos);
+
+    let columnIndex: number | null = null;
+    const shape = this.stage.getIntersection(mousePos);
+    if (shape && shape.hasName("resize-column-button")) {
+      columnIndex = shape.getAttr("columnIndex");
+    }
+
+    if (columnIndex !== this.columnBeingHovered) {
+      if (this.columnBeingHovered !== null) {
+        this.stage.container().style.cursor = "col-resize";
+      } else {
+        this.stage.container().style.cursor = "default";
+      }
+
+      this.columnBeingHovered = columnIndex;
+      this.drawResizeColumnButtons();
+    }
+
+    if (this.columnBeingResized !== null) {
+      const scrollPosition = this.tableState.getScrollPosition();
+      const columnState = this.tableState.getColumnState(this.columnBeingResized);
+      const viewportColumnPosition = columnState.position - scrollPosition.x;
+
+      let columnWidth = mousePos.x - viewportColumnPosition;
+      columnWidth = Math.max(columnWidth, MIN_COLUMN_WIDTH);
+
+      if (columnWidth !== columnState.width) {
+        this.tableState.setColumnWidth(this.columnBeingResized, columnWidth);
+        this.reflow();
+        this.repaint();
+      }
+    }
   }
 
   private onMouseUp(_event: MouseEvent) {
     if (this.columnBeingResized !== null) {
       this.columnBeingResized = null;
-      this.updateResizeColumnButtons();
+      this.drawResizeColumnButtons();
     }
   }
 
-  private scroll(scrollPosition: VectorLike) {
-    this.tableState.setScrollPosition(scrollPosition);
+  private repaint() {
+    this.hsb.repaint();
+    this.vsb.repaint();
 
-    this.updateBodyGrid();
-    this.updateHeadGrid();
-    this.updateBodyCells();
-    this.updateHeadCells();
-    this.updateResizeColumnButtons();
+    this.drawBodyGrid();
+    this.drawHeadGrid();
+    this.drawBodyCells();
+    this.drawHeadCells();
+    this.drawResizeColumnButtons();
   }
 
-  private hoverResizeColumnButton(mousePos: VectorLike) {
-    const resizeColumnButtonGroup = this.resizeColumnButtonManager.getGroup();
-
-    let columnIndex = null;
-    for (const node of resizeColumnButtonGroup.children!) {
-      const button = node as ResizeColumnButton;
-      if (button.intersects(mousePos)) {
-        columnIndex = button.getAttr("columnIndex") as number;
-      }
-    }
-
-    if (columnIndex === this.columnBeingHovered) {
-      return;
-    }
-
-    this.columnBeingHovered = columnIndex;
-    if (this.columnBeingHovered !== null) {
-      this.stage.container().style.cursor = "col-resize";
-    } else {
-      this.stage.container().style.cursor = "default";
-    }
-
-    this.updateResizeColumnButtons();
-  }
-
-  private resizeColumn(mousePos: VectorLike) {
-    if (this.columnBeingResized === null) {
-      return;
-    }
-
-    const scrollPosition = this.tableState.getScrollPosition();
-    const columnState = this.tableState.getColumnState(this.columnBeingResized);
-    const viewportColumnPosition = columnState.position - scrollPosition.x;
-
-    let columnWidth = mousePos.x - viewportColumnPosition;
-    columnWidth = Math.max(columnWidth, MIN_COLUMN_WIDTH);
-
-    if (columnWidth === columnState.width) {
-      return;
-    }
-
-    this.tableState.setColumnWidth(this.columnBeingResized, columnWidth);
-
-    this.updateScrollbarVisibility();
-    this.updateBody();
-    this.updateHead();
-
-    this.hsb.updateThumb();
-    this.hsb.repositionThumb();
-
-    this.vsb.updateThumb();
-    this.vsb.repositionThumb();
-
-    this.updateBodyGrid();
-    this.updateHeadGrid();
-    this.updateBodyCells();
-    this.updateHeadCells();
-    this.updateResizeColumnButtons();
-  }
-
-  private updateBodyDimensions() {
+  private reflow() {
     const { width: stageWidth, height: stageHeight } = this.stage.size();
+    const { width: tableWidth, height: tableHeight } = this.tableState.getTableDimensions();
+    const { rowHeight, scrollBarThickness } = this.theme;
 
-    this.bodyDimensionsWithoutScrollbars.width = stageWidth;
-    this.bodyDimensionsWithScrollbars.width = stageWidth - this.theme.scrollBarThickness;
+    const bodyWidthWithoutScrollbars = stageWidth;
+    const bodyHeightWithoutScrollbars = stageHeight - rowHeight;
 
-    this.bodyDimensionsWithoutScrollbars.height = stageHeight - this.theme.rowHeight;
-    this.bodyDimensionsWithScrollbars.height = stageHeight - this.theme.rowHeight - this.theme.scrollBarThickness;
-  }
+    const hsbShouldBeVisible = bodyWidthWithoutScrollbars < tableWidth;
+    if (hsbShouldBeVisible && !this.hsb.visible()) {
+      this.hsb.visible(true);
+    } else if (!hsbShouldBeVisible && this.hsb.visible()) {
+      this.hsb.visible(false);
+    }
 
-  private updateBody() {
+    const vsbShouldBeVisible = bodyHeightWithoutScrollbars < tableHeight;
+    if (vsbShouldBeVisible && !this.vsb.visible()) {
+      this.vsb.visible(true);
+    } else if (!vsbShouldBeVisible && this.vsb.parent) {
+      this.vsb.visible(false);
+    }
+
+    const bodyWidthWithScrollbars  = bodyWidthWithoutScrollbars  - scrollBarThickness;
+    const bodyHeightWithScrollbars = bodyHeightWithoutScrollbars - scrollBarThickness;
+
     const bodyWidth = this.vsb.visible()
-      ? this.bodyDimensionsWithScrollbars.width
-      : this.bodyDimensionsWithoutScrollbars.width;
+      ? bodyWidthWithScrollbars
+      : bodyWidthWithoutScrollbars
 
     const bodyHeight = this.hsb.visible()
-      ? this.bodyDimensionsWithScrollbars.height
-      : this.bodyDimensionsWithoutScrollbars.height;
+      ? bodyHeightWithScrollbars
+      : bodyHeightWithoutScrollbars;
 
     this.tableState.setViewportDimensions({ width: bodyWidth, height: bodyHeight });
 
@@ -380,9 +319,7 @@ export class CanvasTable {
       width: bodyWidth,
       height: bodyHeight
     });
-  }
 
-  private updateHead() {
     this.head.width(this.body.width());
 
     const tableDimensions = this.tableState.getTableDimensions();
@@ -393,27 +330,17 @@ export class CanvasTable {
       width: this.header.width(),
       height: this.header.height(),
     });
+
+    this.hsb.y(this.stage.height() - this.theme.scrollBarThickness);
+    this.hsb.width(this.body.width());
+    this.hsb.reflow();
+
+    this.vsb.x(this.body.width());
+    this.vsb.height(this.body.height());
+    this.vsb.reflow();
   }
 
-  private updateScrollbarVisibility() {
-    const { width: tableWidth, height: tableHeight } = this.tableState.tableDimensions;
-
-    const hsbShouldBeVisible = this.bodyDimensionsWithoutScrollbars.width < tableWidth;
-    if (hsbShouldBeVisible && !this.hsb.visible()) {
-      this.hsb.visible(true);
-    } else if (!hsbShouldBeVisible && this.hsb.visible()) {
-      this.hsb.visible(false);
-    }
-
-    const vsbShouldBeVisible = this.bodyDimensionsWithoutScrollbars.height < tableHeight;
-    if (vsbShouldBeVisible && !this.vsb.visible()) {
-      this.vsb.visible(true);
-    } else if (!vsbShouldBeVisible && this.vsb.parent) {
-      this.vsb.visible(false);
-    }
-  }
-
-  private updateBodyGrid() {
+  private drawBodyGrid() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableDimensions = this.tableState.getTableDimensions();
     const viewportDimensions = this.tableState.getViewportDimensions();
@@ -479,7 +406,7 @@ export class CanvasTable {
     }
   }
 
-  private updateHeadGrid() {
+  private drawHeadGrid() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableDimensions = this.tableState.getTableDimensions();
     const viewportDimensions = this.tableState.getViewportDimensions();
@@ -548,7 +475,7 @@ export class CanvasTable {
     }
   }
 
-  private updateBodyCells() {
+  private drawBodyCells() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges = this.tableState.getTableRanges();
     const rowHeight = this.tableState.getRowHeight();
@@ -576,7 +503,7 @@ export class CanvasTable {
     }
   }
 
-  private updateHeadCells() {
+  private drawHeadCells() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges = this.tableState.getTableRanges();
     const rowHeight = this.tableState.getRowHeight();
@@ -599,7 +526,7 @@ export class CanvasTable {
     }
   }
 
-  private updateResizeColumnButtons() {
+  private drawResizeColumnButtons() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges = this.tableState.getTableRanges();
 

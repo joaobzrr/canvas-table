@@ -58,21 +58,24 @@ export class VerticalScrollbar extends Konva.Group {
     this.bottomBorder = new Line();
     this.add(this.bottomBorder);
 
-    this.on("widthChange heightChange", this.onResize.bind(this));
+    this.on("widthChange heightChange", this.reflow.bind(this));
   }
 
-  public onResize() {
-    this.updateBar();
-    this.updateTrack();
-    this.updateBorders();
-  }
+  public reflow() {
+    this.bar.setAttrs({ width: this.width(), height: this.height() });
 
-  public repositionThumb() {
-    const { y: normalizedScrollTop } = this.tableState.normalizedScrollPosition;
-    this.thumb.y(Utils.scale(normalizedScrollTop, 0, 1, this.track.y, this.maxThumbTop));
-  }
+    const trackX = this.theme.scrollBarTrackMargin + 1;
+    const trackY = this.bar.y() + this.theme.scrollBarTrackMargin;
+    const trackWidth  = this.bar.width()  - trackX - this.theme.scrollBarTrackMargin;
+    const trackHeight = this.bar.height() - (this.theme.scrollBarTrackMargin * 2);
 
-  public updateThumb() {
+    this.track.set({
+      x: trackX,
+      y: trackY,
+      width: trackWidth,
+      height: trackHeight
+    });
+
     const { height: viewportHeight } = this.tableState.viewportDimensions;
     const { height: scrollHeight } = this.tableState.scrollDimensions;
 
@@ -86,27 +89,7 @@ export class VerticalScrollbar extends Konva.Group {
     });
 
     this.maxThumbTop = this.track.bottom - this.thumb.height();
-  }
 
-  private updateBar() {
-    this.bar.setAttrs({ width: this.width(), height: this.height() });
-  }
-
-  private updateTrack() {
-    const trackX = this.theme.scrollBarTrackMargin + 1;
-    const trackY = this.bar.y() + this.theme.scrollBarTrackMargin;
-    const trackWidth  = this.bar.width()  - trackX - this.theme.scrollBarTrackMargin;
-    const trackHeight = this.bar.height() - (this.theme.scrollBarTrackMargin * 2);
-
-    this.track.set({
-      x: trackX,
-      y: trackY,
-      width: trackWidth,
-      height: trackHeight
-    });
-  }
-
-  private updateBorders() {
     this.leftBorder.setAttrs({
       y: this.bar.y(),
       width: 1,
@@ -127,6 +110,14 @@ export class VerticalScrollbar extends Konva.Group {
       height: 1,
       fill: this.theme.tableBorderColor,
     });
+  }
+
+  public repaint() {
+    const normalizedScrollTop = this.tableState.getNormalizedScrollPosition().y;
+    const minY = this.track.y;
+    const maxY = this.maxThumbTop;
+    const thumbTop = Utils.scale(normalizedScrollTop, 0, 1, minY, maxY);
+    this.thumb.y(thumbTop);
   }
 
   private dragThumb() {

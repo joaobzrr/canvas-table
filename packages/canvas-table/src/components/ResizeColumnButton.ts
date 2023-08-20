@@ -13,6 +13,7 @@ export class ResizeColumnButton extends Konva.Rect {
       width: (RESIZE_COLUMN_BUTTON_SIDE * 2) + 1,
       fill: "#3367D1",
       opacity: 0,
+      name: "resize-column-button"
     });
 
     this.on("mousedown", () => {

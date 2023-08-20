@@ -50,18 +50,31 @@ export class HorizontalScrollbar extends Konva.Group {
 
     this.rightBorder = new Line();
     this.add(this.rightBorder);
-
-    this.on("widthChange heightChange", this.onResize.bind(this));
   }
 
-  public onResize() {
-    this.updateBar();
-    this.updateTrack();
-    this.updateThumb();
-    this.updateBorders();
-  }
+  public reflow() {
+    const barHeight = this.theme.scrollBarThickness;
+    const barWidth = this.width();
 
-  public updateThumb() {
+    this.bar.setAttrs({
+      x: 0,
+      y: 0,
+      width: barWidth,
+      height: barHeight
+    });
+
+    const trackX = this.theme.scrollBarTrackMargin;
+    const trackY = this.theme.scrollBarTrackMargin + 1;
+    const trackWidth  = this.bar.width()  - (this.theme.scrollBarTrackMargin * 2);
+    const trackHeight = this.bar.height() - trackY - this.theme.scrollBarTrackMargin;
+
+    this.track.set({
+      x: trackX,
+      y: trackY,
+      width: trackWidth,
+      height: trackHeight
+    });
+
     const { width: viewportWidth } = this.tableState.viewportDimensions;
     const { width: scrollWidth } = this.tableState.scrollDimensions;
 
@@ -75,42 +88,7 @@ export class HorizontalScrollbar extends Konva.Group {
     });
 
     this.maxThumbLeft = this.track.right - this.thumb.width();
-  }
 
-  public repositionThumb() {
-    const { x: normalizedScrollLeft } = this.tableState.normalizedScrollPosition;
-
-    const thumbLeft = Utils.scale(normalizedScrollLeft, 0, 1, this.track.x, this.maxThumbLeft);
-    this.thumb.x(thumbLeft);
-  }
-
-  private updateBar() {
-    const barHeight = this.theme.scrollBarThickness;
-    const barWidth = this.width();
-
-    this.bar.setAttrs({
-      x: 0,
-      y: 0,
-      width: barWidth,
-      height: barHeight
-    });
-  }
-
-  private updateTrack() {
-    const trackX = this.theme.scrollBarTrackMargin;
-    const trackY = this.theme.scrollBarTrackMargin + 1;
-    const trackWidth  = this.bar.width()  - (this.theme.scrollBarTrackMargin * 2);
-    const trackHeight = this.bar.height() - trackY - this.theme.scrollBarTrackMargin;
-
-    this.track.set({
-      x: trackX,
-      y: trackY,
-      width: trackWidth,
-      height: trackHeight
-    });
-  }
-
-  private updateBorders() {
     this.topBorder.setAttrs({
       width: this.width(),
       height: 1,
@@ -123,6 +101,14 @@ export class HorizontalScrollbar extends Konva.Group {
       height: this.height(),
       fill: this.theme.tableBorderColor,
     });
+  }
+
+  public repaint() {
+    const normalizedScrollLeft = this.tableState.getNormalizedScrollPosition().x;
+    const minX = this.track.x;
+    const maxX = this.maxThumbLeft;
+    const thumbLeft = Utils.scale(normalizedScrollLeft, 0, 1, minX, maxX);
+    this.thumb.x(thumbLeft);
   }
 
   private dragThumb() {
