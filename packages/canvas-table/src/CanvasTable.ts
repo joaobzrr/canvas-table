@@ -233,7 +233,7 @@ export class CanvasTable {
     }
 
     if (columnIndex !== this.columnBeingHovered) {
-      if (columnIndex) {
+      if (columnIndex !== null) {
         this.stage.container().style.cursor = "col-resize";
       } else {
         this.stage.container().style.cursor = "default";
