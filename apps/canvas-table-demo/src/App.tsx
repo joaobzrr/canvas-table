@@ -2,11 +2,13 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import { CanvasTable } from "canvas-table";
 import { generateTableData } from "./testing/utils/generateTableData";
 import { useElementSize } from "./testing/hooks/useElementSize";
+import "./Theme.css";
 import styles from "./App.module.css";
 
 function App() {
   const rowInputRef = useRef<HTMLInputElement>(null);
   const colInputRef = useRef<HTMLInputElement>(null);
+  const selectRef   = useRef<HTMLSelectElement>(null);
 
   const [containerSize, containerRef] = useElementSize();
 
@@ -54,6 +56,19 @@ function App() {
     });
   }
 
+  const onThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    document.body.dataset.theme = event.target.value;
+
+    const container = containerRef.current!;
+    const style = getComputedStyle(container);
+
+    const canvasTable = canvasTableRef.current!;
+    canvasTable.setTheme({
+      fontColor: style.color,
+      tableBorderColor: style.borderColor
+    });
+  }
+
   return (
     <div className={styles.app}>
       <div style={{ margin: "10px 0" }}>
@@ -71,9 +86,17 @@ function App() {
         />
         <button
           onClick={generate}
+          style={{ marginRight: "40px" }}
         >
           Generate
         </button>
+        <select
+          onChange={onThemeChange}
+          ref={selectRef}
+        >
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          </select>
       </div>
       <div id="container" ref={containerRef} className={styles.container} />
     </div>

@@ -49,12 +49,12 @@ export type TableRanges = {
 
 export type TableConfig = {
   columnDefs: ColumnDef[];
-  dataRows:   DataRow[];
-  theme?:     Theme;
+  dataRows: DataRow[];
+  theme?: Partial<Theme>;
 }
 
 export type CanvasTableOptions = TableConfig & {
-  container:  string;
+  container: string;
 }
 
 export type FontSpecifier = {

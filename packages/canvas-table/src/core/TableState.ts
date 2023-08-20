@@ -40,13 +40,19 @@ export class TableState {
     this.columnStates = columnStates;
     this.dataRows = config.dataRows;
 
-    this.theme = config.theme ?? defaultTheme;
+    this.theme = { ...defaultTheme, ...config.theme };
     this.tableDimensions = this.calculateTableDimensions();
     this.tableRanges = this.calculateTableRanges();
   }
 
   public getTheme() {
-    return { ...this.theme };
+    return this.theme;
+  }
+
+  public setTheme(theme: Partial<Theme>) {
+    this.theme = Object.freeze({ ...defaultTheme, ...theme });
+    this.tableDimensions = this.calculateTableDimensions();
+    this.tableRanges = this.calculateTableRanges();
   }
 
   public getColumnState(columnIndex: number) {

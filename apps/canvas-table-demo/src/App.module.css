@@ -3,11 +3,13 @@
   flex-direction: column;
   height: 100%;
   padding: 2rem;
-  background-color: #282828;
-  color: white;
+  background-color: var(--colors-background);
+  color: var(--colors-foreground);
 }
 
 .container {
   flex: 1;
-  border: 1px solid #665C54;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--colors-border);
 }

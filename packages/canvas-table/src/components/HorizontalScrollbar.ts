@@ -8,13 +8,11 @@ import { MIN_THUMB_LENGTH } from "../constants";
 
 export interface HorizontalScrollbarConfig extends GroupConfig {
   tableState: TableState;
-  theme: Theme
   onDragThumb: (scrollPosition: VectorLike) => void;
 }
 
 export class HorizontalScrollbar extends Konva.Group {
   private tableState: TableState;
-  private theme: Theme;
   private onDragThumb: (scrollPosition: VectorLike) => void;
 
   private bar:   Konva.Rect;
@@ -30,16 +28,17 @@ export class HorizontalScrollbar extends Konva.Group {
     super(config);
 
     this.tableState = config.tableState;
-    this.theme = config.theme;
     this.onDragThumb = config.onDragThumb;
 
-    this.bar = new Konva.Rect({ fill: this.theme.scrollBarTrackColor });
+    const theme = this.tableState.getTheme();
+
+    this.bar = new Konva.Rect({ fill: theme.scrollBarTrackColor });
     this.add(this.bar);
 
     this.track = Rect.create();
 
     this.thumb = new Konva.Rect({
-      fill: this.theme.scrollBarThumbColor,
+      fill: theme.scrollBarThumbColor,
       draggable: true
     });
     this.thumb.on("dragmove", this.dragThumb.bind(this));
@@ -53,7 +52,9 @@ export class HorizontalScrollbar extends Konva.Group {
   }
 
   public reflow() {
-    const barHeight = this.theme.scrollBarThickness;
+    const theme = this.getAttr("theme") as Theme;
+
+    const barHeight = theme.scrollBarThickness;
     const barWidth = this.width();
 
     this.bar.setAttrs({
@@ -63,10 +64,10 @@ export class HorizontalScrollbar extends Konva.Group {
       height: barHeight
     });
 
-    const trackX = this.theme.scrollBarTrackMargin;
-    const trackY = this.theme.scrollBarTrackMargin + 1;
-    const trackWidth  = this.bar.width()  - (this.theme.scrollBarTrackMargin * 2);
-    const trackHeight = this.bar.height() - trackY - this.theme.scrollBarTrackMargin;
+    const trackX = theme.scrollBarTrackMargin;
+    const trackY = theme.scrollBarTrackMargin + 1;
+    const trackWidth  = this.bar.width()  - (theme.scrollBarTrackMargin * 2);
+    const trackHeight = this.bar.height() - trackY - theme.scrollBarTrackMargin;
 
     this.track.set({
       x: trackX,
@@ -92,18 +93,23 @@ export class HorizontalScrollbar extends Konva.Group {
     this.topBorder.setAttrs({
       width: this.width(),
       height: 1,
-      fill: this.theme.tableBorderColor,
+      fill: theme.tableBorderColor,
     });
 
     this.rightBorder.setAttrs({
       x: this.width(),
       width: 1,
       height: this.height(),
-      fill: this.theme.tableBorderColor,
+      fill: theme.tableBorderColor,
     });
   }
 
   public repaint() {
+    const theme = this.getAttr("theme") as Theme;
+
+    this.topBorder.fill(theme.tableBorderColor);
+    this.rightBorder.fill(theme.tableBorderColor);
+
     const normalizedScrollLeft = this.tableState.getNormalizedScrollPosition().x;
     const minX = this.track.x;
     const maxX = this.maxThumbLeft;

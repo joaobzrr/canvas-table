@@ -11,14 +11,12 @@ export interface TextConfig extends ShapeConfig {
 
 export class Text extends Konva.Shape {
   private renderer: TextRenderer;
-  private font: Font;
   private padding: number;
 
   constructor(config: TextConfig) {
     super(config);
 
     this.renderer = config.renderer;
-    this.font = config.font;
     this.padding = config.padding;
 
     this.sceneFunc(this.render);
@@ -30,12 +28,14 @@ export class Text extends Konva.Shape {
       return;
     }
 
+    const font = this.getAttr("font") as Font;
+
     const x = this.padding;
     const y = this.height() / 2;
     const maxWidth = this.width() - this.padding * 2;
 
     this.renderer.render(
       ctx as unknown as CanvasRenderingContext2D,
-      this.font, text, x, y, maxWidth, true);
+      font, text, x, y, maxWidth, true);
   }
 }

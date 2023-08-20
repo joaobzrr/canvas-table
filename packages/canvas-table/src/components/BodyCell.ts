@@ -11,31 +11,40 @@ export interface BodyCellConfig extends GroupConfig {
 
 export class BodyCell extends Konva.Group {
   private text: Text;
-  private theme: Theme;
 
   constructor(config: BodyCellConfig) {
     super(config);
 
-    this.theme = config.theme;
-
     const font = {
-      family: this.theme.fontFamily,
-      size:   this.theme.fontSize,
-      color:  this.theme.fontColor,
+      family: config.theme.fontFamily,
+      size:   config.theme.fontSize,
+      color:  config.theme.fontColor,
       style:  "normal" as const
     };
 
     this.text = new Text({
       renderer: config.textRenderer,
-      padding: this.theme.cellPadding,
+      padding: config.theme.cellPadding,
       font,
       listening: false
     });
     this.add(this.text);
 
     this.on("widthChange heightChange", () => this.text.size(this.size()));
+
     this.on("textChange", event => {
       this.text.setAttr("textValue", (event as any).newVal);
+    });
+
+    this.on("themeChange", event => {
+      const theme = (event as any).newVal as Theme;
+      const font = {
+        family: theme.fontFamily,
+        size:   theme.fontSize,
+        color:  theme.fontColor,
+        style:  "normal" as const
+      };
+      this.text.setAttr("font", font);
     });
   }
 }

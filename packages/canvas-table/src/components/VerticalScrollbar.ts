@@ -8,13 +8,11 @@ import { MIN_THUMB_LENGTH } from "../constants";
 
 export interface VerticalScrollbarConfig extends GroupConfig {
   tableState: TableState;
-  theme: Theme;
   onDragThumb: (scrollPosition: VectorLike) => void;
 }
 
 export class VerticalScrollbar extends Konva.Group {
   private tableState: TableState;
-  private theme: Theme;
   private onDragThumb: (scrollPosition: VectorLike) => void;
 
   private bar:   Konva.Rect;
@@ -31,18 +29,19 @@ export class VerticalScrollbar extends Konva.Group {
     super(config);
 
     this.tableState = config.tableState;
-    this.theme = config.theme;
     this.onDragThumb = config.onDragThumb;
 
+    const theme = this.tableState.getTheme();
+
     this.bar = new Konva.Rect({
-      fill: this.theme.scrollBarTrackColor,
+      fill: theme.scrollBarTrackColor,
     });
     this.add(this.bar);
 
     this.track = Rect.create();
 
     this.thumb = new Konva.Rect({
-      fill: this.theme.scrollBarThumbColor,
+      fill: theme.scrollBarThumbColor,
       draggable: true
     });
     this.thumb.on("dragmove", this.dragThumb.bind(this))
@@ -62,10 +61,12 @@ export class VerticalScrollbar extends Konva.Group {
   public reflow() {
     this.bar.setAttrs({ width: this.width(), height: this.height() });
 
-    const trackX = this.theme.scrollBarTrackMargin + 1;
-    const trackY = this.bar.y() + this.theme.scrollBarTrackMargin;
-    const trackWidth  = this.bar.width()  - trackX - this.theme.scrollBarTrackMargin;
-    const trackHeight = this.bar.height() - (this.theme.scrollBarTrackMargin * 2);
+    const theme = this.getAttr("theme") as Theme;
+
+    const trackX = theme.scrollBarTrackMargin + 1;
+    const trackY = this.bar.y() + theme.scrollBarTrackMargin;
+    const trackWidth  = this.bar.width()  - trackX - theme.scrollBarTrackMargin;
+    const trackHeight = this.bar.height() - (theme.scrollBarTrackMargin * 2);
 
     this.track.set({
       x: trackX,
@@ -92,25 +93,31 @@ export class VerticalScrollbar extends Konva.Group {
       y: this.bar.y(),
       width: 1,
       height: this.height(),
-      fill: this.theme.tableBorderColor
+      fill: theme.tableBorderColor
     });
     
     this.topBorder.setAttrs({
       y: this.bar.y(),
       width: this.width(),
       height: 1,
-      fill: this.theme.tableBorderColor
+      fill: theme.tableBorderColor
     });
 
     this.bottomBorder.setAttrs({
       y: this.height(),
       width: this.width(),
       height: 1,
-      fill: this.theme.tableBorderColor,
+      fill: theme.tableBorderColor,
     });
   }
 
   public repaint() {
+    const theme = this.getAttr("theme") as Theme;
+
+    this.leftBorder.fill(theme.tableBorderColor);
+    this.topBorder.fill(theme.tableBorderColor);
+    this.bottomBorder.fill(theme.tableBorderColor);
+
     const normalizedScrollTop = this.tableState.getNormalizedScrollPosition().y;
     const minY = this.track.y;
     const maxY = this.maxThumbTop;

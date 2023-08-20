@@ -18,6 +18,7 @@ import {
   CanvasTableOptions,
   Dimensions,
   TableConfig,
+  Theme,
   VectorLike
 } from "./types";
 import { TextRenderer } from "text-renderer";
@@ -165,6 +166,12 @@ export class CanvasTable {
     this.repaint();
   }
 
+  public setTheme(theme: Partial<Theme>) {
+    this.tableState.setTheme(theme);
+    this.reflow();
+    this.repaint();
+  }
+
   public resize(stageDimensions: Dimensions) {
     this.stage.size(stageDimensions);
     this.reflow();
@@ -245,7 +252,10 @@ export class CanvasTable {
   }
 
   private repaint() {
+    this.hsb.setAttr("theme", this.tableState.getTheme());
     this.hsb.repaint();
+
+    this.vsb.setAttr("theme", this.tableState.getTheme());
     this.vsb.repaint();
 
     this.drawBodyGrid();
@@ -458,7 +468,9 @@ export class CanvasTable {
   private drawBodyCells() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges = this.tableState.getTableRanges();
-    const { rowHeight } = this.tableState.getTheme();
+
+    const theme = this.tableState.getTheme();
+    const { rowHeight } = theme;
 
     this.bodyCellManager.clear();
 
@@ -477,6 +489,7 @@ export class CanvasTable {
           width: columnState.width,
           height: rowHeight,
           text: dataRow[columnState.field],
+          theme
         }));
       }
     }
@@ -485,7 +498,9 @@ export class CanvasTable {
   private drawHeadCells() {
     const scrollPosition = this.tableState.getScrollPosition();
     const tableRanges = this.tableState.getTableRanges();
-    const { rowHeight } = this.tableState.getTheme();
+
+    const theme = this.tableState.getTheme();
+    const { rowHeight } = theme;
 
     this.headCellManager.clear();
 
@@ -500,6 +515,7 @@ export class CanvasTable {
         width: columnState.width,
         height: rowHeight,
         text: columnState.title,
+        theme
       });
     }
   }
