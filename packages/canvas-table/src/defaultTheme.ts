@@ -6,7 +6,6 @@ export const defaultTheme: Theme = {
   tableBorderColor: "#665C54",
   scrollBarThickness: 20,
   scrollBarTrackMargin: 2,
-  scrollBarTrackColor: "#282828",
   scrollBarThumbColor: "#928374",
   fontSize: "14px",
   fontColor: "#EBDBB2",

@@ -74,8 +74,8 @@ export class VerticalScrollbar extends Konva.Group {
       height: trackHeight
     });
 
-    const { height: viewportHeight } = this.tableState.viewportDimensions;
-    const { height: scrollHeight } = this.tableState.scrollDimensions;
+    const { height: viewportHeight } = this.tableState.getViewportDimensions();
+    const { height: scrollHeight } = this.tableState.getScrollDimensions();
 
     let thumbHeight = (viewportHeight / scrollHeight) * this.track.height;
     thumbHeight = Math.max(thumbHeight, MIN_THUMB_LENGTH);

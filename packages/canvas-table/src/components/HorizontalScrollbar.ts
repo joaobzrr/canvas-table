@@ -75,8 +75,8 @@ export class HorizontalScrollbar extends Konva.Group {
       height: trackHeight
     });
 
-    const { width: viewportWidth } = this.tableState.viewportDimensions;
-    const { width: scrollWidth } = this.tableState.scrollDimensions;
+    const { width: viewportWidth } = this.tableState.getViewportDimensions();
+    const { width: scrollWidth } = this.tableState.getScrollDimensions();
 
     let thumbWidth = (viewportWidth / scrollWidth) * this.track.width;
     thumbWidth = Math.max(thumbWidth, MIN_THUMB_LENGTH);

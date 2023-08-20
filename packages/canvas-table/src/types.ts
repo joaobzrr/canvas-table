@@ -33,7 +33,7 @@ export type Theme = {
   tableBorderColor: string;
   scrollBarThickness: number;
   scrollBarTrackMargin: number;
-  scrollBarTrackColor: string;
+  scrollBarTrackColor?: string;
   scrollBarThumbColor: string;
   fontSize: string;
   fontColor: string;
