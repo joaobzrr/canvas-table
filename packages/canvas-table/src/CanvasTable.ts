@@ -13,7 +13,6 @@ import {
   VerticalScrollbar,
   Line,
 } from "./components";
-import { defaultTheme } from "./defaultTheme";
 import { MIN_COLUMN_WIDTH } from "./constants";
 import {
   CanvasTableOptions,
@@ -66,8 +65,8 @@ export class CanvasTable {
     this.layer = new Konva.Layer({ imageSmoothingEnabled: false });
     this.stage.add(this.layer);
 
-    const theme = options.theme ?? defaultTheme;
-    this.tableState = new TableState({ ...config, theme });
+    this.tableState = new TableState(config);
+    const theme = this.tableState.getTheme();
 
     this.body = new Konva.Group({ y: theme.rowHeight });
     this.layer.add(this.body);
@@ -160,8 +159,7 @@ export class CanvasTable {
   }
 
   public config(config: TableConfig) {
-    const theme = config.theme ?? defaultTheme;
-    this.tableState.config({ ...config, theme });
+    this.tableState.config(config);
     this.tableState.setScrollPosition({ x: 0, y: 0 });
     this.reflow();
     this.repaint();

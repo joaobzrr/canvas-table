@@ -1,4 +1,4 @@
-import { Vector } from "./Vector";
+import { defaultTheme } from "../defaultTheme";
 import {
   ColumnState,
   DataRow,
@@ -8,6 +8,7 @@ import {
   Theme,
   VectorLike
 } from "../types";
+import { Vector } from "./Vector";
 
 export class TableState {
   private columnStates = [] as ColumnState[];
@@ -38,8 +39,8 @@ export class TableState {
     }
     this.columnStates = columnStates;
     this.dataRows = config.dataRows;
-    this.theme = config.theme;
 
+    this.theme = config.theme ?? defaultTheme;
     this.tableDimensions = this.calculateTableDimensions();
     this.tableRanges = this.calculateTableRanges();
   }
