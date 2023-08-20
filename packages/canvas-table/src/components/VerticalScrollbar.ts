@@ -57,8 +57,6 @@ export class VerticalScrollbar extends Konva.Group {
 
     this.bottomBorder = new Line();
     this.add(this.bottomBorder);
-
-    this.on("widthChange heightChange", this.reflow.bind(this));
   }
 
   public reflow() {
