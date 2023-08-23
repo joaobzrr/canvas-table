@@ -195,8 +195,8 @@ export class CanvasTable {
     }
 
     const { x: scrollLeft, y: scrollTop } = this.tableState.getScrollPosition();
-    const newScrollLeft = scrollLeft + event.evt.deltaX;
-    const newScrollTop = scrollTop + event.evt.deltaY;
+    const newScrollLeft = Math.round(scrollLeft + event.evt.deltaX);
+    const newScrollTop  = Math.round(scrollTop + event.evt.deltaY);
     const newScrollPosition = new Vector(newScrollLeft, newScrollTop);
     this.tableState.setScrollPosition(newScrollPosition);
     this.repaint();
