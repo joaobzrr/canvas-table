@@ -23,7 +23,9 @@ export class TextRenderer {
   ) {
     const fontMetrics = ctx.measureText("M");
     const textHeight = fontMetrics.fontBoundingBoxAscent + fontMetrics.fontBoundingBoxDescent;
-    y += textHeight / 2;
+
+    // @Note Previously we didn't round this which caused the text to clip at the edges
+    y += Math.round(textHeight / 2);
 
     let availableContentWidth = maxWidth;
     if (ellipsis && maxWidth !== Infinity) {

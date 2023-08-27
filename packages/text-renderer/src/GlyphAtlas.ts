@@ -10,6 +10,7 @@ import {
 const DEFAULT_PAGE_WIDTH = 1024;
 const DEFAULT_PAGE_HEIGHT = 1024;
 const GLYPH_PADDING = 1;
+const GLYPH_PADDING_DOUBLE = GLYPH_PADDING * 2;
 
 export class GlyphAtlas {
   public canvas: HTMLCanvasElement;
@@ -55,15 +56,16 @@ export class GlyphAtlas {
     this.ctx.fillStyle = font.color;
 
     const metrics = this.ctx.measureText(str);
-    const size = {
-      width: metrics.width,
-      height: metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
+    const packingSize = {
+      width: metrics.width + GLYPH_PADDING_DOUBLE,
+      height: metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent + GLYPH_PADDING_DOUBLE
     };
 
-    let node = this.pack(this.root, size, GLYPH_PADDING);
+    let node = this.pack(this.root, packingSize);
     if (!node) {
+      // @Note Clear atlas and try again
       this.clear();
-      node = this.pack(this.root, size, GLYPH_PADDING)!;
+      node = this.pack(this.root, packingSize)!;
     }
 
     node.glyphData = {} as GlyphData;
@@ -78,20 +80,14 @@ export class GlyphAtlas {
     return node.glyphData;
   }
 
-  private pack(node: TextureNode, size: Size, padding: number) {
-    const width  = size.width  + padding * 2;
-    const height = size.height + padding * 2;
-    return this.doPack(node, { width, height });
-  }
-
-  private doPack(node: TextureNode, size: Size): TextureNode | null {
+  private pack(node: TextureNode, size: Size): TextureNode | null {
     if (node.left && node.right) {
-      const newNode = this.doPack(node.left, size);
+      const newNode = this.pack(node.left, size);
       if (newNode !== null) {
         return newNode;
       }
 
-      return this.doPack(node.right, size);
+      return this.pack(node.right, size);
     } else {
       if (node.filled) {
         return null;
