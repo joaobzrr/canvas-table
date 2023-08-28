@@ -26,7 +26,7 @@ export class ResizeColumnButton extends Konva.Rect {
     this.on("centerxChange", event => {
       const centerx = (event as any).newVal as number | undefined;
       if (centerx) {
-        const newX = centerx - this.width() / 2;
+        const newX = centerx - (this.width() / 2 + 1);
         this.x(newX);
       }
     });
