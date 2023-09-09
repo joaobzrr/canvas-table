@@ -7,8 +7,6 @@ import {
   ObjectPool,
 } from "./core";
 import {
-  BodyCell,
-  HeadCell,
   HorizontalScrollbar,
   VerticalScrollbar,
   Line,
@@ -22,6 +20,8 @@ import {
   VectorLike
 } from "./types";
 import { TextRenderer } from "text-renderer";
+import { BodyCellRenderer } from "./BodyCellRenderer";
+import { HeadCellRenderer } from "./HeadCellRenderer";
 import { NodeManager } from "./core/NodeManager";
 import { ResizeColumnButtonFactory } from "./factories";
 
@@ -33,17 +33,17 @@ export class CanvasTable {
   private tableState: TableState;
 
   private body: Konva.Group;
-  private bodyCellManager: NodeManager<BodyCell>;
   private bodyLineManager: NodeManager<Line>;
 
   private head: Konva.Group;
   private header: Konva.Group;
-  private headCellManager: NodeManager<HeadCell>;
   private headLineManager: NodeManager<Line>;
 
   private resizeColumnButtonManager: NodeManager<Konva.Rect>;
 
   private textRenderer: TextRenderer;
+  private bodyCellRenderer: BodyCellRenderer;
+  private headCellRenderer: HeadCellRenderer;
 
   private hsb: HorizontalScrollbar;
   private vsb: VerticalScrollbar;
@@ -103,6 +103,12 @@ export class CanvasTable {
 
     this.textRenderer = new TextRenderer();
 
+    this.bodyCellRenderer = new BodyCellRenderer(this.tableState, this.textRenderer);
+    this.bodyCellRenderer.init(this.body);
+
+    this.headCellRenderer = new HeadCellRenderer(this.tableState, this.textRenderer);
+    this.headCellRenderer.init(this.head);
+
     const linePool = new ObjectPool({
       initialSize: 300,
       factory: {
@@ -119,26 +125,6 @@ export class CanvasTable {
 
     this.headLineManager = new NodeManager(linePool);
     this.head.add(this.headLineManager.getGroup());
-
-    const bodyCellPool = new ObjectPool({
-      initialSize: 1000,
-      factory: {
-        make: () => new BodyCell({ textRenderer: this.textRenderer, theme }),
-        reset: (cell: BodyCell) => cell.setAttrs({ x: 0, y: 0 })
-      }
-    });
-    this.bodyCellManager = new NodeManager(bodyCellPool);
-    this.body.add(this.bodyCellManager.getGroup());
-
-    const headCellPool = new ObjectPool({
-      initialSize: 30,
-      factory: {
-        make: () => new HeadCell({ textRenderer: this.textRenderer, theme }),
-        reset: (cell: HeadCell) => cell.setAttrs({ x: 0, y: 0 })
-      }
-    });
-    this.headCellManager = new NodeManager(headCellPool);
-    this.header.add(this.headCellManager.getGroup());
 
     const resizeColumnButtonFactory = new ResizeColumnButtonFactory({
       theme,
@@ -260,8 +246,8 @@ export class CanvasTable {
 
     this.drawBodyGrid();
     this.drawHeadGrid();
-    this.drawBodyCells();
-    this.drawHeadCells();
+    this.bodyCellRenderer.render();
+    this.headCellRenderer.render();
     this.drawResizeColumnButtons();
   }
 
@@ -461,61 +447,6 @@ export class CanvasTable {
         width: 1,
         height: rowHeight,
         fill: tableBorderColor
-      });
-    }
-  }
-
-  private drawBodyCells() {
-    const scrollPosition = this.tableState.getScrollPosition();
-    const tableRanges = this.tableState.getTableRanges();
-
-    const theme = this.tableState.getTheme();
-    const { rowHeight } = theme;
-
-    this.bodyCellManager.clear();
-
-    const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
-    for (let rowIndex = rowTop; rowIndex < rowBottom; rowIndex++) {
-      const dataRow = this.tableState.getDataRow(rowIndex);
-      const y = rowIndex * rowHeight - scrollPosition.y;
-
-      for (let colIndex = columnLeft; colIndex < columnRight; colIndex++) {
-        const columnState = this.tableState.getColumnState(colIndex);
-        const x = columnState.position - scrollPosition.x;
-
-        const cell = this.bodyCellManager.get();
-        cell.setAttrs(({
-          x, y,
-          width: columnState.width,
-          height: rowHeight,
-          text: dataRow[columnState.field],
-          theme
-        }));
-      }
-    }
-  }
-
-  private drawHeadCells() {
-    const scrollPosition = this.tableState.getScrollPosition();
-    const tableRanges = this.tableState.getTableRanges();
-
-    const theme = this.tableState.getTheme();
-    const { rowHeight } = theme;
-
-    this.headCellManager.clear();
-
-    const { columnLeft, columnRight } = tableRanges;
-    for (let j = columnLeft; j < columnRight; j++) {
-      const columnState = this.tableState.getColumnState(j);
-      const x = columnState.position - scrollPosition.x;
-
-      const cell = this.headCellManager.get();
-      cell.setAttrs({
-        x,
-        width: columnState.width,
-        height: rowHeight,
-        text: columnState.title,
-        theme
       });
     }
   }
