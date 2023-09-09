@@ -13,12 +13,15 @@ importers:
       '@react-hook/resize-observer':
         specifier: ^1.2.6
         version: 1.2.6(react@18.2.0)
-      canvas-table:
+      canvas-table-react:
         specifier: workspace:^
-        version: link:../../packages/canvas-table
+        version: link:../../packages/canvas-table-react
       gh-pages:
         specifier: ^6.0.0
         version: 6.0.0
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -29,6 +32,9 @@ importers:
         specifier: ^9.0.0
         version: 9.0.0
     devDependencies:
+      '@types/lodash':
+        specifier: ^4.14.197
+        version: 4.14.197
       '@types/react':
         specifier: ^18.2.14
         version: 18.2.14
@@ -63,59 +69,21 @@ importers:
         specifier: ^4.4.0
         version: 4.4.5
 
-  apps/text-renderer-demo:
+  packages/canvas-table-core:
     dependencies:
-      text-renderer:
-        specifier: workspace:^
-        version: link:../../packages/text-renderer
-    devDependencies:
-      typescript:
-        specifier: ^5.0.4
-        version: 5.0.4
-      vite:
-        specifier: ^4.4.5
-        version: 4.4.5
-
-  packages/canvas-table:
-    dependencies:
+      graphemer:
+        specifier: ^1.4.0
+        version: 1.4.0
       konva:
         specifier: ^9.2.0
         version: 9.2.0
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
-      text-renderer:
-        specifier: workspace:^
-        version: link:../text-renderer
     devDependencies:
       '@types/lodash':
         specifier: ^4.14.197
         version: 4.14.197
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^5.61.0
-        version: 5.61.0(@typescript-eslint/parser@5.61.0)(eslint@8.44.0)(typescript@5.0.2)
-      '@typescript-eslint/parser':
-        specifier: ^5.61.0
-        version: 5.61.0(eslint@8.44.0)(typescript@5.0.2)
-      eslint:
-        specifier: ^8.44.0
-        version: 8.44.0
-      typescript:
-        specifier: ^5.0.2
-        version: 5.0.2
-      vite:
-        specifier: ^4.4.0
-        version: 4.4.0
-      vite-plugin-dts:
-        specifier: ^3.5.2
-        version: 3.5.2(typescript@5.0.2)(vite@4.4.0)
-
-  packages/text-renderer:
-    dependencies:
-      graphemer:
-        specifier: ^1.4.0
-        version: 1.4.0
-    devDependencies:
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.61.0
         version: 5.61.0(@typescript-eslint/parser@5.61.0)(eslint@8.44.0)(typescript@5.0.4)
@@ -126,10 +94,47 @@ importers:
         specifier: ^8.44.0
         version: 8.44.0
       typescript:
-        specifier: ^5.0.4
+        specifier: ^5.0.2
         version: 5.0.4
       vite:
-        specifier: ^4.4.5
+        specifier: ^4.4.0
+        version: 4.4.5
+      vite-plugin-dts:
+        specifier: ^3.5.2
+        version: 3.5.2(typescript@5.0.4)(vite@4.4.5)
+
+  packages/canvas-table-react:
+    dependencies:
+      canvas-table-core:
+        specifier: workspace:^
+        version: link:../canvas-table-core
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/react':
+        specifier: ^18.2.14
+        version: 18.2.14
+      '@types/react-dom':
+        specifier: ^18.2.6
+        version: 18.2.6
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^5.61.0
+        version: 5.61.0(@typescript-eslint/parser@5.61.0)(eslint@8.44.0)(typescript@5.0.4)
+      '@typescript-eslint/parser':
+        specifier: ^5.61.0
+        version: 5.61.0(eslint@8.44.0)(typescript@5.0.4)
+      eslint:
+        specifier: ^8.44.0
+        version: 8.44.0
+      typescript:
+        specifier: ^5.0.2
+        version: 5.0.4
+      vite:
+        specifier: ^4.4.0
         version: 4.4.5
       vite-plugin-dts:
         specifier: ^3.5.2
@@ -1008,25 +1013,6 @@ packages:
       '@vue/shared': 3.3.4
     dev: true
 
-  /@vue/language-core@1.8.8(typescript@5.0.2):
-    resolution: {integrity: sha512-i4KMTuPazf48yMdYoebTkgSOJdFraE4pQf0B+FTOFkbB+6hAfjrSou/UmYWRsWyZV6r4Rc6DDZdI39CJwL0rWw==}
-    peerDependencies:
-      typescript: '*'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      '@volar/language-core': 1.10.0
-      '@volar/source-map': 1.10.0
-      '@vue/compiler-dom': 3.3.4
-      '@vue/reactivity': 3.3.4
-      '@vue/shared': 3.3.4
-      minimatch: 9.0.3
-      muggle-string: 0.3.1
-      typescript: 5.0.2
-      vue-template-compiler: 2.7.14
-    dev: true
-
   /@vue/language-core@1.8.8(typescript@5.0.4):
     resolution: {integrity: sha512-i4KMTuPazf48yMdYoebTkgSOJdFraE4pQf0B+FTOFkbB+6hAfjrSou/UmYWRsWyZV6r4Rc6DDZdI39CJwL0rWw==}
     peerDependencies:
@@ -1054,15 +1040,6 @@ packages:
 
   /@vue/shared@3.3.4:
     resolution: {integrity: sha512-7OjdcV8vQ74eiz1TZLzZP4JwqM5fA94K6yntPS5Z25r9HDuGNzaGdgvwKYq6S+MxwF0TFRwe50fIR/MYnakdkQ==}
-    dev: true
-
-  /@vue/typescript@1.8.8(typescript@5.0.2):
-    resolution: {integrity: sha512-jUnmMB6egu5wl342eaUH236v8tdcEPXXkPgj+eI/F6JwW/lb+yAU6U07ZbQ3MVabZRlupIlPESB7ajgAGixhow==}
-    dependencies:
-      '@volar/typescript': 1.10.0
-      '@vue/language-core': 1.8.8(typescript@5.0.2)
-    transitivePeerDependencies:
-      - typescript
     dev: true
 
   /@vue/typescript@1.8.8(typescript@5.0.4):
@@ -2248,30 +2225,6 @@ packages:
     engines: {node: '>= 0.10'}
     dev: true
 
-  /vite-plugin-dts@3.5.2(typescript@5.0.2)(vite@4.4.0):
-    resolution: {integrity: sha512-iKc851+jdHEoN1ifbOEsoMs+/Zg26PE1EyO2Jc+4apOWRoaeK2zRJnaStgUuJaVaEcAjTqWzpNgCAMq7iO6DWA==}
-    engines: {node: ^14.18.0 || >=16.0.0}
-    peerDependencies:
-      typescript: '*'
-      vite: '*'
-    peerDependenciesMeta:
-      vite:
-        optional: true
-    dependencies:
-      '@microsoft/api-extractor': 7.36.4
-      '@rollup/pluginutils': 5.0.2
-      '@vue/language-core': 1.8.8(typescript@5.0.2)
-      debug: 4.3.4
-      kolorist: 1.8.0
-      typescript: 5.0.2
-      vite: 4.4.0
-      vue-tsc: 1.8.8(typescript@5.0.2)
-    transitivePeerDependencies:
-      - '@types/node'
-      - rollup
-      - supports-color
-    dev: true
-
   /vite-plugin-dts@3.5.2(typescript@5.0.4)(vite@4.4.5):
     resolution: {integrity: sha512-iKc851+jdHEoN1ifbOEsoMs+/Zg26PE1EyO2Jc+4apOWRoaeK2zRJnaStgUuJaVaEcAjTqWzpNgCAMq7iO6DWA==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -2294,41 +2247,6 @@ packages:
       - '@types/node'
       - rollup
       - supports-color
-    dev: true
-
-  /vite@4.4.0:
-    resolution: {integrity: sha512-Wf+DCEjuM8aGavEYiF77hnbxEZ+0+/jC9nABR46sh5Xi+GYeSvkeEFRiVuI3x+tPjxgZeS91h1jTAQTPFgePpA==}
-    engines: {node: ^14.18.0 || >=16.0.0}
-    hasBin: true
-    peerDependencies:
-      '@types/node': '>= 14'
-      less: '*'
-      lightningcss: ^1.21.0
-      sass: '*'
-      stylus: '*'
-      sugarss: '*'
-      terser: ^5.4.0
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-      less:
-        optional: true
-      lightningcss:
-        optional: true
-      sass:
-        optional: true
-      stylus:
-        optional: true
-      sugarss:
-        optional: true
-      terser:
-        optional: true
-    dependencies:
-      esbuild: 0.18.20
-      postcss: 8.4.27
-      rollup: 3.28.0
-    optionalDependencies:
-      fsevents: 2.3.2
     dev: true
 
   /vite@4.4.5:
@@ -2371,18 +2289,6 @@ packages:
     dependencies:
       de-indent: 1.0.2
       he: 1.2.0
-    dev: true
-
-  /vue-tsc@1.8.8(typescript@5.0.2):
-    resolution: {integrity: sha512-bSydNFQsF7AMvwWsRXD7cBIXaNs/KSjvzWLymq/UtKE36697sboX4EccSHFVxvgdBlI1frYPc/VMKJNB7DFeDQ==}
-    hasBin: true
-    peerDependencies:
-      typescript: '*'
-    dependencies:
-      '@vue/language-core': 1.8.8(typescript@5.0.2)
-      '@vue/typescript': 1.8.8(typescript@5.0.2)
-      semver: 7.5.4
-      typescript: 5.0.2
     dev: true
 
   /vue-tsc@1.8.8(typescript@5.0.4):

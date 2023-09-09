@@ -1,1 +1,0 @@
-export { ResizeColumnButtonFactory } from "./ResizeColumnButtonFactory";
