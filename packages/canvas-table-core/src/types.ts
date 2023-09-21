@@ -91,7 +91,7 @@ export type GlyphData = {
 
 export type Font = {
   family: string;
-  size: string;
+  size: number;
   style: FontStyle
   color: string;
 }

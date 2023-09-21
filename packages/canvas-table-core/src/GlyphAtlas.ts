@@ -60,7 +60,7 @@ export class GlyphAtlas {
       return cached.glyphData!;
     }
     
-    this.ctx.font = this.makeFontDescription(font.family, font.size, font.style);
+    this.ctx.font = this.makeFontSpecifier(font.family, font.size, font.style);
     this.ctx.fillStyle = font.color;
 
     const metrics = this.ctx.measureText(str);
@@ -178,7 +178,7 @@ export class GlyphAtlas {
     };
   }
 
-  private makeFontDescription(fontFamily: string, fontSize: string, fontStyle?: string) {
+  private makeFontSpecifier(fontFamily: string, fontSize: number, fontStyle?: string) {
     let font = `${fontSize}px ${fontFamily}`;
     if (!fontStyle) {
       return font;
