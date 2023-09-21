@@ -9,7 +9,10 @@ import { VectorLike } from "./types";
 export class HorizontalScrollbar extends Konva.Group {
   private ct: CanvasTable;
 
+  // @Todo: Remove this unless we use it later for detecting when
+  // the user clicks the scrollbar track?
   private bar: Konva.Rect;
+
   private thumb: Konva.Rect;
 
   private trackRect = { x: 0, y: 0, width: 1, height: 1 };
@@ -23,11 +26,9 @@ export class HorizontalScrollbar extends Konva.Group {
     this.ct.addEventListener("themeChanged", this.onThemeChanged.bind(this));
     this.ct.addEventListener("scroll", this.onScroll.bind(this));
 
-    const { scrollBarTrackColor, scrollBarThumbColor } = this.ct.getTheme();
+    const { scrollBarThumbColor } = this.ct.getTheme();
 
-    this.bar = new Konva.Rect({
-      fill: scrollBarTrackColor
-    });
+    this.bar = new Konva.Rect();
     this.add(this.bar);
 
     this.thumb = new Konva.Rect({
@@ -47,9 +48,7 @@ export class HorizontalScrollbar extends Konva.Group {
   }
 
   private onThemeChanged() {
-    const { scrollBarThumbColor, scrollBarTrackColor } = this.ct.getTheme();
-
-    this.bar.fill(scrollBarTrackColor!);
+    const { scrollBarThumbColor } = this.ct.getTheme();
     this.thumb.fill(scrollBarThumbColor);
 
     this.reflow();
@@ -64,27 +63,21 @@ export class HorizontalScrollbar extends Konva.Group {
     const {
       normalizedScrollPos,
       normalizedViewportSize,
-      bodyArea,
+      hsbArea,
       overflow
     } = this.ct.getTableState();
 
-    const {
-      scrollBarThickness,
-      scrollBarTrackMargin
-    } = this.ct.getTheme();
-
-    const tableSize = this.ct.getSize();
+    const { scrollBarTrackMargin } = this.ct.getTheme();
 
     this.visible(overflow.x);
     if (!this.visible()) {
       return;
     }
 
-    this.y(tableSize.height - scrollBarThickness);
-    this.width(bodyArea.width);
+    this.setAttrs(hsbArea);
 
     this.bar.width(this.width());
-    this.bar.height(scrollBarThickness)
+    this.bar.height(this.height())
 
     this.trackRect.x = scrollBarTrackMargin;
     this.trackRect.y = scrollBarTrackMargin + 1;

@@ -6,15 +6,17 @@ export type TableState = {
   maxScrollPos: VectorLike;
   normalizedScrollPos: VectorLike;
 
-  mousePos: VectorLike;
-
   tableSize: Size;
   scrollSize: Size;
   viewportSize: Size;
   normalizedViewportSize: Size;
 
+  mousePos: VectorLike;
+
   mainArea: RectLike;
   bodyArea: RectLike;
+  hsbArea: RectLike;
+  vsbArea: RectLike;
 
   overflow: Overflow;
 

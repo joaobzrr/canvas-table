@@ -130,67 +130,11 @@ export class TableLayer {
 
   private render() {
     this.clearCanvas();
+    this.renderScrollbarBackground();
     this.renderLines();
     this.renderText();
 
     this.image.setAttr("image", this.canvas);
-  }
-
-  private clearCanvas() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-
-  private renderLines() {
-    const {
-      columnStates,
-      mainArea,
-      scrollPos,
-      tableSize,
-      tableRanges,
-      overflow
-    } = this.ct.getTableState();
-
-    const { rowHeight, scrollBarThickness } = this.ct.getTheme();
-
-    const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
-
-    this.ctx.save();
-    this.ctx.lineWidth = 1;
-
-    // Draw grid horizontal lines
-    const gridWidth = Math.min(mainArea.width, tableSize.width);
-    for (let i = rowTop + 1; i < rowBottom; i++) {
-      const y = i * rowHeight + rowHeight - scrollPos.y;
-      this.lineRenderer.hline(this.ctx, 0, y, gridWidth);
-    }
-
-    // Draw grid vertical lines
-    const gridHeight = Math.min(mainArea.height, tableSize.height + rowHeight);
-    for (let j = columnLeft + 1; j < columnRight; j++) {
-      const columnState = columnStates[j];
-      const x = columnState.pos - scrollPos.x;
-      this.lineRenderer.vline(this.ctx, x, 0, gridHeight);
-    }
-
-    // Draw header bottom border
-    this.lineRenderer.hline(this.ctx, 0, rowHeight, mainArea.width);
-
-    if (overflow.x) {
-      this.lineRenderer.hline(this.ctx, 0, mainArea.height, mainArea.width);
-      this.lineRenderer.vline(this.ctx, mainArea.width, mainArea.height, scrollBarThickness);
-    } else {
-      this.lineRenderer.vline(this.ctx, tableSize.width, 0, gridHeight);
-    }
-
-    if (overflow.y) {
-      this.lineRenderer.vline(this.ctx, mainArea.width, 0, mainArea.height);
-      this.lineRenderer.hline(this.ctx, mainArea.width, rowHeight, scrollBarThickness);
-      this.lineRenderer.hline(this.ctx, mainArea.width, mainArea.height, scrollBarThickness);
-    } else {
-      this.lineRenderer.hline(this.ctx, 0, gridHeight, tableSize.width);
-    }
-
-    this.ctx.restore();
   }
 
   private renderText() {
@@ -241,5 +185,86 @@ export class TableLayer {
     }
 
     this.ctx.restore();
+  }
+
+  private renderLines() {
+    const {
+      columnStates,
+      mainArea,
+      hsbArea,
+      vsbArea,
+      scrollPos,
+      tableSize,
+      tableRanges,
+      overflow
+    } = this.ct.getTableState();
+
+    const { rowHeight } = this.ct.getTheme();
+
+    const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
+
+    this.ctx.save();
+    this.ctx.lineWidth = 1;
+
+    // Draw grid horizontal lines
+    const gridWidth = Math.min(mainArea.width, tableSize.width);
+    for (let i = rowTop + 1; i < rowBottom; i++) {
+      const y = i * rowHeight + rowHeight - scrollPos.y;
+      this.lineRenderer.hline(this.ctx, 0, y, gridWidth);
+    }
+
+    // Draw grid vertical lines
+    const gridHeight = Math.min(mainArea.height, tableSize.height + rowHeight);
+    for (let j = columnLeft + 1; j < columnRight; j++) {
+      const columnState = columnStates[j];
+      const x = columnState.pos - scrollPos.x;
+      this.lineRenderer.vline(this.ctx, x, 0, gridHeight);
+    }
+
+    // Draw header bottom border
+    this.lineRenderer.hline(this.ctx, 0, rowHeight, mainArea.width);
+
+    if (overflow.x) {
+      this.lineRenderer.hline(this.ctx, hsbArea.x, hsbArea.y, hsbArea.width);
+      this.lineRenderer.vline(this.ctx, hsbArea.width, hsbArea.y, hsbArea.height);
+    } else {
+      this.lineRenderer.vline(this.ctx, tableSize.width, 0, gridHeight);
+    }
+
+    if (overflow.y) {
+      this.lineRenderer.vline(this.ctx, mainArea.width, 0, mainArea.height);
+      this.lineRenderer.hline(this.ctx, vsbArea.x, vsbArea.y, vsbArea.width);
+      this.lineRenderer.hline(this.ctx, vsbArea.x, vsbArea.y + vsbArea.height, vsbArea.width);
+    } else {
+      this.lineRenderer.hline(this.ctx, 0, gridHeight, tableSize.width);
+    }
+
+    this.ctx.restore();
+  }
+
+  private renderScrollbarBackground() {
+    const { hsbArea, vsbArea, overflow } = this.ct.getTableState();
+    const { scrollBarTrackColor } = this.ct.getTheme();
+
+    if (!scrollBarTrackColor) {
+      return;
+    }
+
+    this.ctx.save();
+    this.ctx.fillStyle = scrollBarTrackColor!;
+
+    if (overflow.x) {
+      this.ctx.fillRect(hsbArea.x, hsbArea.y, hsbArea.width, hsbArea.height);
+    }
+
+    if (overflow.y) {
+      this.ctx.fillRect(vsbArea.x, vsbArea.y, vsbArea.width, vsbArea.height);
+    }
+
+    this.ctx.restore();
+  }
+
+  private clearCanvas() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 }

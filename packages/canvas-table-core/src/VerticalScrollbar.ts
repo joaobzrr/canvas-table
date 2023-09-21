@@ -9,7 +9,10 @@ import { VectorLike } from "./types";
 export class VerticalScrollbar extends Konva.Group {
   private ct: CanvasTable;
 
+  // @Todo: Remove this unless we use it later for detecting when
+  // the user clicks the scrollbar track?
   private bar: Konva.Rect;
+
   private thumb: Konva.Rect;
 
   private trackRect = { x: 0, y: 0, width: 1, height: 1 };
@@ -23,11 +26,9 @@ export class VerticalScrollbar extends Konva.Group {
     this.ct.addEventListener("themeChanged", this.onThemeChanged.bind(this));
     this.ct.addEventListener("scroll", this.onScroll.bind(this));
 
-    const { scrollBarTrackColor, scrollBarThumbColor } = this.ct.getTheme();
+    const { scrollBarThumbColor } = this.ct.getTheme();
 
-    this.bar = new Konva.Rect({
-      fill: scrollBarTrackColor
-    });
+    this.bar = new Konva.Rect();
     this.add(this.bar);
 
     this.thumb = new Konva.Rect({
@@ -45,9 +46,7 @@ export class VerticalScrollbar extends Konva.Group {
   }
 
   private onThemeChanged() {
-    const { scrollBarThumbColor, scrollBarTrackColor } = this.ct.getTheme();
-
-    this.bar.fill(scrollBarTrackColor!);
+    const { scrollBarThumbColor } = this.ct.getTheme();
     this.thumb.fill(scrollBarThumbColor);
 
     this.reflow();
@@ -62,26 +61,18 @@ export class VerticalScrollbar extends Konva.Group {
     const {
       normalizedScrollPos,
       normalizedViewportSize,
-      bodyArea,
+      vsbArea,
       overflow
     } = this.ct.getTableState();
 
-    const {
-      rowHeight,
-      scrollBarThickness,
-      scrollBarTrackMargin,
-    } = this.ct.getTheme();
-
-    const tableSize = this.ct.getSize();
+    const { scrollBarThickness, scrollBarTrackMargin } = this.ct.getTheme();
 
     this.visible(overflow.y);
     if (!this.visible()) {
       return;
     }
 
-    this.x(tableSize.width - scrollBarThickness);
-    this.y(rowHeight);
-    this.height(bodyArea.height);
+    this.setAttrs(vsbArea);
 
     this.bar.width(scrollBarThickness);
     this.bar.height(this.height());

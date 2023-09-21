@@ -51,11 +51,14 @@ export class CanvasTable extends EventTarget {
     this.theme = { ...defaultTheme, ...params.theme };
 
     this.tableState = CanvasTable.createTableState(columnStates, params.dataRows);
+    // @Note: Maybe call reflow()?
     this.tableState.tableSize = this.calcTableSize(
       this.tableState.columnStates,
       this.theme.rowHeight,
       this.tableState.dataRows.length
     );
+    this.tableState.hsbArea.height = this.theme.scrollBarThickness;
+    this.tableState.vsbArea.width  = this.theme.scrollBarThickness;
 
     const element = document.getElementById(params.container);
     if (!element) {
@@ -103,6 +106,8 @@ export class CanvasTable extends EventTarget {
 
     state.mainArea = createArea();
     state.bodyArea = createArea();
+    state.hsbArea  = createArea();
+    state.vsbArea  = createArea();
 
     state.overflow = { x: false, y: false };
 
@@ -288,20 +293,30 @@ export class CanvasTable extends EventTarget {
   }
 
   private reflow() {
+    const stageSize = this.stage.size();
+
     this.tableState.overflow = this.calcOverflow(
-      this.stage.size(),
+      stageSize,
       this.tableState.tableSize,
       this.theme.rowHeight,
       this.theme.scrollBarThickness);
 
     this.tableState.mainArea = this.calcMainArea(
-      this.stage.size(),
+      stageSize,
       this.tableState.overflow,
       this.theme.scrollBarThickness);
 
     this.tableState.bodyArea = this.calcBodyArea(
       this.tableState.mainArea,
       this.theme.rowHeight);
+
+    this.tableState.hsbArea.y = stageSize.height - this.theme.scrollBarThickness;
+    this.tableState.hsbArea.width = this.tableState.bodyArea.width;
+    this.tableState.hsbArea.height = this.theme.scrollBarThickness;
+
+    this.tableState.vsbArea.x = stageSize.width - this.theme.scrollBarThickness;
+    this.tableState.vsbArea.y = this.theme.rowHeight;
+    this.tableState.vsbArea.height = this.tableState.bodyArea.height;
 
     this.tableState.viewportSize = { ...this.tableState.bodyArea };
 
