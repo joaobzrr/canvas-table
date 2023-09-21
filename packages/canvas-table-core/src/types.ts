@@ -61,6 +61,7 @@ export type TableRanges = {
 export type Theme = {
   rowHeight: number;
   cellPadding: number;
+  tableBackgroundColor?: string;
   tableBorderColor: string;
   scrollBarThickness: number;
   scrollBarTrackMargin: number;

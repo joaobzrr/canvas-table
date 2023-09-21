@@ -265,6 +265,14 @@ export class TableLayer {
   }
 
   private clearCanvas() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    const { tableBackgroundColor } = this.ct.getTheme();
+    if (tableBackgroundColor) {
+      this.ctx.save();
+      this.ctx.fillStyle = tableBackgroundColor;
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.restore();
+    } else {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
   }
 }

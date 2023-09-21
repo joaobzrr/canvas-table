@@ -18,6 +18,24 @@ function App() {
       <div className={styles.sidebar}>
         <form>
           <div className={styles.row}>
+            <label className={styles.label}>Background Color</label>
+            <input
+              onChange={event => updateTheme({
+                tableBackgroundColor: event.target.value || undefined
+              })}
+              className={styles.input}
+            />
+          </div>
+          <div className={styles.row}>
+            <label className={styles.label}>Border Color</label>
+            <input
+              onChange={event => updateTheme({
+                tableBorderColor: event.target.value || undefined
+              })}
+              className={styles.input}
+            />
+          </div>
+          <div className={styles.row}>
             <label className={styles.label}>Font Family</label>
             <input
               onChange={event => updateTheme({
@@ -40,15 +58,6 @@ function App() {
             <input
               onChange={event => updateTheme({
                 fontColor: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Border Color</label>
-            <input
-              onChange={event => updateTheme({
-                tableBorderColor: event.target.value || undefined
               })}
               className={styles.input}
             />
