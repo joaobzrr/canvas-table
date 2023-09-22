@@ -2,7 +2,7 @@ import { useState } from "react";
 import { debounce } from "lodash";
 import CanvasTable, { Theme } from "canvas-table-react";
 import { columnDefs, dataRows } from "./pokemon";
-import { useElementSize } from "./testing/hooks/useElementSize";
+import { useElementSize } from "./useElementSize";
 import styles from "./App.module.css";
 
 function App() {
