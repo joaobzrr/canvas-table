@@ -140,6 +140,7 @@ export class TableLayer {
 
   private render() {
     this.clearCanvas();
+    this.renderBodyAndHeaderBackground();
     this.renderScrollbarBackground();
     this.renderLines();
     this.renderText();
@@ -250,6 +251,30 @@ export class TableLayer {
     }
 
     this.ctx.restore();
+  }
+
+  private renderBodyAndHeaderBackground() {
+    const { bodyArea, headerArea } = this.ct.getTableState();
+
+    let {
+      tableBackgroundColor,
+      bodyBackgroundColor,
+      headerBackgroundColor
+    } = this.ct.getTheme();
+
+    this.ctx.save();
+
+    bodyBackgroundColor = bodyBackgroundColor ?? tableBackgroundColor;
+    if (bodyBackgroundColor) {
+      this.ctx.fillStyle = bodyBackgroundColor;
+      this.ctx.fillRect(bodyArea.x, bodyArea.y, bodyArea.width, bodyArea.height);
+    }
+
+    headerBackgroundColor = headerBackgroundColor ?? tableBackgroundColor;
+    if (headerBackgroundColor) {
+      this.ctx.fillStyle = headerBackgroundColor;
+      this.ctx.fillRect(headerArea.x, headerArea.y, headerArea.width, headerArea.height);
+    }
   }
 
   private renderScrollbarBackground() {

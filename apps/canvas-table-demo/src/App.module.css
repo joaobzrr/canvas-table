@@ -32,6 +32,7 @@
   width: 300px;
   border-right: 1px solid var(--colors-border);
   background-color: var(--colors-background1);
+  overflow-y: scroll;
 }
 
 .sidebar form {

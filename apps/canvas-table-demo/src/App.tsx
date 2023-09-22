@@ -27,6 +27,24 @@ function App() {
             />
           </div>
           <div className={styles.row}>
+            <label className={styles.label}>Body Background Color</label>
+            <input
+              onChange={event => updateTheme({
+                bodyBackgroundColor: event.target.value || undefined
+              })}
+              className={styles.input}
+            />
+          </div>
+          <div className={styles.row}>
+            <label className={styles.label}>Header Background Color</label>
+            <input
+              onChange={event => updateTheme({
+                headerBackgroundColor: event.target.value || undefined
+              })}
+              className={styles.input}
+            />
+          </div>
+          <div className={styles.row}>
             <label className={styles.label}>Border Color</label>
             <input
               onChange={event => updateTheme({

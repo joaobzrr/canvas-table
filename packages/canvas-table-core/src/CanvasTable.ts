@@ -5,6 +5,14 @@ import { TableLayer } from "./TableLayer";
 import { ScrollbarLayer } from "./ScrollbarLayer";
 import { ColumnResizerLayer } from "./ColumnResizerLayer";
 import {
+  ReflowEvent,
+  ThemeChangedEvent,
+  ScrollEvent,
+  MouseDownEvent,
+  MouseUpEvent,
+  MouseMoveEvent
+} from "./events";
+import {
   scale,
   clamp,
   createVector,
@@ -23,14 +31,6 @@ import {
   VectorLike,
   Size
 } from "./types";
-import {
-  ReflowEvent,
-  ThemeChangedEvent,
-  ScrollEvent,
-  MouseDownEvent,
-  MouseUpEvent,
-  MouseMoveEvent
-} from "./events";
 
 export class CanvasTable extends EventTarget {
   private stage: Konva.Stage;
@@ -51,7 +51,8 @@ export class CanvasTable extends EventTarget {
     this.theme = { ...defaultTheme, ...params.theme };
 
     this.tableState = CanvasTable.createTableState(columnStates, params.dataRows);
-    // @Note: Maybe call reflow()?
+
+    // @Note: Maybe call reflow instead of doing this here?
     this.tableState.tableSize = this.calcTableSize(
       this.tableState.columnStates,
       this.theme.rowHeight,
@@ -104,10 +105,11 @@ export class CanvasTable extends EventTarget {
     state.viewportSize           = createSize();
     state.normalizedViewportSize = createSize();
 
-    state.mainArea = createArea();
-    state.bodyArea = createArea();
-    state.hsbArea  = createArea();
-    state.vsbArea  = createArea();
+    state.mainArea   = createArea();
+    state.bodyArea   = createArea();
+    state.headerArea = createArea();
+    state.hsbArea    = createArea();
+    state.vsbArea    = createArea();
 
     state.overflow = { x: false, y: false };
 
@@ -310,6 +312,10 @@ export class CanvasTable extends EventTarget {
       this.tableState.mainArea,
       this.theme.rowHeight);
 
+    this.tableState.headerArea = this.calcHeaderArea(
+      this.tableState.mainArea,
+      this.theme.rowHeight);
+
     this.tableState.hsbArea.y = stageSize.height - this.theme.scrollBarThickness;
     this.tableState.hsbArea.width = this.tableState.bodyArea.width;
     this.tableState.hsbArea.height = this.theme.scrollBarThickness;
@@ -358,6 +364,12 @@ export class CanvasTable extends EventTarget {
     const width  = mainArea.width;
     const height = mainArea.height - rowHeight;
     return { x: 0, y: rowHeight, width, height };
+  }
+
+  private calcHeaderArea(mainArea: Size, rowHeight: number) {
+    const width = mainArea.width;
+    const height = rowHeight;
+    return { x: 0, y: 0, width, height };
   }
 
   private calcOverflow(

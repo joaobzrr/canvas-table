@@ -15,6 +15,7 @@ export type TableState = {
 
   mainArea: RectLike;
   bodyArea: RectLike;
+  headerArea: RectLike;
   hsbArea: RectLike;
   vsbArea: RectLike;
 
@@ -73,6 +74,8 @@ export type Theme = {
   bodyFontStyle?: FontStyle;
   headerFontStyle?: FontStyle;
   tableBackgroundColor?: string;
+  bodyBackgroundColor?: string;
+  headerBackgroundColor?: string;
   scrollBarTrackColor?: string;
   columnResizerColor?: string;
   bodyFontColor?: string;
