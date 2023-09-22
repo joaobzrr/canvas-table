@@ -43,10 +43,11 @@ export type CreateViewParams = Omit<CanvasTableParams, "container">;
 export type ColumnDef = {
   title: string;
   field: string;
-  width: number;
+  width?: number;
 }
 
-export type ColumnState = ColumnDef & {
+export type ColumnState = Omit<ColumnDef, "width"> & {
+  width: number;
   pos: number;
 }
 

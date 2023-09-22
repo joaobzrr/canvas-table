@@ -2,7 +2,7 @@ import Konva from "konva";
 import { throttle } from "lodash";
 import { CanvasTable } from "./CanvasTable";
 import { MouseDownEvent, MouseMoveEvent } from "./events";
-import { COL_RESIZER_SIDE, MIN_COLUMN_WIDTH } from "./constants";
+import { COLUMN_RESIZER_WIDTH, MIN_COLUMN_WIDTH } from "./constants";
 import { VectorLike } from "./types";
 
 export class ColumnResizerLayer {
@@ -127,10 +127,10 @@ export class ColumnResizerLayer {
     this.rect.y(0); // Reset y-coordinate
     
     const colX = columnState.pos - scrollPos.x;
-    const minX = colX + MIN_COLUMN_WIDTH - COL_RESIZER_SIDE;
+    const minX = colX + MIN_COLUMN_WIDTH - COLUMN_RESIZER_WIDTH;
     this.rect.x(Math.max(this.rect.x(), minX));
 
-    const newColumnWidth = this.rect.x() + COL_RESIZER_SIDE - colX;
+    const newColumnWidth = this.rect.x() + COLUMN_RESIZER_WIDTH - colX;
     this.setColumnWidth(this.columnUnderCursor, newColumnWidth);
   }
 
@@ -149,8 +149,8 @@ export class ColumnResizerLayer {
     for (let j = columnLeft; j < columnRight; j++) {
       const columnState = columnStates[j];
       const centerX = columnState.pos + columnState.width - scrollLeft;
-      const x1 = centerX - COL_RESIZER_SIDE;
-      const x2 = centerX + COL_RESIZER_SIDE + 1;
+      const x1 = centerX - COLUMN_RESIZER_WIDTH;
+      const x2 = centerX + COLUMN_RESIZER_WIDTH + 1;
 
       if (mousePos.x >= x1 && mousePos.x < x2) {
         return j;
@@ -168,8 +168,8 @@ export class ColumnResizerLayer {
 
     const columnState = columnStates[columnIndex];
     const centerX = columnState.pos + columnState.width - scrollLeft;
-    const x = centerX - COL_RESIZER_SIDE;
-    const width = (COL_RESIZER_SIDE * 2) + 1;
+    const x = centerX - COLUMN_RESIZER_WIDTH;
+    const width = (COLUMN_RESIZER_WIDTH * 2) + 1;
 
     return { x, y: 0, width, height: rowHeight };
   }

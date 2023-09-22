@@ -19,6 +19,7 @@ import {
   createSize,
   createArea
 } from "./utils";
+import { DEFAULT_COLUMN_WIDTH } from "./constants";
 import {
   CanvasTableParams,
   TableState,
@@ -483,11 +484,12 @@ export class CanvasTable extends EventTarget {
   }
 
   private columnDefsToColumnStates(columnDefs: ColumnDef[]) {
-    const columnStates = [];
+    const columnStates = [] as ColumnState[];
     let total = 0;
-    for (const columnDef of columnDefs) {
-      columnStates.push({ ...columnDef, pos: total })
-      total += columnDef.width;
+    for (let { width, ...rest } of columnDefs) {
+      width = width ?? DEFAULT_COLUMN_WIDTH;
+      columnStates.push({ ...rest, width, pos: total });
+      total += width;
     }
     return columnStates;
   }
