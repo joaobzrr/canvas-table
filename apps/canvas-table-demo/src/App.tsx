@@ -63,6 +63,51 @@ function App() {
             />
           </div>
           <div className={styles.row}>
+            <label className={styles.label}>Body Font Color</label>
+            <input
+              onChange={event => updateTheme({
+                bodyFontColor: event.target.value || undefined
+              })}
+              className={styles.input}
+            />
+          </div>
+          <div className={styles.row}>
+            <label className={styles.label}>Header Font Color</label>
+            <input
+              onChange={event => updateTheme({
+                headerFontColor: event.target.value || undefined
+              })}
+              className={styles.input}
+            />
+          </div>
+          <div className={styles.row}>
+            <label className={styles.label}>Font Style</label>
+            <input
+              onChange={event => updateTheme({
+                fontStyle: (event.target.value as any) || undefined
+              })}
+              className={styles.input}
+            />
+          </div>
+          <div className={styles.row}>
+            <label className={styles.label}>Body Font Style</label>
+            <input
+              onChange={event => updateTheme({
+                bodyFontStyle: (event.target.value as any) || undefined
+              })}
+              className={styles.input}
+            />
+          </div>
+          <div className={styles.row}>
+            <label className={styles.label}>Header Font Style</label>
+            <input
+              onChange={event => updateTheme({
+                headerFontStyle: (event.target.value as any) || undefined
+              })}
+              className={styles.input}
+            />
+          </div>
+          <div className={styles.row}>
             <label className={styles.label}>Scrollbar Thickness</label>
             <input
               onChange={event => updateTheme({

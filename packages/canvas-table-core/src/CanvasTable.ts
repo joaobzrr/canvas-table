@@ -492,5 +492,7 @@ const defaultTheme: Theme = {
   columnResizerOpacity: 0.5,
   fontSize: 14,
   fontColor: "black",
-  fontFamily: "Arial"
+  fontFamily: "Arial",
+  fontStyle: "normal",
+  headerFontStyle: "bold"
 }

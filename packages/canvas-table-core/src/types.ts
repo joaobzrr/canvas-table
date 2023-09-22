@@ -61,17 +61,22 @@ export type TableRanges = {
 export type Theme = {
   rowHeight: number;
   cellPadding: number;
-  tableBackgroundColor?: string;
   tableBorderColor: string;
   scrollBarThickness: number;
   scrollBarTrackMargin: number;
-  scrollBarTrackColor?: string;
   scrollBarThumbColor: string;
-  columnResizerColor?: string;
   columnResizerOpacity: number;
   fontSize: number;
-  fontColor: string;
   fontFamily: string;
+  fontColor: string;
+  fontStyle: FontStyle;
+  bodyFontStyle?: FontStyle;
+  headerFontStyle?: FontStyle;
+  tableBackgroundColor?: string;
+  scrollBarTrackColor?: string;
+  columnResizerColor?: string;
+  bodyFontColor?: string;
+  headerFontColor?: string;
 }
 
 export type GlyphAtlasOptions = {

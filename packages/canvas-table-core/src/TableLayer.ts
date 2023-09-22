@@ -18,7 +18,7 @@ export class TableLayer {
   private lineRenderer: LineRenderer;
 
   private bodyFont: Font;
-  private headFont: Font;
+  private headerFont: Font;
 
   private mainAreaClipRegion: Path2D;
   private bodyAreaClipRegion: Path2D;
@@ -61,7 +61,7 @@ export class TableLayer {
       style: "normal"
     };
 
-    this.headFont = {
+    this.headerFont = {
       family: fontFamily,
       size: fontSize,
       color: fontColor,
@@ -89,20 +89,30 @@ export class TableLayer {
 
   private onThemeChanged(event: Event) {
     const { theme } = (event as ThemeChangedEvent).detail;
-    const { fontFamily, fontSize, fontColor, tableBorderColor } = theme;
+    const {
+      fontFamily,
+      fontSize,
+      fontColor,
+      fontStyle,
+      bodyFontColor,
+      bodyFontStyle,
+      headerFontColor,
+      headerFontStyle,
+      tableBorderColor
+    } = theme;
 
     this.bodyFont = {
       family: fontFamily,
-      size: fontSize,
-      color: fontColor,
-      style: "normal"
+      size:   fontSize,
+      color:  bodyFontColor ?? fontColor,
+      style:  bodyFontStyle ?? fontStyle
     };
 
-    this.headFont = {
+    this.headerFont = {
       family: fontFamily,
-      size: fontSize,
-      color: fontColor,
-      style: "bold" 
+      size:   fontSize,
+      color:  headerFontColor ?? fontColor,
+      style:  headerFontStyle ?? fontStyle
     };
 
     this.textRenderer.clearAtlas();
@@ -163,7 +173,7 @@ export class TableLayer {
       const y = rowHeight / 2;
       const maxWidth = width - cellPadding * 2;
 
-      this.textRenderer.render(this.ctx, this.headFont, text, x, y, maxWidth, true);
+      this.textRenderer.render(this.ctx, this.headerFont, text, x, y, maxWidth, true);
     }
 
     this.ctx.clip(this.bodyAreaClipRegion);
