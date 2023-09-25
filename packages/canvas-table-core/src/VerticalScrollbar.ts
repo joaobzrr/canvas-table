@@ -61,7 +61,7 @@ export class VerticalScrollbar extends Konva.Group {
     const {
       normalizedScrollPos,
       normalizedViewportSize,
-      vsbArea,
+      vsbInnerArea,
       overflow
     } = this.ct.getTableState();
 
@@ -72,12 +72,12 @@ export class VerticalScrollbar extends Konva.Group {
       return;
     }
 
-    this.setAttrs(vsbArea);
+    this.setAttrs(vsbInnerArea);
 
     this.bar.width(scrollBarThickness);
     this.bar.height(this.height());
 
-    this.trackRect.x = scrollBarTrackMargin + 1;
+    this.trackRect.x = scrollBarTrackMargin;
     this.trackRect.y = this.bar.y() + scrollBarTrackMargin;
     this.trackRect.width = this.bar.width() - this.trackRect.x - scrollBarTrackMargin;
     this.trackRect.height = this.bar.height() - (scrollBarTrackMargin * 2);

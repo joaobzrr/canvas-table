@@ -16,8 +16,10 @@ export type TableState = {
   mainArea: RectLike;
   bodyArea: RectLike;
   headerArea: RectLike;
-  hsbArea: RectLike;
-  vsbArea: RectLike;
+  hsbOuterArea: RectLike;
+  hsbInnerArea: RectLike;
+  vsbOuterArea: RectLike;
+  vsbInnerArea: RectLike;
 
   overflow: Overflow;
 

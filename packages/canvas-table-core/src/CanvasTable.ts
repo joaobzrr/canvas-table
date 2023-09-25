@@ -19,7 +19,10 @@ import {
   createSize,
   createArea
 } from "./utils";
-import { DEFAULT_COLUMN_WIDTH } from "./constants";
+import {
+  DEFAULT_COLUMN_WIDTH,
+  BORDER_WIDTH
+} from "./constants";
 import {
   CanvasTableParams,
   TableState,
@@ -27,7 +30,6 @@ import {
   ColumnState,
   DataRow,
   Theme,
-  Overflow,
   TableRanges,
   VectorLike,
   Size
@@ -51,16 +53,7 @@ export class CanvasTable extends EventTarget {
 
     this.theme = { ...defaultTheme, ...params.theme };
 
-    this.tableState = CanvasTable.createTableState(columnStates, params.dataRows);
-
-    // @Note: Maybe call reflow instead of doing this here?
-    this.tableState.tableSize = this.calcTableSize(
-      this.tableState.columnStates,
-      this.theme.rowHeight,
-      this.tableState.dataRows.length
-    );
-    this.tableState.hsbArea.height = this.theme.scrollBarThickness;
-    this.tableState.vsbArea.width  = this.theme.scrollBarThickness;
+    this.tableState = this.createTableState(columnStates, params.dataRows, this.theme);
 
     const element = document.getElementById(params.container);
     if (!element) {
@@ -93,30 +86,52 @@ export class CanvasTable extends EventTarget {
     document.addEventListener("mouseup", this.onMouseUp);
   }
 
-  private static createTableState(columnStates: ColumnState[], dataRows: DataRow[]) {
-    const state = { columnStates, dataRows } as TableState;
+  private createTableState(columnStates: ColumnState[], dataRows: DataRow[], theme: Theme): TableState {
+    const { rowHeight, scrollBarThickness } = theme;
 
-    state.scrollPos           = createVector();
-    state.maxScrollPos        = createVector();
-    state.normalizedScrollPos = createVector();
-    state.mousePos            = createVector();
+    return {
+      columnStates,
+      dataRows,
 
-    state.tableSize              = createSize();
-    state.scrollSize             = createSize();
-    state.viewportSize           = createSize();
-    state.normalizedViewportSize = createSize();
+      scrollPos: createVector(),
+      maxScrollPos: createVector(),
+      normalizedScrollPos: createVector(),
+      mousePos: createVector(),
 
-    state.mainArea   = createArea();
-    state.bodyArea   = createArea();
-    state.headerArea = createArea();
-    state.hsbArea    = createArea();
-    state.vsbArea    = createArea();
+      tableSize: this.calcTableSize(columnStates, rowHeight, dataRows.length),
+      scrollSize: createSize(),
+      viewportSize: createSize(),
+      normalizedViewportSize: createSize(),
 
-    state.overflow = { x: false, y: false };
+      mainArea: createArea(),
+      bodyArea: createArea({ y: rowHeight }),
+      headerArea: createArea({ y: rowHeight }),
 
-    state.tableRanges = { columnLeft: 0, columnRight: 0, rowTop: 0, rowBottom: 0 };
+      hsbOuterArea: createArea({
+        height: scrollBarThickness + BORDER_WIDTH
+      }),
+      hsbInnerArea: createArea({
+        x: BORDER_WIDTH,
+        height: scrollBarThickness
+      }),
+      vsbOuterArea: createArea({
+        y: rowHeight,
+        width: scrollBarThickness + BORDER_WIDTH
+      }),
+      vsbInnerArea: createArea({
+        y: rowHeight + BORDER_WIDTH,
+        width: scrollBarThickness
+      }),
 
-    return state;
+      overflow: { x: false, y: false },
+
+      tableRanges: {
+        columnLeft: 0,
+        columnRight: 0,
+        rowTop: 0,
+        rowBottom: 0
+      }
+    };
   }
 
   public getTableState() {
@@ -298,32 +313,53 @@ export class CanvasTable extends EventTarget {
   private reflow() {
     const stageSize = this.stage.size();
 
-    this.tableState.overflow = this.calcOverflow(
-      stageSize,
-      this.tableState.tableSize,
-      this.theme.rowHeight,
-      this.theme.scrollBarThickness);
+    const outerMainAreaWidth  = stageSize.width  - BORDER_WIDTH;
+    const outerMainAreaHeight = stageSize.height - BORDER_WIDTH;
+    const innerMainAreaWidth  = stageSize.width  - this.theme.scrollBarThickness - BORDER_WIDTH * 2;
+    const innerMainAreaHeight = stageSize.height - this.theme.scrollBarThickness - BORDER_WIDTH * 2;
 
-    this.tableState.mainArea = this.calcMainArea(
-      stageSize,
-      this.tableState.overflow,
-      this.theme.scrollBarThickness);
+    const outerBodyAreaWidth  = outerMainAreaWidth;
+    const outerBodyAreaHeight = outerMainAreaHeight - this.theme.rowHeight;
+    const innerBodyAreaWidth  = innerMainAreaWidth;
+    const innerBodyAreaHeight = innerMainAreaHeight - this.theme.rowHeight;
 
-    this.tableState.bodyArea = this.calcBodyArea(
-      this.tableState.mainArea,
-      this.theme.rowHeight);
+    const outerHeaderAreaWidth = outerMainAreaWidth;
+    const innerHeaderAreaWidth = innerMainAreaWidth;
 
-    this.tableState.headerArea = this.calcHeaderArea(
-      this.tableState.mainArea,
-      this.theme.rowHeight);
+    if (outerBodyAreaWidth >= this.tableState.tableSize.width && outerBodyAreaHeight >= this.tableState.tableSize.height) {
+      this.tableState.overflow.x = this.tableState.overflow.y = false;
+    } else {
+      this.tableState.overflow.x = innerBodyAreaWidth  < this.tableState.tableSize.width;
+      this.tableState.overflow.y = innerBodyAreaHeight < this.tableState.tableSize.height;
+    }
 
-    this.tableState.hsbArea.y = stageSize.height - this.theme.scrollBarThickness;
-    this.tableState.hsbArea.width = this.tableState.bodyArea.width;
-    this.tableState.hsbArea.height = this.theme.scrollBarThickness;
+    if (this.tableState.overflow.y) {
+      this.tableState.mainArea.width   = innerMainAreaWidth;
+      this.tableState.bodyArea.width   = innerBodyAreaWidth;
+      this.tableState.headerArea.width = innerHeaderAreaWidth;
+    } else {
+      this.tableState.mainArea.width   = outerMainAreaWidth;
+      this.tableState.bodyArea.width   = outerBodyAreaWidth;
+      this.tableState.headerArea.width = outerHeaderAreaWidth;
+    }
 
-    this.tableState.vsbArea.x = stageSize.width - this.theme.scrollBarThickness;
-    this.tableState.vsbArea.y = this.theme.rowHeight;
-    this.tableState.vsbArea.height = this.tableState.bodyArea.height;
+    if (this.tableState.overflow.x) {
+      this.tableState.mainArea.height   = innerMainAreaHeight;
+      this.tableState.bodyArea.height   = innerBodyAreaHeight;
+    } else {
+      this.tableState.mainArea.height   = outerMainAreaHeight;
+      this.tableState.bodyArea.height   = outerBodyAreaHeight;
+    }
+
+    this.tableState.hsbOuterArea.y     = this.tableState.mainArea.height;
+    this.tableState.hsbOuterArea.width = this.tableState.mainArea.width;
+    this.tableState.hsbInnerArea.y     = this.tableState.hsbOuterArea.y + BORDER_WIDTH;
+    this.tableState.hsbInnerArea.width = this.tableState.hsbOuterArea.width - BORDER_WIDTH;
+
+    this.tableState.vsbOuterArea.x      = this.tableState.bodyArea.width;
+    this.tableState.vsbOuterArea.height = this.tableState.bodyArea.height;
+    this.tableState.vsbInnerArea.x      = this.tableState.vsbOuterArea.x + BORDER_WIDTH;
+    this.tableState.vsbInnerArea.height = this.tableState.vsbOuterArea.height - BORDER_WIDTH;
 
     this.tableState.viewportSize = { ...this.tableState.bodyArea };
 
@@ -349,54 +385,6 @@ export class CanvasTable extends EventTarget {
       this.tableState.viewportSize,
       this.tableState.dataRows.length,
       this.theme.rowHeight);
-  }
-
-  private calcMainArea(
-    stageSize: Size,
-    overflow: Overflow,
-    scrollBarThickness: number
-  ) {
-    const width  = overflow.y ? stageSize.width  - scrollBarThickness : stageSize.width;
-    const height = overflow.x ? stageSize.height - scrollBarThickness : stageSize.height;
-    return { x: 0, y: 0, width, height };
-  }
-
-  private calcBodyArea(mainArea: Size, rowHeight: number) {
-    const width  = mainArea.width;
-    const height = mainArea.height - rowHeight;
-    return { x: 0, y: rowHeight, width, height };
-  }
-
-  private calcHeaderArea(mainArea: Size, rowHeight: number) {
-    const width = mainArea.width;
-    const height = rowHeight;
-    return { x: 0, y: 0, width, height };
-  }
-
-  private calcOverflow(
-    stageSize: Size,
-    tableSize: Size,
-    rowHeight: number,
-    scrollBarThickness: number
-  ) {
-    const { width: stageWidth, height: stageHeight } = stageSize;
-    const { width: tableWidth, height: tableHeight } = tableSize;
-
-    const outerWidth = stageWidth;
-    const outerHeight = stageHeight - rowHeight;
-
-    let overflowX: boolean;
-    let overflowY: boolean;
-    if (outerWidth >= tableWidth && outerHeight >= tableHeight) {
-      overflowX = overflowY = false;
-    } else {
-      const innerWidth  = outerWidth  - scrollBarThickness;
-      const innerHeight = outerHeight - scrollBarThickness;
-      overflowX = innerWidth  < tableWidth;
-      overflowY = innerHeight < tableHeight;
-    }
-
-    return { x: overflowX, y: overflowY };
   }
 
   private calcMaxScrollPos(scrollSize: Size, viewportSize: Size) {
@@ -500,7 +488,7 @@ const defaultTheme: Theme = {
   cellPadding: 12,
   tableBorderColor: "#665C54",
   scrollBarThickness: 20,
-  scrollBarTrackMargin: 2,
+  scrollBarTrackMargin: 0,
   scrollBarThumbColor: "black",
   columnResizerColor: "#257AFD",
   columnResizerOpacity: 0.5,

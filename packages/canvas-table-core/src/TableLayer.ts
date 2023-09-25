@@ -3,6 +3,7 @@ import { CanvasTable } from "./CanvasTable";
 import { TextRenderer } from "./TextRenderer";
 import { LineRenderer } from "./LineRenderer";
 import { ReflowEvent, ThemeChangedEvent } from "./events";
+import { BORDER_WIDTH } from "./constants";
 import { Font } from "./types";
 
 export class TableLayer {
@@ -202,52 +203,54 @@ export class TableLayer {
     const {
       columnStates,
       mainArea,
-      hsbArea,
-      vsbArea,
+      hsbOuterArea,
+      vsbOuterArea,
       scrollPos,
       tableSize,
       tableRanges,
       overflow
     } = this.ct.getTableState();
-
-    const { rowHeight } = this.ct.getTheme();
-
     const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
+    const { rowHeight } = this.ct.getTheme();
 
     this.ctx.save();
     this.ctx.lineWidth = 1;
 
-    // Draw grid horizontal lines
     const gridWidth = Math.min(mainArea.width, tableSize.width);
+    const gridHeight = Math.min(mainArea.height, tableSize.height + rowHeight);
+
+    // Draw outer border
+    this.lineRenderer.hline(this.ctx, 0, 0, this.canvas.width);
+    this.lineRenderer.hline(this.ctx, 0, this.canvas.height - BORDER_WIDTH, this.canvas.width);
+    this.lineRenderer.vline(this.ctx, 0, 0, this.canvas.height);
+    this.lineRenderer.vline(this.ctx, this.canvas.width - BORDER_WIDTH, 0, this.canvas.height);
+
+    // Draw header bottom border
+    this.lineRenderer.hline(this.ctx, 0, rowHeight, this.canvas.width);
+
+    if (overflow.x) {
+      this.lineRenderer.hline(this.ctx, 0, hsbOuterArea.y, this.canvas.width);
+    } else {
+      this.lineRenderer.vline(this.ctx, tableSize.width, 0, gridHeight);
+    }
+
+    if (overflow.y) {
+      this.lineRenderer.vline(this.ctx, vsbOuterArea.x, 0, this.canvas.height);
+    } else {
+      this.lineRenderer.hline(this.ctx, 0, gridHeight, tableSize.width);
+    }
+
+    // Draw grid horizontal lines
     for (let i = rowTop + 1; i < rowBottom; i++) {
       const y = i * rowHeight + rowHeight - scrollPos.y;
       this.lineRenderer.hline(this.ctx, 0, y, gridWidth);
     }
 
     // Draw grid vertical lines
-    const gridHeight = Math.min(mainArea.height, tableSize.height + rowHeight);
     for (let j = columnLeft + 1; j < columnRight; j++) {
       const columnState = columnStates[j];
       const x = columnState.pos - scrollPos.x;
       this.lineRenderer.vline(this.ctx, x, 0, gridHeight);
-    }
-
-    // Draw header bottom border
-    this.lineRenderer.hline(this.ctx, 0, rowHeight, mainArea.width);
-
-    if (overflow.x) {
-      this.lineRenderer.hline(this.ctx, hsbArea.x, hsbArea.y, hsbArea.width);
-      this.lineRenderer.vline(this.ctx, hsbArea.width, hsbArea.y, hsbArea.height);
-    } else {
-      this.lineRenderer.vline(this.ctx, tableSize.width, 0, gridHeight);
-    }
-
-    if (overflow.y) {
-      this.lineRenderer.vline(this.ctx, mainArea.width, 0, mainArea.height);
-      this.lineRenderer.hline(this.ctx, vsbArea.x, vsbArea.y, vsbArea.width);
-      this.lineRenderer.hline(this.ctx, vsbArea.x, vsbArea.y + vsbArea.height, vsbArea.width);
-    } else {
-      this.lineRenderer.hline(this.ctx, 0, gridHeight, tableSize.width);
     }
 
     this.ctx.restore();
@@ -259,7 +262,7 @@ export class TableLayer {
     let {
       tableBackgroundColor,
       bodyBackgroundColor,
-      headerBackgroundColor
+      headerBackgroundColor,
     } = this.ct.getTheme();
 
     this.ctx.save();
@@ -278,7 +281,7 @@ export class TableLayer {
   }
 
   private renderScrollbarBackground() {
-    const { hsbArea, vsbArea, overflow } = this.ct.getTableState();
+    const { hsbOuterArea, vsbOuterArea, overflow } = this.ct.getTableState();
     const { scrollBarTrackColor } = this.ct.getTheme();
 
     if (!scrollBarTrackColor) {
@@ -289,11 +292,11 @@ export class TableLayer {
     this.ctx.fillStyle = scrollBarTrackColor!;
 
     if (overflow.x) {
-      this.ctx.fillRect(hsbArea.x, hsbArea.y, hsbArea.width, hsbArea.height);
+      this.ctx.fillRect(hsbOuterArea.x, hsbOuterArea.y, hsbOuterArea.width, hsbOuterArea.height);
     }
 
     if (overflow.y) {
-      this.ctx.fillRect(vsbArea.x, vsbArea.y, vsbArea.width, vsbArea.height);
+      this.ctx.fillRect(vsbOuterArea.x, vsbOuterArea.y, vsbOuterArea.width, vsbOuterArea.height);
     }
 
     this.ctx.restore();

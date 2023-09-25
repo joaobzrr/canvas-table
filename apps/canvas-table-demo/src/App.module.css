@@ -23,7 +23,6 @@
 
 .canvas-table {
   height: 100%;
-  border: 1px solid var(--colors-border);
 }
 
 .sidebar {
