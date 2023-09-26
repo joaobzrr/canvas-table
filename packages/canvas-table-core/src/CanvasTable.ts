@@ -5,7 +5,8 @@ import { TableState } from "./TableState";
 import { TableLayer } from "./TableLayer";
 import { ScrollbarLayer } from "./ScrollbarLayer";
 import { ColumnResizerLayer } from "./ColumnResizerLayer";
-import { DEFAULT_COLUMN_WIDTH } from "./constants";
+import { defaultTheme } from "./defaultTheme";
+import { createVector, createSize } from "./utils";
 import {
   ReflowEvent,
   ThemeChangedEvent,
@@ -14,6 +15,7 @@ import {
   MouseUpEvent,
   MouseMoveEvent
 } from "./events";
+import { DEFAULT_COLUMN_WIDTH } from "./constants";
 import {
   CanvasTableParams,
   ColumnDef,
@@ -32,18 +34,18 @@ export class CanvasTable extends EventTarget {
   private scrollbarLayer: ScrollbarLayer;
   private columnResizerLayer: ColumnResizerLayer;
 
-  private tableState: TableState;
+  private state: TableState;
 
-  private mousePos = { x: 0, y: 0 };
+  private mousePos = createVector();
 
   constructor(params: CanvasTableParams) {
     super();
 
     const columnStates = this.columnDefsToColumnStates(params.columnDefs);
     const theme = { ...defaultTheme, ...params.theme };
-    const tableSize = params.size ?? { width: 0, height: 0 };
+    const tableSize = createSize(params.size);
 
-    this.tableState = new TableState(columnStates, params.dataRows, theme, tableSize);
+    this.state = new TableState(columnStates, params.dataRows, theme, tableSize);
 
     const element = document.getElementById(params.container);
     if (!element) {
@@ -76,18 +78,16 @@ export class CanvasTable extends EventTarget {
     document.addEventListener("mouseup", this.onMouseUp);
   }
 
-  
-
-  public setData(columnDefs: ColumnDef[], dataRows: DataRow[]) {
+  public setContent(columnDefs: ColumnDef[], dataRows: DataRow[]) {
     const columnStates = this.columnDefsToColumnStates(columnDefs);
-    this.tableState.setContent(columnStates, dataRows);
+    this.state.setContent(columnStates, dataRows);
 
     this.dispatchEvent(new ReflowEvent(this.stage.size()));
   }
 
   public setTheme(theme: Partial<Theme>) {
-    this.tableState.setTheme(merge({}, defaultTheme, theme));
-    this.dispatchEvent(new ThemeChangedEvent(this.tableState.theme));
+    this.state.setTheme(merge({}, defaultTheme, theme));
+    this.dispatchEvent(new ThemeChangedEvent(this.state.theme));
   }
 
   public setSize(size: Size) {
@@ -96,24 +96,24 @@ export class CanvasTable extends EventTarget {
     }
 
     this.stage.size(size);
-    this.tableState.setSize(size);
+    this.state.setSize(size);
 
     this.dispatchEvent(new ReflowEvent(size));
   }
 
   public setColumnWidth(columnIndex: number, columnWidth: number) {
-    this.tableState.setColumnWidth(columnIndex, columnWidth);
+    this.state.setColumnWidth(columnIndex, columnWidth);
     this.dispatchEvent(new ReflowEvent(this.stage.size()));
   }
 
   public setScrollPos(scrollPos: VectorLike) {
-    this.tableState.setScrollPos(scrollPos);
-    this.dispatchEvent(new ScrollEvent(scrollPos, this.tableState.normalizedScrollPos));
+    this.state.setScrollPos(scrollPos);
+    this.dispatchEvent(new ScrollEvent(scrollPos, this.state.normalizedScrollPos));
   }
 
   public setNormalizedScrollPos(normalizedScrollPos: VectorLike) {
-    this.tableState.setNormalizedScrollPos(normalizedScrollPos);
-    this.dispatchEvent(new ScrollEvent(this.tableState.scrollPos, normalizedScrollPos));
+    this.state.setNormalizedScrollPos(normalizedScrollPos);
+    this.dispatchEvent(new ScrollEvent(this.state.scrollPos, normalizedScrollPos));
   }
 
   public cleanup() {
@@ -122,11 +122,11 @@ export class CanvasTable extends EventTarget {
   }
 
   public getState() {
-    return this.tableState;
+    return this.state;
   }
 
   public getTheme() {
-    return this.tableState.theme;
+    return this.state.theme;
   }
 
   public getSize() {
@@ -138,14 +138,8 @@ export class CanvasTable extends EventTarget {
   }
 
   private onMouseDown(event: KonvaEventObject<MouseEvent>) {
-    const mousePos = this.getRelativeMousePos({
-      x: event.evt.clientX,
-      y: event.evt.clientY
-    });
-    this.dispatchEvent(new MouseDownEvent({
-      mousePos,
-      button: event.evt.button
-    }));
+    const mousePos = this.getRelativeMousePos({ x: event.evt.clientX, y: event.evt.clientY });
+    this.dispatchEvent(new MouseDownEvent({ mousePos, button: event.evt.button }));
   }
 
   private onMouseUp(_event: MouseEvent) {
@@ -181,20 +175,4 @@ export class CanvasTable extends EventTarget {
     }
     return columnStates;
   }
-}
-
-const defaultTheme: Theme = {
-  rowHeight: 30,
-  cellPadding: 12,
-  tableBorderColor: "#665C54",
-  scrollBarThickness: 20,
-  scrollBarTrackMargin: 0,
-  scrollBarThumbColor: "black",
-  columnResizerColor: "#257AFD",
-  columnResizerOpacity: 0.5,
-  fontSize: 14,
-  fontColor: "black",
-  fontFamily: "Arial",
-  fontStyle: "normal",
-  headerFontStyle: "bold"
 }

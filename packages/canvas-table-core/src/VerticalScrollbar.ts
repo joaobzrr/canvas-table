@@ -26,33 +26,31 @@ export class VerticalScrollbar extends Konva.Group {
     this.ct.addEventListener("themeChanged", this.onThemeChanged.bind(this));
     this.ct.addEventListener("scroll", this.onScroll.bind(this));
 
-    const { scrollBarThumbColor } = this.ct.getTheme();
+    const { scrollbarThumbColor } = this.ct.getTheme();
 
     this.bar = new Konva.Rect();
     this.add(this.bar);
 
-    this.thumb = new Konva.Rect({
-      fill: scrollBarThumbColor,
-      draggable: true
-    });
+    this.thumb = new Konva.Rect({ fill: scrollbarThumbColor, draggable: true });
     this.add(this.thumb);
+
     this.thumb.on("dragmove", this.dragThumb.bind(this));
 
     this.setNormalizedScrollPos = throttle(this.setNormalizedScrollPos.bind(this), 16);
   }
 
-  public onReflow() {
+  private onReflow() {
     this.reflow();
   }
 
   private onThemeChanged() {
-    const { scrollBarThumbColor } = this.ct.getTheme();
-    this.thumb.fill(scrollBarThumbColor);
+    const { scrollbarThumbColor } = this.ct.getTheme();
+    this.thumb.fill(scrollbarThumbColor);
 
     this.reflow();
   }
 
-  public onScroll(event: Event) {
+  private onScroll(event: Event) {
     const { normalizedPos } = (event as ScrollEvent).detail;
     this.thumb.y(this.calcThumbPos(normalizedPos.y));
   }
@@ -65,7 +63,7 @@ export class VerticalScrollbar extends Konva.Group {
       overflow
     } = this.ct.getState();
 
-    const { scrollBarThickness, scrollBarTrackMargin } = this.ct.getTheme();
+    const { scrollbarThickness, scrollbarTrackMargin } = this.ct.getTheme();
 
     this.visible(overflow.y);
     if (!this.visible()) {
@@ -74,13 +72,13 @@ export class VerticalScrollbar extends Konva.Group {
 
     this.setAttrs(vsbInnerArea);
 
-    this.bar.width(scrollBarThickness);
+    this.bar.width(scrollbarThickness);
     this.bar.height(this.height());
 
-    this.trackRect.x = scrollBarTrackMargin;
-    this.trackRect.y = this.bar.y() + scrollBarTrackMargin;
-    this.trackRect.width = this.bar.width() - this.trackRect.x - scrollBarTrackMargin;
-    this.trackRect.height = this.bar.height() - (scrollBarTrackMargin * 2);
+    this.trackRect.x = scrollbarTrackMargin;
+    this.trackRect.y = this.bar.y() + scrollbarTrackMargin;
+    this.trackRect.width  = this.bar.width()  - (scrollbarTrackMargin * 2);
+    this.trackRect.height = this.bar.height() - (scrollbarTrackMargin * 2);
 
     const { height: normalizedSize } = normalizedViewportSize;
     const thumbHeight = this.calcThumbSize(normalizedSize);

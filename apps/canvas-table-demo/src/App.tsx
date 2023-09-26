@@ -129,7 +129,7 @@ function App() {
             <label className={styles.label}>Scrollbar Thickness</label>
             <input
               onChange={event => updateTheme({
-                scrollBarThickness: parseInt(event.target.value) || undefined
+                scrollbarThickness: parseInt(event.target.value) || undefined
               })}
               className={styles.input}
             />
@@ -138,7 +138,7 @@ function App() {
             <label className={styles.label}>Scrollbar Track Margin</label>
             <input
               onChange={event => updateTheme({
-                scrollBarTrackMargin: parseInt(event.target.value) || undefined
+                scrollbarTrackMargin: parseInt(event.target.value) || undefined
               })}
               className={styles.input}
             />
@@ -147,7 +147,7 @@ function App() {
             <label className={styles.label}>Scrollbar Thumb Color</label>
             <input
               onChange={event => updateTheme({
-                scrollBarThumbColor: event.target.value || undefined
+                scrollbarThumbColor: event.target.value || undefined
               })}
               className={styles.input}
             />
@@ -156,7 +156,7 @@ function App() {
             <label className={styles.label}>Scrollbar Track Color</label>
             <input
               onChange={event => updateTheme({
-                scrollBarTrackColor: event.target.value || undefined
+                scrollbarTrackColor: event.target.value || undefined
               })}
               className={styles.input}
             />

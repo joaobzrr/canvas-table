@@ -1,7 +1,11 @@
-import { clamp, scale } from "./utils";
 import {
-  BORDER_WIDTH
-} from "./constants";
+  clamp,
+  scale,
+  createVector,
+  createSize,
+  createArea
+} from "./utils";
+import { BORDER_WIDTH } from "./constants";
 import {
   ColumnState,
   DataRow,
@@ -43,18 +47,6 @@ export class TableState {
   ) {
     this.contentSize = this.calculateContentSize();
 
-    function createVector(props?: Partial<VectorLike>): VectorLike {
-      return { x: 0, y: 0, ...props };
-    }
-
-    function createSize(props?: Partial<Size>): Size {
-      return { width: 1, height: 1, ...props };
-    }
-
-    function createArea(props?: Partial<RectLike>): RectLike {
-      return { x: 0, y: 0, width: 1, height: 1, ...props };
-    }
-
     this.scrollPos = createVector();
     this.maxScrollPos = createVector();
     this.normalizedScrollPos = createVector();
@@ -63,16 +55,17 @@ export class TableState {
     this.viewportSize = createSize();
     this.normalizedViewportSize = createSize();
 
-    const { rowHeight, scrollBarThickness } = this.theme;
+    const { rowHeight, scrollbarThickness } = this.theme;
 
     this.mainArea = createArea();
     this.bodyArea = createArea({ y: rowHeight });
     this.headerArea = createArea({ height: rowHeight });
 
-    this.hsbOuterArea = createArea({ height: scrollBarThickness + BORDER_WIDTH });
-    this.vsbOuterArea = createArea({ y: rowHeight, width: scrollBarThickness + BORDER_WIDTH });
-    this.hsbInnerArea = createArea({ x: BORDER_WIDTH, height: scrollBarThickness });
-    this.vsbInnerArea = createArea({ y: rowHeight + BORDER_WIDTH, width: scrollBarThickness });
+    this.hsbOuterArea = createArea({ height: scrollbarThickness + BORDER_WIDTH });
+    this.vsbOuterArea = createArea({ y: rowHeight, width: scrollbarThickness + BORDER_WIDTH });
+
+    this.hsbInnerArea = createArea({ x: BORDER_WIDTH, height: scrollbarThickness });
+    this.vsbInnerArea = createArea({ y: rowHeight + BORDER_WIDTH, width: scrollbarThickness });
 
     this.overflow = { x: false, y: false };
 
@@ -135,12 +128,12 @@ export class TableState {
   }
 
   private reflow() {
-    const { rowHeight, scrollBarThickness } = this.theme;
+    const { rowHeight, scrollbarThickness } = this.theme;
 
     const outerMainAreaWidth  = this.tableSize.width  - BORDER_WIDTH;
     const outerMainAreaHeight = this.tableSize.height - BORDER_WIDTH;
-    const innerMainAreaWidth  = outerMainAreaWidth  - scrollBarThickness;
-    const innerMainAreaHeight = outerMainAreaHeight - scrollBarThickness;
+    const innerMainAreaWidth  = outerMainAreaWidth  - scrollbarThickness - BORDER_WIDTH;
+    const innerMainAreaHeight = outerMainAreaHeight - scrollbarThickness - BORDER_WIDTH;
 
     const outerBodyAreaHeight = outerMainAreaHeight - rowHeight;
     const innerBodyAreaHeight = innerMainAreaHeight - rowHeight;

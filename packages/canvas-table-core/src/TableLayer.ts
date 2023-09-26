@@ -283,14 +283,14 @@ export class TableLayer {
 
   private renderScrollbarBackground() {
     const { hsbOuterArea, vsbOuterArea, overflow } = this.ct.getState();
-    const { scrollBarTrackColor } = this.ct.getTheme();
+    const { scrollbarTrackColor } = this.ct.getTheme();
 
-    if (!scrollBarTrackColor) {
+    if (!scrollbarTrackColor) {
       return;
     }
 
     this.ctx.save();
-    this.ctx.fillStyle = scrollBarTrackColor!;
+    this.ctx.fillStyle = scrollbarTrackColor!;
 
     if (overflow.x) {
       this.ctx.fillRect(hsbOuterArea.x, hsbOuterArea.y, hsbOuterArea.width, hsbOuterArea.height);

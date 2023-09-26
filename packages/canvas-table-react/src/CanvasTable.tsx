@@ -45,7 +45,7 @@ const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>((props
 
   useUpdateEffect(() => {
     if (canvasTableRef.current) {
-      canvasTableRef.current.setData(columnDefs, dataRows);
+      canvasTableRef.current.setContent(columnDefs, dataRows);
     }
   }, [columnDefs, dataRows]);
 

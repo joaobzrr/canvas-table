@@ -38,9 +38,9 @@ export type Theme = {
   rowHeight: number;
   cellPadding: number;
   tableBorderColor: string;
-  scrollBarThickness: number;
-  scrollBarTrackMargin: number;
-  scrollBarThumbColor: string;
+  scrollbarThickness: number;
+  scrollbarTrackMargin: number;
+  scrollbarThumbColor: string;
   columnResizerOpacity: number;
   fontSize: number;
   fontFamily: string;
@@ -51,7 +51,7 @@ export type Theme = {
   tableBackgroundColor?: string;
   bodyBackgroundColor?: string;
   headerBackgroundColor?: string;
-  scrollBarTrackColor?: string;
+  scrollbarTrackColor?: string;
   columnResizerColor?: string;
   bodyFontColor?: string;
   headerFontColor?: string;
