@@ -2,7 +2,7 @@ import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { throttle, merge } from "lodash";
 import { TableState } from "./TableState";
-import { TableLayer } from "./TableLayer";
+import { BackgroundLayer } from "./BackgroundLayer";
 import { ScrollbarLayer } from "./ScrollbarLayer";
 import { ColumnResizerLayer } from "./ColumnResizerLayer";
 import { defaultTheme } from "./defaultTheme";
@@ -30,7 +30,7 @@ export class CanvasTable extends EventTarget {
   private stage: Konva.Stage;
   private wrapperEl: HTMLDivElement;
 
-  private tableLayer: TableLayer;
+  private backgroundLayer: BackgroundLayer;
   private scrollbarLayer: ScrollbarLayer;
   private columnResizerLayer: ColumnResizerLayer;
 
@@ -62,8 +62,8 @@ export class CanvasTable extends EventTarget {
     this.stage.on("wheel", this.onWheel.bind(this));
     if (params.size) this.stage.size(params.size);
 
-    this.tableLayer = new TableLayer(this);
-    this.stage.add(this.tableLayer.getLayer());
+    this.backgroundLayer = new BackgroundLayer(this);
+    this.stage.add(this.backgroundLayer.getLayer());
 
     this.scrollbarLayer = new ScrollbarLayer(this);
     this.stage.add(this.scrollbarLayer.getLayer());
