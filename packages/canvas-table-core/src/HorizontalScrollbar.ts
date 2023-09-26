@@ -63,7 +63,7 @@ export class HorizontalScrollbar extends Konva.Group {
       overflow
     } = this.ct.getState();
 
-    const { scrollbarTrackMargin } = this.ct.getTheme();
+    const { scrollbarThickness, scrollbarTrackMargin } = this.ct.getTheme();
 
     this.visible(overflow.x);
     if (!this.visible()) {
@@ -73,7 +73,7 @@ export class HorizontalScrollbar extends Konva.Group {
     this.setAttrs(hsbInnerArea);
 
     this.bar.width(this.width());
-    this.bar.height(this.height())
+    this.bar.height(scrollbarThickness);
 
     this.trackRect.x = scrollbarTrackMargin;
     this.trackRect.y = scrollbarTrackMargin;
