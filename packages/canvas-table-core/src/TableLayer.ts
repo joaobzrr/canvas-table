@@ -275,6 +275,7 @@ export class TableLayer {
 
     headerBackgroundColor = headerBackgroundColor ?? tableBackgroundColor;
     if (headerBackgroundColor) {
+      console.log(headerArea);
       this.ctx.fillStyle = headerBackgroundColor;
       this.ctx.fillRect(headerArea.x, headerArea.y, headerArea.width, headerArea.height);
     }

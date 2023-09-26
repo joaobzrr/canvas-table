@@ -105,7 +105,7 @@ export class CanvasTable extends EventTarget {
 
       mainArea: createArea(),
       bodyArea: createArea({ y: rowHeight }),
-      headerArea: createArea({ y: rowHeight }),
+      headerArea: createArea({ height: rowHeight }),
 
       hsbOuterArea: createArea({
         height: scrollBarThickness + BORDER_WIDTH

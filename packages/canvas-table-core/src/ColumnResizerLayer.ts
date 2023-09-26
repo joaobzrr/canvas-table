@@ -126,12 +126,15 @@ export class ColumnResizerLayer {
 
     this.rect.y(0); // Reset y-coordinate
     
-    const colX = columnState.pos - scrollPos.x;
-    const minX = colX + MIN_COLUMN_WIDTH - COLUMN_RESIZER_WIDTH;
-    this.rect.x(Math.max(this.rect.x(), minX));
+    // @Todo Throttle this block instead of setColumnWidth
+    {
+      const colX = columnState.pos - scrollPos.x;
+      const minX = colX + MIN_COLUMN_WIDTH - COLUMN_RESIZER_WIDTH;
+      this.rect.x(Math.max(this.rect.x(), minX));
 
-    const newColumnWidth = this.rect.x() + COLUMN_RESIZER_WIDTH - colX;
-    this.setColumnWidth(this.columnUnderCursor, newColumnWidth);
+      const newColumnWidth = this.rect.x() + COLUMN_RESIZER_WIDTH - colX;
+      this.setColumnWidth(this.columnUnderCursor, newColumnWidth);
+    }
   }
 
   private findColumnBeingHovered(mousePos: VectorLike) {
