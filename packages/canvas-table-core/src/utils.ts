@@ -21,15 +21,3 @@ export function clamp(value: number, min: number, max: number) {
   if (value > max) return max;
   return value;
 }
-
-export function createVector(props?: Partial<VectorLike>): VectorLike {
-  return { x: 0, y: 0, ...props };
-}
-
-export function createSize(props?: Partial<Size>): Size {
-  return { width: 1, height: 1, ...props };
-}
-
-export function createArea(props?: Partial<RectLike>): RectLike {
-  return { x: 0, y: 0, width: 1, height: 1, ...props };
-}

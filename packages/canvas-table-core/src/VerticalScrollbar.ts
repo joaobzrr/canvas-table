@@ -63,7 +63,7 @@ export class VerticalScrollbar extends Konva.Group {
       normalizedViewportSize,
       vsbInnerArea,
       overflow
-    } = this.ct.getTableState();
+    } = this.ct.getState();
 
     const { scrollBarThickness, scrollBarTrackMargin } = this.ct.getTheme();
 
@@ -109,7 +109,7 @@ export class VerticalScrollbar extends Konva.Group {
     }
 
     const scrollTop = scale(this.thumb.y(), minY, maxY, 0, 1);
-    const { normalizedScrollPos } = this.ct.getTableState();
+    const { normalizedScrollPos } = this.ct.getState();
     this.setNormalizedScrollPos({ x: normalizedScrollPos.x, y: scrollTop });
   }
 

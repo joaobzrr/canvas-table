@@ -1,31 +1,3 @@
-export type TableState = {
-  columnStates: ColumnState[];
-  dataRows: DataRow[];
-
-  scrollPos: VectorLike;
-  maxScrollPos: VectorLike;
-  normalizedScrollPos: VectorLike;
-
-  tableSize: Size;
-  scrollSize: Size;
-  viewportSize: Size;
-  normalizedViewportSize: Size;
-
-  mousePos: VectorLike;
-
-  mainArea: RectLike;
-  bodyArea: RectLike;
-  headerArea: RectLike;
-  hsbOuterArea: RectLike;
-  hsbInnerArea: RectLike;
-  vsbOuterArea: RectLike;
-  vsbInnerArea: RectLike;
-
-  overflow: Overflow;
-
-  tableRanges: TableRanges;
-}
-
 export type CanvasTableConfig = {
   columnDefs: ColumnDef[];
   dataRows: DataRow[];

@@ -65,7 +65,7 @@ export class HorizontalScrollbar extends Konva.Group {
       normalizedViewportSize,
       hsbInnerArea,
       overflow
-    } = this.ct.getTableState();
+    } = this.ct.getState();
 
     const { scrollBarTrackMargin } = this.ct.getTheme();
 
@@ -111,7 +111,7 @@ export class HorizontalScrollbar extends Konva.Group {
     }
 
     const scrollLeft = scale(this.thumb.x(), minX, maxX, 0, 1);
-    const { normalizedScrollPos } = this.ct.getTableState();
+    const { normalizedScrollPos } = this.ct.getState();
     this.setNormalizedScrollPos({ x: scrollLeft, y: normalizedScrollPos.y }); 
   }
 

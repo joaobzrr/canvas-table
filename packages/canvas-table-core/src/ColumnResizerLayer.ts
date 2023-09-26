@@ -99,7 +99,7 @@ export class ColumnResizerLayer {
   }
 
   private onScroll(_event: Event) {
-    const { mousePos } = this.ct.getTableState();
+    const mousePos = this.ct.getMousePos();
 
     const newColumnUnderCursor = this.findColumnBeingHovered(mousePos);
     const columnUnderCursorChanged = newColumnUnderCursor !== this.columnUnderCursor;
@@ -121,7 +121,7 @@ export class ColumnResizerLayer {
   }
 
   private onDragResizer() {
-    const { columnStates, scrollPos } = this.ct.getTableState();
+    const { columnStates, scrollPos } = this.ct.getState();
     const columnState = columnStates[this.columnUnderCursor];
 
     this.rect.y(0); // Reset y-coordinate
@@ -138,7 +138,7 @@ export class ColumnResizerLayer {
   }
 
   private findColumnBeingHovered(mousePos: VectorLike) {
-    const { columnStates, scrollPos, tableRanges } = this.ct.getTableState();
+    const { columnStates, scrollPos, tableRanges } = this.ct.getState();
 
     const { rowHeight } = this.ct.getTheme();
 
@@ -164,7 +164,7 @@ export class ColumnResizerLayer {
   }
 
   private calcColumnResizerArea(columnIndex: number) {
-    const { columnStates, scrollPos } = this.ct.getTableState();
+    const { columnStates, scrollPos } = this.ct.getState();
 
     const { x: scrollLeft } = scrollPos;
     const { rowHeight } = this.ct.getTheme();

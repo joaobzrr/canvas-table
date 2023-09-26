@@ -45,7 +45,7 @@ export class TableLayer {
     this.textRenderer = new TextRenderer();
     this.lineRenderer = new LineRenderer();
 
-    const { mainArea, bodyArea } = this.ct.getTableState();
+    const { mainArea, bodyArea } = this.ct.getState();
 
     this.mainAreaClipRegion = new Path2D();
     this.mainAreaClipRegion.rect(0, 0, mainArea.width, mainArea.height);
@@ -128,7 +128,7 @@ export class TableLayer {
   }
 
   private reflow() {
-    const { mainArea, bodyArea } = this.ct.getTableState();
+    const { mainArea, bodyArea } = this.ct.getState();
 
     this.mainAreaClipRegion = new Path2D();
     this.mainAreaClipRegion.rect(
@@ -155,7 +155,7 @@ export class TableLayer {
       dataRows,
       scrollPos,
       tableRanges
-    } = this.ct.getTableState();
+    } = this.ct.getState();
 
     const { rowHeight, cellPadding } = this.ct.getTheme();
 
@@ -206,10 +206,10 @@ export class TableLayer {
       hsbOuterArea,
       vsbOuterArea,
       scrollPos,
-      tableSize,
+      contentSize: tableSize,
       tableRanges,
       overflow
-    } = this.ct.getTableState();
+    } = this.ct.getState();
     const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
     const { rowHeight } = this.ct.getTheme();
 
@@ -257,7 +257,7 @@ export class TableLayer {
   }
 
   private renderBodyAndHeaderBackground() {
-    const { bodyArea, headerArea } = this.ct.getTableState();
+    const { bodyArea, headerArea } = this.ct.getState();
 
     let {
       tableBackgroundColor,
@@ -282,7 +282,7 @@ export class TableLayer {
   }
 
   private renderScrollbarBackground() {
-    const { hsbOuterArea, vsbOuterArea, overflow } = this.ct.getTableState();
+    const { hsbOuterArea, vsbOuterArea, overflow } = this.ct.getState();
     const { scrollBarTrackColor } = this.ct.getTheme();
 
     if (!scrollBarTrackColor) {
