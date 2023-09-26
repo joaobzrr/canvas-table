@@ -141,7 +141,7 @@ export class TableState {
     if (outerMainAreaWidth >= this.contentSize.width && outerBodyAreaHeight >= this.contentSize.height) {
       this.overflow.x = this.overflow.y = false;
     } else {
-      this.overflow.x = outerMainAreaWidth  < this.contentSize.width;
+      this.overflow.x = innerMainAreaWidth  < this.contentSize.width;
       this.overflow.y = innerBodyAreaHeight < this.contentSize.height;
     }
 

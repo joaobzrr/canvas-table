@@ -55,7 +55,7 @@ export class GlyphAtlas {
       str
     ].join(separator);
 
-    let cached = this.nodeCache.get(key);
+    const cached = this.nodeCache.get(key);
     if (cached) {
       return cached.glyphData!;
     }

@@ -85,7 +85,7 @@ export class BackgroundLayer {
     this.render();
   }
 
-  private onScroll(_event: Event) {
+  private onScroll() {
     this.render();
   }
 
@@ -236,6 +236,8 @@ export class BackgroundLayer {
       }
     }
 
+    this.ctx.restore();
+
     this.image.setAttr("image", this.canvas);
   }
 
@@ -256,10 +258,7 @@ export class BackgroundLayer {
       headerFontStyle
     } = this.ct.getTheme();
 
-    const baseFont = {
-      family: fontFamily,
-      size: fontSize
-    };
+    const baseFont = { family: fontFamily, size: fontSize };
 
     const bodyFont = {
       ...baseFont,
@@ -280,10 +279,12 @@ export class BackgroundLayer {
     const { mainArea, bodyArea } = this.ct.getState();
 
     const mainAreaClipRegion = new Path2D();
-    mainAreaClipRegion.rect(0, 0, mainArea.width, mainArea.height);
+    mainAreaClipRegion.rect(
+      mainArea.x, mainArea.y, mainArea.width, mainArea.height);
 
     const bodyAreaClipRegion = new Path2D();
-    bodyAreaClipRegion.rect(0, 0, bodyArea.width, bodyArea.height);
+    bodyAreaClipRegion.rect(
+      bodyArea.x, bodyArea.y, bodyArea.width, bodyArea.height);
 
     return { mainAreaClipRegion, bodyAreaClipRegion };
   }

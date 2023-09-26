@@ -39,7 +39,7 @@ export class TextRenderer {
     let stringIndex = 0;
     let doEllipsis = false;
 
-    while (true) {
+    for (;;) {
       const nextStringIndex = Graphemer.nextBreak(str, stringIndex);
       if (nextStringIndex === stringIndex) {
         break;

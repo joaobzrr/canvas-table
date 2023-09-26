@@ -142,7 +142,7 @@ export class CanvasTable extends EventTarget {
     this.dispatchEvent(new MouseDownEvent({ mousePos, button: event.evt.button }));
   }
 
-  private onMouseUp(_event: MouseEvent) {
+  private onMouseUp() {
     this.dispatchEvent(new MouseUpEvent());
   }
 
@@ -168,10 +168,10 @@ export class CanvasTable extends EventTarget {
   private columnDefsToColumnStates(columnDefs: ColumnDef[]) {
     const columnStates = [] as ColumnState[];
     let total = 0;
-    for (let { width, ...rest } of columnDefs) {
-      width = width ?? DEFAULT_COLUMN_WIDTH;
-      columnStates.push({ ...rest, width, pos: total });
-      total += width;
+    for (const { width, ...rest } of columnDefs) {
+      const w = width ?? DEFAULT_COLUMN_WIDTH;
+      columnStates.push({ ...rest, width: w, pos: total });
+      total += w;
     }
     return columnStates;
   }

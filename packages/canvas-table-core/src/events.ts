@@ -46,7 +46,7 @@ export class MouseDownEvent extends CustomEvent<MouseDownEventDetail> {
 }
 
 
-export type MouseUpEventDetail = {}
+export type MouseUpEventDetail = Record<string, never>;
 
 export class MouseUpEvent extends CustomEvent<MouseUpEventDetail> {
   constructor() {

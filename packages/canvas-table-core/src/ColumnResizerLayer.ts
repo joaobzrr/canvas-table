@@ -43,7 +43,7 @@ export class ColumnResizerLayer {
     return this.layer;
   }
 
-  private onReflow(_event: Event) {
+  private onReflow() {
     if (!this.isResizingColumn) {
       return;
     }
@@ -67,7 +67,7 @@ export class ColumnResizerLayer {
     }
   }
 
-  private onMouseUp(_event: Event) {
+  private onMouseUp() {
     this.isResizingColumn = false;
 
     this.rect.stopDrag();
@@ -98,7 +98,7 @@ export class ColumnResizerLayer {
     this.rect.visible(true);
   }
 
-  private onScroll(_event: Event) {
+  private onScroll() {
     const mousePos = this.ct.getMousePos();
 
     const newColumnUnderCursor = this.findColumnBeingHovered(mousePos);

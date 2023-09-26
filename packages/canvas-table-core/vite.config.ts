@@ -1,13 +1,13 @@
 import { resolve } from "path";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
+import eslint from "vite-plugin-eslint";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    dts({
-      insertTypesEntry: true
-    })
+    dts({ insertTypesEntry: true }),
+    eslint()
   ],
   build: {
     rollupOptions: {
