@@ -1,6 +1,6 @@
 import Konva from "konva";
-import { throttle } from "lodash";
 import { CanvasTable } from "./CanvasTable";
+import { throttle } from "./utils";
 import { ScrollEvent } from "./events";
 import { scale } from "./utils";
 import { MIN_THUMB_LENGTH } from "./constants";

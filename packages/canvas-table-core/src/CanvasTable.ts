@@ -1,12 +1,11 @@
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
-import { throttle, merge } from "lodash";
 import { TableState } from "./TableState";
 import { BackgroundLayer } from "./BackgroundLayer";
 import { ScrollbarLayer } from "./ScrollbarLayer";
 import { ColumnResizerLayer } from "./ColumnResizerLayer";
 import { defaultTheme } from "./defaultTheme";
-import { createVector, createSize } from "./utils";
+import { throttle, shallowMerge, createVector, createSize } from "./utils";
 import {
   ReflowEvent,
   ThemeChangedEvent,
@@ -86,7 +85,7 @@ export class CanvasTable extends EventTarget {
   }
 
   public setTheme(theme: Partial<Theme>) {
-    this.state.setTheme(merge({}, defaultTheme, theme));
+    this.state.setTheme(shallowMerge({}, defaultTheme, theme));
     this.dispatchEvent(new ThemeChangedEvent(this.state.theme));
   }
 

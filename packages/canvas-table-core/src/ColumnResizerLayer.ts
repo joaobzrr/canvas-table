@@ -1,6 +1,6 @@
 import Konva from "konva";
-import { throttle } from "lodash";
 import { CanvasTable } from "./CanvasTable";
+import { throttle } from "./utils";
 import { MouseDownEvent, MouseMoveEvent } from "./events";
 import { COLUMN_RESIZER_WIDTH, MIN_COLUMN_WIDTH } from "./constants";
 import { VectorLike } from "./types";
@@ -36,7 +36,7 @@ export class ColumnResizerLayer {
     this.ct.addEventListener("mouseup", this.onMouseUp.bind(this));
     this.ct.addEventListener("mousemove", this.onMouseMove.bind(this));
 
-    this.setColumnWidth = throttle(this.setColumnWidth, 16);
+    this.setColumnWidth = throttle(this.setColumnWidth.bind(this), 16);
   }
 
   public getLayer() {
