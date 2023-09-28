@@ -14,7 +14,9 @@ import {
   RectLike,
   Size,
   Overflow,
-  TableRanges
+  TableRanges,
+  Grid,
+  TextInfo
 } from "./types";
 
 export class TableState {
@@ -38,6 +40,10 @@ export class TableState {
   public overflow: Overflow;
 
   public tableRanges: TableRanges;
+
+  public grid: Grid;
+  public bodyTextInfo: TextInfo[];
+  public headerTextInfo: TextInfo[];
 
   constructor(
     public columnStates: ColumnState[],
@@ -70,6 +76,12 @@ export class TableState {
     this.overflow = { x: false, y: false };
 
     this.tableRanges = { columnLeft: 0, columnRight: 0, rowTop: 0, rowBottom: 0 };
+
+    this.grid = this.calculateGrid();
+    
+    const { bodyTextInfo, headerTextInfo } = this.calculateTextInfo();
+    this.bodyTextInfo = bodyTextInfo;
+    this.headerTextInfo = headerTextInfo;
   }
 
   public setContent(columnStates: ColumnState[], dataRows: DataRow[]) {
@@ -78,6 +90,11 @@ export class TableState {
 
     this.contentSize = this.calculateContentSize();
     this.reflow();
+    this.grid = this.calculateGrid();
+
+    const { bodyTextInfo, headerTextInfo } = this.calculateTextInfo();
+    this.bodyTextInfo = bodyTextInfo;
+    this.headerTextInfo = headerTextInfo;
   }
 
   public setTheme(theme: Theme) {
@@ -85,11 +102,22 @@ export class TableState {
 
     this.contentSize = this.calculateContentSize();
     this.reflow();
+    this.grid = this.calculateGrid();
+
+    const { bodyTextInfo, headerTextInfo } = this.calculateTextInfo();
+    this.bodyTextInfo = bodyTextInfo;
+    this.headerTextInfo = headerTextInfo;
   }
 
   public setSize(size: Size) {
     this.tableSize = size;
+
     this.reflow();
+    this.grid = this.calculateGrid();
+
+    const { bodyTextInfo, headerTextInfo } = this.calculateTextInfo();
+    this.bodyTextInfo = bodyTextInfo;
+    this.headerTextInfo = headerTextInfo;
   }
 
   public setColumnWidth(columnIndex: number, columnWidth: number) {
@@ -105,6 +133,11 @@ export class TableState {
 
     this.contentSize = this.calculateContentSize();
     this.reflow();
+    this.grid = this.calculateGrid();
+
+    const { bodyTextInfo, headerTextInfo } = this.calculateTextInfo();
+    this.bodyTextInfo = bodyTextInfo;
+    this.headerTextInfo = headerTextInfo;
   }
 
   public setScrollPos(scrollPos: VectorLike) {
@@ -115,6 +148,11 @@ export class TableState {
     this.normalizedScrollPos.y = this.maxScrollPos.y > 0 ? this.scrollPos.y / this.maxScrollPos.y : 0;
 
     this.recalculateTableRanges();
+    this.grid = this.calculateGrid();
+
+    const { bodyTextInfo, headerTextInfo } = this.calculateTextInfo();
+    this.bodyTextInfo = bodyTextInfo;
+    this.headerTextInfo = headerTextInfo;
   }
 
   public setNormalizedScrollPos(normalizedScrollPos: VectorLike) {
@@ -125,6 +163,11 @@ export class TableState {
     this.scrollPos.y = Math.round(scale(this.normalizedScrollPos.y, 0, 1, 0, this.maxScrollPos.y));
 
     this.recalculateTableRanges();
+    this.grid = this.calculateGrid();
+
+    const { bodyTextInfo, headerTextInfo } = this.calculateTextInfo();
+    this.bodyTextInfo = bodyTextInfo;
+    this.headerTextInfo = headerTextInfo;
   }
 
   private reflow() {
@@ -188,6 +231,92 @@ export class TableState {
     this.normalizedScrollPos.y = this.maxScrollPos.y > 0 ? this.scrollPos.y / this.maxScrollPos.y : 0;
 
     this.recalculateTableRanges();
+  }
+
+  private calculateGrid() {
+    const { rowTop, rowBottom, columnLeft, columnRight } = this.tableRanges;
+    const { rowHeight } = this.theme;
+
+    // @Performance: Pre-allocate the arrays
+
+    const xArray = [];
+    {
+      const start = rowTop + 1;
+      const end = rowBottom; 
+      const offset = -this.scrollPos.y + rowHeight;
+      for (let i = start; i < end; i++) {
+        const y = i * rowHeight + offset;
+        xArray.push(y);
+      }
+    }
+
+    const yArray = [];
+    {
+      const start = columnLeft + 1;
+      const end = columnRight;
+      const offset = -this.scrollPos.x;
+      for (let j = start; j < end; j++) {
+        const columnState = this.columnStates[j];
+        const x = columnState.pos + offset;
+        yArray.push(x);
+      }
+    }
+
+    const gridWidth  = Math.min(this.mainArea.width,  this.contentSize.width);
+    const gridHeight = Math.min(this.mainArea.height, this.contentSize.height + rowHeight);
+
+    const grid = {
+      x: yArray,
+      y: xArray,
+      width: gridWidth,
+      height: gridHeight
+    };
+
+    return grid;
+  }
+
+  private calculateTextInfo() {
+    const { rowTop, rowBottom, columnLeft, columnRight } = this.tableRanges;
+    const { rowHeight, cellPadding } = this.theme;
+
+    const halfOfRowHeight = rowHeight / 2;
+    const doubleOfCellPadding = cellPadding * 2;
+
+    const xOffset = -this.scrollPos.x + cellPadding;
+    const yOffset = -this.scrollPos.y + halfOfRowHeight + rowHeight;
+
+    const bodyTextInfoArray = [];
+    for (let i = rowTop; i < rowBottom; i++) {
+      const dataRow = this.dataRows[i];
+      const y = i * rowHeight + yOffset;
+
+      for (let j = columnLeft; j < columnRight; j++) {
+        const columnState = this.columnStates[j];
+        const x = columnState.pos + xOffset;
+        const maxWidth = columnState.width - doubleOfCellPadding;
+        const text = dataRow[columnState.field];
+
+        const bodytextInfo = { x, y, maxWidth, text };
+        bodyTextInfoArray.push(bodytextInfo);
+      }
+    }
+
+    const headerTextInfoArray = [];
+    for (let j = columnLeft; j < columnRight; j++) {
+      const columnState = this.columnStates[j];
+      const x = columnState.pos + xOffset;
+      const y = halfOfRowHeight;
+      const maxWidth = columnState.width - doubleOfCellPadding;
+      const text = columnState.title;
+
+      const headerTextInfo = { x, y, maxWidth, text };
+      headerTextInfoArray.push(headerTextInfo);
+    }
+
+    return {
+      bodyTextInfo: bodyTextInfoArray,
+      headerTextInfo: headerTextInfoArray
+    };
   }
 
   private calculateContentSize() {

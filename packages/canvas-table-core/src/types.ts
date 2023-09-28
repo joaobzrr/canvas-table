@@ -34,6 +34,20 @@ export type TableRanges = {
   rowBottom:   number;
 }
 
+export type Grid = {
+  x: number[];
+  y: number[];
+  width: number;
+  height: number;
+}
+
+export type TextInfo = {
+  x: number;
+  y: number;
+  maxWidth: number;
+  text: string;
+}
+
 export type Theme = {
   rowHeight: number;
   cellPadding: number;

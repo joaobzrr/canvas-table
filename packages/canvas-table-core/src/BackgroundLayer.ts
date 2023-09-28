@@ -97,22 +97,19 @@ export class BackgroundLayer {
 
   private render() {
     const {
-      columnStates,
-      dataRows,
-      scrollPos,
-      contentSize,
-      mainArea,
+      tableSize,
       bodyArea,
       headerArea,
       hsbOuterArea,
       vsbOuterArea,
       overflow,
-      tableRanges
+      grid,
+      bodyTextInfo,
+      headerTextInfo
     } = this.ct.getState();
 
     const {
       rowHeight,
-      cellPadding,
       tableBackgroundColor,
       bodyBackgroundColor,
       headerBackgroundColor,
@@ -124,9 +121,9 @@ export class BackgroundLayer {
     // Fill or clear table background
     if (tableBackgroundColor) {
       this.ctx.fillStyle = tableBackgroundColor;
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.fillRect(0, 0, tableSize.width, tableSize.height);
     } else {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.clearRect(0, 0, tableSize.width, tableSize.height);
     }
 
     // Fill body and header background
@@ -155,28 +152,21 @@ export class BackgroundLayer {
       }
     }
 
-    const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
-
-    this.ctx.lineWidth = 1;
-
     // Draw outer border
-    this.lineRenderer.hline(this.ctx, 0, 0, this.canvas.width);
-    this.lineRenderer.hline(this.ctx, 0, this.canvas.height - BORDER_WIDTH, this.canvas.width);
-    this.lineRenderer.vline(this.ctx, 0, 0, this.canvas.height);
-    this.lineRenderer.vline(this.ctx, this.canvas.width - BORDER_WIDTH, 0, this.canvas.height);
+    this.lineRenderer.hline(this.ctx, 0, 0, tableSize.width);
+    this.lineRenderer.vline(this.ctx, 0, 0, tableSize.height);
+    this.lineRenderer.vline(this.ctx, tableSize.width - BORDER_WIDTH, 0, tableSize.height);
+    this.lineRenderer.hline(this.ctx, 0, tableSize.height - BORDER_WIDTH, tableSize.width);
 
     // Draw header bottom border
     this.lineRenderer.hline(this.ctx, 0, rowHeight, this.canvas.width);
-
-    const gridWidth  = Math.min(mainArea.width,  contentSize.width);
-    const gridHeight = Math.min(mainArea.height, contentSize.height + rowHeight);
 
     if (overflow.x) {
       // Draw horizontal scrollbar border
       this.lineRenderer.hline(this.ctx, 0, hsbOuterArea.y, this.canvas.width);
     } else {
       // Draw table content right border
-      this.lineRenderer.vline(this.ctx, contentSize.width, 0, gridHeight);
+      this.lineRenderer.vline(this.ctx, grid.width, 0, grid.height);
     }
 
     if (overflow.y) {
@@ -184,56 +174,31 @@ export class BackgroundLayer {
       this.lineRenderer.vline(this.ctx, vsbOuterArea.x, 0, this.canvas.height);
     } else {
       // Draw table content bottom border
-      this.lineRenderer.hline(this.ctx, 0, gridHeight, contentSize.width);
+      this.lineRenderer.hline(this.ctx, 0, grid.height, grid.width);
     }
 
     // Draw grid horizontal lines
-    for (let i = rowTop + 1; i < rowBottom; i++) {
-      const y = i * rowHeight + rowHeight - scrollPos.y;
-      this.lineRenderer.hline(this.ctx, 0, y, gridWidth);
+    for (const y of grid.y) {
+      this.lineRenderer.hline(this.ctx, 0, y, grid.width);
     }
 
     // Draw grid vertical lines
-    for (let j = columnLeft + 1; j < columnRight; j++) {
-      const columnState = columnStates[j];
-      const x = columnState.pos - scrollPos.x;
-      this.lineRenderer.vline(this.ctx, x, 0, gridHeight);
+    for (const x of grid.x) {
+      this.lineRenderer.vline(this.ctx, x, 0, grid.height);
     }
 
     this.ctx.clip(this.mainAreaClipRegion);
 
-    const offsetX = -scrollPos.x + cellPadding;
-    const offsetY = -scrollPos.y + rowHeight / 2 + rowHeight;
-
     // Draw header text
-    for (let j = columnLeft; j < columnRight; j++) {
-      const columnState = columnStates[j];
-      const { pos, width, title: text } = columnState;
-
-      const x = pos + offsetX;
-      const y = rowHeight / 2;
-      const maxWidth = width - cellPadding * 2;
-
+    for (const { x, y, maxWidth, text } of headerTextInfo) {
       this.textRenderer.render(this.ctx, this.headerFont, text, x, y, maxWidth, true);
     }
 
     this.ctx.clip(this.bodyAreaClipRegion);
 
     // Draw body text
-    for (let i = rowTop; i < rowBottom; i++) {
-      const dataRow = dataRows[i];
-      const y = i * rowHeight + offsetY;
-
-      for (let j = columnLeft; j < columnRight; j++) {
-        const columnState = columnStates[j];
-        const { pos, width, field } = columnState;
-
-        const x = pos + offsetX;
-        const maxWidth = width - cellPadding * 2;
-        const text = dataRow[field];
-
-        this.textRenderer.render(this.ctx, this.bodyFont, text, x, y, maxWidth, true);
-      }
+    for (const { x, y, maxWidth, text } of bodyTextInfo) {
+      this.textRenderer.render(this.ctx, this.bodyFont, text, x, y, maxWidth, true);
     }
 
     this.ctx.restore();
