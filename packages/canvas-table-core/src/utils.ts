@@ -1,5 +1,40 @@
 import { VectorLike, RectLike, Size } from "./types";
 
+export function throttle<T extends (...args: any[]) => void>(func: T, delay: number): T {
+  let lastCalled = 0;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  const result = ((...args: any[]) => {
+    const now = Date.now();
+    const timeSinceLastCall = now - lastCalled;
+
+    if (!lastCalled || timeSinceLastCall >= delay) {
+      func(...args);
+      lastCalled = now;
+    } else if (!timeout) {
+      timeout = setTimeout(() => {
+        func(...args);
+        lastCalled = now;
+        timeout = null;
+      }, delay - timeSinceLastCall);
+    }
+  }) as T;
+
+  return result;
+}
+
+export function shallowMerge<T = Record<string, any>>(...objects: Record<string, any>[]): T {
+  const result = {} as T;
+  for (const obj of objects) {
+    for (const key of Object.keys(obj)) {
+      if (obj[key] !== undefined) {
+        result[key as keyof T] = obj[key];
+      }
+    }
+  }
+  return result;
+}
+
 export function scale(
   value:   number,
   fromMin: number,
