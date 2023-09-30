@@ -7,7 +7,7 @@ import {
 import { LineRenderer } from "./LineRenderer";
 import { TextRenderer } from "./TextRenderer";
 import { defaultTheme } from "./defaultTheme";
-import { createRect, createVector, createSize, shallowMerge } from "./utils";
+import { shallowMerge, createRect, createVector, createSize } from "./utils";
 import { DEFAULT_COLUMN_WIDTH, BORDER_WIDTH } from "./constants";
 import {
   CanvasTable,
@@ -15,7 +15,6 @@ import {
   ColumnDef,
   ColumnState,
   DataRow,
-  Font,
   RectLike,
   Size,
   Theme,
@@ -54,24 +53,6 @@ export function canvasTableCreate(params: CanvasTableParams): CanvasTable {
 
   const mousePos = createVector();
 
-  let bodyFont: Font;
-  let headerFont: Font;
-  {
-    const baseFont = { family: theme.fontFamily, size: theme.fontSize };
-
-    bodyFont = {
-      ...baseFont,
-      color: theme.bodyFontColor ?? theme.fontColor,
-      style: theme.bodyFontStyle ?? theme.fontStyle
-    };
-
-    headerFont = {
-      ...baseFont,
-      color: theme.headerFontColor ?? theme.fontColor,
-      style: theme.headerFontStyle ?? theme.fontStyle
-    };
-  }
-
   const ct = {
     canvas,
     containerEl,
@@ -80,9 +61,9 @@ export function canvasTableCreate(params: CanvasTableParams): CanvasTable {
     lineRenderer,
     textRenderer,
     mousePos,
-    bodyFont,
-    headerFont
   } as CanvasTable;
+
+  updateFonts(ct);
 
   ct.mouseDownHandler = (e) => onMouseDown(ct, e);
   ct.mouseUpHandler   = (e) => onMouseUp(ct, e);
@@ -129,8 +110,15 @@ export function canvasTableSetTheme(ct: CanvasTable, theme: Partial<Theme>) {
   const { tableState } = ct;
 
   const _theme = shallowMerge<Theme>({}, defaultTheme, theme);
-
   tableStateSetTheme(tableState, _theme);
+
+  updateFonts(ct);
+
+  const { lineRenderer } = ct;
+  const { tableBorderColor } = _theme;
+
+  lineRenderer.setColor(tableBorderColor);
+
   render(ct);
 }
 
@@ -190,14 +178,35 @@ function render(ct: CanvasTable) {
     fillRect(ctx, headerRect);
   }
 
-  const { hsbOuterRect, vsbOuterRect, overflowX, overflowY } = tableState;
+  const {
+    hsbOuterRect,
+    hsbThumbRect,
+    vsbOuterRect,
+    vsbThumbRect,
+    overflowX,
+    overflowY
+  } = tableState;
 
-  // Draw scrollbar background
-  const { scrollbarTrackColor } = theme;
-  if (scrollbarTrackColor) {
-    ctx.fillStyle = scrollbarTrackColor;
-    if (overflowX) fillRect(ctx, hsbOuterRect);
-    if (overflowY) fillRect(ctx, vsbOuterRect);
+  // Draw scrollbar background and thumb
+  const { scrollbarTrackColor, scrollbarThumbColor } = theme;
+  if (overflowX) {
+    if (scrollbarTrackColor) {
+      ctx.fillStyle = scrollbarTrackColor;
+      fillRect(ctx, hsbOuterRect)
+    }
+
+    ctx.fillStyle = scrollbarThumbColor;
+    fillRect(ctx, hsbThumbRect);
+  }
+
+  if (overflowY) {
+    if (scrollbarTrackColor) {
+      ctx.fillStyle = scrollbarTrackColor;
+      fillRect(ctx, vsbOuterRect)
+    }
+    
+    ctx.fillStyle = scrollbarThumbColor;
+    fillRect(ctx, vsbThumbRect);
   }
 
   const { lineRenderer } = ct;
@@ -205,7 +214,7 @@ function render(ct: CanvasTable) {
   // Draw outer border
   lineRenderer.hline(ctx, 0, 0, canvasSize.width);
   lineRenderer.vline(ctx, 0, 0, canvasSize.height);
-  lineRenderer.hline(ctx, 0, canvasSize.height - BORDER_WIDTH, canvasSize.height);
+  lineRenderer.hline(ctx, 0, canvasSize.height - BORDER_WIDTH, canvasSize.width);
   lineRenderer.vline(ctx, canvasSize.width - BORDER_WIDTH, 0, canvasSize.height);
 
   const { rowHeight } = theme;
@@ -231,9 +240,7 @@ function render(ct: CanvasTable) {
     lineRenderer.hline(ctx, 0, gridSize.height, gridSize.width);
   }
 
-  const { gridPositions } = tableState;
-
-  const { columns: columnPositions, rows: rowPositions } = gridPositions;
+  const { columnPositions, rowPositions } = tableState;
 
   // Draw grid horizontal lines
   for (let i = 1; i < rowPositions.length; i++) {
@@ -304,6 +311,29 @@ function render(ct: CanvasTable) {
   }
 
   ctx.restore();
+}
+
+function updateFonts(ct: CanvasTable) {
+  const { tableState } = ct;
+  const { theme } = tableState;
+
+  const baseFont = {
+    family: theme.fontFamily,
+    size: theme.fontSize
+  };
+
+  const bodyFont = { ...baseFont,
+    color: theme.bodyFontColor ?? theme.fontColor,
+    style: theme.bodyFontStyle ?? theme.fontStyle
+  };
+  ct.bodyFont = bodyFont;
+
+  const headerFont = {
+    ...baseFont,
+    color: theme.headerFontColor ?? theme.fontColor,
+    style: theme.headerFontStyle ?? theme.fontStyle
+  };
+  ct.headerFont = headerFont;
 }
 
 function fillRect(ctx: CanvasRenderingContext2D, rect: RectLike) {

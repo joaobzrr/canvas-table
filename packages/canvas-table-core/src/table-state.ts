@@ -1,15 +1,6 @@
 import { clamp, createRect, createVector, createSize } from "./utils";
-import { BORDER_WIDTH } from "./constants";
-import {
-  TableState,
-  ColumnState,
-  DataRow,
-  Theme,
-  RectLike,
-  VectorLike,
-  TableRanges,
-  Size,
-} from "./types";
+import { MIN_THUMB_LENGTH, BORDER_WIDTH } from "./constants";
+import { TableState, ColumnState, DataRow, Theme, Size } from "./types";
 
 export function tableStateCreate(
   columnStates:  ColumnState[],
@@ -17,65 +8,36 @@ export function tableStateCreate(
   theme: Theme,
   canvasSize: Size
 ): TableState {
-  const { rowHeight, scrollbarThickness } = theme;
+  const { rowHeight } = theme;
 
-  const mainRect   = createRect();
   const bodyRect   = createRect({ y: rowHeight });
   const headerRect = createRect({ height: rowHeight });
 
-  const outerThickness = scrollbarThickness + BORDER_WIDTH ;
-  const hsbOuterRect = createRect({ height: outerThickness });
-  const vsbOuterRect = createRect({ y: rowHeight, width: outerThickness });
-
-  const hsbInnerRect = createRect({ x: BORDER_WIDTH, height: scrollbarThickness });
-  const vsbInnerRect = createRect({ y: rowHeight + BORDER_WIDTH, width: scrollbarThickness });
-
-  const scrollPos           = createVector();
-  const maxScrollPos        = createVector();
-  const normalizedScrollPos = createVector();
-
-  const lastColumnStateIndex = columnStates.length - 1;
-  const lastColumnState = columnStates[lastColumnStateIndex];
-
-  const numberOfRows = dataRows.length;
-
-  const contentSize = calculateContentSize(lastColumnState, numberOfRows, rowHeight);
-
-  const gridSize = calculateGridSize(mainRect, contentSize, rowHeight);
-
-  const scrollSize             = createSize();
-  const viewportSize           = createSize();
-  const normalizedViewportSize = createSize();
-
-  const tableRanges = { columnLeft: 0, columnRight: 0, rowTop: 0, rowBottom: 0 };
-
-  const gridPositions = calculateGridPositions(columnStates, scrollPos, tableRanges, rowHeight);
-
-  return {
+  const tableState = {
     columnStates,
     dataRows,
     theme,
-    mainRect,
+    mainRect: createRect(),
     bodyRect,
-    hsbOuterRect,
-    vsbOuterRect,
-    hsbInnerRect,
-    vsbInnerRect,
     headerRect,
-    scrollPos,
-    maxScrollPos,
-    normalizedScrollPos,
+    scrollPos: createVector(),
+    maxScrollPos: createVector(),
+    normalizedScrollPos: createVector(),
     canvasSize,
-    contentSize,
-    gridSize,
-    scrollSize,
-    viewportSize,
-    normalizedViewportSize,
+    scrollSize: createSize(),
+    viewportSize: createSize(),
+    normalizedViewportSize: createSize(),
     overflowX: false,
     overflowY: false,
-    tableRanges,
-    gridPositions,
-  };
+  } as TableState;
+
+  updateScrollbarGeometry(tableState);
+  updateContentSize(tableState);
+  updateTableRanges(tableState);
+  updateGridSize(tableState);
+  updateGridPositions(tableState);
+
+  return tableState;
 }
 
 export function tableStateSetContent(
@@ -86,27 +48,12 @@ export function tableStateSetContent(
   tableState.columnStates = columnStates;
   tableState.dataRows = dataRows;
 
-  const lastColumnStateIndex = columnStates.length - 1;
-  const lastColumnState = columnStates[lastColumnStateIndex];
-
-  const numberOfRows = dataRows.length;
-
-  const { theme } = tableState;
-  const { rowHeight } = theme;
-
-  const contentSize = calculateContentSize(lastColumnState, numberOfRows, rowHeight);
-  tableState.contentSize = contentSize;
+  updateContentSize(tableState);
 
   reflow(tableState);
 
-  const { scrollPos, viewportSize } = tableState;
-
-  const tableRanges = calculateTableRanges(
-    columnStates, dataRows, scrollPos, contentSize, viewportSize, rowHeight);
-  tableState.tableRanges = tableRanges;
-
-  const gridPositions = calculateGridPositions(columnStates, scrollPos, tableRanges, rowHeight);
-  tableState.gridPositions = gridPositions;
+  updateTableRanges(tableState);
+  updateGridPositions(tableState);
 }
 
 export function tableStateSetSize(tableState: TableState, size: Size) {
@@ -114,42 +61,19 @@ export function tableStateSetSize(tableState: TableState, size: Size) {
 
   reflow(tableState);
 
-  const { columnStates, dataRows, scrollPos, contentSize, viewportSize, theme } = tableState;
-  const { rowHeight } = theme;
-
-  const tableRanges = calculateTableRanges(
-    columnStates, dataRows, scrollPos, contentSize, viewportSize, rowHeight);
-  tableState.tableRanges = tableRanges;
-
-  const gridPositions = calculateGridPositions(columnStates, scrollPos, tableRanges, rowHeight);
-  tableState.gridPositions = gridPositions;
+  updateTableRanges(tableState);
+  updateGridPositions(tableState);
 }
 
 export function tableStateSetTheme(tableState: TableState, theme: Theme) {
   tableState.theme = theme;
 
-  const { columnStates, dataRows } = tableState;
-
-  const lastColumnStateIndex = columnStates.length - 1;
-  const lastColumnState = columnStates[lastColumnStateIndex];
-
-  const numberOfRows = dataRows.length;
-
-  const { rowHeight } = theme;
-
-  const contentSize = calculateContentSize(lastColumnState, numberOfRows, rowHeight);
-  tableState.contentSize = contentSize;
+  updateContentSize(tableState);
 
   reflow(tableState);
 
-  const { scrollPos, viewportSize } = tableState;
-
-  const tableRanges = calculateTableRanges(
-    columnStates, dataRows, scrollPos, contentSize, viewportSize, rowHeight);
-  tableState.tableRanges = tableRanges;
-
-  const gridPositions = calculateGridPositions(columnStates, scrollPos, tableRanges, rowHeight);
-  tableState.gridPositions = gridPositions;
+  updateTableRanges(tableState);
+  updateGridPositions(tableState);
 }
 
 function reflow(tableState: TableState) {
@@ -159,10 +83,6 @@ function reflow(tableState: TableState) {
     mainRect,
     bodyRect,
     headerRect,
-    hsbOuterRect,
-    hsbInnerRect,
-    vsbOuterRect,
-    vsbInnerRect,
     scrollPos,
     theme
   } = tableState;
@@ -203,15 +123,7 @@ function reflow(tableState: TableState) {
     bodyRect.height = outerBodyRectHeight;
   }
 
-  hsbOuterRect.y     = mainRect.height;
-  hsbOuterRect.width = mainRect.width;
-  hsbInnerRect.y     = hsbOuterRect.y     + BORDER_WIDTH;
-  hsbInnerRect.width = hsbOuterRect.width - BORDER_WIDTH;
-
-  vsbOuterRect.x      = mainRect.width;
-  vsbOuterRect.height = bodyRect.height;
-  vsbInnerRect.x      = vsbOuterRect.x      + BORDER_WIDTH;
-  vsbInnerRect.height = vsbOuterRect.height - BORDER_WIDTH;
+  updateScrollbarGeometry(tableState);
 
   const viewportSize = { width: bodyRect.width, height: bodyRect.height };
   tableState.viewportSize = viewportSize;
@@ -246,16 +158,91 @@ function reflow(tableState: TableState) {
   };
   tableState.normalizedScrollPos = normalizedScrollPos;
 
-  const gridSize = calculateGridSize(mainRect, contentSize, rowHeight);
-  tableState.gridSize = gridSize;
+  updateGridSize(tableState);
 }
 
-function calculateGridPositions(
-  columnStates: ColumnState[],
-  scrollPos: VectorLike,
-  tableRanges: TableRanges,
-  rowHeight: number
-) {
+function updateScrollbarGeometry(tableState: TableState) {
+  const { mainRect, bodyRect, theme, normalizedViewportSize } = tableState;
+  const { rowHeight, scrollbarThickness, scrollbarTrackMargin } = theme;
+
+  const outerThickness = scrollbarThickness + BORDER_WIDTH ;
+
+  const hsbOuterRect = createRect({
+    y: mainRect.height,
+    width: mainRect.width,
+    height: outerThickness
+  });
+  tableState.hsbOuterRect = hsbOuterRect;
+
+  const hsbInnerRect = createRect({
+    x: BORDER_WIDTH,
+    y: hsbOuterRect.y + BORDER_WIDTH,
+    width: hsbOuterRect.width - BORDER_WIDTH,
+    height: scrollbarThickness
+  });
+  tableState.hsbInnerRect = hsbInnerRect;
+
+  const hsbTrackRectX = hsbInnerRect.x + scrollbarTrackMargin;
+  const hsbTrackRectY = hsbInnerRect.y + scrollbarTrackMargin;
+  const hsbTrackRectWidth =  hsbInnerRect.width  - (scrollbarTrackMargin * 2);
+  const hsbTrackRectHeight = hsbInnerRect.height - (scrollbarTrackMargin * 2);
+  const hsbTrackRect = createRect({
+    x: hsbTrackRectX,
+    y: hsbTrackRectY,
+    width: hsbTrackRectWidth,
+    height: hsbTrackRectHeight
+  });
+  tableState.hsbTrackRect = hsbTrackRect;
+
+  const hsbThumbRectWidth = Math.max(
+    normalizedViewportSize.width * hsbTrackRectWidth, MIN_THUMB_LENGTH);
+  const hsbThumbRect = {
+    ...hsbTrackRect,
+    width: hsbThumbRectWidth
+  };
+  tableState.hsbThumbRect = hsbThumbRect;
+
+  const vsbOuterRect = createRect({
+    x: mainRect.width,
+    y: rowHeight,
+    width: outerThickness,
+    height: bodyRect.width
+  });
+  tableState.vsbOuterRect = vsbOuterRect;
+
+  const vsbInnerRect = createRect({
+    x: vsbOuterRect.x + BORDER_WIDTH,
+    y: rowHeight + BORDER_WIDTH,
+    width: scrollbarThickness,
+    height: vsbOuterRect.height - BORDER_WIDTH
+  });
+  tableState.vsbInnerRect = vsbInnerRect;
+
+  const vsbTrackRectX = vsbInnerRect.x + scrollbarTrackMargin;
+  const vsbTrackRectY = vsbInnerRect.y + scrollbarTrackMargin;
+  const vsbTrackRectWidth =  vsbInnerRect.width  - (scrollbarTrackMargin * 2);
+  const vsbTrackRectHeight = vsbInnerRect.height - (scrollbarTrackMargin * 2);
+  const vsbTrackRect = createRect({
+    x: vsbTrackRectX,
+    y: vsbTrackRectY,
+    width: vsbTrackRectWidth,
+    height: vsbTrackRectHeight
+  });
+  tableState.vsbTrackRect = vsbTrackRect;
+
+  const vsbThumbRectHeight = Math.max(
+    normalizedViewportSize.height * vsbTrackRectHeight, MIN_THUMB_LENGTH);
+  const vsbThumbRect = {
+    ...vsbTrackRect,
+    height: vsbThumbRectHeight
+  };
+  tableState.vsbThumbRect = vsbThumbRect;
+}
+
+function updateGridPositions(tableState: TableState) {
+  const { columnStates, scrollPos, tableRanges, theme } = tableState;
+  const { rowHeight } = theme;
+
   const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
   const { x: scrollLeft, y: scrollTop } = scrollPos;
 
@@ -268,6 +255,7 @@ function calculateGridPositions(
       columnPositions.push(x);
     }
   }
+  tableState.columnPositions = columnPositions;
 
   const rowPositions = [];
   {
@@ -277,21 +265,13 @@ function calculateGridPositions(
       rowPositions.push(y);
     }
   }
-
-  return {
-    columns: columnPositions,
-    rows: rowPositions
-  };
+  tableState.rowPositions = rowPositions;
 }
 
-function calculateTableRanges(
-  columnStates: ColumnState[],
-  dataRows: DataRow[],
-  scrollPos: VectorLike,
-  contentSize: Size,
-  viewportSize: Size,
-  rowHeight: number
-) {
+function updateTableRanges(tableState: TableState) {
+  const { columnStates, dataRows, scrollPos, contentSize, viewportSize, theme } = tableState;
+  const { rowHeight } = theme;
+
   const { x: scrollLeft, y: scrollTop } = scrollPos;
   const { width: viewportWidth, height: viewportHeight } = viewportSize;
 
@@ -307,12 +287,8 @@ function calculateTableRanges(
   const rowTop = Math.floor(scrollTop / rowHeight);
   const rowBottom = Math.min(Math.ceil(scrollBottom / rowHeight), dataRows.length);
 
-  return {
-    columnLeft,
-    columnRight,
-    rowTop,
-    rowBottom
-  };
+  const tableRanges = { columnLeft, columnRight, rowTop, rowBottom };
+  tableState.tableRanges = tableRanges;
 }
 
 function findColumnIndexAtPosition(
@@ -340,22 +316,32 @@ function findColumnIndexAtPosition(
   return index - 1;
 }
 
-function calculateContentSize(
-  lastColumnState: ColumnState,
-  numberOfRows: number,
-  rowHeight: number,
-) {
+function updateContentSize(tableState: TableState) {
+  const { columnStates, dataRows, theme } = tableState;
+  const { rowHeight } = theme;
+
+  const lastColumnStateIndex = columnStates.length - 1;
+  const lastColumnState = columnStates[lastColumnStateIndex];
+
+  const numberOfRows = dataRows.length;
+
   const contentWidth = lastColumnState.pos + lastColumnState.width;
   const contentHeight = numberOfRows * rowHeight;
-  return createSize(contentWidth, contentHeight);
+  const contentSize = createSize(contentWidth, contentHeight);
+
+  tableState.contentSize = contentSize;
 }
 
-function calculateGridSize(mainRect: RectLike, contentSize: Size, rowHeight: number): Size {
+function updateGridSize(tableState: TableState) {
+  const { mainRect, contentSize, theme } = tableState;
+  const { rowHeight } = theme;
+
   const { width: mainRectWidth, height: mainRectHeight } = mainRect;
   const { width: contentWidth, height: contentHeight } = contentSize;
 
   const gridWidth = Math.min(mainRectWidth, contentWidth);
   const gridHeight = Math.min(mainRectHeight, contentHeight + rowHeight);
+  const gridSize = { width: gridWidth, height: gridHeight };
 
-  return { width: gridWidth, height: gridHeight };
+  tableState.gridSize = gridSize;
 }

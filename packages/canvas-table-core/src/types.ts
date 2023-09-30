@@ -30,10 +30,16 @@ export type TableState = {
   mainRect: RectLike;
   bodyRect: RectLike;
   headerRect: RectLike;
+
   hsbOuterRect: RectLike;
-  vsbOuterRect: RectLike;
   hsbInnerRect: RectLike;
+  hsbTrackRect: RectLike;
+  hsbThumbRect: RectLike;
+
+  vsbOuterRect: RectLike;
   vsbInnerRect: RectLike;
+  vsbTrackRect: RectLike;
+  vsbThumbRect: RectLike;
 
   scrollPos: VectorLike;
   maxScrollPos: VectorLike;
@@ -51,7 +57,8 @@ export type TableState = {
 
   tableRanges: TableRanges;
 
-  gridPositions: GridPositions;
+  rowPositions: number[];
+  columnPositions: number[];
 }
 
 export type CanvasTableParams = {
