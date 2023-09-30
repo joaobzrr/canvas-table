@@ -1,18 +1,73 @@
+import { LineRenderer } from "./LineRenderer";
+import { TextRenderer } from "./TextRenderer";
+
+export type CanvasTable = {
+  canvas: HTMLCanvasElement;
+  containerEl: HTMLElement;
+  wrapperEl: HTMLDivElement;
+
+  tableState: TableState;
+
+  lineRenderer: LineRenderer;
+  textRenderer: TextRenderer;
+
+  mousePos: VectorLike;
+
+  bodyFont: Font;
+  headerFont: Font;
+
+  mouseDownHandler: (event: MouseEvent) => void;
+  mouseUpHandler:   (event: MouseEvent) => void;
+  mouseMoveHandler: (event: MouseEvent) => void;
+  wheelHandler:     (event: WheelEvent) => void;
+}
+
+export type TableState = {
+  columnStates: ColumnState[];
+  dataRows: DataRow[];
+  theme: Theme;
+
+  mainRect: RectLike;
+  bodyRect: RectLike;
+  headerRect: RectLike;
+  hsbOuterRect: RectLike;
+  vsbOuterRect: RectLike;
+  hsbInnerRect: RectLike;
+  vsbInnerRect: RectLike;
+
+  scrollPos: VectorLike;
+  maxScrollPos: VectorLike;
+  normalizedScrollPos: VectorLike;
+
+  canvasSize: Size;
+  contentSize: Size;
+  gridSize: Size;
+  scrollSize: Size;
+  viewportSize: Size;
+  normalizedViewportSize: Size;
+
+  overflowX: boolean;
+  overflowY: boolean;
+
+  tableRanges: TableRanges;
+
+  gridPositions: GridPositions;
+}
+
+export type CanvasTableParams = {
+  container: string;
+  columnDefs: ColumnDef[];
+  dataRows: DataRow[];
+  theme?: Partial<Theme>;
+  size?: Size;
+}
+
 export type CanvasTableConfig = {
   columnDefs: ColumnDef[];
   dataRows: DataRow[];
   theme: Partial<Theme>;
   size: Size;
 }
-
-export type CanvasTableParams =
-Omit<CanvasTableConfig, "theme" | "size"> & {
-  container: string;
-  theme?: Partial<Theme>;
-  size?: Size;
-}
-
-export type CreateViewParams = Omit<CanvasTableParams, "container">;
 
 export type ColumnDef = {
   title: string;
@@ -35,13 +90,16 @@ export type TableRanges = {
 }
 
 export type Grid = {
-  x: number[];
-  y: number[];
   width: number;
   height: number;
 }
 
-export type TextInfo = {
+export type GridPositions = {
+  columns: number[];
+  rows: number[];
+}
+
+export type TextData = {
   x: number;
   y: number;
   maxWidth: number;

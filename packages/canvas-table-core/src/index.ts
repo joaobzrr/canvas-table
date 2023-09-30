@@ -1,5 +1,12 @@
-export { CanvasTable } from "./CanvasTable";
+export {
+  canvasTableCreate,
+  canvasTableSetContent,
+  canvasTableSetSize,
+  canvasTableSetTheme,
+  canvasTableCleanup
+} from "./canvas-table";
 export type {
+  CanvasTable,
   CanvasTableParams,
   ColumnDef,
   DataRow,
