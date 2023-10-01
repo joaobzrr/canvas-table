@@ -123,8 +123,6 @@ function reflow(tableState: TableState) {
     bodyRect.height = outerBodyRectHeight;
   }
 
-  updateScrollbarGeometry(tableState);
-
   const viewportSize = { width: bodyRect.width, height: bodyRect.height };
   tableState.viewportSize = viewportSize;
 
@@ -140,6 +138,8 @@ function reflow(tableState: TableState) {
     height: normalizedViewportHeight
   };
   tableState.normalizedViewportSize = normalizedViewportSize;
+
+  updateScrollbarGeometry(tableState);
 
   const maxScrollLeft = scrollWidth  - viewportSize.width;
   const maxScrollTop  = scrollHeight - viewportSize.height;
@@ -162,7 +162,7 @@ function reflow(tableState: TableState) {
 }
 
 function updateScrollbarGeometry(tableState: TableState) {
-  const { mainRect, bodyRect, theme, normalizedViewportSize } = tableState;
+  const { mainRect, bodyRect, theme } = tableState;
   const { rowHeight, scrollbarThickness, scrollbarTrackMargin } = theme;
 
   const outerThickness = scrollbarThickness + BORDER_WIDTH ;
@@ -194,8 +194,11 @@ function updateScrollbarGeometry(tableState: TableState) {
   });
   tableState.hsbTrackRect = hsbTrackRect;
 
-  const hsbThumbRectWidth = Math.max(
-    normalizedViewportSize.width * hsbTrackRectWidth, MIN_THUMB_LENGTH);
+  const { normalizedViewportSize } = tableState;
+  const { width: normViewportWidth } = normalizedViewportSize;
+
+  const hsbThumbRectWidth = Math.max(normViewportWidth * hsbTrackRectWidth, MIN_THUMB_LENGTH);
+
   const hsbThumbRect = {
     ...hsbTrackRect,
     width: hsbThumbRectWidth
@@ -230,8 +233,9 @@ function updateScrollbarGeometry(tableState: TableState) {
   });
   tableState.vsbTrackRect = vsbTrackRect;
 
-  const vsbThumbRectHeight = Math.max(
-    normalizedViewportSize.height * vsbTrackRectHeight, MIN_THUMB_LENGTH);
+  const { height: normViewportHeight } = normalizedViewportSize;
+
+  const vsbThumbRectHeight = Math.max(normViewportHeight * vsbTrackRectHeight, MIN_THUMB_LENGTH);
   const vsbThumbRect = {
     ...vsbTrackRect,
     height: vsbThumbRectHeight
