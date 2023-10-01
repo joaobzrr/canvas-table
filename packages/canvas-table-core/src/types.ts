@@ -6,8 +6,6 @@ export type CanvasTable = {
   containerEl: HTMLElement;
   wrapperEl: HTMLDivElement;
 
-  tableState: TableState;
-
   lineRenderer: LineRenderer;
   textRenderer: TextRenderer;
 
@@ -20,11 +18,10 @@ export type CanvasTable = {
   mouseUpHandler:   (event: MouseEvent) => void;
   mouseMoveHandler: (event: MouseEvent) => void;
   wheelHandler:     (event: WheelEvent) => void;
-}
 
-export type TableState = {
   columnStates: ColumnState[];
-  dataRows: DataRow[];
+  dataRows:     DataRow[];
+
   theme: Theme;
 
   mainRect: RectLike;
@@ -41,15 +38,14 @@ export type TableState = {
   vsbTrackRect: RectLike;
   vsbThumbRect: RectLike;
 
-  scrollPos: VectorLike;
-  maxScrollPos: VectorLike;
+  scrollPos:           VectorLike;
+  maxScrollPos:        VectorLike;
   normalizedScrollPos: VectorLike;
 
-  canvasSize: Size;
-  contentSize: Size;
-  gridSize: Size;
-  scrollSize: Size;
-  viewportSize: Size;
+  contentSize:            Size;
+  gridSize:               Size;
+  scrollSize:             Size;
+  viewportSize:           Size;
   normalizedViewportSize: Size;
 
   overflowX: boolean;
