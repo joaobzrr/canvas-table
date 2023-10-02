@@ -59,6 +59,9 @@ export type CanvasTable = {
 
   overflowX: boolean;
   overflowY: boolean;
+  
+  firstVisibleColumnIndex: number;
+  firstVisibleColumnPos:   number;
 
   tableRanges: TableRanges;
 
@@ -89,7 +92,6 @@ export type ColumnDef = {
 
 export type ColumnState = Omit<ColumnDef, "width"> & {
   width: number;
-  pos: number;
 }
 
 export type DataRow = Record<string, string>;

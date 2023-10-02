@@ -17,7 +17,6 @@ import {
   DEFAULT_COLUMN_WIDTH,
   MIN_THUMB_LENGTH,
   COLUMN_RESIZER_WIDTH,
-  MIN_COLUMN_WIDTH,
   BORDER_WIDTH,
 } from "./constants";
 import {
@@ -95,6 +94,8 @@ export function canvasTableCreate(params: CanvasTableParams): CanvasTable {
   const overflowX = false;
   const overflowY = false;
 
+  const firstVisibleColumnPos = 0;
+
   const ct = {
     canvas,
     containerEl,
@@ -120,6 +121,7 @@ export function canvasTableCreate(params: CanvasTableParams): CanvasTable {
     vsbIsDragging,
     indexOfColumnWhoseResizerIsBeingHovered,
     indexOfColumnBeingResized,
+    firstVisibleColumnPos,
     scrollPos,
     maxScrollPos,
     normalizedScrollPos,
@@ -132,6 +134,7 @@ export function canvasTableCreate(params: CanvasTableParams): CanvasTable {
 
   updateScrollbarGeometry(ct);
   updateContentSize(ct);
+  updateFirstVisibleColumnIndexAndPosition(ct);
   updateTableRanges(ct);
   updateGridSize(ct);
   updateGridPositions(ct);
@@ -164,6 +167,7 @@ export function canvasTableSetContent(
 
   updateContentSize(ct);
   reflow(ct);
+  updateFirstVisibleColumnIndexAndPosition(ct);
   updateTableRanges(ct);
   updateGridSize(ct);
   updateGridPositions(ct);
@@ -182,6 +186,7 @@ export function canvasTableSetSize(ct: CanvasTable, size: Size) {
   canvas.height = size.height;
 
   reflow(ct);
+  updateFirstVisibleColumnIndexAndPosition(ct);
   updateTableRanges(ct);
   updateGridSize(ct);
   updateGridPositions(ct);
@@ -195,6 +200,7 @@ export function canvasTableSetTheme(ct: CanvasTable, theme: Partial<Theme>) {
 
   updateContentSize(ct);
   reflow(ct);
+  updateFirstVisibleColumnIndexAndPosition(ct);
   updateTableRanges(ct);
   updateGridSize(ct);
   updateGridPositions(ct);
@@ -337,14 +343,21 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     }
   }
 
-  const { columnPositions, indexOfColumnBeingResized, tableRanges } = ct;
-  const { columnLeft } = tableRanges;
+  // const { columnStates, columnPositions, indexOfColumnBeingResized, tableRanges } = ct;
+  // const { columnLeft } = tableRanges;
 
-  if (indexOfColumnBeingResized) {
-    // @Todo Resize column
-  }
+  // if (indexOfColumnBeingResized) {
+  //   const columnState = columnStates[indexOfColumnBeingResized];
+  //   const { width: columnWidth } = columnState;
+
+  //   const columnPositionIndex = indexOfColumnBeingResized - columnLeft;
+  //   const columnPosition = columnPositions[columnPositionIndex];
+
+  //   const x = columnPosition + columnWidth;
+  // }
 
   if (shouldUpdate) {
+    updateFirstVisibleColumnIndexAndPosition(ct);
     updateTableRanges(ct);
     updateGridPositions(ct);
     render(ct);
@@ -532,7 +545,8 @@ function render(ct: CanvasTable) {
     : indexOfColumnBeingResized;
 
   if (indexOfColumnToHighlight !== -1) {
-    const { width: columnWidth } = columnStates[indexOfColumnToHighlight];
+    const columnState = columnStates[indexOfColumnToHighlight];
+    const { width: columnWidth } = columnState;
 
     const columnPositionIndex = indexOfColumnToHighlight - columnLeft;
     const columnPosition = columnPositions[columnPositionIndex];
@@ -729,12 +743,14 @@ function updateContentSize(ct: CanvasTable) {
   const { columnStates, dataRows, theme } = ct;
   const { rowHeight } = theme;
 
-  const lastColumnStateIndex = columnStates.length - 1;
-  const lastColumnState = columnStates[lastColumnStateIndex];
-
   const numberOfRows = dataRows.length;
 
-  const contentWidth = lastColumnState.pos + lastColumnState.width;
+  let contentWidth = 0;
+  for (const columnState of columnStates) {
+    const { width } = columnState;
+    contentWidth += width;
+  }
+
   const contentHeight = numberOfRows * rowHeight;
   const contentSize = createSize(contentWidth, contentHeight);
 
@@ -742,8 +758,13 @@ function updateContentSize(ct: CanvasTable) {
 }
 
 function updateTableRanges(ct: CanvasTable) {
-  const { columnStates, dataRows, scrollPos, contentSize, viewportSize, theme } = ct;
-  const { rowHeight } = theme;
+  const {
+    columnStates,
+    scrollPos,
+    viewportSize,
+    firstVisibleColumnIndex,
+    firstVisibleColumnPos,
+  } = ct;
 
   const { x: scrollLeft, y: scrollTop } = scrollPos;
   const { width: viewportWidth, height: viewportHeight } = viewportSize;
@@ -751,11 +772,21 @@ function updateTableRanges(ct: CanvasTable) {
   const scrollRight  = scrollLeft + viewportWidth;
   const scrollBottom = scrollTop  + viewportHeight;
 
-  let columnLeft = findColumnIndexAtPosition(columnStates, contentSize, scrollLeft);
-  if (columnLeft === -1) columnLeft = 0;
+  const columnLeft = firstVisibleColumnIndex;
 
-  let columnRight = findColumnIndexAtPosition(columnStates, contentSize, scrollRight, columnLeft);
-  columnRight = columnRight !== -1 ? columnRight + 1 : columnStates.length;
+  let columnRight = columnLeft;
+  let lastVisibleColumnPos = firstVisibleColumnPos;
+  for (; columnRight < columnStates.length; columnRight++) {
+    if (lastVisibleColumnPos >= scrollRight) {
+      break;
+    }
+    const columnState = columnStates[columnRight];
+    const { width: columnWidth } = columnState;
+    lastVisibleColumnPos += columnWidth;
+  }
+
+  const { dataRows, theme } = ct;
+  const { rowHeight } = theme;
 
   const rowTop = Math.floor(scrollTop / rowHeight);
   const rowBottom = Math.min(Math.ceil(scrollBottom / rowHeight), dataRows.length);
@@ -764,29 +795,28 @@ function updateTableRanges(ct: CanvasTable) {
   ct.tableRanges = tableRanges;
 }
 
-function findColumnIndexAtPosition(
-  columnStates: ColumnState[],
-  contentSize: Size,
-  x: number,
-  start = 0
-) {
-  if (start < 0 || start >= columnStates.length) {
-    throw new Error("Index out of bounds");
-  }
+function updateFirstVisibleColumnIndexAndPosition(ct: CanvasTable) {
+  const { columnStates, scrollPos } = ct;
+  const { x: scrollLeft } = scrollPos;
 
-  if (x >= contentSize.width) return -1;
-  if (x < 0) return -1;
-  if (x === 0) return 0;
+  let columnIndex = 0;
+  let columnPos = 0;
 
-  let index = start;
-  for (; index < columnStates.length; index++) {
-    const columnState = columnStates[index];
-    if (columnState.pos >= x) {
+  for (; columnIndex < columnStates.length - 1; columnIndex++) {
+    const currColumnState = columnStates[columnIndex];
+    const nextColumnState = columnStates[columnIndex + 1];
+    const { width: nextColumnWidth } = nextColumnState;
+
+    if (columnPos + nextColumnWidth > scrollLeft) {
       break;
     }
+
+    const { width: currColumnWidth } = currColumnState;
+    columnPos += currColumnWidth;
   }
 
-  return index - 1;
+  ct.firstVisibleColumnIndex = columnIndex;
+  ct.firstVisibleColumnPos   = columnPos;
 }
 
 function updateGridSize(ct: CanvasTable) {
@@ -804,19 +834,32 @@ function updateGridSize(ct: CanvasTable) {
 }
 
 function updateGridPositions(ct: CanvasTable) {
-  const { columnStates, scrollPos, tableRanges, theme } = ct;
+  const {
+    columnStates,
+    scrollPos,
+    firstVisibleColumnPos,
+    tableRanges,
+    theme
+  } = ct;
+
   const { rowHeight } = theme;
 
   const { rowTop, rowBottom, columnLeft, columnRight } = tableRanges;
   const { x: scrollLeft, y: scrollTop } = scrollPos;
 
-  const columnPositions = [];
+  const columnPositions = [firstVisibleColumnPos - scrollLeft];
   {
     const offset = -scrollLeft;
-    for (let j = columnLeft; j < columnRight; j++) {
+
+    let totalWidth = firstVisibleColumnPos;
+    for (let j = columnLeft; j < columnRight - 1; j++) {
       const columnState = columnStates[j];
-      const x = columnState.pos + offset;
-      columnPositions.push(x);
+      const { width: columnWidth } = columnState;
+
+      const columnPosition = totalWidth + columnWidth + offset;
+      columnPositions.push(columnPosition);
+
+      totalWidth += columnWidth;
     }
   }
   ct.columnPositions = columnPositions;
@@ -824,6 +867,7 @@ function updateGridPositions(ct: CanvasTable) {
   const rowPositions = [];
   {
     const offset = -scrollTop + rowHeight;
+
     for (let i = rowTop; i < rowBottom; i++) {
       const y = i * rowHeight + offset;
       rowPositions.push(y);
@@ -892,9 +936,9 @@ function columnDefsToColumnStates(columnDefs: ColumnDef[]) {
   const columnStates = [] as ColumnState[];
   let total = 0;
   for (const { width, ...rest } of columnDefs) {
-    const w = width ?? DEFAULT_COLUMN_WIDTH;
-    columnStates.push({ ...rest, width: w, pos: total });
-    total += w;
+    const _width = width ?? DEFAULT_COLUMN_WIDTH;
+    columnStates.push({...rest, width: _width });
+    total += _width;
   }
   return columnStates;
 }
