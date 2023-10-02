@@ -44,6 +44,9 @@ export type CanvasTable = {
   vsbMaxThumbPos: number;
   vsbIsDragging: boolean;
 
+  indexOfColumnWhoseResizerIsBeingHovered: number;
+  indexOfColumnBeingResized: number;
+
   scrollPos:           VectorLike;
   maxScrollPos:        VectorLike;
   normalizedScrollPos: VectorLike;

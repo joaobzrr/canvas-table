@@ -13,7 +13,13 @@ import {
   clipRect,
   pointInRect
 } from "./utils";
-import { DEFAULT_COLUMN_WIDTH, MIN_THUMB_LENGTH, BORDER_WIDTH } from "./constants";
+import {
+  DEFAULT_COLUMN_WIDTH,
+  MIN_THUMB_LENGTH,
+  COLUMN_RESIZER_WIDTH,
+  MIN_COLUMN_WIDTH,
+  BORDER_WIDTH,
+} from "./constants";
 import {
   CanvasTable,
   CanvasTableParams,
@@ -83,6 +89,9 @@ export function canvasTableCreate(params: CanvasTableParams): CanvasTable {
   const vsbDragOffset = 0;
   const vsbIsDragging = false;
 
+  const indexOfColumnWhoseResizerIsBeingHovered = -1;
+  const indexOfColumnBeingResized = -1;
+
   const overflowX = false;
   const overflowY = false;
 
@@ -109,6 +118,8 @@ export function canvasTableCreate(params: CanvasTableParams): CanvasTable {
     vsbMaxThumbPos,
     vsbDragOffset,
     vsbIsDragging,
+    indexOfColumnWhoseResizerIsBeingHovered,
+    indexOfColumnBeingResized,
     scrollPos,
     maxScrollPos,
     normalizedScrollPos,
@@ -228,11 +239,18 @@ function onMouseDown(ct: CanvasTable, event: MouseEvent) {
     ct.vsbDragOffset = mouseY - vsbThumbY;
   }
   ct.vsbIsDragging = vsbIsDragging;
+
+  const { indexOfColumnWhoseResizerIsBeingHovered } = ct;
+  if (indexOfColumnWhoseResizerIsBeingHovered !== -1) {
+    ct.indexOfColumnBeingResized = indexOfColumnWhoseResizerIsBeingHovered;
+  }
 }
 
 function onMouseUp(ct: CanvasTable, _event: MouseEvent) {
   ct.hsbIsDragging = false;
   ct.vsbIsDragging = false;
+
+  ct.indexOfColumnBeingResized = -1;
 }
 
 function onMouseMove(ct: CanvasTable, event: MouseEvent) {
@@ -294,6 +312,23 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     scrollPos.y = scrollTop;
 
     shouldUpdate = true;
+  }
+
+  {
+    const { indexOfColumnWhoseResizerIsBeingHovered: oldIndex } = ct;
+
+    const newIndex = findIndexOfColumnWhoseResizerIsBeingHovered(ct, mousePos);
+    if (newIndex !== oldIndex) {
+      ct.indexOfColumnWhoseResizerIsBeingHovered = newIndex;
+      shouldUpdate = true;
+    }
+  }
+
+  const { columnPositions, indexOfColumnBeingResized, tableRanges } = ct;
+  const { columnLeft } = tableRanges;
+
+  if (indexOfColumnBeingResized) {
+    // @Todo Resize column
   }
 
   if (shouldUpdate) {
@@ -473,6 +508,28 @@ function render(ct: CanvasTable) {
   }
 
   ctx.restore();
+
+  const {
+    indexOfColumnWhoseResizerIsBeingHovered,
+    indexOfColumnBeingResized,
+  } = ct;
+
+  const indexOfColumnToHighlight = indexOfColumnWhoseResizerIsBeingHovered !== -1
+    ? indexOfColumnWhoseResizerIsBeingHovered
+    : indexOfColumnBeingResized;
+
+  if (indexOfColumnToHighlight !== -1) {
+    const { width: columnWidth } = columnStates[indexOfColumnToHighlight];
+
+    const columnPositionIndex = indexOfColumnToHighlight - columnLeft;
+    const columnPosition = columnPositions[columnPositionIndex];
+
+    const x = columnPosition + columnWidth - COLUMN_RESIZER_WIDTH;
+    const width = (COLUMN_RESIZER_WIDTH * 2) + 1;
+
+    ctx.fillStyle = "blue";
+    ctx.fillRect(x, 0, width, rowHeight);
+  }
 }
 
 function reflow(ct: CanvasTable) {
@@ -782,6 +839,33 @@ function updateFonts(ct: CanvasTable) {
     style: theme.headerFontStyle ?? theme.fontStyle
   };
   ct.headerFont = headerFont;
+}
+
+function findIndexOfColumnWhoseResizerIsBeingHovered(ct: CanvasTable, mousePos: VectorLike) {
+  const { theme } = ct;
+  const { rowHeight } = theme;
+
+  const { x: mouseX, y: mouseY } = mousePos;
+  if (mouseY < 0 || mouseY >= rowHeight) {
+    return -1;
+  }
+
+  const { columnStates, columnPositions, tableRanges } = ct;
+  const { columnLeft } = tableRanges;
+
+  for (const [j, pos] of columnPositions.entries()) {
+    const columnIndex = j + columnLeft;
+    const columnState = columnStates[columnIndex];
+    const centerX = pos + columnState.width;
+    const x1 = centerX - COLUMN_RESIZER_WIDTH;
+    const x2 = centerX + COLUMN_RESIZER_WIDTH + 1;
+
+    if (mouseX >= x1 && mouseX <= x2) {
+      return columnIndex;
+    }
+  }
+
+  return -1;
 }
 
 function getRelativeMousePos(wrapperEl: HTMLDivElement, eventPos: VectorLike): VectorLike {
