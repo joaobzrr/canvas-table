@@ -462,14 +462,14 @@ function render(ct: CanvasTable) {
 
   // Draw header font
   for (const { x, y, maxWidth, text } of headerTextData) {
-    textRenderer.render(ctx, headerFont, text, x, y, maxWidth);
+    textRenderer.render(ctx, headerFont, text, x, y, maxWidth, true);
   }
 
   clipRect(ctx, bodyRect);
 
   // Draw body text
   for (const { x, y, maxWidth, text } of bodyTextData) {
-    textRenderer.render(ctx, bodyFont, text, x, y, maxWidth);
+    textRenderer.render(ctx, bodyFont, text, x, y, maxWidth, true);
   }
 
   ctx.restore();
@@ -649,7 +649,6 @@ function updateScrollbarGeometry(ct: CanvasTable) {
   const { y: scrollTop } = scrollPos;
   const { y: maxScrollTop } = maxScrollPos;
 
-  // @Todo correct vertical scrollbar thumb pos
   ct.vsbThumbRect.x = vsbTrackX;
   ct.vsbThumbRect.y = scale(scrollTop, 0, maxScrollTop, vsbTrackY, vsbMaxThumbPos);
   ct.vsbThumbRect.width = vsbTrackWidth;
