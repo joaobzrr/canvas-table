@@ -95,3 +95,23 @@ export function createSize(...args: any[]): Size {
     return { width: args[0], height: args[1] };
   }
 }
+
+export function fillRect(ctx: CanvasRenderingContext2D, rect: RectLike) {
+  ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+}
+
+export function clearRect(ctx: CanvasRenderingContext2D, rect: RectLike) {
+  ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
+}
+
+export function clipRect(ctx: CanvasRenderingContext2D, rect: RectLike) {
+  const region = new Path2D();
+  region.rect(rect.x, rect.y, rect.width, rect.height);
+
+  ctx.clip(region);
+}
+
+export function pointInRect(point: VectorLike, rect: RectLike) {
+  return point.x >= rect.x && point.x < rect.x + rect.width &&
+         point.y >= rect.y && point.y < rect.y + rect.height;
+}

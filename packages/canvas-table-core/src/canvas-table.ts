@@ -1,7 +1,18 @@
 import { LineRenderer } from "./LineRenderer";
 import { TextRenderer } from "./TextRenderer";
 import { defaultTheme } from "./defaultTheme";
-import { clamp, shallowMerge, createRect, createVector, createSize } from "./utils";
+import {
+  shallowMerge,
+  scale,
+  clamp,
+  createRect,
+  createVector,
+  createSize,
+  fillRect,
+  clearRect,
+  clipRect,
+  pointInRect
+} from "./utils";
 import { DEFAULT_COLUMN_WIDTH, MIN_THUMB_LENGTH, BORDER_WIDTH } from "./constants";
 import {
   CanvasTable,
@@ -9,7 +20,7 @@ import {
   ColumnDef,
   ColumnState,
   DataRow,
-  RectLike,
+  VectorLike,
   Size,
   Theme,
 } from "./types";
@@ -60,6 +71,18 @@ export function canvasTableCreate(params: CanvasTableParams): CanvasTable {
   const viewportSize = createSize();
   const normalizedViewportSize = createSize();
 
+  const hsbTrackRect = createRect();
+  const hsbThumbRect = createRect();
+  const hsbMaxThumbPos = 0;
+  const hsbDragOffset = 0;
+  const hsbIsDragging = false;
+
+  const vsbTrackRect = createRect();
+  const vsbThumbRect = createRect();
+  const vsbMaxThumbPos = 0;
+  const vsbDragOffset = 0;
+  const vsbIsDragging = false;
+
   const overflowX = false;
   const overflowY = false;
 
@@ -76,6 +99,16 @@ export function canvasTableCreate(params: CanvasTableParams): CanvasTable {
     mainRect,
     bodyRect,
     headerRect,
+    hsbTrackRect,
+    hsbThumbRect,
+    hsbMaxThumbPos,
+    hsbDragOffset,
+    hsbIsDragging,
+    vsbTrackRect,
+    vsbThumbRect,
+    vsbMaxThumbPos,
+    vsbDragOffset,
+    vsbIsDragging,
     scrollPos,
     maxScrollPos,
     normalizedScrollPos,
@@ -143,8 +176,6 @@ export function canvasTableSetSize(ct: CanvasTable, size: Size) {
   updateGridPositions(ct);
 
   render(ct);
-
-  console.log(ct);
 }
 
 export function canvasTableSetTheme(ct: CanvasTable, theme: Partial<Theme>) {
@@ -174,13 +205,102 @@ export function canvasTableCleanup(ct: CanvasTable) {
   document.removeEventListener("mouseup", mouseUpHandler);
 }
 
-function onMouseDown(_ct: CanvasTable, _event: MouseEvent) {
+function onMouseDown(ct: CanvasTable, event: MouseEvent) {
+  const { wrapperEl, hsbThumbRect, vsbThumbRect } = ct;
+
+  const eventPos = { x: event.clientX, y: event.clientY };
+
+  const mousePos = getRelativeMousePos(wrapperEl, eventPos);
+  const { x: mouseX, y: mouseY } = mousePos;
+
+  const { x: hsbThumbX } = hsbThumbRect;
+
+  const hsbIsDragging = pointInRect(mousePos, hsbThumbRect);
+  if (hsbIsDragging) {
+    ct.hsbDragOffset = mouseX - hsbThumbX;
+  }
+  ct.hsbIsDragging = hsbIsDragging;
+
+  const { y: vsbThumbY } = vsbThumbRect;
+
+  const vsbIsDragging = pointInRect(mousePos, vsbThumbRect);
+  if (vsbIsDragging) {
+    ct.vsbDragOffset = mouseY - vsbThumbY;
+  }
+  ct.vsbIsDragging = vsbIsDragging;
 }
 
-function onMouseUp(_ct: CanvasTable, _event: MouseEvent) {
+function onMouseUp(ct: CanvasTable, _event: MouseEvent) {
+  ct.hsbIsDragging = false;
+  ct.vsbIsDragging = false;
 }
 
-function onMouseMove(_ct: CanvasTable, _event: MouseEvent) {
+function onMouseMove(ct: CanvasTable, event: MouseEvent) {
+  const { wrapperEl }  = ct;
+
+  const eventPos = { x: event.clientX, y: event.clientY }
+
+  const mousePos = getRelativeMousePos(wrapperEl, eventPos);
+  const { x: mouseX, y: mouseY } = mousePos;
+
+  let shouldUpdate = false;
+
+  const {
+    scrollPos,
+    maxScrollPos,
+    normalizedScrollPos,
+    hsbTrackRect,
+    hsbThumbRect,
+    hsbMaxThumbPos,
+    hsbDragOffset,
+    hsbIsDragging
+  } = ct;
+
+  const { x: maxScrollLeft } = maxScrollPos;
+  const { x: hsbTrackX } = hsbTrackRect;
+
+  if (hsbIsDragging) {
+    const hsbThumbX = clamp(mouseX - hsbDragOffset, hsbTrackX, hsbMaxThumbPos);
+    hsbThumbRect.x = hsbThumbX;
+
+    const normScrollLeft = scale(hsbThumbX, hsbTrackX, hsbMaxThumbPos, 0, 1);
+    normalizedScrollPos.x = normScrollLeft;
+
+    const scrollLeft = Math.round(scale(normScrollLeft, 0, 1, 0, maxScrollLeft));
+    scrollPos.x = scrollLeft;
+
+    shouldUpdate = true;
+  }
+
+  const {
+    vsbTrackRect,
+    vsbThumbRect,
+    vsbMaxThumbPos,
+    vsbDragOffset,
+    vsbIsDragging
+  } = ct;
+
+  const { y: maxScrollTop } = maxScrollPos;
+  const { y: vsbTrackY } = vsbTrackRect;
+
+  if (vsbIsDragging) {
+    const vsbThumbY = clamp(mouseY - vsbDragOffset, vsbTrackY, vsbMaxThumbPos);
+    vsbThumbRect.y = vsbThumbY;
+
+    const normScrollTop = scale(vsbThumbY, vsbTrackY, vsbMaxThumbPos, 0, 1);
+    normalizedScrollPos.y = normScrollTop;
+
+    const scrollTop = Math.round(scale(normScrollTop, 0, 1, 0, maxScrollTop));
+    scrollPos.y = scrollTop;
+
+    shouldUpdate = true;
+  }
+
+  if (shouldUpdate) {
+    updateTableRanges(ct);
+    updateGridPositions(ct);
+    render(ct);
+  }
 }
 
 function onWheel(_ct: CanvasTable, _event: WheelEvent) {
@@ -418,8 +538,6 @@ function reflow(ct: CanvasTable) {
   };
   ct.normalizedViewportSize = normalizedViewportSize;
 
-  updateScrollbarGeometry(ct);
-
   const maxScrollLeft = scrollWidth  - viewportSize.width;
   const maxScrollTop  = scrollHeight - viewportSize.height;
   const maxScrollPos = { x: maxScrollLeft, y: maxScrollTop };
@@ -437,11 +555,12 @@ function reflow(ct: CanvasTable) {
   };
   ct.normalizedScrollPos = normalizedScrollPos;
 
+  updateScrollbarGeometry(ct);
   updateGridSize(ct);
 }
 
 function updateScrollbarGeometry(ct: CanvasTable) {
-  const { mainRect, bodyRect, theme, normalizedViewportSize } = ct;
+  const { mainRect, bodyRect, theme } = ct;
   const { rowHeight, scrollbarThickness, scrollbarTrackMargin } = theme;
 
   const outerThickness = scrollbarThickness + BORDER_WIDTH ;
@@ -461,33 +580,42 @@ function updateScrollbarGeometry(ct: CanvasTable) {
   });
   ct.hsbInnerRect = hsbInnerRect;
 
-  const hsbTrackRectX = hsbInnerRect.x + scrollbarTrackMargin;
-  const hsbTrackRectY = hsbInnerRect.y + scrollbarTrackMargin;
-  const hsbTrackRectWidth =  hsbInnerRect.width  - (scrollbarTrackMargin * 2);
-  const hsbTrackRectHeight = hsbInnerRect.height - (scrollbarTrackMargin * 2);
+  const hsbTrackX = hsbInnerRect.x + scrollbarTrackMargin;
+  const hsbTrackY = hsbInnerRect.y + scrollbarTrackMargin;
+  const hsbTrackWidth =  hsbInnerRect.width  - (scrollbarTrackMargin * 2);
+  const hsbTrackHeight = hsbInnerRect.height - (scrollbarTrackMargin * 2);
   const hsbTrackRect = createRect({
-    x: hsbTrackRectX,
-    y: hsbTrackRectY,
-    width: hsbTrackRectWidth,
-    height: hsbTrackRectHeight
+    x: hsbTrackX,
+    y: hsbTrackY,
+    width: hsbTrackWidth,
+    height: hsbTrackHeight
   });
   ct.hsbTrackRect = hsbTrackRect;
 
+  const { normalizedViewportSize } = ct;
   const { width: normViewportWidth } = normalizedViewportSize;
 
-  const hsbThumbRectWidth = Math.max(normViewportWidth * hsbTrackRectWidth, MIN_THUMB_LENGTH);
+  const hsbThumbWidth = Math.max(normViewportWidth * hsbTrackWidth, MIN_THUMB_LENGTH);
 
-  const hsbThumbRect = {
-    ...hsbTrackRect,
-    width: hsbThumbRectWidth
-  };
-  ct.hsbThumbRect = hsbThumbRect;
+  const hsbMaxThumbPos = hsbTrackX + hsbTrackWidth - hsbThumbWidth;
+  ct.hsbMaxThumbPos = hsbMaxThumbPos;
+
+  const { scrollPos, maxScrollPos } = ct;
+  const { x: scrollLeft } = scrollPos;
+  const { x: maxScrollLeft } = maxScrollPos;
+
+  ct.hsbThumbRect.x = scale(scrollLeft, 0, maxScrollLeft, hsbTrackX, hsbMaxThumbPos);
+  ct.hsbThumbRect.y = hsbTrackY;
+  ct.hsbThumbRect.width = hsbThumbWidth;
+  ct.hsbThumbRect.height = hsbTrackHeight;
+
+  ct.hsbMaxThumbPos = hsbMaxThumbPos;
 
   const vsbOuterRect = createRect({
     x: mainRect.width,
     y: rowHeight,
     width: outerThickness,
-    height: bodyRect.width
+    height: bodyRect.height
   });
   ct.vsbOuterRect = vsbOuterRect;
 
@@ -499,26 +627,33 @@ function updateScrollbarGeometry(ct: CanvasTable) {
   });
   ct.vsbInnerRect = vsbInnerRect;
 
-  const vsbTrackRectX = vsbInnerRect.x + scrollbarTrackMargin;
-  const vsbTrackRectY = vsbInnerRect.y + scrollbarTrackMargin;
-  const vsbTrackRectWidth =  vsbInnerRect.width  - (scrollbarTrackMargin * 2);
-  const vsbTrackRectHeight = vsbInnerRect.height - (scrollbarTrackMargin * 2);
+  const vsbTrackX = vsbInnerRect.x + scrollbarTrackMargin;
+  const vsbTrackY = vsbInnerRect.y + scrollbarTrackMargin;
+  const vsbTrackWidth =  vsbInnerRect.width  - (scrollbarTrackMargin * 2);
+  const vsbTrackHeight = vsbInnerRect.height - (scrollbarTrackMargin * 2);
   const vsbTrackRect = createRect({
-    x: vsbTrackRectX,
-    y: vsbTrackRectY,
-    width: vsbTrackRectWidth,
-    height: vsbTrackRectHeight
+    x: vsbTrackX,
+    y: vsbTrackY,
+    width: vsbTrackWidth,
+    height: vsbTrackHeight
   });
   ct.vsbTrackRect = vsbTrackRect;
 
   const { height: normViewportHeight } = normalizedViewportSize;
 
-  const vsbThumbRectHeight = Math.max(normViewportHeight * vsbTrackRectHeight, MIN_THUMB_LENGTH);
-  const vsbThumbRect = {
-    ...vsbTrackRect,
-    height: vsbThumbRectHeight
-  };
-  ct.vsbThumbRect = vsbThumbRect;
+  const vsbThumbHeight = Math.max(normViewportHeight * vsbTrackHeight, MIN_THUMB_LENGTH);
+
+  const vsbMaxThumbPos = vsbTrackY + vsbTrackHeight - vsbThumbHeight;
+  ct.vsbMaxThumbPos = vsbMaxThumbPos;
+
+  const { y: scrollTop } = scrollPos;
+  const { y: maxScrollTop } = maxScrollPos;
+
+  // @Todo correct vertical scrollbar thumb pos
+  ct.vsbThumbRect.x = vsbTrackX;
+  ct.vsbThumbRect.y = scale(scrollTop, 0, maxScrollTop, vsbTrackY, vsbMaxThumbPos);
+  ct.vsbThumbRect.width = vsbTrackWidth;
+  ct.vsbThumbRect.height = vsbThumbHeight;
 }
 
 function updateContentSize(ct: CanvasTable) {
@@ -650,29 +785,12 @@ function updateFonts(ct: CanvasTable) {
   ct.headerFont = headerFont;
 }
 
-function fillRect(ctx: CanvasRenderingContext2D, rect: RectLike) {
-  ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
-}
-
-function clearRect(ctx: CanvasRenderingContext2D, rect: RectLike) {
-  ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
-}
-
-function clipRect(ctx: CanvasRenderingContext2D, rect: RectLike) {
-  const region = new Path2D();
-  region.rect(rect.x, rect.y, rect.width, rect.height);
-
-  ctx.clip(region);
-}
-
-/*
 function getRelativeMousePos(wrapperEl: HTMLDivElement, eventPos: VectorLike): VectorLike {
   const bcr = wrapperEl.getBoundingClientRect();
   const x = eventPos.x - bcr.x;
   const y = eventPos.y - bcr.y;
   return { x, y };
 }
-*/
 
 function columnDefsToColumnStates(columnDefs: ColumnDef[]) {
   const columnStates = [] as ColumnState[];

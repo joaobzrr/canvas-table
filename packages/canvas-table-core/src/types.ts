@@ -9,8 +9,6 @@ export type CanvasTable = {
   lineRenderer: LineRenderer;
   textRenderer: TextRenderer;
 
-  mousePos: VectorLike;
-
   bodyFont: Font;
   headerFont: Font;
 
@@ -18,6 +16,8 @@ export type CanvasTable = {
   mouseUpHandler:   (event: MouseEvent) => void;
   mouseMoveHandler: (event: MouseEvent) => void;
   wheelHandler:     (event: WheelEvent) => void;
+
+  mousePos: VectorLike;
 
   columnStates: ColumnState[];
   dataRows:     DataRow[];
@@ -32,11 +32,17 @@ export type CanvasTable = {
   hsbInnerRect: RectLike;
   hsbTrackRect: RectLike;
   hsbThumbRect: RectLike;
+  hsbMaxThumbPos: number;
+  hsbDragOffset: number;
+  hsbIsDragging: boolean;
 
   vsbOuterRect: RectLike;
   vsbInnerRect: RectLike;
   vsbTrackRect: RectLike;
   vsbThumbRect: RectLike;
+  vsbDragOffset: number;
+  vsbMaxThumbPos: number;
+  vsbIsDragging: boolean;
 
   scrollPos:           VectorLike;
   maxScrollPos:        VectorLike;
