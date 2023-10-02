@@ -247,10 +247,23 @@ function onMouseDown(ct: CanvasTable, event: MouseEvent) {
 }
 
 function onMouseUp(ct: CanvasTable, _event: MouseEvent) {
+  let shouldUpdate = false;
+
   ct.hsbIsDragging = false;
   ct.vsbIsDragging = false;
 
-  ct.indexOfColumnBeingResized = -1;
+  {
+    const { indexOfColumnBeingResized: oldIndex } = ct;
+    const newIndex = -1;
+    if (newIndex !== oldIndex) {
+      ct.indexOfColumnBeingResized = newIndex;
+      shouldUpdate = true;
+    }
+  }
+
+  if (shouldUpdate) {
+    render(ct);
+  }
 }
 
 function onMouseMove(ct: CanvasTable, event: MouseEvent) {
