@@ -240,8 +240,3 @@ export type VectorLike = {
   x: number;
   y: number;
 }
-
-export type Overflow = {
-  x: boolean;
-  y: boolean;
-}

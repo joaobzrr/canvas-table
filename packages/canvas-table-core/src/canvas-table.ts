@@ -318,7 +318,8 @@ function onMouseDown(ct: CanvasTable, event: MouseEvent) {
     vsbThumbX,
     vsbThumbY,
     vsbThumbWidth,
-    vsbThumbHeight
+    vsbThumbHeight,
+    indexOfColumnWhoseResizerIsBeingHovered
   } = ct;
 
   const eventPos = { x: event.clientX, y: event.clientY };
@@ -340,7 +341,6 @@ function onMouseDown(ct: CanvasTable, event: MouseEvent) {
   }
   ct.vsbIsDragging = vsbIsDragging;
 
-  const { indexOfColumnWhoseResizerIsBeingHovered } = ct;
   if (indexOfColumnWhoseResizerIsBeingHovered !== -1) {
     ct.indexOfColumnBeingResized = indexOfColumnWhoseResizerIsBeingHovered;
   }
@@ -676,23 +676,11 @@ function render(ct: CanvasTable) {
     ctx.fillStyle = "blue";
     ctx.fillRect(x, 0, width, rowHeight);
   }
-
-  console.log(ct);
 }
 
 function reflow(ct: CanvasTable) {
-  const {
-    canvas,
-    contentWidth,
-    contentHeight,
-    theme
-  } = ct;
-
-  const {
-    rowHeight,
-    scrollbarThickness,
-    scrollbarTrackMargin
-  } = theme;
+  const { canvas, contentWidth, contentHeight, theme } = ct;
+  const { rowHeight, scrollbarThickness, scrollbarTrackMargin } = theme;
 
   const outerMainRectWidth  = canvas.width  - BORDER_WIDTH;
   const outerMainRectHeight = canvas.height - BORDER_WIDTH;
@@ -711,9 +699,6 @@ function reflow(ct: CanvasTable) {
     overflowY = innerBodyRectHeight < contentHeight;
   }
 
-  ct.overflowX = overflowX;
-  ct.overflowY = overflowY;
-
   let mainRectWidth:   number;
   let bodyRectWidth:   number;
   let headerRectWidth: number;
@@ -727,9 +712,6 @@ function reflow(ct: CanvasTable) {
     bodyRectWidth   = outerMainRectWidth;
     headerRectWidth = outerMainRectWidth;
   }
-  ct.mainRectWidth   = mainRectWidth;
-  ct.bodyRectWidth   = bodyRectWidth;
-  ct.headerRectWidth = headerRectWidth;
 
   let mainRectHeight: number;
   let bodyRectHeight: number;
@@ -741,146 +723,120 @@ function reflow(ct: CanvasTable) {
     mainRectHeight = outerMainRectHeight;
     bodyRectHeight = outerBodyRectHeight;
   }
-  ct.mainRectHeight = mainRectHeight;
-  ct.bodyRectHeight = bodyRectHeight;
 
-  const viewportWidth  = bodyRectWidth;
-  ct.viewportWidth = viewportWidth;
-
+  const viewportWidth = bodyRectWidth;
   const viewportHeight = bodyRectHeight;
-  ct.viewportHeight = viewportHeight;
 
   const scrollWidth = Math.max(contentWidth,  viewportWidth);
-  ct.scrollWidth = scrollWidth;
-
   const scrollHeight = Math.max(contentHeight, viewportHeight);
-  ct.scrollHeight = scrollHeight;
 
   const normViewportWidth = viewportWidth  / scrollWidth;
-  ct.normViewportWidth = normViewportWidth;
-
   const normViewportHeight = viewportHeight / scrollHeight;
-  ct.normViewportHeight = normViewportHeight;
 
   const maxScrollX = scrollWidth  - viewportWidth;
-  ct.maxScrollX = maxScrollX;
-
   const maxScrollY  = scrollHeight - viewportHeight;
-  ct.maxScrollY = maxScrollY;
 
   const scrollX = Math.min(ct.scrollX, maxScrollX);
-  ct.scrollX = scrollX;
-
   const scrollY = Math.min(ct.scrollY, maxScrollY);
-  ct.scrollY = scrollY;
 
   const normScrollX = maxScrollX > 0 ? scrollX / maxScrollX : 0;
-  ct.normScrollX = normScrollX;
-
   const normScrollY = maxScrollY > 0 ? scrollY  / maxScrollY  : 0;
-  ct.normScrollY = normScrollY;
 
   const outerThickness = scrollbarThickness + BORDER_WIDTH ;
 
   const hsbOuterY = mainRectHeight;
-  ct.hsbOuterY = hsbOuterY;
-
   const hsbOuterWidth = mainRectWidth;
-  ct.hsbOuterWidth = hsbOuterWidth;
-
   const hsbOuterHeight = outerThickness;
-  ct.hsbOuterHeight = hsbOuterHeight;
 
   const hsbInnerX = BORDER_WIDTH;
-  ct.hsbInnerX = hsbInnerX;
-
   const hsbInnerY = hsbOuterY + BORDER_WIDTH;
-  ct.hsbInnerY = hsbInnerY;
-
   const hsbInnerWidth = hsbOuterWidth - BORDER_WIDTH;
-  ct.hsbInnerWidth = hsbInnerWidth;
-
   const hsbInnerHeight = scrollbarThickness;
-  ct.hsbInnerHeight = hsbInnerHeight;
 
   const hsbTrackX = hsbInnerX + scrollbarTrackMargin;
-  ct.hsbTrackX = hsbTrackX;
-
   const hsbTrackY = hsbInnerY + scrollbarTrackMargin;
-  ct.hsbTrackY = hsbTrackY;
-
   const hsbTrackWidth = hsbInnerWidth - (scrollbarTrackMargin * 2);
-  ct.hsbTrackWidth = hsbTrackWidth;
-
   const hsbTrackHeight = hsbInnerHeight - (scrollbarTrackMargin * 2);
-  ct.hsbTrackHeight = hsbTrackHeight;
 
   const hsbThumbWidth = Math.max(normViewportWidth * hsbTrackWidth, MIN_THUMB_LENGTH);
-  ct.hsbThumbWidth = hsbThumbWidth;
-
   const hsbThumbHeight = hsbTrackHeight;
-  ct.hsbThumbHeight = hsbThumbHeight;
-
   const hsbMaxThumbPos = hsbTrackX + hsbTrackWidth - hsbThumbWidth;
-  ct.hsbMaxThumbPos = hsbMaxThumbPos;
-
   const hsbThumbX = scale(scrollX, 0, maxScrollX, hsbTrackX, hsbMaxThumbPos);
-  ct.hsbThumbX = hsbThumbX;
-
   const hsbThumbY = hsbTrackY;
-  ct.hsbThumbY = hsbThumbY;
-
-  ct.hsbMaxThumbPos = hsbMaxThumbPos;
 
   const vsbOuterX = mainRectWidth;
-  ct.vsbOuterX = vsbOuterX;
-
   const vsbOuterY = rowHeight;
-  ct.vsbOuterY = vsbOuterY;
 
   const vsbOuterWidth = outerThickness;
-  ct.vsbOuterWidth = vsbOuterWidth;
-
   const vsbOuterHeight = bodyRectHeight;
-  ct.vsbOuterHeight = vsbOuterHeight;
 
   const vsbInnerX = vsbOuterX + BORDER_WIDTH;
-  ct.vsbInnerX = vsbInnerX;
-
   const vsbInnerY = rowHeight + BORDER_WIDTH;
-  ct.vsbInnerY = vsbInnerY;
-
   const vsbInnerWidth = scrollbarThickness;
-  ct.vsbInnerWidth = vsbInnerWidth;
-
   const vsbInnerHeight = vsbOuterHeight - BORDER_WIDTH;
-  ct.vsbInnerHeight = vsbInnerHeight;
 
   const vsbTrackX = vsbInnerX + scrollbarTrackMargin;
-  ct.vsbTrackX = vsbTrackX;
-
   const vsbTrackY = vsbInnerY + scrollbarTrackMargin;
-  ct.vsbTrackY = vsbTrackY;
-
   const vsbTrackWidth =  vsbInnerWidth  - (scrollbarTrackMargin * 2);
-  ct.vsbTrackWidth = vsbTrackWidth;
-
   const vsbTrackHeight = vsbInnerHeight - (scrollbarTrackMargin * 2);
-  ct.vsbTrackHeight = vsbTrackHeight;
-  
   const vsbThumbWidth = vsbTrackWidth;
-  ct.vsbThumbWidth = vsbThumbWidth;
 
   const vsbThumbHeight = Math.max(normViewportHeight * vsbTrackHeight, MIN_THUMB_LENGTH);
-  ct.vsbThumbHeight = vsbThumbHeight;
-
   const vsbMaxThumbPos = vsbTrackY + vsbTrackHeight - vsbThumbHeight;
-  ct.vsbMaxThumbPos = vsbMaxThumbPos;
-
   const vsbThumbX = vsbTrackX;
-  ct.vsbThumbX = vsbThumbX;
-
   const vsbThumbY = scale(scrollY, 0, maxScrollY, vsbTrackY, vsbMaxThumbPos);
+  
+  ct.mainRectWidth   = mainRectWidth;
+  ct.mainRectHeight = mainRectHeight;
+  ct.bodyRectWidth   = bodyRectWidth;
+  ct.bodyRectHeight = bodyRectHeight;
+  ct.headerRectWidth = headerRectWidth;
+  ct.scrollX = scrollX;
+  ct.scrollY = scrollY;
+  ct.maxScrollX = maxScrollX;
+  ct.maxScrollY = maxScrollY;
+  ct.normScrollX = normScrollX;
+  ct.normScrollY = normScrollY;
+  ct.scrollWidth = scrollWidth;
+  ct.scrollHeight = scrollHeight;
+  ct.viewportWidth = viewportWidth;
+  ct.viewportHeight = viewportHeight;
+  ct.normViewportWidth = normViewportWidth;
+  ct.normViewportHeight = normViewportHeight;
+  ct.overflowX = overflowX;
+  ct.overflowY = overflowY;
+  ct.hsbOuterY = hsbOuterY;
+  ct.hsbOuterWidth = hsbOuterWidth;
+  ct.hsbOuterHeight = hsbOuterHeight;
+  ct.hsbInnerX = hsbInnerX;
+  ct.hsbInnerY = hsbInnerY;
+  ct.hsbInnerWidth = hsbInnerWidth;
+  ct.hsbInnerHeight = hsbInnerHeight;
+  ct.hsbTrackX = hsbTrackX;
+  ct.hsbTrackY = hsbTrackY;
+  ct.hsbTrackWidth = hsbTrackWidth;
+  ct.hsbTrackHeight = hsbTrackHeight;
+  ct.hsbThumbWidth = hsbThumbWidth;
+  ct.hsbThumbHeight = hsbThumbHeight;
+  ct.hsbMaxThumbPos = hsbMaxThumbPos;
+  ct.hsbThumbX = hsbThumbX;
+  ct.hsbThumbY = hsbThumbY;
+  ct.vsbOuterX = vsbOuterX;
+  ct.vsbOuterY = vsbOuterY;
+  ct.vsbOuterWidth = vsbOuterWidth;
+  ct.vsbOuterHeight = vsbOuterHeight;
+  ct.vsbInnerX = vsbInnerX;
+  ct.vsbInnerY = vsbInnerY;
+  ct.vsbInnerWidth = vsbInnerWidth;
+  ct.vsbInnerHeight = vsbInnerHeight;
+  ct.vsbTrackX = vsbTrackX;
+  ct.vsbTrackY = vsbTrackY;
+  ct.vsbTrackWidth = vsbTrackWidth;
+  ct.vsbTrackHeight = vsbTrackHeight;
+  ct.vsbThumbWidth = vsbThumbWidth;
+  ct.vsbThumbHeight = vsbThumbHeight;
+  ct.vsbMaxThumbPos = vsbMaxThumbPos;
+  ct.vsbThumbX = vsbThumbX;
   ct.vsbThumbY = vsbThumbY;
 }
 
