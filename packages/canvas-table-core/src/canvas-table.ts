@@ -328,7 +328,7 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     let newIndex = -1;
 
     const { x: mouseX, y: mouseY } = mousePos;
-    if (mouseY >= 0 || mouseY < rowHeight) {
+    if (mouseY >= 0 && mouseY < rowHeight) {
       const { columnLeft } = tableRanges;
 
       for (const [j, pos] of columnPositions.entries()) {
@@ -338,7 +338,7 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
         const x1 = centerX - COLUMN_RESIZER_WIDTH;
         const x2 = centerX + COLUMN_RESIZER_WIDTH + 1;
 
-        if (mouseX >= x1 && mouseX <= x2) {
+        if (mouseX >= x1 && mouseX < x2) {
           newIndex = columnIndex;
           break;
         }
