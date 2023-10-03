@@ -14,6 +14,7 @@ import {
   MIN_THUMB_LENGTH,
   COLUMN_RESIZER_WIDTH,
   BORDER_WIDTH,
+  MIN_COLUMN_WIDTH,
 } from "./constants";
 import {
   CanvasTable,
@@ -367,7 +368,8 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     hsbMaxThumbPos,
     hsbDragOffset,
     hsbIsDragging,
-    indexOfColumnWhoseResizerIsBeingHovered
+    indexOfColumnWhoseResizerIsBeingHovered,
+    indexOfColumnBeingResized
   } = ct;
 
   const { rowHeight } = theme;
@@ -431,20 +433,23 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     }
   }
 
-  // const { columnStates, columnPositions, indexOfColumnBeingResized } = ct;
+  if (indexOfColumnBeingResized !== -1) {
+    const columnState = columnStates[indexOfColumnBeingResized];
 
-  // if (indexOfColumnBeingResized) {
-  //   const columnState = columnStates[indexOfColumnBeingResized];
-  //   const { width: columnWidth } = columnState;
+    const columnPositionIndex = indexOfColumnBeingResized - columnLeft;
+    const columnPosition = columnPositions[columnPositionIndex];
 
-  //   const columnPositionIndex = indexOfColumnBeingResized - columnLeft;
-  //   const columnPosition = columnPositions[columnPositionIndex];
+    const columnWidth = Math.max(mouseX - columnPosition, MIN_COLUMN_WIDTH);
+    columnState.width = columnWidth;
 
-  //   const x = columnPosition + columnWidth;
-  // }
+    shouldUpdate = true;
+  }
 
   if (shouldUpdate) {
+    updateContentSize(ct);
+    reflow(ct);
     updateScreenData(ct);
+
     render(ct);
   }
 }
