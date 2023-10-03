@@ -402,7 +402,6 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
   if (shouldUpdate) {
     updateScreenData(ct);
     render(ct);
-    console.log(ct);
   }
 }
 
@@ -446,7 +445,13 @@ function render(ct: CanvasTable) {
   } = ct;
 
   const {
-    tableBackgroundColor
+    rowHeight,
+    cellPadding,
+    tableBackgroundColor,
+    bodyBackgroundColor = tableBackgroundColor,
+    headerBackgroundColor = tableBackgroundColor,
+    scrollbarTrackColor,
+    scrollbarThumbColor,
   } = theme;
 
   const ctx = canvas.getContext("2d");
@@ -464,21 +469,18 @@ function render(ct: CanvasTable) {
   }
 
   // Draw body background
-  const { bodyBackgroundColor = tableBackgroundColor } = theme;
   if (bodyBackgroundColor) {
     ctx.fillStyle = bodyBackgroundColor;
     ctx.fillRect(bodyRectX, bodyRectY, bodyRectWidth, bodyRectHeight);
   }
 
   // Draw header background
-  const { headerBackgroundColor = tableBackgroundColor } = theme;
   if (headerBackgroundColor) {
     ctx.fillStyle = headerBackgroundColor;
     ctx.fillRect(headerRectX, headerRectY, headerRectWidth, headerRectHeight);
   }
 
   // Draw scrollbar background and thumb
-  const { scrollbarTrackColor, scrollbarThumbColor } = theme;
   if (overflowX) {
     if (scrollbarTrackColor) {
       ctx.fillStyle = scrollbarTrackColor;
@@ -504,8 +506,6 @@ function render(ct: CanvasTable) {
   lineRenderer.vline(ctx, 0, 0, canvas.height);
   lineRenderer.hline(ctx, 0, canvas.height - BORDER_WIDTH, canvas.width);
   lineRenderer.vline(ctx, canvas.width - BORDER_WIDTH, 0, canvas.height);
-
-  const { rowHeight } = theme;
 
   // Draw header bottom border
   lineRenderer.hline(ctx, 0, rowHeight, canvas.width);
@@ -540,8 +540,6 @@ function render(ct: CanvasTable) {
     const x = columnPositions[i];
     lineRenderer.vline(ctx, x, 0, gridHeight);
   }
-
-  const { cellPadding } = theme;
 
   const halfOfRowHeight = rowHeight / 2;
   const doubleOfCellPadding = cellPadding * 2;
