@@ -1,9 +1,9 @@
 export {
-  canvasTableCreate,
-  canvasTableSetContent,
-  canvasTableSetSize,
-  canvasTableSetTheme,
-  canvasTableCleanup
+  create,
+  setContent,
+  setSize,
+  setTheme,
+  cleanup
 } from "./canvas-table";
 export type {
   CanvasTable,

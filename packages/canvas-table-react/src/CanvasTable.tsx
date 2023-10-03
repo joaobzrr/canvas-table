@@ -1,10 +1,10 @@
 import { useRef, useLayoutEffect, forwardRef } from "react";
 import {
-  canvasTableCreate,
-  canvasTableSetContent,
-  canvasTableSetSize,
-  canvasTableSetTheme,
-  canvasTableCleanup,
+  create,
+  setContent,
+  setSize,
+  setTheme,
+  cleanup,
   CanvasTable,
   CanvasTableParams
 } from "canvas-table-core";
@@ -37,7 +37,7 @@ const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>((props
   const containerIdRef = useRef(getContainerId());
 
   useLayoutEffect(() => {
-    canvasTableRef.current = canvasTableCreate({
+    canvasTableRef.current = create({
       container: containerIdRef.current,
       columnDefs,
       dataRows,
@@ -46,26 +46,26 @@ const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>((props
     });
 
     return () => {
-      canvasTableCleanup(canvasTableRef.current);
+      cleanup(canvasTableRef.current);
       canvasTableRef.current = null;
     }
   }, []);
 
   useUpdateEffect(() => {
     if (canvasTableRef.current) {
-      canvasTableSetContent(canvasTableRef.current, columnDefs, dataRows);
+      setContent(canvasTableRef.current, columnDefs, dataRows);
     }
   }, [columnDefs, dataRows]);
 
   useUpdateEffect(() => {
     if (canvasTableRef.current && size) {
-      canvasTableSetSize(canvasTableRef.current, size);
+      setSize(canvasTableRef.current, size);
     }
   }, [size]);
 
   useUpdateEffect(() => {
     if (canvasTableRef.current && theme) {
-      canvasTableSetTheme(canvasTableRef.current, theme);
+      setTheme(canvasTableRef.current, theme);
     }
   }, [theme]);
 

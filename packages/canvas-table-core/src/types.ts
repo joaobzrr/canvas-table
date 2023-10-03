@@ -52,7 +52,6 @@ export type CanvasTable = {
   normalizedScrollPos: VectorLike;
 
   contentSize:            Size;
-  gridSize:               Size;
   scrollSize:             Size;
   viewportSize:           Size;
   normalizedViewportSize: Size;
@@ -60,9 +59,6 @@ export type CanvasTable = {
   overflowX: boolean;
   overflowY: boolean;
   
-  firstVisibleColumnIndex: number;
-  firstVisibleColumnPos:   number;
-
   tableRanges: TableRanges;
 
   rowPositions: number[];
