@@ -104,9 +104,15 @@ export function clearRect(ctx: CanvasRenderingContext2D, rect: RectLike) {
   ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
 }
 
-export function clipRect(ctx: CanvasRenderingContext2D, rect: RectLike) {
+export function clipRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) {
   const region = new Path2D();
-  region.rect(rect.x, rect.y, rect.width, rect.height);
+  region.rect(x, y, width, height);
 
   ctx.clip(region);
 }

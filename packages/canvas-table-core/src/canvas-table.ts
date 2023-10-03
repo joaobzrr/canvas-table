@@ -63,18 +63,38 @@ export function create(params: CanvasTableParams): CanvasTable {
 
   const { rowHeight } = theme;
 
-  const bodyRect   = createRect({ y: rowHeight });
-  const headerRect = createRect({ height: rowHeight });
+  const mainRectX = 0;
+  const mainRectY = 0;
+  const mainRectWidth = 1;
+  const mainRectHeight = 1;
 
-  const mainRect = createRect();
+  const bodyRectX = 0;
+  const bodyRectY = rowHeight;
+  const bodyRectWidth = 1;
+  const bodyRectHeight = 1;
 
-  const scrollPos = createVector();
-  const maxScrollPos = createVector();
-  const normalizedScrollPos = createVector();
+  const headerRectX = 0;
+  const headerRectY = 0;
+  const headerRectWidth = 1;
+  const headerRectHeight = rowHeight;
 
-  const scrollSize = createSize();
-  const viewportSize = createSize();
-  const normalizedViewportSize = createSize();
+  const scrollX = 0;
+  const scrollY = 0;
+
+  const maxScrollX = 0;
+  const maxScrollY = 0;
+
+  const normScrollX = 0;
+  const normScrollY = 0;
+
+  const scrollWidth  = 1;
+  const scrollHeight = 1;
+
+  const viewportWidth  = 1;
+  const viewportHeight = 1;
+
+  const normViewportWidth  = 1;
+  const normViewportHeight = 1;
 
   const hsbTrackRect = createRect();
   const hsbThumbRect = createRect();
@@ -91,7 +111,10 @@ export function create(params: CanvasTableParams): CanvasTable {
   const indexOfColumnWhoseResizerIsBeingHovered = -1;
   const indexOfColumnBeingResized = -1;
 
-  const tableRanges = { columnLeft: 0, columnRight: 0, rowTop: 0, rowBottom: 0 };
+  const columnLeft = 0;
+  const columnRight = 0;
+  const rowTop = 0;
+  const rowBottom = 0;
 
   const overflowX = false;
   const overflowY = false;
@@ -106,9 +129,18 @@ export function create(params: CanvasTableParams): CanvasTable {
     columnStates,
     dataRows,
     theme,
-    mainRect,
-    bodyRect,
-    headerRect,
+    mainRectX,
+    mainRectY,
+    mainRectWidth,
+    mainRectHeight,
+    bodyRectX,
+    bodyRectY,
+    bodyRectWidth,
+    bodyRectHeight,
+    headerRectX,
+    headerRectY,
+    headerRectWidth,
+    headerRectHeight,
     hsbTrackRect,
     hsbThumbRect,
     hsbMaxThumbPos,
@@ -121,13 +153,22 @@ export function create(params: CanvasTableParams): CanvasTable {
     vsbIsDragging,
     indexOfColumnWhoseResizerIsBeingHovered,
     indexOfColumnBeingResized,
-    scrollPos,
-    maxScrollPos,
-    normalizedScrollPos,
-    scrollSize,
-    viewportSize,
-    normalizedViewportSize,
-    tableRanges,
+    scrollX,
+    scrollY,
+    maxScrollX,
+    maxScrollY,
+    normScrollX,
+    normScrollY,
+    scrollWidth,
+    scrollHeight,
+    viewportWidth,
+    viewportHeight,
+    normViewportWidth,
+    normViewportHeight,
+    columnLeft,
+    columnRight,
+    rowTop,
+    rowBottom,
     overflowX,
     overflowY
   } as CanvasTable;
@@ -265,16 +306,15 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     wrapperEl,
     columnStates,
     columnPositions,
-    tableRanges,
     theme,
+    columnLeft,
     vsbTrackRect,
     vsbThumbRect,
     vsbMaxThumbPos,
     vsbDragOffset,
     vsbIsDragging,
-    scrollPos,
-    maxScrollPos,
-    normalizedScrollPos,
+    maxScrollX,
+    maxScrollY,
     hsbTrackRect,
     hsbThumbRect,
     hsbMaxThumbPos,
@@ -284,8 +324,6 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
   } = ct;
 
   const { rowHeight } = theme;
-
-  const { x: maxScrollLeft, y: maxScrollTop } = maxScrollPos;
 
   const { x: hsbTrackX } = hsbTrackRect;
   const { y: vsbTrackY } = vsbTrackRect;
@@ -301,11 +339,11 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     const hsbThumbX = clamp(mouseX - hsbDragOffset, hsbTrackX, hsbMaxThumbPos);
     hsbThumbRect.x = hsbThumbX;
 
-    const normScrollLeft = scale(hsbThumbX, hsbTrackX, hsbMaxThumbPos, 0, 1);
-    normalizedScrollPos.x = normScrollLeft;
+    const normScrollX = scale(hsbThumbX, hsbTrackX, hsbMaxThumbPos, 0, 1);
+    ct.normScrollX = normScrollX;
 
-    const scrollLeft = Math.round(scale(normScrollLeft, 0, 1, 0, maxScrollLeft));
-    scrollPos.x = scrollLeft;
+    const scrollX = Math.round(scale(normScrollX, 0, 1, 0, maxScrollX));
+    ct.scrollX = scrollX;
 
     shouldUpdate = true;
   }
@@ -314,11 +352,11 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     const vsbThumbY = clamp(mouseY - vsbDragOffset, vsbTrackY, vsbMaxThumbPos);
     vsbThumbRect.y = vsbThumbY;
 
-    const normScrollTop = scale(vsbThumbY, vsbTrackY, vsbMaxThumbPos, 0, 1);
-    normalizedScrollPos.y = normScrollTop;
+    const normScrollY = scale(vsbThumbY, vsbTrackY, vsbMaxThumbPos, 0, 1);
+    ct.normScrollY = normScrollY;
 
-    const scrollTop = Math.round(scale(normScrollTop, 0, 1, 0, maxScrollTop));
-    scrollPos.y = scrollTop;
+    const scrollY = Math.round(scale(normScrollY, 0, 1, 0, maxScrollY));
+    ct.scrollY = scrollY;
 
     shouldUpdate = true;
   }
@@ -329,8 +367,6 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
 
     const { x: mouseX, y: mouseY } = mousePos;
     if (mouseY >= 0 && mouseY < rowHeight) {
-      const { columnLeft } = tableRanges;
-
       for (const [j, pos] of columnPositions.entries()) {
         const columnIndex = j + columnLeft;
         const columnState = columnStates[columnIndex];
@@ -351,8 +387,7 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     }
   }
 
-  // const { columnStates, columnPositions, indexOfColumnBeingResized, tableRanges } = ct;
-  // const { columnLeft } = tableRanges;
+  // const { columnStates, columnPositions, indexOfColumnBeingResized } = ct;
 
   // if (indexOfColumnBeingResized) {
   //   const columnState = columnStates[indexOfColumnBeingResized];
@@ -367,6 +402,7 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
   if (shouldUpdate) {
     updateScreenData(ct);
     render(ct);
+    console.log(ct);
   }
 }
 
@@ -381,19 +417,28 @@ function render(ct: CanvasTable) {
     bodyFont,
     headerFont,
     theme,
-    mainRect,
-    bodyRect,
-    headerRect,
+    mainRectWidth,
+    mainRectHeight,
+    bodyRectX,
+    bodyRectY,
+    bodyRectWidth,
+    bodyRectHeight,
+    headerRectX,
+    headerRectY,
+    headerRectWidth,
+    headerRectHeight,
     hsbOuterRect,
     hsbThumbRect,
     vsbOuterRect,
     vsbThumbRect,
     columnStates,
     dataRows,
-    tableRanges,
+    columnLeft,
+    rowTop,
     columnPositions,
     rowPositions,
-    contentSize,
+    contentWidth,
+    contentHeight,
     overflowX,
     overflowY,
     indexOfColumnWhoseResizerIsBeingHovered,
@@ -422,14 +467,14 @@ function render(ct: CanvasTable) {
   const { bodyBackgroundColor = tableBackgroundColor } = theme;
   if (bodyBackgroundColor) {
     ctx.fillStyle = bodyBackgroundColor;
-    fillRect(ctx, bodyRect);
+    ctx.fillRect(bodyRectX, bodyRectY, bodyRectWidth, bodyRectHeight);
   }
 
   // Draw header background
   const { headerBackgroundColor = tableBackgroundColor } = theme;
   if (headerBackgroundColor) {
     ctx.fillStyle = headerBackgroundColor;
-    fillRect(ctx, headerRect);
+    ctx.fillRect(headerRectX, headerRectY, headerRectWidth, headerRectHeight);
   }
 
   // Draw scrollbar background and thumb
@@ -465,8 +510,8 @@ function render(ct: CanvasTable) {
   // Draw header bottom border
   lineRenderer.hline(ctx, 0, rowHeight, canvas.width);
 
-  const gridWidth  = Math.min(mainRect.width,  contentSize.width);
-  const gridHeight = Math.min(mainRect.height, contentSize.height + rowHeight);
+  const gridWidth  = Math.min(mainRectWidth,  contentWidth);
+  const gridHeight = Math.min(mainRectHeight, contentHeight + rowHeight);
 
   // If horizontal scrollbar is visible, draw its border, otherwise,
   // draw table content right border
@@ -495,8 +540,6 @@ function render(ct: CanvasTable) {
     const x = columnPositions[i];
     lineRenderer.vline(ctx, x, 0, gridHeight);
   }
-
-  const { columnLeft, rowTop } = tableRanges;
 
   const { cellPadding } = theme;
 
@@ -530,16 +573,17 @@ function render(ct: CanvasTable) {
 
   ctx.save();
 
-  clipRect(ctx, mainRect);
-
   // Draw header font
+  clipRect(ctx, headerRectX, headerRectY, headerRectWidth, headerRectHeight);
   for (const { x, y, maxWidth, text } of headerTextData) {
     textRenderer.render(ctx, headerFont, text, x, y, maxWidth, true);
   }
 
-  clipRect(ctx, bodyRect);
+  ctx.restore();
+  ctx.save();
 
   // Draw body text
+  clipRect(ctx, bodyRectX, bodyRectY, bodyRectWidth, bodyRectHeight);
   for (const { x, y, maxWidth, text } of bodyTextData) {
     textRenderer.render(ctx, bodyFont, text, x, y, maxWidth, true);
   }
@@ -568,11 +612,8 @@ function render(ct: CanvasTable) {
 function reflow(ct: CanvasTable) {
   const {
     canvas,
-    contentSize,
-    mainRect,
-    bodyRect,
-    headerRect,
-    scrollPos,
+    contentWidth,
+    contentHeight,
     theme
   } = ct;
 
@@ -592,68 +633,87 @@ function reflow(ct: CanvasTable) {
 
   let overflowX: boolean;
   let overflowY: boolean;
-  if (outerMainRectWidth >= contentSize.width && outerBodyRectHeight >= contentSize.height) {
+  if (outerMainRectWidth >= contentWidth && outerBodyRectHeight >= contentHeight) {
     overflowX = overflowY = false;
   } else {
-    overflowX = innerMainRectWidth  < contentSize.width;
-    overflowY = innerBodyRectHeight < contentSize.height;
+    overflowX = innerMainRectWidth  < contentWidth;
+    overflowY = innerBodyRectHeight < contentHeight;
   }
 
   ct.overflowX = overflowX;
   ct.overflowY = overflowY;
 
+  let mainRectWidth:   number;
+  let bodyRectWidth:   number;
+  let headerRectWidth: number;
+
   if (overflowY) {
-    mainRect.width = bodyRect.width = headerRect.width = innerMainRectWidth;
+    mainRectWidth   = innerMainRectWidth;
+    bodyRectWidth   = innerMainRectWidth;
+    headerRectWidth = innerMainRectWidth;
   } else {
-    mainRect.width = bodyRect.width = headerRect.width = outerMainRectWidth;
+    mainRectWidth   = outerMainRectWidth;
+    bodyRectWidth   = outerMainRectWidth;
+    headerRectWidth = outerMainRectWidth;
   }
+  ct.mainRectWidth   = mainRectWidth;
+  ct.bodyRectWidth   = bodyRectWidth;
+  ct.headerRectWidth = headerRectWidth;
+
+  let mainRectHeight: number;
+  let bodyRectHeight: number;
 
   if (overflowX) {
-    mainRect.height = innerMainRectHeight;
-    bodyRect.height = innerBodyRectHeight;
+    mainRectHeight = innerMainRectHeight;
+    bodyRectHeight = innerBodyRectHeight;
   } else {
-    mainRect.height = outerMainRectHeight;
-    bodyRect.height = outerBodyRectHeight;
+    mainRectHeight = outerMainRectHeight;
+    bodyRectHeight = outerBodyRectHeight;
   }
+  ct.mainRectHeight = mainRectHeight;
+  ct.bodyRectHeight = bodyRectHeight;
 
-  const viewportSize = { width: bodyRect.width, height: bodyRect.height };
-  ct.viewportSize = viewportSize;
+  const viewportWidth  = bodyRectWidth;
+  ct.viewportWidth = viewportWidth;
 
-  const scrollWidth  = Math.max(contentSize.width,  viewportSize.width);
-  const scrollHeight = Math.max(contentSize.height, viewportSize.height);
-  const scrollSize = { width: scrollWidth, height: scrollHeight };
-  ct.scrollSize = scrollSize;
+  const viewportHeight = bodyRectHeight;
+  ct.viewportHeight = viewportHeight;
 
-  const normalizedViewportWidth  = viewportSize.width  / scrollWidth;
-  const normalizedViewportHeight = viewportSize.height / scrollHeight;
-  const normalizedViewportSize = {
-    width:  normalizedViewportWidth,
-    height: normalizedViewportHeight
-  };
-  ct.normalizedViewportSize = normalizedViewportSize;
+  const scrollWidth = Math.max(contentWidth,  viewportWidth);
+  ct.scrollWidth = scrollWidth;
 
-  const maxScrollLeft = scrollWidth  - viewportSize.width;
-  const maxScrollTop  = scrollHeight - viewportSize.height;
-  const maxScrollPos = { x: maxScrollLeft, y: maxScrollTop };
-  ct.maxScrollPos = maxScrollPos;
+  const scrollHeight = Math.max(contentHeight, viewportHeight);
+  ct.scrollHeight = scrollHeight;
 
-  const scrollLeft = Math.min(scrollPos.x, maxScrollLeft);
-  const scrollTop  = Math.min(scrollPos.y, maxScrollTop);
-  ct.scrollPos = { x: scrollLeft, y: scrollTop };
+  const normViewportWidth = viewportWidth  / scrollWidth;
+  ct.normViewportWidth = normViewportWidth;
 
-  const normalizedScrollX = maxScrollLeft > 0 ? scrollLeft / maxScrollLeft : 0;
-  const normalizedScrollY = maxScrollTop  > 0 ? scrollTop  / maxScrollTop  : 0;
-  const normalizedScrollPos = {
-    x: normalizedScrollX,
-    y: normalizedScrollY
-  };
-  ct.normalizedScrollPos = normalizedScrollPos;
+  const normViewportHeight = viewportHeight / scrollHeight;
+  ct.normViewportHeight = normViewportHeight;
+
+  const maxScrollX = scrollWidth  - viewportWidth;
+  ct.maxScrollX = maxScrollX;
+
+  const maxScrollY  = scrollHeight - viewportHeight;
+  ct.maxScrollY = maxScrollY;
+
+  const scrollX = Math.min(ct.scrollX, maxScrollX);
+  ct.scrollX = scrollX;
+
+  const scrollY = Math.min(ct.scrollY, maxScrollY);
+  ct.scrollY = scrollY;
+
+  const normScrollX = maxScrollX > 0 ? scrollX / maxScrollX : 0;
+  ct.normScrollX = normScrollX;
+
+  const normScrollY = maxScrollY > 0 ? scrollY  / maxScrollY  : 0;
+  ct.normScrollY = normScrollY;
 
   const outerThickness = scrollbarThickness + BORDER_WIDTH ;
 
   const hsbOuterRect = createRect({
-    y: mainRect.height,
-    width: mainRect.width,
+    y: mainRectHeight,
+    width: mainRectWidth,
     height: outerThickness
   });
   ct.hsbOuterRect = hsbOuterRect;
@@ -678,14 +738,12 @@ function reflow(ct: CanvasTable) {
   });
   ct.hsbTrackRect = hsbTrackRect;
 
-  const { width: normViewportWidth } = normalizedViewportSize;
-
   const hsbThumbWidth = Math.max(normViewportWidth * hsbTrackWidth, MIN_THUMB_LENGTH);
 
   const hsbMaxThumbPos = hsbTrackX + hsbTrackWidth - hsbThumbWidth;
   ct.hsbMaxThumbPos = hsbMaxThumbPos;
 
-  ct.hsbThumbRect.x = scale(scrollLeft, 0, maxScrollLeft, hsbTrackX, hsbMaxThumbPos);
+  ct.hsbThumbRect.x = scale(scrollX, 0, maxScrollX, hsbTrackX, hsbMaxThumbPos);
   ct.hsbThumbRect.y = hsbTrackY;
   ct.hsbThumbRect.width = hsbThumbWidth;
   ct.hsbThumbRect.height = hsbTrackHeight;
@@ -693,10 +751,10 @@ function reflow(ct: CanvasTable) {
   ct.hsbMaxThumbPos = hsbMaxThumbPos;
 
   const vsbOuterRect = createRect({
-    x: mainRect.width,
+    x: mainRectWidth,
     y: rowHeight,
     width: outerThickness,
-    height: bodyRect.height
+    height: bodyRectHeight
   });
   ct.vsbOuterRect = vsbOuterRect;
 
@@ -720,15 +778,13 @@ function reflow(ct: CanvasTable) {
   });
   ct.vsbTrackRect = vsbTrackRect;
 
-  const { height: normViewportHeight } = normalizedViewportSize;
-
   const vsbThumbHeight = Math.max(normViewportHeight * vsbTrackHeight, MIN_THUMB_LENGTH);
 
   const vsbMaxThumbPos = vsbTrackY + vsbTrackHeight - vsbThumbHeight;
   ct.vsbMaxThumbPos = vsbMaxThumbPos;
 
   ct.vsbThumbRect.x = vsbTrackX;
-  ct.vsbThumbRect.y = scale(scrollTop, 0, maxScrollTop, vsbTrackY, vsbMaxThumbPos);
+  ct.vsbThumbRect.y = scale(scrollY, 0, maxScrollY, vsbTrackY, vsbMaxThumbPos);
   ct.vsbThumbRect.width = vsbTrackWidth;
   ct.vsbThumbRect.height = vsbThumbHeight;
 }
@@ -744,11 +800,11 @@ function updateContentSize(ct: CanvasTable) {
     const { width } = columnState;
     contentWidth += width;
   }
+  ct.contentWidth = contentWidth;
 
   const contentHeight = numberOfRows * rowHeight;
-  const contentSize = createSize(contentWidth, contentHeight);
+  ct.contentHeight = contentHeight;
 
-  ct.contentSize = contentSize;
 }
 
 function updateScreenData(ct: CanvasTable) {
@@ -756,21 +812,13 @@ function updateScreenData(ct: CanvasTable) {
     columnStates,
     dataRows,
     theme,
-    scrollPos,
-    viewportSize
+    scrollX,
+    scrollY,
+    viewportWidth,
+    viewportHeight
   } = ct;
 
   const { rowHeight } = theme;
-
-  const {
-    x: scrollLeft,
-    y: scrollTop
-  } = scrollPos;
-
-  const {
-    width:  viewportWidth,
-    height: viewportHeight
-  } = viewportSize;
 
   let columnLeft = 0;
   let columnPos = 0;
@@ -780,7 +828,7 @@ function updateScreenData(ct: CanvasTable) {
     const nextColumnState = columnStates[columnLeft + 1];
     const { width: nextColumnWidth } = nextColumnState;
 
-    if (columnPos + nextColumnWidth > scrollLeft) {
+    if (columnPos + nextColumnWidth > scrollX) {
       break;
     }
 
@@ -789,7 +837,7 @@ function updateScreenData(ct: CanvasTable) {
   }
 
   const columnPositions = [];
-  const scrollRight = scrollLeft + viewportWidth;
+  const scrollRight = scrollX + viewportWidth;
 
   let columnRight = columnLeft;
   for (; columnRight < columnStates.length; columnRight++) {
@@ -797,30 +845,30 @@ function updateScreenData(ct: CanvasTable) {
       break;
     }
 
-    columnPositions.push(columnPos - scrollLeft);
+    columnPositions.push(columnPos - scrollX);
 
     const columnState = columnStates[columnRight];
     const { width: columnWidth } = columnState;
     columnPos += columnWidth;
   }
 
-  const rowTop = Math.floor(scrollTop / rowHeight);
+  const rowTop = Math.floor(scrollY / rowHeight);
 
-  const scrollBottom = scrollTop + viewportHeight;
+  const scrollBottom = scrollY + viewportHeight;
   const rowBottom = Math.min(Math.ceil(scrollBottom / rowHeight), dataRows.length);
 
   const rowPositions = [];
-  const yOffset = -scrollTop + rowHeight;
+  const yOffset = -scrollY + rowHeight;
   for (let i = rowTop; i < rowBottom; i++) {
     rowPositions.push(i * rowHeight + yOffset);
   }
 
-  ct.tableRanges.columnLeft  = columnLeft;
-  ct.tableRanges.columnRight = columnRight;
+  ct.columnLeft  = columnLeft;
+  ct.columnRight = columnRight;
   ct.columnPositions = columnPositions;
 
-  ct.tableRanges.rowTop    = rowTop;
-  ct.tableRanges.rowBottom = rowBottom;
+  ct.rowTop    = rowTop;
+  ct.rowBottom = rowBottom;
   ct.rowPositions = rowPositions;
 }
 

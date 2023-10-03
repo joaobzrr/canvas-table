@@ -24,9 +24,52 @@ export type CanvasTable = {
 
   theme: Theme;
 
-  mainRect: RectLike;
-  bodyRect: RectLike;
-  headerRect: RectLike;
+  mainRectX:      number;
+  mainRectY:      number;
+  mainRectWidth:  number;
+  mainRectHeight: number;
+
+  bodyRectX:      number;
+  bodyRectY:      number;
+  bodyRectWidth:  number;
+  bodyRectHeight: number;
+
+  headerRectX: number;
+  headerRectY: number;
+  headerRectWidth: number;
+  headerRectHeight: number;
+
+  scrollX: number;
+  scrollY: number;
+
+  maxScrollX: number;
+  maxScrollY: number;
+
+  normScrollX: number;
+  normScrollY: number;
+
+  contentWidth:  number;
+  contentHeight: number;
+
+  scrollWidth:  number;
+  scrollHeight: number;
+
+  viewportWidth:  number;
+  viewportHeight: number;
+
+  normViewportWidth:  number;
+  normViewportHeight: number;
+
+  overflowX: boolean;
+  overflowY: boolean;
+  
+  columnPositions: number[];
+  columnLeft:  number;
+  columnRight: number;
+
+  rowPositions: number[];
+  rowTop:      number;
+  rowBottom:   number;
 
   hsbOuterRect: RectLike;
   hsbInnerRect: RectLike;
@@ -46,23 +89,6 @@ export type CanvasTable = {
 
   indexOfColumnWhoseResizerIsBeingHovered: number;
   indexOfColumnBeingResized: number;
-
-  scrollPos:           VectorLike;
-  maxScrollPos:        VectorLike;
-  normalizedScrollPos: VectorLike;
-
-  contentSize:            Size;
-  scrollSize:             Size;
-  viewportSize:           Size;
-  normalizedViewportSize: Size;
-
-  overflowX: boolean;
-  overflowY: boolean;
-  
-  tableRanges: TableRanges;
-
-  rowPositions: number[];
-  columnPositions: number[];
 }
 
 export type CanvasTableParams = {
