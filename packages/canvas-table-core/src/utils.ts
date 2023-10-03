@@ -118,3 +118,9 @@ export function clipRect(ctx: CanvasRenderingContext2D, x: number, y: number, w:
 export function pointInRect(x: number, y: number, rx: number, ry: number, rw: number, rh: number) {
   return x >= rx && x < rx + rw && y >= ry && y < ry + rh;
 }
+
+export function withContext(ctx: CanvasRenderingContext2D, func: () => void) {
+  ctx.save();
+  func();
+  ctx.restore();
+}

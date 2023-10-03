@@ -6,7 +6,8 @@ import {
   scale,
   clamp,
   clipRect,
-  pointInRect
+  pointInRect,
+  withContext
 } from "./utils";
 import {
   DEFAULT_COLUMN_WIDTH,
@@ -23,6 +24,7 @@ import {
   VectorLike,
   Size,
   Theme,
+  TextData,
 } from "./types";
 
 export function create(params: CanvasTableParams): CanvasTable {
@@ -616,8 +618,8 @@ function render(ct: CanvasTable) {
   const doubleOfCellPadding = cellPadding * 2;
 
   // Calculate text data
-  const bodyTextData = [];
-  const headerTextData = [];
+  const bodyTextData   = [] as TextData[];
+  const headerTextData = [] as TextData[];
   for (const [j, xPos] of columnPositions.entries()) {
     const columnIndex = j + columnLeft;
     const columnState = columnStates[columnIndex];
@@ -640,24 +642,23 @@ function render(ct: CanvasTable) {
     }
   }
 
-  ctx.save();
-
   // Draw header font
-  clipRect(ctx, headerRectX, headerRectY, headerRectWidth, headerRectHeight);
-  for (const { x, y, maxWidth, text } of headerTextData) {
-    textRenderer.render(ctx, headerFont, text, x, y, maxWidth, true);
-  }
+  withContext(ctx, () => {
+    clipRect(ctx, headerRectX, headerRectY, headerRectWidth, headerRectHeight);
 
-  ctx.restore();
-  ctx.save();
+    for (const { x, y, maxWidth, text } of headerTextData) {
+      textRenderer.render(ctx, headerFont, text, x, y, maxWidth, true);
+    }
+  })
 
   // Draw body text
-  clipRect(ctx, bodyRectX, bodyRectY, bodyRectWidth, bodyRectHeight);
-  for (const { x, y, maxWidth, text } of bodyTextData) {
-    textRenderer.render(ctx, bodyFont, text, x, y, maxWidth, true);
-  }
+  withContext(ctx, () => {
+    clipRect(ctx, bodyRectX, bodyRectY, bodyRectWidth, bodyRectHeight);
 
-  ctx.restore();
+    for (const { x, y, maxWidth, text } of bodyTextData) {
+      textRenderer.render(ctx, bodyFont, text, x, y, maxWidth, true);
+    }
+  });
 
   const indexOfColumnToHighlight = indexOfColumnWhoseResizerIsBeingHovered !== -1
     ? indexOfColumnWhoseResizerIsBeingHovered
@@ -909,18 +910,16 @@ function updateScreenData(ct: CanvasTable) {
   const rowBottom = Math.min(Math.ceil(scrollBottom / rowHeight), dataRows.length);
 
   const rowPositions = [];
-  const yOffset = -scrollY + rowHeight;
   for (let i = rowTop; i < rowBottom; i++) {
-    rowPositions.push(i * rowHeight + yOffset);
+    rowPositions.push(i * rowHeight + rowHeight - scrollY);
   }
 
+  ct.columnPositions = columnPositions;
   ct.columnLeft  = columnLeft;
   ct.columnRight = columnRight;
-  ct.columnPositions = columnPositions;
-
+  ct.rowPositions = rowPositions;
   ct.rowTop    = rowTop;
   ct.rowBottom = rowBottom;
-  ct.rowPositions = rowPositions;
 }
 
 function updateFonts(ct: CanvasTable) {
