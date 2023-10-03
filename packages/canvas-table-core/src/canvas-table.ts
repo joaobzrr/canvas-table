@@ -711,7 +711,7 @@ function reflow(ct: CanvasTable) {
   const viewportWidth = bodyRectWidth;
   const viewportHeight = bodyRectHeight;
 
-  const scrollWidth = Math.max(contentWidth,  viewportWidth);
+  const scrollWidth = Math.max(contentWidth, viewportWidth);
   const scrollHeight = Math.max(contentHeight, viewportHeight);
 
   const normViewportWidth = viewportWidth  / scrollWidth;
@@ -809,18 +809,16 @@ function updateContentSize(ct: CanvasTable) {
   const { columnStates, dataRows, theme } = ct;
   const { rowHeight } = theme;
 
-  const numberOfRows = dataRows.length;
-
   let contentWidth = 0;
   for (const columnState of columnStates) {
     const { width } = columnState;
     contentWidth += width;
   }
+
+  const contentHeight = dataRows.length * rowHeight;
+
   ct.contentWidth = contentWidth;
-
-  const contentHeight = numberOfRows * rowHeight;
   ct.contentHeight = contentHeight;
-
 }
 
 function updateScreenData(ct: CanvasTable) {
@@ -840,16 +838,11 @@ function updateScreenData(ct: CanvasTable) {
   let columnPos = 0;
 
   for (; columnLeft < columnStates.length - 1; columnLeft++) {
-    const currColumnState = columnStates[columnLeft];
-    const nextColumnState = columnStates[columnLeft + 1];
-    const { width: nextColumnWidth } = nextColumnState;
-
-    if (columnPos + nextColumnWidth > scrollX) {
+    const columnState = columnStates[columnLeft];
+    if (columnPos + columnState.width > scrollX) {
       break;
     }
-
-    const { width: currColumnWidth } = currColumnState;
-    columnPos += currColumnWidth;
+    columnPos += columnState.width;
   }
 
   const columnPositions = [];
@@ -864,8 +857,7 @@ function updateScreenData(ct: CanvasTable) {
     columnPositions.push(columnPos - scrollX);
 
     const columnState = columnStates[columnRight];
-    const { width: columnWidth } = columnState;
-    columnPos += columnWidth;
+    columnPos += columnState.width;
   }
 
   const rowTop = Math.floor(scrollY / rowHeight);
@@ -917,11 +909,9 @@ function getRelativeMousePos(wrapperEl: HTMLDivElement, eventPos: VectorLike): V
 
 function columnDefsToColumnStates(columnDefs: ColumnDef[]) {
   const columnStates = [] as ColumnState[];
-  let total = 0;
   for (const { width, ...rest } of columnDefs) {
     const _width = width ?? DEFAULT_COLUMN_WIDTH;
     columnStates.push({...rest, width: _width });
-    total += _width;
   }
   return columnStates;
 }

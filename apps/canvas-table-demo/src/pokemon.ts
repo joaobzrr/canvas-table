@@ -1,11 +1,13 @@
 export const columnDefs = [
   {
     title: "ID",
-    field: "id"
+    field: "id",
+    width: 200
   },
   {
     title: "Name",
-    field: "name"
+    field: "name",
+    width: 50
   },
   {
     title: "Type 1",
