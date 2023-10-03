@@ -69,15 +69,10 @@ export type CanvasTable = {
   rowTop:      number;
   rowBottom:   number;
 
-  hsbOuterX:      number;
-  hsbOuterY:      number;
-  hsbOuterWidth:  number;
-  hsbOuterHeight: number;
-
-  hsbInnerX:      number;
-  hsbInnerY:      number;
-  hsbInnerWidth:  number;
-  hsbInnerHeight: number;
+  hsbX:      number;
+  hsbY:      number;
+  hsbWidth:  number;
+  hsbHeight: number;
 
   hsbTrackX:      number;
   hsbTrackY:      number;
@@ -94,15 +89,10 @@ export type CanvasTable = {
   hsbDragOffset: number;
   hsbIsDragging: boolean;
 
-  vsbOuterX:      number;
-  vsbOuterY:      number;
-  vsbOuterWidth:  number;
-  vsbOuterHeight: number;
-
-  vsbInnerX:      number;
-  vsbInnerY:      number;
-  vsbInnerWidth:  number;
-  vsbInnerHeight: number;
+  vsbX:      number;
+  vsbY:      number;
+  vsbWidth:  number;
+  vsbHeight: number;
 
   vsbTrackX: number;
   vsbTrackY: number;

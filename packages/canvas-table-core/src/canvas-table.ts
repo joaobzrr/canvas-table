@@ -95,15 +95,10 @@ export function create(params: CanvasTableParams): CanvasTable {
   const overflowX = false;
   const overflowY = false;
 
-  const hsbOuterX = 0;
-  const hsbOuterY = 0;
-  const hsbOuterWidth = 1;
-  const hsbOuterHeight = 1;
-
-  const hsbInnerX = 0;
-  const hsbInnerY = 0;
-  const hsbInnerWidth = 1;
-  const hsbInnerHeight = 1;
+  const hsbX = 0;
+  const hsbY = 0;
+  const hsbWidth = 1;
+  const hsbHeight = 1;
 
   const hsbTrackX      = 0;
   const hsbTrackY      = 0;
@@ -119,15 +114,10 @@ export function create(params: CanvasTableParams): CanvasTable {
   const hsbDragOffset  = 0;
   const hsbIsDragging = false;
 
-  const vsbOuterX      = 0;
-  const vsbOuterY      = 0;
-  const vsbOuterWidth  = 1;
-  const vsbOuterHeight = 1;
-
-  const vsbInnerX      = 0;
-  const vsbInnerY      = 0;
-  const vsbInnerWidth  = 1;
-  const vsbInnerHeight = 1;
+  const vsbX      = 0;
+  const vsbY      = 0;
+  const vsbWidth  = 1;
+  const vsbHeight = 1;
 
   const vsbTrackX      = 0;
   const vsbTrackY      = 0;
@@ -172,14 +162,10 @@ export function create(params: CanvasTableParams): CanvasTable {
     headerRectY,
     headerRectWidth,
     headerRectHeight,
-    hsbOuterX,
-    hsbOuterY,
-    hsbOuterWidth,
-    hsbOuterHeight,
-    hsbInnerX,
-    hsbInnerY,
-    hsbInnerWidth,
-    hsbInnerHeight,
+    hsbX,
+    hsbY,
+    hsbWidth,
+    hsbHeight,
     hsbTrackX,
     hsbTrackY,
     hsbTrackWidth,
@@ -191,14 +177,10 @@ export function create(params: CanvasTableParams): CanvasTable {
     hsbMaxThumbPos,
     hsbDragOffset,
     hsbIsDragging,
-    vsbOuterX,
-    vsbOuterY,
-    vsbOuterWidth,
-    vsbOuterHeight,
-    vsbInnerX,
-    vsbInnerY,
-    vsbInnerWidth,
-    vsbInnerHeight,
+    vsbX,
+    vsbY,
+    vsbWidth,
+    vsbHeight,
     vsbTrackX,
     vsbTrackY,
     vsbTrackWidth,
@@ -488,18 +470,18 @@ function render(ct: CanvasTable) {
     headerRectY,
     headerRectWidth,
     headerRectHeight,
-    hsbOuterX,
-    hsbOuterY,
-    hsbOuterWidth,
-    hsbOuterHeight,
+    hsbX,
+    hsbY,
+    hsbWidth,
+    hsbHeight,
     hsbThumbX,
     hsbThumbY,
     hsbThumbWidth,
     hsbThumbHeight,
-    vsbOuterX,
-    vsbOuterY,
-    vsbOuterWidth,
-    vsbOuterHeight,
+    vsbX,
+    vsbY,
+    vsbWidth,
+    vsbHeight,
     vsbThumbX,
     vsbThumbY,
     vsbThumbWidth,
@@ -557,7 +539,7 @@ function render(ct: CanvasTable) {
   if (overflowX) {
     if (scrollbarTrackColor) {
       ctx.fillStyle = scrollbarTrackColor;
-      ctx.fillRect(hsbOuterX, hsbOuterY, hsbOuterWidth, hsbOuterHeight);
+      ctx.fillRect(hsbX, hsbY, hsbWidth, hsbHeight);
     }
 
     ctx.fillStyle = scrollbarThumbColor;
@@ -567,7 +549,7 @@ function render(ct: CanvasTable) {
   if (overflowY) {
     if (scrollbarTrackColor) {
       ctx.fillStyle = scrollbarTrackColor;
-      ctx.fillRect(vsbOuterX, vsbOuterY, vsbOuterWidth, vsbOuterHeight)
+      ctx.fillRect(vsbX, vsbY, vsbWidth, vsbHeight);
     }
     
     ctx.fillStyle = scrollbarThumbColor;
@@ -589,7 +571,7 @@ function render(ct: CanvasTable) {
   // If horizontal scrollbar is visible, draw its border, otherwise,
   // draw table content right border
   if (overflowX) {
-    lineRenderer.hline(ctx, 0, hsbOuterY, canvas.width);
+    lineRenderer.hline(ctx, 0, hsbY - BORDER_WIDTH, canvas.width);
   } else {
     lineRenderer.vline(ctx, gridWidth, 0, gridHeight);
   }
@@ -597,7 +579,7 @@ function render(ct: CanvasTable) {
   // If vertical scrollbar is visible, draw its border, otherwise,
   // draw table content bottom border
   if (overflowY) {
-    lineRenderer.vline(ctx, vsbOuterX, 0, canvas.height);
+    lineRenderer.vline(ctx, vsbX - BORDER_WIDTH, 0, canvas.height);
   } else {
     lineRenderer.hline(ctx, 0, gridHeight, gridWidth);
   }
@@ -618,6 +600,7 @@ function render(ct: CanvasTable) {
   const doubleOfCellPadding = cellPadding * 2;
 
   // Calculate text data
+  // @Performance We are allocating these every frame. Maybe use an object pool?
   const bodyTextData   = [] as TextData[];
   const headerTextData = [] as TextData[];
   for (const [j, xPos] of columnPositions.entries()) {
@@ -743,21 +726,15 @@ function reflow(ct: CanvasTable) {
   const normScrollX = maxScrollX > 0 ? scrollX / maxScrollX : 0;
   const normScrollY = maxScrollY > 0 ? scrollY  / maxScrollY  : 0;
 
-  const outerThickness = scrollbarThickness + BORDER_WIDTH ;
+  const hsbX = BORDER_WIDTH;
+  const hsbY = mainRectHeight + BORDER_WIDTH;
+  const hsbWidth = mainRectWidth - BORDER_WIDTH;
+  const hsbHeight = scrollbarThickness;
 
-  const hsbOuterY = mainRectHeight;
-  const hsbOuterWidth = mainRectWidth;
-  const hsbOuterHeight = outerThickness;
-
-  const hsbInnerX = BORDER_WIDTH;
-  const hsbInnerY = hsbOuterY + BORDER_WIDTH;
-  const hsbInnerWidth = hsbOuterWidth - BORDER_WIDTH;
-  const hsbInnerHeight = scrollbarThickness;
-
-  const hsbTrackX = hsbInnerX + scrollbarTrackMargin;
-  const hsbTrackY = hsbInnerY + scrollbarTrackMargin;
-  const hsbTrackWidth = hsbInnerWidth - (scrollbarTrackMargin * 2);
-  const hsbTrackHeight = hsbInnerHeight - (scrollbarTrackMargin * 2);
+  const hsbTrackX = hsbX + scrollbarTrackMargin;
+  const hsbTrackY = hsbY + scrollbarTrackMargin;
+  const hsbTrackWidth = hsbWidth - (scrollbarTrackMargin * 2);
+  const hsbTrackHeight = hsbHeight - (scrollbarTrackMargin * 2);
 
   const hsbThumbWidth = Math.max(normViewportWidth * hsbTrackWidth, MIN_THUMB_LENGTH);
   const hsbThumbHeight = hsbTrackHeight;
@@ -765,21 +742,15 @@ function reflow(ct: CanvasTable) {
   const hsbThumbX = scale(scrollX, 0, maxScrollX, hsbTrackX, hsbMaxThumbPos);
   const hsbThumbY = hsbTrackY;
 
-  const vsbOuterX = mainRectWidth;
-  const vsbOuterY = rowHeight;
+  const vsbX = mainRectWidth + BORDER_WIDTH;
+  const vsbY = rowHeight + BORDER_WIDTH;
+  const vsbWidth = scrollbarThickness;
+  const vsbHeight = bodyRectHeight - BORDER_WIDTH;
 
-  const vsbOuterWidth = outerThickness;
-  const vsbOuterHeight = bodyRectHeight;
-
-  const vsbInnerX = vsbOuterX + BORDER_WIDTH;
-  const vsbInnerY = rowHeight + BORDER_WIDTH;
-  const vsbInnerWidth = scrollbarThickness;
-  const vsbInnerHeight = vsbOuterHeight - BORDER_WIDTH;
-
-  const vsbTrackX = vsbInnerX + scrollbarTrackMargin;
-  const vsbTrackY = vsbInnerY + scrollbarTrackMargin;
-  const vsbTrackWidth =  vsbInnerWidth  - (scrollbarTrackMargin * 2);
-  const vsbTrackHeight = vsbInnerHeight - (scrollbarTrackMargin * 2);
+  const vsbTrackX = vsbX + scrollbarTrackMargin;
+  const vsbTrackY = vsbY + scrollbarTrackMargin;
+  const vsbTrackWidth =  vsbWidth  - (scrollbarTrackMargin * 2);
+  const vsbTrackHeight = vsbHeight - (scrollbarTrackMargin * 2);
   const vsbThumbWidth = vsbTrackWidth;
 
   const vsbThumbHeight = Math.max(normViewportHeight * vsbTrackHeight, MIN_THUMB_LENGTH);
@@ -806,13 +777,10 @@ function reflow(ct: CanvasTable) {
   ct.normViewportHeight = normViewportHeight;
   ct.overflowX = overflowX;
   ct.overflowY = overflowY;
-  ct.hsbOuterY = hsbOuterY;
-  ct.hsbOuterWidth = hsbOuterWidth;
-  ct.hsbOuterHeight = hsbOuterHeight;
-  ct.hsbInnerX = hsbInnerX;
-  ct.hsbInnerY = hsbInnerY;
-  ct.hsbInnerWidth = hsbInnerWidth;
-  ct.hsbInnerHeight = hsbInnerHeight;
+  ct.hsbX = hsbX;
+  ct.hsbY = hsbY;
+  ct.hsbWidth = hsbWidth;
+  ct.hsbHeight = hsbHeight;
   ct.hsbTrackX = hsbTrackX;
   ct.hsbTrackY = hsbTrackY;
   ct.hsbTrackWidth = hsbTrackWidth;
@@ -822,14 +790,10 @@ function reflow(ct: CanvasTable) {
   ct.hsbMaxThumbPos = hsbMaxThumbPos;
   ct.hsbThumbX = hsbThumbX;
   ct.hsbThumbY = hsbThumbY;
-  ct.vsbOuterX = vsbOuterX;
-  ct.vsbOuterY = vsbOuterY;
-  ct.vsbOuterWidth = vsbOuterWidth;
-  ct.vsbOuterHeight = vsbOuterHeight;
-  ct.vsbInnerX = vsbInnerX;
-  ct.vsbInnerY = vsbInnerY;
-  ct.vsbInnerWidth = vsbInnerWidth;
-  ct.vsbInnerHeight = vsbInnerHeight;
+  ct.vsbX = vsbX;
+  ct.vsbY = vsbY;
+  ct.vsbWidth = vsbWidth;
+  ct.vsbHeight = vsbHeight;
   ct.vsbTrackX = vsbTrackX;
   ct.vsbTrackY = vsbTrackY;
   ct.vsbTrackWidth = vsbTrackWidth;
