@@ -17,8 +17,6 @@ export type CanvasTable = {
   mouseMoveHandler: (event: MouseEvent) => void;
   wheelHandler:     (event: WheelEvent) => void;
 
-  mousePos: VectorLike;
-
   columnStates: ColumnState[];
   dataRows:     DataRow[];
 
@@ -71,20 +69,54 @@ export type CanvasTable = {
   rowTop:      number;
   rowBottom:   number;
 
-  hsbOuterRect: RectLike;
-  hsbInnerRect: RectLike;
-  hsbTrackRect: RectLike;
-  hsbThumbRect: RectLike;
+  hsbOuterX:      number;
+  hsbOuterY:      number;
+  hsbOuterWidth:  number;
+  hsbOuterHeight: number;
+
+  hsbInnerX:      number;
+  hsbInnerY:      number;
+  hsbInnerWidth:  number;
+  hsbInnerHeight: number;
+
+  hsbTrackX:      number;
+  hsbTrackY:      number;
+  hsbTrackWidth:  number;
+  hsbTrackHeight: number;
+
+  hsbThumbX:      number;
+  hsbThumbY:      number;
+  hsbThumbWidth:  number;
+  hsbThumbHeight: number;
+
   hsbMaxThumbPos: number;
+
   hsbDragOffset: number;
   hsbIsDragging: boolean;
 
-  vsbOuterRect: RectLike;
-  vsbInnerRect: RectLike;
-  vsbTrackRect: RectLike;
-  vsbThumbRect: RectLike;
-  vsbDragOffset: number;
+  vsbOuterX:      number;
+  vsbOuterY:      number;
+  vsbOuterWidth:  number;
+  vsbOuterHeight: number;
+
+  vsbInnerX:      number;
+  vsbInnerY:      number;
+  vsbInnerWidth:  number;
+  vsbInnerHeight: number;
+
+  vsbTrackX: number;
+  vsbTrackY: number;
+  vsbTrackWidth: number;
+  vsbTrackHeight: number;
+
+  vsbThumbX:      number;
+  vsbThumbY:      number;
+  vsbThumbWidth:  number;
+  vsbThumbHeight: number;
+
   vsbMaxThumbPos: number;
+
+  vsbDragOffset: number;
   vsbIsDragging: boolean;
 
   indexOfColumnWhoseResizerIsBeingHovered: number;

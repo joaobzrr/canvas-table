@@ -57,6 +57,7 @@ export function clamp(value: number, min: number, max: number) {
   return value;
 }
 
+// @Remove
 export function createRect(): RectLike;
 export function createRect(partial: Partial<RectLike> | undefined): RectLike;
 export function createRect(x: number, y: number, width: number, height: number): RectLike;
@@ -70,6 +71,7 @@ export function createRect(...args: any[]): RectLike {
   }
 }
 
+// @Remove
 export function createVector(): VectorLike;
 export function createVector(partial: Partial<VectorLike> | undefined): VectorLike;
 export function createVector(x: number, y: number): VectorLike;
@@ -83,6 +85,7 @@ export function createVector(...args: any[]): VectorLike {
   }
 }
 
+// @Remove
 export function createSize(): Size;
 export function createSize(partial: Partial<Size> | undefined): Size;
 export function createSize(width: number, height: number): Size;
@@ -96,28 +99,22 @@ export function createSize(...args: any[]): Size {
   }
 }
 
+// @Remove
 export function fillRect(ctx: CanvasRenderingContext2D, rect: RectLike) {
   ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
 }
 
+// @Remove
 export function clearRect(ctx: CanvasRenderingContext2D, rect: RectLike) {
   ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
 }
 
-export function clipRect(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number
-) {
+export function clipRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
   const region = new Path2D();
-  region.rect(x, y, width, height);
-
+  region.rect(x, y, w, h);
   ctx.clip(region);
 }
 
-export function pointInRect(point: VectorLike, rect: RectLike) {
-  return point.x >= rect.x && point.x < rect.x + rect.width &&
-         point.y >= rect.y && point.y < rect.y + rect.height;
+export function pointInRect(x: number, y: number, rx: number, ry: number, rw: number, rh: number) {
+  return x >= rx && x < rx + rw && y >= ry && y < ry + rh;
 }
