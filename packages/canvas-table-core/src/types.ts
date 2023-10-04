@@ -87,6 +87,7 @@ export type CanvasTable = {
   hsbMaxThumbPos: number;
 
   hsbDragOffset: number;
+  hsbIsHovering: boolean;
   hsbIsDragging: boolean;
 
   vsbX:      number;
@@ -107,6 +108,7 @@ export type CanvasTable = {
   vsbMaxThumbPos: number;
 
   vsbDragOffset: number;
+  vsbIsHovering: boolean;
   vsbIsDragging: boolean;
 
   indexOfColumnWhoseResizerIsBeingHovered: number;
@@ -182,6 +184,8 @@ export type Theme = {
   bodyBackgroundColor?: string;
   headerBackgroundColor?: string;
   scrollbarTrackColor?: string;
+  scrollbarThumbHoverColor?: string;
+  scrollbarThumbPressedColor?: string;
   columnResizerColor: string;
   bodyFontColor?: string;
   headerFontColor?: string;

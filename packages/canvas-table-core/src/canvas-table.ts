@@ -297,13 +297,9 @@ function onMouseDown(ct: CanvasTable, event: MouseEvent) {
   const {
     wrapperEl,
     hsbThumbX,
-    hsbThumbY,
-    hsbThumbWidth,
-    hsbThumbHeight,
-    vsbThumbX,
+    hsbIsHovering,
     vsbThumbY,
-    vsbThumbWidth,
-    vsbThumbHeight,
+    vsbIsHovering,
     indexOfColumnWhoseResizerIsBeingHovered
   } = ct;
 
@@ -312,30 +308,53 @@ function onMouseDown(ct: CanvasTable, event: MouseEvent) {
   const mousePos = getRelativeMousePos(wrapperEl, eventPos);
   const { x: mouseX, y: mouseY } = mousePos;
 
-  const hsbIsDragging = pointInRect(
-    mouseX, mouseY, hsbThumbX, hsbThumbY, hsbThumbWidth, hsbThumbHeight);
-  if (hsbIsDragging) {
-    ct.hsbDragOffset = mouseX - hsbThumbX;
-  }
-  ct.hsbIsDragging = hsbIsDragging;
+  let shouldUpdate = false;
 
-  const vsbIsDragging = pointInRect(
-    mouseX, mouseY, vsbThumbX, vsbThumbY, vsbThumbWidth, vsbThumbHeight);
-  if (vsbIsDragging) {
-    ct.vsbDragOffset = mouseY - vsbThumbY;
+  const hsbIsDragging = hsbIsHovering;
+  if (hsbIsDragging !== ct.hsbIsDragging) {
+    ct.hsbIsDragging = hsbIsDragging;
+    shouldUpdate = true;
   }
-  ct.vsbIsDragging = vsbIsDragging;
+
+  if (hsbIsDragging) {
+    const hsbDragOffset = mouseX - hsbThumbX;
+    ct.hsbDragOffset = hsbDragOffset;
+  }
+
+  const vsbIsDragging = vsbIsHovering;
+  if (vsbIsDragging !== ct.vsbIsDragging) {
+    ct.vsbIsDragging = vsbIsDragging;
+    shouldUpdate = true;
+  }
+
+  if (vsbIsDragging) {
+    const vsbDragOffset = mouseY - vsbThumbY;
+    ct.vsbDragOffset = vsbDragOffset;
+  }
 
   if (indexOfColumnWhoseResizerIsBeingHovered !== -1) {
     ct.indexOfColumnBeingResized = indexOfColumnWhoseResizerIsBeingHovered;
+  }
+
+  if (shouldUpdate) {
+    render(ct);
   }
 }
 
 function onMouseUp(ct: CanvasTable, _event: MouseEvent) {
   let shouldUpdate = false;
 
-  ct.hsbIsDragging = false;
-  ct.vsbIsDragging = false;
+  const hsbIsDragging = false;
+  if (hsbIsDragging !== ct.hsbIsDragging) {
+    ct.hsbIsDragging = hsbIsDragging;
+    shouldUpdate = true;
+  }
+
+  const vsbIsDragging = false;
+  if (vsbIsDragging !== ct.vsbIsDragging) {
+    ct.vsbIsDragging = vsbIsDragging;
+    shouldUpdate = true;
+  }
 
   {
     const { indexOfColumnBeingResized: oldIndex } = ct;
@@ -358,7 +377,15 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     columnPositions,
     theme,
     columnLeft,
+    hsbThumbX,
+    hsbThumbY,
+    hsbThumbWidth,
+    hsbThumbHeight,
     hsbTrackX,
+    vsbThumbX,
+    vsbThumbY,
+    vsbThumbWidth,
+    vsbThumbHeight,
     vsbTrackY,
     vsbMaxThumbPos,
     vsbDragOffset,
@@ -404,6 +431,18 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     const scrollY = Math.round(scale(normScrollY, 0, 1, 0, maxScrollY));
     ct.scrollY = scrollY;
 
+    shouldUpdate = true;
+  }
+
+  const hsbIsHovering = pointInRect(mouseX, mouseY, hsbThumbX, hsbThumbY, hsbThumbWidth, hsbThumbHeight);
+  if (hsbIsHovering !== ct.hsbIsHovering) {
+    ct.hsbIsHovering = hsbIsHovering;
+    shouldUpdate = true;
+  }
+
+  const vsbIsHovering = pointInRect(mouseX, mouseY, vsbThumbX, vsbThumbY, vsbThumbWidth, vsbThumbHeight);
+  if (vsbIsHovering !== ct.vsbIsHovering) {
+    ct.vsbIsHovering = vsbIsHovering;
     shouldUpdate = true;
   }
 
@@ -499,6 +538,8 @@ function render(ct: CanvasTable) {
     hsbThumbY,
     hsbThumbWidth,
     hsbThumbHeight,
+    hsbIsHovering,
+    hsbIsDragging,
     vsbX,
     vsbY,
     vsbWidth,
@@ -507,6 +548,8 @@ function render(ct: CanvasTable) {
     vsbThumbY,
     vsbThumbWidth,
     vsbThumbHeight,
+    vsbIsHovering,
+    vsbIsDragging,
     columnStates,
     dataRows,
     columnLeft,
@@ -529,6 +572,8 @@ function render(ct: CanvasTable) {
     headerBackgroundColor = tableBackgroundColor,
     scrollbarTrackColor,
     scrollbarThumbColor,
+    scrollbarThumbHoverColor,
+    scrollbarThumbPressedColor,
     columnResizerColor,
     columnResizerOpacity
   } = theme;
@@ -558,24 +603,37 @@ function render(ct: CanvasTable) {
     ctx.fillRect(headerRectX, headerRectY, headerRectWidth, headerRectHeight);
   }
 
-  // Draw scrollbar background and thumb
+  // Draw horizontal scrollbar background and thumb
   if (overflowX) {
     if (scrollbarTrackColor) {
       ctx.fillStyle = scrollbarTrackColor;
       ctx.fillRect(hsbX, hsbY, hsbWidth, hsbHeight);
     }
 
-    ctx.fillStyle = scrollbarThumbColor;
+    if (hsbIsDragging && scrollbarThumbPressedColor) {
+      ctx.fillStyle = scrollbarThumbPressedColor;
+    } else if (hsbIsHovering && scrollbarThumbHoverColor) {
+      ctx.fillStyle = scrollbarThumbHoverColor;
+    } else {
+      ctx.fillStyle = scrollbarThumbColor;
+    }
     ctx.fillRect(hsbThumbX, hsbThumbY, hsbThumbWidth, hsbThumbHeight);
   }
 
+  // Draw vertical scrollbar background and thumb
   if (overflowY) {
     if (scrollbarTrackColor) {
       ctx.fillStyle = scrollbarTrackColor;
       ctx.fillRect(vsbX, vsbY, vsbWidth, vsbHeight);
     }
     
-    ctx.fillStyle = scrollbarThumbColor;
+    if (vsbIsDragging && scrollbarThumbPressedColor) {
+      ctx.fillStyle = scrollbarThumbPressedColor;
+    } else if (vsbIsHovering && scrollbarThumbHoverColor) {
+      ctx.fillStyle = scrollbarThumbHoverColor;
+    } else {
+      ctx.fillStyle = scrollbarThumbColor;
+    }
     ctx.fillRect(vsbThumbX, vsbThumbY, vsbThumbWidth, vsbThumbHeight);
   }
 

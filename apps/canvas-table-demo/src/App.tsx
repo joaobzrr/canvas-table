@@ -161,6 +161,24 @@ function App() {
               className={styles.input}
             />
           </div>
+          <div className={styles.row}>
+            <label className={styles.label}>Scrollbar Thumb Hover Color</label>
+            <input
+              onChange={event => updateTheme({
+                scrollbarThumbHoverColor: event.target.value || undefined
+              })}
+              className={styles.input}
+            />
+          </div>
+          <div className={styles.row}>
+            <label className={styles.label}>Scrollbar Thumb Pressed Color</label>
+            <input
+              onChange={event => updateTheme({
+                scrollbarThumbPressedColor: event.target.value || undefined
+              })}
+              className={styles.input}
+            />
+          </div>
         </form>
       </div>
       <main className={styles.main}>
