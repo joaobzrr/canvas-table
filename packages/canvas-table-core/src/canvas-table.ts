@@ -96,6 +96,11 @@ export function create(params: CanvasTableParams): CanvasTable {
   const overflowX = false;
   const overflowY = false;
 
+  const columnLeft = 0;
+  const columnRight = 0;
+  const rowTop = 0;
+  const rowBottom = 0;
+
   const hsbX = 0;
   const hsbY = 0;
   const hsbWidth = 1;
@@ -137,10 +142,8 @@ export function create(params: CanvasTableParams): CanvasTable {
   const indexOfColumnWhoseResizerIsBeingHovered = -1;
   const indexOfColumnBeingResized = -1;
 
-  const columnLeft = 0;
-  const columnRight = 0;
-  const rowTop = 0;
-  const rowBottom = 0;
+  const hoveredRowIndex = -1;
+  const selectedRowIndex = -1;
 
   const ct = {
     canvas,
@@ -163,6 +166,24 @@ export function create(params: CanvasTableParams): CanvasTable {
     headerRectY,
     headerRectWidth,
     headerRectHeight,
+    scrollX,
+    scrollY,
+    maxScrollX,
+    maxScrollY,
+    normScrollX,
+    normScrollY,
+    scrollWidth,
+    scrollHeight,
+    viewportWidth,
+    viewportHeight,
+    normViewportWidth,
+    normViewportHeight,
+    columnLeft,
+    columnRight,
+    rowTop,
+    rowBottom,
+    overflowX,
+    overflowY,
     hsbX,
     hsbY,
     hsbWidth,
@@ -195,24 +216,8 @@ export function create(params: CanvasTableParams): CanvasTable {
     vsbIsDragging,
     indexOfColumnWhoseResizerIsBeingHovered,
     indexOfColumnBeingResized,
-    scrollX,
-    scrollY,
-    maxScrollX,
-    maxScrollY,
-    normScrollX,
-    normScrollY,
-    scrollWidth,
-    scrollHeight,
-    viewportWidth,
-    viewportHeight,
-    normViewportWidth,
-    normViewportHeight,
-    columnLeft,
-    columnRight,
-    rowTop,
-    rowBottom,
-    overflowX,
-    overflowY
+    hoveredRowIndex,
+    selectedRowIndex
   } as CanvasTable;
 
   updateContentSize(ct);
@@ -376,12 +381,20 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     columnStates,
     columnPositions,
     theme,
+    maxScrollX,
+    maxScrollY,
+    gridWidth,
     columnLeft,
+    rowTop,
+    rowPositions,
     hsbThumbX,
     hsbThumbY,
     hsbThumbWidth,
     hsbThumbHeight,
     hsbTrackX,
+    hsbMaxThumbPos,
+    hsbDragOffset,
+    hsbIsDragging,
     vsbThumbX,
     vsbThumbY,
     vsbThumbWidth,
@@ -390,11 +403,6 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     vsbMaxThumbPos,
     vsbDragOffset,
     vsbIsDragging,
-    maxScrollX,
-    maxScrollY,
-    hsbMaxThumbPos,
-    hsbDragOffset,
-    hsbIsDragging,
     indexOfColumnWhoseResizerIsBeingHovered,
     indexOfColumnBeingResized
   } = ct;
@@ -408,6 +416,7 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
 
   let shouldUpdate = false;
 
+  // Drag horizontal scrollbar thumb
   if (hsbIsDragging) {
     const hsbThumbX = clamp(mouseX - hsbDragOffset, hsbTrackX, hsbMaxThumbPos);
     ct.hsbThumbX = hsbThumbX;
@@ -421,6 +430,7 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     shouldUpdate = true;
   }
 
+  // Drag vertical scrollbar thumb
   if (vsbIsDragging) {
     const vsbThumbY = clamp(mouseY - vsbDragOffset, vsbTrackY, vsbMaxThumbPos);
     ct.vsbThumbY = vsbThumbY;
@@ -434,18 +444,21 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     shouldUpdate = true;
   }
 
+  // Check whether cursor is over horizontal scrollbar thumb
   const hsbIsHovering = pointInRect(mouseX, mouseY, hsbThumbX, hsbThumbY, hsbThumbWidth, hsbThumbHeight);
   if (hsbIsHovering !== ct.hsbIsHovering) {
     ct.hsbIsHovering = hsbIsHovering;
     shouldUpdate = true;
   }
 
+  // Check whether cursor is over vertical scrollbar thumb
   const vsbIsHovering = pointInRect(mouseX, mouseY, vsbThumbX, vsbThumbY, vsbThumbWidth, vsbThumbHeight);
   if (vsbIsHovering !== ct.vsbIsHovering) {
     ct.vsbIsHovering = vsbIsHovering;
     shouldUpdate = true;
   }
 
+  // Find index of column whose rezizer the cursor is hovering over
   {
     const oldIndex = indexOfColumnWhoseResizerIsBeingHovered;
     let newIndex = -1;
@@ -472,6 +485,7 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     }
   }
 
+  // Resize column
   if (indexOfColumnBeingResized !== -1) {
     const columnState = columnStates[indexOfColumnBeingResized];
 
@@ -482,6 +496,27 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
     columnState.width = columnWidth;
 
     shouldUpdate = true;
+  }
+
+  // Check whether the cursor is hovering over a row
+  {
+    let hoveredRowIndex = -1;
+    for (let i = 0; i < rowPositions.length; i++) {
+      const rowIndex = rowTop + i;
+
+      const rowX = 0;
+      const rowY = rowPositions[i];
+      const rowWidth = gridWidth;
+      if (pointInRect(mouseX, mouseY, rowX, rowY, rowWidth, rowHeight)) {
+        hoveredRowIndex = rowIndex;
+        break;
+      }
+    }
+
+    if (hoveredRowIndex !== ct.hoveredRowIndex) {
+      ct.hoveredRowIndex = hoveredRowIndex;
+      shouldUpdate = true;
+    }
   }
 
   if (shouldUpdate) {
@@ -520,8 +555,6 @@ function render(ct: CanvasTable) {
     bodyFont,
     headerFont,
     theme,
-    mainRectWidth,
-    mainRectHeight,
     bodyRectX,
     bodyRectY,
     bodyRectWidth,
@@ -556,12 +589,13 @@ function render(ct: CanvasTable) {
     rowTop,
     columnPositions,
     rowPositions,
-    contentWidth,
-    contentHeight,
+    gridWidth,
+    gridHeight,
     overflowX,
     overflowY,
     indexOfColumnWhoseResizerIsBeingHovered,
     indexOfColumnBeingResized,
+    hoveredRowIndex
   } = ct;
 
   const {
@@ -570,6 +604,7 @@ function render(ct: CanvasTable) {
     tableBackgroundColor,
     bodyBackgroundColor = tableBackgroundColor,
     headerBackgroundColor = tableBackgroundColor,
+    hoveredRowColor,
     scrollbarTrackColor,
     scrollbarThumbColor,
     scrollbarThumbHoverColor,
@@ -601,6 +636,20 @@ function render(ct: CanvasTable) {
   if (headerBackgroundColor) {
     ctx.fillStyle = headerBackgroundColor;
     ctx.fillRect(headerRectX, headerRectY, headerRectWidth, headerRectHeight);
+  }
+
+  if (hoveredRowIndex != -1 && hoveredRowColor) {
+    withContext(ctx, () => {
+      clipRect(ctx, bodyRectX, bodyRectY, bodyRectWidth, bodyRectHeight);
+
+      const rowPositionIndex = hoveredRowIndex - rowTop;
+      const rowY = rowPositions[rowPositionIndex];
+      const rowX = 0;
+      const rowWidth = gridWidth;
+
+      ctx.fillStyle = hoveredRowColor;
+      ctx.fillRect(rowX, rowY, rowWidth, rowHeight);
+    });
   }
 
   // Draw horizontal scrollbar background and thumb
@@ -645,9 +694,6 @@ function render(ct: CanvasTable) {
 
   // Draw header bottom border
   lineRenderer.hline(ctx, 0, rowHeight, canvas.width);
-
-  const gridWidth  = Math.min(mainRectWidth,  contentWidth);
-  const gridHeight = Math.min(mainRectHeight, contentHeight + rowHeight);
 
   // If horizontal scrollbar is visible, draw its border, otherwise,
   // draw table content right border
@@ -801,6 +847,9 @@ function reflow(ct: CanvasTable) {
   const normViewportWidth = viewportWidth  / scrollWidth;
   const normViewportHeight = viewportHeight / scrollHeight;
 
+  const gridWidth  = Math.min(mainRectWidth,  contentWidth);
+  const gridHeight = Math.min(mainRectHeight, contentHeight + rowHeight);
+
   const maxScrollX = scrollWidth  - viewportWidth;
   const maxScrollY  = scrollHeight - viewportHeight;
 
@@ -859,6 +908,8 @@ function reflow(ct: CanvasTable) {
   ct.viewportHeight = viewportHeight;
   ct.normViewportWidth = normViewportWidth;
   ct.normViewportHeight = normViewportHeight;
+  ct.gridWidth = gridWidth;
+  ct.gridHeight = gridHeight;
   ct.overflowX = overflowX;
   ct.overflowY = overflowY;
   ct.hsbX = hsbX;

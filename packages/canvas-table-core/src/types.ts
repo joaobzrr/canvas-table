@@ -58,6 +58,9 @@ export type CanvasTable = {
   normViewportWidth:  number;
   normViewportHeight: number;
 
+  gridWidth:  number;
+  gridHeight: number;
+
   overflowX: boolean;
   overflowY: boolean;
   
@@ -113,6 +116,9 @@ export type CanvasTable = {
 
   indexOfColumnWhoseResizerIsBeingHovered: number;
   indexOfColumnBeingResized: number;
+
+  hoveredRowIndex:  number;
+  selectedRowIndex: number;
 }
 
 export type CanvasTableParams = {
@@ -183,6 +189,7 @@ export type Theme = {
   tableBackgroundColor?: string;
   bodyBackgroundColor?: string;
   headerBackgroundColor?: string;
+  hoveredRowColor?: string;
   scrollbarTrackColor?: string;
   scrollbarThumbHoverColor?: string;
   scrollbarThumbPressedColor?: string;

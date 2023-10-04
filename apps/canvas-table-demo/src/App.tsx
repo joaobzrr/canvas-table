@@ -45,6 +45,15 @@ function App() {
             />
           </div>
           <div className={styles.row}>
+            <label className={styles.label}>Hovered Row Color</label>
+            <input
+              onChange={event => updateTheme({
+                hoveredRowColor: event.target.value || undefined
+              })}
+              className={styles.input}
+            />
+          </div>
+          <div className={styles.row}>
             <label className={styles.label}>Border Color</label>
             <input
               onChange={event => updateTheme({
