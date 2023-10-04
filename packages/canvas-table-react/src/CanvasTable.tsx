@@ -46,7 +46,7 @@ const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>((props
     });
 
     return () => {
-      cleanup(canvasTableRef.current);
+      cleanup(canvasTableRef.current!);
       canvasTableRef.current = null;
     }
   }, []);
