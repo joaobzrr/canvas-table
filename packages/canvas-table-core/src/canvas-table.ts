@@ -454,7 +454,23 @@ function onMouseMove(ct: CanvasTable, event: MouseEvent) {
   }
 }
 
-function onWheel(_ct: CanvasTable, _event: WheelEvent) {
+function onWheel(ct: CanvasTable, event: WheelEvent) {
+  const { maxScrollX, maxScrollY } = ct;
+
+  const scrollX = Math.round(clamp(ct.scrollX + event.deltaX, 0, maxScrollX));
+  const scrollY = Math.round(clamp(ct.scrollY + event.deltaY, 0, maxScrollY));
+  
+  const normScrollX = maxScrollX > 0 ? scrollX / maxScrollX : 0;
+  const normScrollY = maxScrollY > 0 ? scrollY / maxScrollY : 0;
+
+  ct.scrollX = scrollX;
+  ct.scrollY = scrollY;
+  ct.normScrollX = normScrollX;
+  ct.normScrollY = normScrollY;
+
+  reflow(ct);
+  updateScreenData(ct);
+  render(ct);
 }
 
 function render(ct: CanvasTable) {
