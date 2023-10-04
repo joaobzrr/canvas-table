@@ -529,6 +529,8 @@ function render(ct: CanvasTable) {
     headerBackgroundColor = tableBackgroundColor,
     scrollbarTrackColor,
     scrollbarThumbColor,
+    columnResizerColor,
+    columnResizerOpacity
   } = theme;
 
   const ctx = canvas.getContext("2d");
@@ -678,8 +680,11 @@ function render(ct: CanvasTable) {
     const x = columnPosition + columnWidth - COLUMN_RESIZER_WIDTH;
     const width = (COLUMN_RESIZER_WIDTH * 2) + 1;
 
-    ctx.fillStyle = "blue";
-    ctx.fillRect(x, 0, width, rowHeight);
+    withContext(ctx, () => {
+      ctx.fillStyle = columnResizerColor;
+      ctx.globalAlpha = columnResizerOpacity;
+      ctx.fillRect(x, 0, width, rowHeight);
+    });
   }
 }
 

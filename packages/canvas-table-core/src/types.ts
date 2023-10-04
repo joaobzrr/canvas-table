@@ -182,7 +182,7 @@ export type Theme = {
   bodyBackgroundColor?: string;
   headerBackgroundColor?: string;
   scrollbarTrackColor?: string;
-  columnResizerColor?: string;
+  columnResizerColor: string;
   bodyFontColor?: string;
   headerFontColor?: string;
 }
