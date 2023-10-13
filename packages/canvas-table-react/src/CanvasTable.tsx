@@ -1,13 +1,5 @@
 import { useRef, useLayoutEffect, forwardRef } from "react";
-import {
-  create,
-  setContent,
-  setSize,
-  setTheme,
-  cleanup,
-  CanvasTable,
-  CanvasTableParams
-} from "canvas-table-core";
+import { create, set, cleanup, CanvasTable, CreateCanvasTableParams } from "canvas-table-core-2";
 import { useUpdateEffect } from "./hooks";
 
 let count = 0;
@@ -18,7 +10,7 @@ function getContainerId() {
   return result;
 }
 
-export type CanvasTableProps = Omit<CanvasTableParams, "container"> & {
+export type CanvasTableProps = Omit<CreateCanvasTableParams, "container"> & {
   containerClassName?: string;
   containerStyle?: React.CSSProperties;
 }
@@ -53,21 +45,14 @@ const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>((props
 
   useUpdateEffect(() => {
     if (canvasTableRef.current) {
-      setContent(canvasTableRef.current, columnDefs, dataRows);
+      set(canvasTableRef.current, {
+        columnDefs,
+        dataRows,
+        size,
+        theme
+      });
     }
-  }, [columnDefs, dataRows]);
-
-  useUpdateEffect(() => {
-    if (canvasTableRef.current && size) {
-      setSize(canvasTableRef.current, size);
-    }
-  }, [size]);
-
-  useUpdateEffect(() => {
-    if (canvasTableRef.current && theme) {
-      setTheme(canvasTableRef.current, theme);
-    }
-  }, [theme]);
+  }, [columnDefs, dataRows, size, theme]);
 
   return (
     <div

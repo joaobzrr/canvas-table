@@ -25,7 +25,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "canvas-table-core": "workspace:^"
+    "canvas-table-core-2": "workspace:^"
   },
   "devDependencies": {
     "@types/react": "^18.2.14",
