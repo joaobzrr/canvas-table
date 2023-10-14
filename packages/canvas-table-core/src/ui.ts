@@ -141,6 +141,7 @@ function render(ui: UiContext) {
     throw new Error("Could not instantiate canvas context");
   }
 
+  ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   while (renderQueue.length > 0) {

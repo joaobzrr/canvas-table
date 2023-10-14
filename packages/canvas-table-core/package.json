@@ -1,8 +1,11 @@
 {
   "name": "canvas-table-core",
   "version": "1.0.0",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "description": "",
-  "main": "./dist/canvas-table-core.umd.cjs",
+  "main": "index.js",
   "module": "./dist/canvas-table-core.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -22,21 +25,18 @@
     "build": "tsc && vite build",
     "lint": "eslint --ext .js,.ts ./src"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "graphemer": "^1.4.0",
-    "konva": "^9.2.0"
-  },
   "devDependencies": {
-    "@types/lodash": "^4.14.197",
-    "@typescript-eslint/eslint-plugin": "^6.7.3",
-    "@typescript-eslint/parser": "^6.7.3",
+    "@types/uuid": "^9.0.2",
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
     "eslint": "^8.44.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.0",
     "vite-plugin-dts": "^3.5.2",
     "vite-plugin-eslint": "^1.8.1"
+  },
+  "dependencies": {
+    "graphemer": "^1.4.0",
+    "uuid": "^9.0.0"
   }
 }

@@ -1,38 +1,31 @@
-import { VectorLike, RectLike, Size } from "./types";
+export function shallowMerge<T1, T2>(obj1: T1, obj2: T2): T1 & T2;
+export function shallowMerge<T1, T2, T3>(obj1: T1, obj2: T2, obj3: T3): T1 & T2 & T3;
+export function shallowMerge<T extends any[]>(...args: T): any {
+  const result = args[0];
 
-export function throttle<T extends (...args: any[]) => void>(func: T, delay: number): T {
-  let lastCalled = 0;
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-
-  const result = ((...args: any[]) => {
-    const now = Date.now();
-    const timeSinceLastCall = now - lastCalled;
-
-    if (!lastCalled || timeSinceLastCall >= delay) {
-      func(...args);
-      lastCalled = now;
-    } else if (!timeout) {
-      timeout = setTimeout(() => {
-        func(...args);
-        lastCalled = now;
-        timeout = null;
-      }, delay - timeSinceLastCall);
+  for (const obj of args.slice(1)) {
+    if (obj === null || obj === undefined) {
+      continue;
     }
-  }) as T;
 
-  return result;
-}
-
-export function shallowMerge<T = Record<string, any>>(...objects: Record<string, any>[]): T {
-  const result = {} as T;
-  for (const obj of objects) {
     for (const key of Object.keys(obj)) {
       if (obj[key] !== undefined) {
-        result[key as keyof T] = obj[key];
+        result[key] = obj[key];
       }
     }
   }
   return result;
+}
+
+export function shallowMatch<T1 extends object, T2 extends object>(obj1: T1, obj2: T2) {
+  for (const key of Object.keys(obj1)) {
+    const o1 = obj1 as any;
+    const o2 = obj2 as any;
+    if (o1[key] !== undefined && o1[key] !== o2[key]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function scale(
@@ -57,70 +50,6 @@ export function clamp(value: number, min: number, max: number) {
   return value;
 }
 
-// @Remove
-export function createRect(): RectLike;
-export function createRect(partial: Partial<RectLike> | undefined): RectLike;
-export function createRect(x: number, y: number, width: number, height: number): RectLike;
-export function createRect(...args: any[]): RectLike {
-  if (args.length === 0) {
-    return { x: 0, y: 0, width: 1, height: 1 };
-  } else if (args.length === 1) {
-    return { x: 0, y: 0, width: 1, height: 1, ...args[0] };
-  } else {
-    return { x: args[0], y: args[1], width: args[2], height: args[3] };
-  }
-}
-
-// @Remove
-export function createVector(): VectorLike;
-export function createVector(partial: Partial<VectorLike> | undefined): VectorLike;
-export function createVector(x: number, y: number): VectorLike;
-export function createVector(...args: any[]): VectorLike {
-  if (args.length === 0) {
-    return { x: 0, y: 0 };
-  } else if (args.length === 1) {
-    return { x: 0, y: 0, ...args[0] };
-  } else {
-    return { x: args[0], y: args[1] };
-  }
-}
-
-// @Remove
-export function createSize(): Size;
-export function createSize(partial: Partial<Size> | undefined): Size;
-export function createSize(width: number, height: number): Size;
-export function createSize(...args: any[]): Size {
-  if (args.length === 0) {
-    return { width: 0, height: 0 };
-  } else if (args.length === 1) {
-    return { width: 0, height: 0, ...args[0], };
-  } else {
-    return { width: args[0], height: args[1] };
-  }
-}
-
-// @Remove
-export function fillRect(ctx: CanvasRenderingContext2D, rect: RectLike) {
-  ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
-}
-
-// @Remove
-export function clearRect(ctx: CanvasRenderingContext2D, rect: RectLike) {
-  ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
-}
-
-export function clipRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
-  const region = new Path2D();
-  region.rect(x, y, w, h);
-  ctx.clip(region);
-}
-
-export function pointInRect(x: number, y: number, rx: number, ry: number, rw: number, rh: number) {
-  return x >= rx && x < rx + rw && y >= ry && y < ry + rh;
-}
-
-export function withContext(ctx: CanvasRenderingContext2D, func: () => void) {
-  ctx.save();
-  func();
-  ctx.restore();
+export function isObject(val: any) {
+  return val != null && val.constructor.name === "Object"
 }

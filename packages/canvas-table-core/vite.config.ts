@@ -10,8 +10,6 @@ export default defineConfig({
     eslint()
   ],
   build: {
-    rollupOptions: {
-    },
     sourcemap: true,
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

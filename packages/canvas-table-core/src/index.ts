@@ -1,14 +1,10 @@
-export {
-  create,
-  setContent,
-  setSize,
-  setTheme,
-  cleanup
-} from "./canvas-table";
+export { create, set, cleanup } from "./canvas-table";
+
 export type {
   CanvasTable,
-  CanvasTableParams,
+  CreateCanvasTableParams,
+  SetCanvasTableParams,
   ColumnDef,
   DataRow,
-  Theme,
+  Theme
 } from "./types";

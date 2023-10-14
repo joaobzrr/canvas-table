@@ -1,7 +1,7 @@
 import {
   GlyphAtlasOptions,
   TextureNode,
-  RectLike,
+  Rect,
   Size,
   Font,
   GlyphData
@@ -160,7 +160,7 @@ export class GlyphAtlas {
     return node;
   } 
 
-  private makeNode(rect: RectLike): TextureNode {
+  private makeNode(rect: Rect): TextureNode {
     return {
       rect,
       left: null,
@@ -169,7 +169,7 @@ export class GlyphAtlas {
     };
   }
 
-  private makeGlyphRect(rect: RectLike, padding: number) {
+  private makeGlyphRect(rect: Rect, padding: number) {
     return {
       x: rect.x + padding,
       y: rect.y + padding,

@@ -1,1045 +1,767 @@
-import { LineRenderer } from "./LineRenderer";
-import { TextRenderer } from "./TextRenderer";
-import { defaultTheme } from "./defaultTheme";
+import * as UI from "./ui";
+import { defaultTheme } from "./default-theme";
+import { shallowMerge, scale, clamp } from "./utils";
 import {
-  shallowMerge,
-  scale,
-  clamp,
-  clipRect,
-  pointInRect,
-  withContext
-} from "./utils";
-import {
-  DEFAULT_COLUMN_WIDTH,
-  MIN_THUMB_LENGTH,
+  COLUMN_RESIZER_LEFT_WIDTH,
   COLUMN_RESIZER_WIDTH,
-  BORDER_WIDTH,
+  DEFAULT_COLUMN_WIDTH,
   MIN_COLUMN_WIDTH,
+  MIN_THUMB_LENGTH
 } from "./constants";
 import {
   CanvasTable,
-  CanvasTableParams,
+  CreateCanvasTableParams,
+  SetCanvasTableParams,
   ColumnDef,
   ColumnState,
-  DataRow,
-  VectorLike,
-  Size,
-  Theme,
-  TextData,
+  Rect,
+  Vector,
+  Layout,
+  Viewport,
 } from "./types";
 
-export function create(params: CanvasTableParams): CanvasTable {
-  const { container, columnDefs, dataRows, size } = params;
+export function create(params: CreateCanvasTableParams): CanvasTable {
+  const { columnDefs, dataRows,  container, size } = params;
+
+  const ui = UI.create({ container: container, size: size });
 
   const columnStates = columnDefsToColumnStates(columnDefs);
 
-  const theme = { ...defaultTheme, ...params.theme };
+  const theme = shallowMerge({}, defaultTheme, params.theme);
 
-  const containerEl = document.getElementById(container);
-  if (!containerEl) {
-    throw new Error(`Element with id "${params.container}" could not be found`);
-  }
-
-  containerEl.replaceChildren();
-  containerEl.style.overflow = "hidden";
-
-  const wrapperEl = document.createElement("div");
-  wrapperEl.classList.add("canvas-table-wrapper");
-  containerEl.appendChild(wrapperEl);
-
-  const canvasWidth  = size?.width  ?? 1;
-  const canvasHeight = size?.height ?? 1;
-
-  const canvas = document.createElement("canvas");
-  canvas.width  = canvasWidth;
-  canvas.height = canvasHeight;
-  wrapperEl.appendChild(canvas);
-
-  const lineRenderer = new LineRenderer();
-  const textRenderer = new TextRenderer();
-
-  const { rowHeight } = theme;
-
-  const mainRectX = 0;
-  const mainRectY = 0;
-  const mainRectWidth = 1;
-  const mainRectHeight = 1;
-
-  const bodyRectX = 0;
-  const bodyRectY = rowHeight;
-  const bodyRectWidth = 1;
-  const bodyRectHeight = 1;
-
-  const headerRectX = 0;
-  const headerRectY = 0;
-  const headerRectWidth = 1;
-  const headerRectHeight = rowHeight;
-
-  const scrollX = 0;
-  const scrollY = 0;
-
-  const maxScrollX = 0;
-  const maxScrollY = 0;
-
-  const normScrollX = 0;
-  const normScrollY = 0;
-
-  const scrollWidth  = 1;
-  const scrollHeight = 1;
-
-  const viewportWidth  = 1;
-  const viewportHeight = 1;
-
-  const normViewportWidth  = 1;
-  const normViewportHeight = 1;
-
-  const overflowX = false;
-  const overflowY = false;
-
-  const columnLeft = 0;
-  const columnRight = 0;
-  const rowTop = 0;
-  const rowBottom = 0;
-
-  const hsbX = 0;
-  const hsbY = 0;
-  const hsbWidth = 1;
-  const hsbHeight = 1;
-
-  const hsbTrackX      = 0;
-  const hsbTrackY      = 0;
-  const hsbTrackWidth  = 1;
-  const hsbTrackHeight = 1;
-
-  const hsbThumbX      = 0;
-  const hsbThumbY      = 0;
-  const hsbThumbWidth  = 1;
-  const hsbThumbHeight = 1;
-
-  const hsbMaxThumbPos = 0;
-  const hsbDragOffset  = 0;
-  const hsbIsDragging = false;
-
-  const vsbX      = 0;
-  const vsbY      = 0;
-  const vsbWidth  = 1;
-  const vsbHeight = 1;
-
-  const vsbTrackX      = 0;
-  const vsbTrackY      = 0;
-  const vsbTrackWidth  = 1;
-  const vsbTrackHeight = 1;
-
-  const vsbThumbX      = 0;
-  const vsbThumbY      = 0;
-  const vsbThumbWidth  = 1;
-  const vsbThumbHeight = 1;
-
-  const vsbMaxThumbPos = 0;
-  const vsbDragOffset = 0;
-  const vsbIsDragging = false;
-
-  const indexOfColumnWhoseResizerIsBeingHovered = -1;
-  const indexOfColumnBeingResized = -1;
-
-  const hoveredRowIndex = -1;
-  const selectedRowIndex = -1;
+  const scrollPos = { x: 0, y: 0 };
 
   const ct = {
-    canvas,
-    containerEl,
-    wrapperEl,
-    lineRenderer,
-    textRenderer,
+    ui,
     columnStates,
     dataRows,
     theme,
-    mainRectX,
-    mainRectY,
-    mainRectWidth,
-    mainRectHeight,
-    bodyRectX,
-    bodyRectY,
-    bodyRectWidth,
-    bodyRectHeight,
-    headerRectX,
-    headerRectY,
-    headerRectWidth,
-    headerRectHeight,
-    scrollX,
-    scrollY,
-    maxScrollX,
-    maxScrollY,
-    normScrollX,
-    normScrollY,
-    scrollWidth,
-    scrollHeight,
-    viewportWidth,
-    viewportHeight,
-    normViewportWidth,
-    normViewportHeight,
-    columnLeft,
-    columnRight,
-    rowTop,
-    rowBottom,
-    overflowX,
-    overflowY,
-    hsbX,
-    hsbY,
-    hsbWidth,
-    hsbHeight,
-    hsbTrackX,
-    hsbTrackY,
-    hsbTrackWidth,
-    hsbTrackHeight,
-    hsbThumbX,
-    hsbThumbY,
-    hsbThumbWidth,
-    hsbThumbHeight,
-    hsbMaxThumbPos,
-    hsbDragOffset,
-    hsbIsDragging,
-    vsbX,
-    vsbY,
-    vsbWidth,
-    vsbHeight,
-    vsbTrackX,
-    vsbTrackY,
-    vsbTrackWidth,
-    vsbTrackHeight,
-    vsbThumbX,
-    vsbThumbY,
-    vsbThumbWidth,
-    vsbThumbHeight,
-    vsbMaxThumbPos,
-    vsbDragOffset,
-    vsbIsDragging,
-    indexOfColumnWhoseResizerIsBeingHovered,
-    indexOfColumnBeingResized,
-    hoveredRowIndex,
-    selectedRowIndex
+    scrollPos,
   } as CanvasTable;
 
-  updateContentSize(ct);
-  reflow(ct);
-  updateScreenData(ct);
-
-  updateFonts(ct);
-
-  ct.mouseDownHandler = (e) => onMouseDown(ct, e);
-  ct.mouseUpHandler   = (e) => onMouseUp(ct, e);
-  ct.mouseMoveHandler = (e) => onMouseMove(ct, e);
-  ct.wheelHandler     = (e) => onWheel(ct, e);
-
-  canvas.addEventListener("mousedown", ct.mouseDownHandler);
-  canvas.addEventListener("wheel", ct.wheelHandler);
-
-  document.addEventListener("mousemove", ct.mouseMoveHandler);
-  document.addEventListener("mouseup", ct.mouseUpHandler);
+  const rafId = requestAnimationFrame(() => update(ct));
+  ct.rafId = rafId;
 
   return ct;
 }
 
-export function setContent(
-  ct: CanvasTable,
-  columnDefs: ColumnDef[],
-  dataRows: DataRow[]
-) {
-  const columnStates = columnDefsToColumnStates(columnDefs);
-  ct.columnStates = columnStates;
-
-  ct.dataRows = dataRows;
-
-  updateContentSize(ct);
-  reflow(ct);
-  updateScreenData(ct);
-
-  render(ct);
-}
-
-export function setSize(ct: CanvasTable, size: Size) {
-  if (size.width <= 0 || size.height <= 0) {
-    return;
+export function set(ct: CanvasTable, params: Partial<SetCanvasTableParams>) {
+  if (params.size) {
+    UI.setCanvasSize(ct.ui, params.size);
   }
 
-  const { canvas } = ct;
-
-  canvas.width  = size.width;
-  canvas.height = size.height;
-
-  reflow(ct);
-  updateScreenData(ct);
-
-  render(ct);
-}
-
-export function setTheme(ct: CanvasTable, theme: Partial<Theme>) {
-  const _theme = shallowMerge<Theme>({}, defaultTheme, theme);
-  ct.theme = _theme;
-
-  updateContentSize(ct);
-  reflow(ct);
-  updateScreenData(ct);
-
-  updateFonts(ct);
-
-  const { lineRenderer } = ct;
-  const { tableBorderColor } = _theme;
-
-  lineRenderer.setColor(tableBorderColor);
-
-  render(ct);
+  if (params.theme) {
+    ct.theme = shallowMerge({}, defaultTheme, params.theme);
+  }
 }
 
 export function cleanup(ct: CanvasTable) {
-  const { mouseMoveHandler, mouseUpHandler } = ct;
-
-  document.removeEventListener("mousemove", mouseMoveHandler);
-  document.removeEventListener("mouseup", mouseUpHandler);
+  UI.removeDocumentEventListeners(ct.ui);
+  cancelAnimationFrame(ct.rafId);
 }
 
-function onMouseDown(ct: CanvasTable, event: MouseEvent) {
-  const {
-    wrapperEl,
-    hsbThumbX,
-    hsbIsHovering,
-    vsbThumbY,
-    vsbIsHovering,
-    indexOfColumnWhoseResizerIsBeingHovered
-  } = ct;
+function update(ct: CanvasTable) {
+  const { ui, columnStates, dataRows, theme, scrollPos } = ct;
 
-  const eventPos = { x: event.clientX, y: event.clientY };
+  UI.beginFrame(ui);
 
-  const mousePos = getRelativeMousePos(wrapperEl, eventPos);
-  const { x: mouseX, y: mouseY } = mousePos;
+  const canvasSize = UI.getCanvasSize(ui);
 
-  let shouldUpdate = false;
+  let layout = reflow(ct);
+  let viewport = calculateViewport(ct, layout);
 
-  const hsbIsDragging = hsbIsHovering;
-  if (hsbIsDragging !== ct.hsbIsDragging) {
-    ct.hsbIsDragging = hsbIsDragging;
-    shouldUpdate = true;
-  }
-
-  if (hsbIsDragging) {
-    const hsbDragOffset = mouseX - hsbThumbX;
-    ct.hsbDragOffset = hsbDragOffset;
-  }
-
-  const vsbIsDragging = vsbIsHovering;
-  if (vsbIsDragging !== ct.vsbIsDragging) {
-    ct.vsbIsDragging = vsbIsDragging;
-    shouldUpdate = true;
-  }
-
-  if (vsbIsDragging) {
-    const vsbDragOffset = mouseY - vsbThumbY;
-    ct.vsbDragOffset = vsbDragOffset;
-  }
-
-  if (indexOfColumnWhoseResizerIsBeingHovered !== -1) {
-    ct.indexOfColumnBeingResized = indexOfColumnWhoseResizerIsBeingHovered;
-  }
-
-  if (shouldUpdate) {
-    render(ct);
-  }
-}
-
-function onMouseUp(ct: CanvasTable, _event: MouseEvent) {
-  let shouldUpdate = false;
-
-  const hsbIsDragging = false;
-  if (hsbIsDragging !== ct.hsbIsDragging) {
-    ct.hsbIsDragging = hsbIsDragging;
-    shouldUpdate = true;
-  }
-
-  const vsbIsDragging = false;
-  if (vsbIsDragging !== ct.vsbIsDragging) {
-    ct.vsbIsDragging = vsbIsDragging;
-    shouldUpdate = true;
-  }
-
-  {
-    const { indexOfColumnBeingResized: oldIndex } = ct;
-    const newIndex = -1;
-    if (newIndex !== oldIndex) {
-      ct.indexOfColumnBeingResized = newIndex;
-      shouldUpdate = true;
-    }
-  }
-
-  if (shouldUpdate) {
-    render(ct);
-  }
-}
-
-function onMouseMove(ct: CanvasTable, event: MouseEvent) {
-  const {
-    wrapperEl,
-    columnStates,
-    columnPositions,
-    theme,
-    maxScrollX,
-    maxScrollY,
-    gridWidth,
-    columnLeft,
-    rowTop,
-    rowPositions,
-    hsbThumbX,
-    hsbThumbY,
-    hsbThumbWidth,
-    hsbThumbHeight,
-    hsbTrackX,
-    hsbMaxThumbPos,
-    hsbDragOffset,
-    hsbIsDragging,
-    vsbThumbX,
-    vsbThumbY,
-    vsbThumbWidth,
-    vsbThumbHeight,
-    vsbTrackY,
-    vsbMaxThumbPos,
-    vsbDragOffset,
-    vsbIsDragging,
-    indexOfColumnWhoseResizerIsBeingHovered,
-    indexOfColumnBeingResized
-  } = ct;
-
-  const { rowHeight } = theme;
-
-  const eventPos = { x: event.clientX, y: event.clientY }
-
-  const mousePos = getRelativeMousePos(wrapperEl, eventPos);
-  const { x: mouseX, y: mouseY } = mousePos;
-
-  let shouldUpdate = false;
-
-  // Drag horizontal scrollbar thumb
-  if (hsbIsDragging) {
-    const hsbThumbX = clamp(mouseX - hsbDragOffset, hsbTrackX, hsbMaxThumbPos);
-    ct.hsbThumbX = hsbThumbX;
-
-    const normScrollX = scale(hsbThumbX, hsbTrackX, hsbMaxThumbPos, 0, 1);
-    ct.normScrollX = normScrollX;
-
-    const scrollX = Math.round(scale(normScrollX, 0, 1, 0, maxScrollX));
-    ct.scrollX = scrollX;
-
-    shouldUpdate = true;
-  }
-
-  // Drag vertical scrollbar thumb
-  if (vsbIsDragging) {
-    const vsbThumbY = clamp(mouseY - vsbDragOffset, vsbTrackY, vsbMaxThumbPos);
-    ct.vsbThumbY = vsbThumbY;
-
-    const normScrollY = scale(vsbThumbY, vsbTrackY, vsbMaxThumbPos, 0, 1);
-    ct.normScrollY = normScrollY;
-
-    const scrollY = Math.round(scale(normScrollY, 0, 1, 0, maxScrollY));
-    ct.scrollY = scrollY;
-
-    shouldUpdate = true;
-  }
-
-  // Check whether cursor is over horizontal scrollbar thumb
-  const hsbIsHovering = pointInRect(mouseX, mouseY, hsbThumbX, hsbThumbY, hsbThumbWidth, hsbThumbHeight);
-  if (hsbIsHovering !== ct.hsbIsHovering) {
-    ct.hsbIsHovering = hsbIsHovering;
-    shouldUpdate = true;
-  }
-
-  // Check whether cursor is over vertical scrollbar thumb
-  const vsbIsHovering = pointInRect(mouseX, mouseY, vsbThumbX, vsbThumbY, vsbThumbWidth, vsbThumbHeight);
-  if (vsbIsHovering !== ct.vsbIsHovering) {
-    ct.vsbIsHovering = vsbIsHovering;
-    shouldUpdate = true;
-  }
-
-  // Find index of column whose rezizer the cursor is hovering over
-  {
-    const oldIndex = indexOfColumnWhoseResizerIsBeingHovered;
-    let newIndex = -1;
-
-    const { x: mouseX, y: mouseY } = mousePos;
-    if (mouseY >= 0 && mouseY < rowHeight) {
-      for (const [j, pos] of columnPositions.entries()) {
-        const columnIndex = j + columnLeft;
-        const columnState = columnStates[columnIndex];
-        const centerX = pos + columnState.width;
-        const x1 = centerX - COLUMN_RESIZER_WIDTH;
-        const x2 = centerX + COLUMN_RESIZER_WIDTH + 1;
-
-        if (mouseX >= x1 && mouseX < x2) {
-          newIndex = columnIndex;
-          break;
-        }
-      }
-    }
-
-    if (newIndex !== oldIndex) {
-      ct.indexOfColumnWhoseResizerIsBeingHovered = newIndex;
-      shouldUpdate = true;
-    }
-  }
-
-  // Resize column
-  if (indexOfColumnBeingResized !== -1) {
-    const columnState = columnStates[indexOfColumnBeingResized];
-
-    const columnPositionIndex = indexOfColumnBeingResized - columnLeft;
-    const columnPosition = columnPositions[columnPositionIndex];
-
-    const columnWidth = Math.max(mouseX - columnPosition, MIN_COLUMN_WIDTH);
-    columnState.width = columnWidth;
-
-    shouldUpdate = true;
-  }
-
-  // Check whether the cursor is hovering over a row
-  {
-    let hoveredRowIndex = -1;
-    for (let i = 0; i < rowPositions.length; i++) {
-      const rowIndex = rowTop + i;
-
-      const rowX = 0;
-      const rowY = rowPositions[i];
-      const rowWidth = gridWidth;
-      if (pointInRect(mouseX, mouseY, rowX, rowY, rowWidth, rowHeight)) {
-        hoveredRowIndex = rowIndex;
-        break;
-      }
-    }
-
-    if (hoveredRowIndex !== ct.hoveredRowIndex) {
-      ct.hoveredRowIndex = hoveredRowIndex;
-      shouldUpdate = true;
-    }
-  }
-
-  if (shouldUpdate) {
-    updateContentSize(ct);
-    reflow(ct);
-    updateScreenData(ct);
-
-    render(ct);
-  }
-}
-
-function onWheel(ct: CanvasTable, event: WheelEvent) {
-  const { maxScrollX, maxScrollY } = ct;
-
-  const scrollX = Math.round(clamp(ct.scrollX + event.deltaX, 0, maxScrollX));
-  const scrollY = Math.round(clamp(ct.scrollY + event.deltaY, 0, maxScrollY));
-  
-  const normScrollX = maxScrollX > 0 ? scrollX / maxScrollX : 0;
-  const normScrollY = maxScrollY > 0 ? scrollY / maxScrollY : 0;
-
-  ct.scrollX = scrollX;
-  ct.scrollY = scrollY;
-  ct.normScrollX = normScrollX;
-  ct.normScrollY = normScrollY;
-
-  reflow(ct);
-  updateScreenData(ct);
-  render(ct);
-}
-
-function render(ct: CanvasTable) {
-  const {
-    canvas,
-    lineRenderer,
-    textRenderer,
-    bodyFont,
-    headerFont,
-    theme,
-    bodyRectX,
-    bodyRectY,
-    bodyRectWidth,
-    bodyRectHeight,
-    headerRectX,
-    headerRectY,
-    headerRectWidth,
-    headerRectHeight,
-    hsbX,
-    hsbY,
-    hsbWidth,
-    hsbHeight,
-    hsbThumbX,
-    hsbThumbY,
-    hsbThumbWidth,
-    hsbThumbHeight,
-    hsbIsHovering,
-    hsbIsDragging,
-    vsbX,
-    vsbY,
-    vsbWidth,
-    vsbHeight,
-    vsbThumbX,
-    vsbThumbY,
-    vsbThumbWidth,
-    vsbThumbHeight,
-    vsbIsHovering,
-    vsbIsDragging,
-    columnStates,
-    dataRows,
-    columnLeft,
-    rowTop,
-    columnPositions,
-    rowPositions,
-    gridWidth,
-    gridHeight,
-    overflowX,
-    overflowY,
-    indexOfColumnWhoseResizerIsBeingHovered,
-    indexOfColumnBeingResized,
-    hoveredRowIndex
-  } = ct;
-
-  const {
-    rowHeight,
-    cellPadding,
-    tableBackgroundColor,
-    bodyBackgroundColor = tableBackgroundColor,
-    headerBackgroundColor = tableBackgroundColor,
-    hoveredRowColor,
-    scrollbarTrackColor,
-    scrollbarThumbColor,
-    scrollbarThumbHoverColor,
-    scrollbarThumbPressedColor,
-    columnResizerColor,
-    columnResizerOpacity
-  } = theme;
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    throw new Error("Could not instantiate context");
-  }
-
-  // Draw or clear table background
-  if (tableBackgroundColor) {
-    ctx.fillStyle = tableBackgroundColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  } else {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
-
-  // Draw body background
-  if (bodyBackgroundColor) {
-    ctx.fillStyle = bodyBackgroundColor;
-    ctx.fillRect(bodyRectX, bodyRectY, bodyRectWidth, bodyRectHeight);
-  }
-
-  // Draw header background
-  if (headerBackgroundColor) {
-    ctx.fillStyle = headerBackgroundColor;
-    ctx.fillRect(headerRectX, headerRectY, headerRectWidth, headerRectHeight);
-  }
-
-  if (hoveredRowIndex != -1 && hoveredRowColor) {
-    withContext(ctx, () => {
-      clipRect(ctx, bodyRectX, bodyRectY, bodyRectWidth, bodyRectHeight);
-
-      const rowPositionIndex = hoveredRowIndex - rowTop;
-      const rowY = rowPositions[rowPositionIndex];
-      const rowX = 0;
-      const rowWidth = gridWidth;
-
-      ctx.fillStyle = hoveredRowColor;
-      ctx.fillRect(rowX, rowY, rowWidth, rowHeight);
+  if (theme.tableBackgroundColor) {
+    UI.submitDraw(ui, {
+      type: "rect",
+      x: 0,
+      y: 0,
+      width: canvasSize.width,
+      height: canvasSize.height,
+      color: theme.tableBackgroundColor
     });
   }
 
-  // Draw horizontal scrollbar background and thumb
-  if (overflowX) {
-    if (scrollbarTrackColor) {
-      ctx.fillStyle = scrollbarTrackColor;
-      ctx.fillRect(hsbX, hsbY, hsbWidth, hsbHeight);
-    }
-
-    if (hsbIsDragging && scrollbarThumbPressedColor) {
-      ctx.fillStyle = scrollbarThumbPressedColor;
-    } else if (hsbIsHovering && scrollbarThumbHoverColor) {
-      ctx.fillStyle = scrollbarThumbHoverColor;
-    } else {
-      ctx.fillStyle = scrollbarThumbColor;
-    }
-    ctx.fillRect(hsbThumbX, hsbThumbY, hsbThumbWidth, hsbThumbHeight);
+  if (theme.bodyBackgroundColor) {
+    UI.submitDraw(ui, {
+      type: "rect",
+      x: 0,
+      y: theme.rowHeight,
+      width: layout.bodyWidth,
+      height: layout.bodyHeight,
+      color: theme.bodyBackgroundColor
+    });
   }
 
-  // Draw vertical scrollbar background and thumb
-  if (overflowY) {
-    if (scrollbarTrackColor) {
-      ctx.fillStyle = scrollbarTrackColor;
-      ctx.fillRect(vsbX, vsbY, vsbWidth, vsbHeight);
-    }
-    
-    if (vsbIsDragging && scrollbarThumbPressedColor) {
-      ctx.fillStyle = scrollbarThumbPressedColor;
-    } else if (vsbIsHovering && scrollbarThumbHoverColor) {
-      ctx.fillStyle = scrollbarThumbHoverColor;
-    } else {
-      ctx.fillStyle = scrollbarThumbColor;
-    }
-    ctx.fillRect(vsbThumbX, vsbThumbY, vsbThumbWidth, vsbThumbHeight);
+  if (theme.headerBackgroundColor) {
+    UI.submitDraw(ui, {
+      type: "rect",
+      x: 0,
+      y: 0,
+      width: layout.tableWidth,
+      height: theme.rowHeight,
+      color: theme.headerBackgroundColor
+    });
   }
 
-  // Draw outer border
-  lineRenderer.hline(ctx, 0, 0, canvas.width);
-  lineRenderer.vline(ctx, 0, 0, canvas.height);
-  lineRenderer.hline(ctx, 0, canvas.height - BORDER_WIDTH, canvas.width);
-  lineRenderer.vline(ctx, canvas.width - BORDER_WIDTH, 0, canvas.height);
+  for (let columnIndex = viewport.columnStart; columnIndex < viewport.columnEnd; columnIndex++) {
+    const columnEndPosition = getColumnEndPosition(ct, viewport, columnIndex);
+    const rect = calculateColumnResizerRect(theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
+
+    if (pointInRect(ui.currentMousePosition, rect)) {
+      UI.setAsHot(ui, "column-resizer", columnIndex);
+
+      if (UI.isMousePressed(ui, UI.MOUSE_BUTTONS.PRIMARY)) {
+        UI.setAsActive(ui, "column-resizer", columnIndex);
+
+        const dragAnchorPosition = createVector(columnEndPosition, rect.y);
+        ui.dragAnchorPosition = dragAnchorPosition;
+      }
+
+      break;
+    } else {
+      UI.unsetAsHot(ui, "column-resizer", columnIndex);
+    }
+  }
+
+  if (UI.isActive(ui, "column-resizer")) {
+    const id = ui.active!;
+    const columnIndex = id.index!;
+
+    const columnState = columnStates[columnIndex];
+    const columnPos = viewport.columnPositions.get(columnIndex)!;
+
+    const calculatedColumnWidth = ui.dragAnchorPosition.x + ui.dragDistance.x - columnPos;
+    const columnWidth = Math.max(calculatedColumnWidth, MIN_COLUMN_WIDTH);
+    columnState.width = columnWidth;
+
+    layout = reflow(ct);
+
+    scrollPos.x = Math.min(scrollPos.x, layout.maxScrollX);
+    scrollPos.y = Math.min(scrollPos.y, layout.maxScrollY);
+
+    viewport = calculateViewport(ct, layout);
+  }
+
+  if (UI.isActive(ui, "column-resizer") || UI.isHot(ui, "column-resizer")) {
+    const id = ui.active ?? ui.hot!;
+    const columnIndex = id.index!;
+
+    const columnEndPosition = getColumnEndPosition(ct, viewport, columnIndex);
+    const rect = calculateColumnResizerRect(theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
+
+    const clipRegion = new Path2D();
+    clipRegion.rect(0, 0, layout.tableWidth, theme.rowHeight);
+
+    UI.submitDraw(ui, {
+      type: "rect",
+      ...rect,
+      color: theme.columnResizerColor,
+      sortOrder: 2,
+      clipRegion
+    });
+  }
+
+  if (layout.overflowX) {
+    if (theme.scrollbarTrackColor) {
+      UI.submitDraw(ui, {
+        type: "rect",
+        color: theme.scrollbarTrackColor,
+        ...layout.hsbRect
+      });
+    }
+
+    doHorizontalScrollbarThumb(ct, layout);
+  }
+
+  if (layout.overflowY) {
+    if (theme.scrollbarTrackColor) {
+      UI.submitDraw(ui, {
+        type: "rect",
+        color: theme.scrollbarTrackColor,
+        ...layout.vsbRect
+      });
+    }
+
+    doVerticalScrolbarThumb(ct, layout);
+  }
+
+  {
+    const bodyRect = createRect(0, theme.rowHeight, layout.bodyWidth, layout.bodyHeight);
+
+    if ((!UI.isActive(ui, "row-hover") || UI.isNoneActive(ui)) && theme.hoveredRowColor) {
+      if (pointInRect(ui.currentMousePosition, bodyRect)) {
+        for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
+          const rowPos = viewport.rowPositions.get(rowIndex)!;
+          const rect = createRect(0, rowPos, layout.gridWidth, theme.rowHeight);
+          if (pointInRect(ui.currentMousePosition, rect)) {
+            UI.setAsHot(ui, "row-hover", rowIndex);
+          }
+        }
+      } else {
+        UI.unsetAsHot(ui, "row-hover");
+      }
+    }
+
+    if (UI.isHot(ui, "row-hover")) {
+      const id = ui.hot!;
+      const rowIndex = id.index!;
+
+      const rowPos = viewport.rowPositions.get(rowIndex)!;
+      const rect = createRect(0, rowPos, layout.gridWidth, theme.rowHeight);
+
+      const clipRegion = new Path2D();
+      clipRegion.rect(bodyRect.x, bodyRect.y, bodyRect.width, bodyRect.height);
+
+      UI.submitDraw(ui, {
+        type: "rect",
+        color: theme.hoveredRowColor!,
+        clipRegion: clipRegion,
+        ...rect,
+      });
+    }
+  }
+
+  // Draw outer canvas border
+  UI.submitDraw(ui, {
+    type: "line",
+    orientation: "horizontal",
+    x: 0,
+    y: 0,
+    length: canvasSize.width,
+    color: theme.tableBorderColor
+  });
+
+  UI.submitDraw(ui, {
+    type: "line",
+    orientation: "horizontal",
+    x: 0,
+    y: canvasSize.height - 1,
+    length: canvasSize.width,
+    color: theme.tableBorderColor
+  });
+
+  UI.submitDraw(ui, {
+    type: "line",
+    orientation: "vertical",
+    x: 0,
+    y: 0,
+    length: canvasSize.height,
+    color: theme.tableBorderColor
+  });
+
+  UI.submitDraw(ui, {
+    type: "line",
+    orientation: "vertical",
+    x: canvasSize.width - 1,
+    y: 0,
+    length: canvasSize.height,
+    color: theme.tableBorderColor
+  });
 
   // Draw header bottom border
-  lineRenderer.hline(ctx, 0, rowHeight, canvas.width);
+  UI.submitDraw(ui, {
+    type: "line",
+    orientation: "horizontal",
+    x: 0,
+    y: theme.rowHeight,
+    length: canvasSize.width,
+    color: theme.tableBorderColor
+  });
 
   // If horizontal scrollbar is visible, draw its border, otherwise,
   // draw table content right border
-  if (overflowX) {
-    lineRenderer.hline(ctx, 0, hsbY - BORDER_WIDTH, canvas.width);
+  if (layout.overflowX) {
+    UI.submitDraw(ui, {
+      type: "line",
+      orientation: "horizontal",
+      x: 0,
+      y: layout.hsbRect.y - 1,
+      length: canvasSize.width,
+      color: theme.tableBorderColor
+    });
   } else {
-    lineRenderer.vline(ctx, gridWidth, 0, gridHeight);
+    UI.submitDraw(ui, {
+      type: "line",
+      orientation: "vertical",
+      x: layout.gridWidth,
+      y: 0,
+      length: layout.gridHeight,
+      color: theme.tableBorderColor
+    });
   }
 
   // If vertical scrollbar is visible, draw its border, otherwise,
   // draw table content bottom border
-  if (overflowY) {
-    lineRenderer.vline(ctx, vsbX - BORDER_WIDTH, 0, canvas.height);
+  if (layout.overflowY) {
+    UI.submitDraw(ui, {
+      type: "line",
+      orientation: "vertical",
+      x: layout.vsbRect.x - 1,
+      y: 0,
+      length: canvasSize.height,
+      color: theme.tableBorderColor
+    });
   } else {
-    lineRenderer.hline(ctx, 0, gridHeight, gridWidth);
+    UI.submitDraw(ui, {
+      type: "line",
+      orientation: "horizontal",
+      x: 0,
+      y: layout.gridHeight,
+      length: layout.gridWidth,
+      color: theme.tableBorderColor
+    });
   }
 
   // Draw grid horizontal lines
-  for (let i = 1; i < rowPositions.length; i++) {
-    const y = rowPositions[i];
-    lineRenderer.hline(ctx, 0, y, gridWidth);
-  }
+  for (let rowIndex = viewport.rowStart + 1; rowIndex < viewport.rowEnd; rowIndex++) {
+    const rowPos = viewport.rowPositions.get(rowIndex)!;
 
-  // Draw grid vertical lines
-  for (let i = 1; i < columnPositions.length; i++) {
-    const x = columnPositions[i];
-    lineRenderer.vline(ctx, x, 0, gridHeight);
-  }
-
-  const halfOfRowHeight = rowHeight / 2;
-  const doubleOfCellPadding = cellPadding * 2;
-
-  // Calculate text data
-  // @Performance We are allocating these every frame. Maybe use an object pool?
-  const bodyTextData   = [] as TextData[];
-  const headerTextData = [] as TextData[];
-  for (const [j, xPos] of columnPositions.entries()) {
-    const columnIndex = j + columnLeft;
-    const columnState = columnStates[columnIndex];
-
-    const x = xPos + cellPadding;
-    const y = halfOfRowHeight;
-    const maxWidth = columnState.width - doubleOfCellPadding;
-    const text = columnState.title;
-
-    headerTextData.push({ x, y, maxWidth, text })
-
-    for (const [i, yPos] of rowPositions.entries()) {
-      const rowIndex = i + rowTop;
-      const dataRow = dataRows[rowIndex];
-
-      const y = yPos + halfOfRowHeight;
-      const text = dataRow[columnState.field];
-
-      bodyTextData.push({ x, y, maxWidth, text });
-    }
-  }
-
-  // Draw header font
-  withContext(ctx, () => {
-    clipRect(ctx, headerRectX, headerRectY, headerRectWidth, headerRectHeight);
-
-    for (const { x, y, maxWidth, text } of headerTextData) {
-      textRenderer.render(ctx, headerFont, text, x, y, maxWidth, true);
-    }
-  })
-
-  // Draw body text
-  withContext(ctx, () => {
-    clipRect(ctx, bodyRectX, bodyRectY, bodyRectWidth, bodyRectHeight);
-
-    for (const { x, y, maxWidth, text } of bodyTextData) {
-      textRenderer.render(ctx, bodyFont, text, x, y, maxWidth, true);
-    }
-  });
-
-  const indexOfColumnToHighlight = indexOfColumnWhoseResizerIsBeingHovered !== -1
-    ? indexOfColumnWhoseResizerIsBeingHovered
-    : indexOfColumnBeingResized;
-
-  if (indexOfColumnToHighlight !== -1) {
-    const columnState = columnStates[indexOfColumnToHighlight];
-    const { width: columnWidth } = columnState;
-
-    const columnPositionIndex = indexOfColumnToHighlight - columnLeft;
-    const columnPosition = columnPositions[columnPositionIndex];
-
-    const x = columnPosition + columnWidth - COLUMN_RESIZER_WIDTH;
-    const width = (COLUMN_RESIZER_WIDTH * 2) + 1;
-
-    withContext(ctx, () => {
-      ctx.fillStyle = columnResizerColor;
-      ctx.globalAlpha = columnResizerOpacity;
-      ctx.fillRect(x, 0, width, rowHeight);
+    UI.submitDraw(ui, {
+      type: "line",
+      orientation: "horizontal",
+      x: 0,
+      y: rowPos,
+      length: layout.gridWidth,
+      color: theme.tableBorderColor
     });
   }
+
+  for (let columnIndex = viewport.columnStart + 1; columnIndex < viewport.columnEnd; columnIndex++) {
+    const columnPos = viewport.columnPositions.get(columnIndex)!;
+
+    UI.submitDraw(ui, {
+      type: "line",
+      orientation: "vertical",
+      x: columnPos,
+      y: 0,
+      length: layout.gridHeight,
+      color: theme.tableBorderColor
+    });
+  }
+
+  {
+    const font = {
+      family: theme.fontFamily,
+      size: theme.fontSize,
+      style: theme.headerFontStyle ?? theme.fontStyle,
+      color: theme.headerFontColor ?? theme.fontColor
+    } as const;
+
+    const clipRegion = new Path2D();
+    clipRegion.rect(0, 0, layout.tableWidth, theme.rowHeight);
+
+    for (let columnIndex = viewport.columnStart; columnIndex < viewport.columnEnd; columnIndex++) {
+      const columnState = columnStates[columnIndex];
+
+      const columnPos = viewport.columnPositions.get(columnIndex)!;
+
+      const x = columnPos + theme.cellPadding;
+      const y = theme.rowHeight / 2;
+      const maxWidth = columnState.width - theme.cellPadding * 2;
+      const text = columnState.title;
+
+      UI.submitDraw(ui, {
+        type: "text",
+        x,
+        y,
+        text,
+        font,
+        maxWidth,
+        ellipsis: true,
+        clipRegion
+      });
+    }
+  }
+
+  {
+    const font = {
+      family: theme.fontFamily,
+      size: theme.fontSize,
+      style: theme.bodyFontStyle ?? theme.fontStyle,
+      color: theme.bodyFontColor ?? theme.fontColor
+    } as const;
+
+    const clipRegion = new Path2D();
+    clipRegion.rect(0, theme.rowHeight, layout.bodyWidth, layout.bodyHeight);
+
+    for (let columnIndex = viewport.columnStart; columnIndex < viewport.columnEnd; columnIndex++) {
+      const columnState = columnStates[columnIndex];
+
+      const columnPos = viewport.columnPositions.get(columnIndex)!;
+
+      const x = columnPos + theme.cellPadding;
+      const maxWidth = columnState.width - theme.cellPadding * 2;
+
+      for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
+        const dataRow = dataRows[rowIndex];
+
+        const rowPos = viewport.rowPositions.get(rowIndex)!;
+
+        const y = rowPos + theme.rowHeight / 2;
+        const text = dataRow[columnState.field];
+
+        UI.submitDraw(ui, {
+          type: "text",
+          x,
+          y,
+          text,
+          font,
+          maxWidth,
+          ellipsis: true,
+          clipRegion
+        });
+      }
+    }
+  }
+
+  UI.endFrame(ui);
+  ct.rafId = requestAnimationFrame(() => update(ct));
 }
 
-function reflow(ct: CanvasTable) {
-  const { canvas, contentWidth, contentHeight, theme } = ct;
+function reflow(ct: CanvasTable): Layout {
+  const { ui, columnStates, dataRows, theme } = ct;
   const { rowHeight, scrollbarThickness, scrollbarTrackMargin } = theme;
 
-  const outerMainRectWidth  = canvas.width  - BORDER_WIDTH;
-  const outerMainRectHeight = canvas.height - BORDER_WIDTH;
-  const innerMainRectWidth  = outerMainRectWidth  - scrollbarThickness - BORDER_WIDTH;
-  const innerMainRectHeight = outerMainRectHeight - scrollbarThickness - BORDER_WIDTH;
+  let contentWidth = 0;
+  for (const { width } of columnStates) {
+    contentWidth += width;
+  }
+  const contentHeight = dataRows.length * rowHeight;
 
-  const outerBodyRectHeight = outerMainRectHeight - rowHeight;
-  const innerBodyRectHeight = innerMainRectHeight - rowHeight;
+  const canvasSize = UI.getCanvasSize(ui);
+  const outerTableWidth  = canvasSize.width - 1;
+  const outerTableHeight = canvasSize.height - 1;
+
+  const innerTableWidth  = outerTableWidth  - scrollbarThickness - 1;
+  const innerTableHeight = outerTableHeight - scrollbarThickness - 1;
+
+  const outerBodyHeight = outerTableHeight - rowHeight;
+  const innerBodyHeight = innerTableHeight - rowHeight;
 
   let overflowX: boolean;
   let overflowY: boolean;
-  if (outerMainRectWidth >= contentWidth && outerBodyRectHeight >= contentHeight) {
+  if (outerTableWidth >= contentWidth && outerBodyHeight >= contentHeight) {
     overflowX = overflowY = false;
   } else {
-    overflowX = innerMainRectWidth  < contentWidth;
-    overflowY = innerBodyRectHeight < contentHeight;
+    overflowX = innerTableWidth  < contentWidth;
+    overflowY = innerBodyHeight < contentHeight;
   }
 
-  let mainRectWidth:   number;
-  let bodyRectWidth:   number;
-  let headerRectWidth: number;
+  let tableWidth:   number;
+  let bodyWidth:   number;
 
   if (overflowY) {
-    mainRectWidth   = innerMainRectWidth;
-    bodyRectWidth   = innerMainRectWidth;
-    headerRectWidth = innerMainRectWidth;
+    tableWidth = bodyWidth = innerTableWidth;
   } else {
-    mainRectWidth   = outerMainRectWidth;
-    bodyRectWidth   = outerMainRectWidth;
-    headerRectWidth = outerMainRectWidth;
+    tableWidth = bodyWidth = outerTableWidth;
   }
 
-  let mainRectHeight: number;
-  let bodyRectHeight: number;
+  let tableHeight: number;
+  let bodyHeight: number;
 
   if (overflowX) {
-    mainRectHeight = innerMainRectHeight;
-    bodyRectHeight = innerBodyRectHeight;
+    tableHeight = innerTableHeight;
+    bodyHeight = innerBodyHeight;
   } else {
-    mainRectHeight = outerMainRectHeight;
-    bodyRectHeight = outerBodyRectHeight;
+    tableHeight = outerTableHeight;
+    bodyHeight = outerBodyHeight;
   }
 
-  const viewportWidth = bodyRectWidth;
-  const viewportHeight = bodyRectHeight;
+  const scrollWidth  = Math.max(contentWidth,  bodyWidth);
+  const scrollHeight = Math.max(contentHeight, bodyHeight);
 
-  const scrollWidth = Math.max(contentWidth, viewportWidth);
-  const scrollHeight = Math.max(contentHeight, viewportHeight);
+  const maxScrollX = scrollWidth  - bodyWidth;
+  const maxScrollY = scrollHeight - bodyHeight;
 
-  const normViewportWidth = viewportWidth  / scrollWidth;
-  const normViewportHeight = viewportHeight / scrollHeight;
+  const gridWidth  = Math.min(tableWidth,  contentWidth);
+  const gridHeight = Math.min(tableHeight, contentHeight + rowHeight);
 
-  const gridWidth  = Math.min(mainRectWidth,  contentWidth);
-  const gridHeight = Math.min(mainRectHeight, contentHeight + rowHeight);
+  const hsbRect = {
+    x: 1,
+    y: tableHeight + 1,
+    width: tableWidth - 1,
+    height: scrollbarThickness
+  };
 
-  const maxScrollX = scrollWidth  - viewportWidth;
-  const maxScrollY  = scrollHeight - viewportHeight;
+  const hsbTrackRect = {
+    x: hsbRect.x + scrollbarTrackMargin,
+    y: hsbRect.y + scrollbarTrackMargin,
+    width:  hsbRect.width  - (scrollbarTrackMargin * 2),
+    height: hsbRect.height - (scrollbarTrackMargin * 2)
+  };
 
-  const scrollX = Math.min(ct.scrollX, maxScrollX);
-  const scrollY = Math.min(ct.scrollY, maxScrollY);
+  const vsbRect = {
+    x: tableWidth + 1,
+    y: rowHeight + 1,
+    width: scrollbarThickness,
+    height: bodyHeight - 1
+  };
 
-  const normScrollX = maxScrollX > 0 ? scrollX / maxScrollX : 0;
-  const normScrollY = maxScrollY > 0 ? scrollY  / maxScrollY  : 0;
+  const vsbTrackRect = {
+    x: vsbRect.x + scrollbarTrackMargin,
+    y: vsbRect.y + scrollbarTrackMargin,
+    width:  vsbRect.width  - (scrollbarTrackMargin * 2),
+    height: vsbRect.height - (scrollbarTrackMargin * 2)
+  };
 
-  const hsbX = BORDER_WIDTH;
-  const hsbY = mainRectHeight + BORDER_WIDTH;
-  const hsbWidth = mainRectWidth - BORDER_WIDTH;
-  const hsbHeight = scrollbarThickness;
-
-  const hsbTrackX = hsbX + scrollbarTrackMargin;
-  const hsbTrackY = hsbY + scrollbarTrackMargin;
-  const hsbTrackWidth = hsbWidth - (scrollbarTrackMargin * 2);
-  const hsbTrackHeight = hsbHeight - (scrollbarTrackMargin * 2);
-
-  const hsbThumbWidth = Math.max(normViewportWidth * hsbTrackWidth, MIN_THUMB_LENGTH);
-  const hsbThumbHeight = hsbTrackHeight;
-  const hsbMaxThumbPos = hsbTrackX + hsbTrackWidth - hsbThumbWidth;
-  const hsbThumbX = scale(scrollX, 0, maxScrollX, hsbTrackX, hsbMaxThumbPos);
-  const hsbThumbY = hsbTrackY;
-
-  const vsbX = mainRectWidth + BORDER_WIDTH;
-  const vsbY = rowHeight + BORDER_WIDTH;
-  const vsbWidth = scrollbarThickness;
-  const vsbHeight = bodyRectHeight - BORDER_WIDTH;
-
-  const vsbTrackX = vsbX + scrollbarTrackMargin;
-  const vsbTrackY = vsbY + scrollbarTrackMargin;
-  const vsbTrackWidth =  vsbWidth  - (scrollbarTrackMargin * 2);
-  const vsbTrackHeight = vsbHeight - (scrollbarTrackMargin * 2);
-  const vsbThumbWidth = vsbTrackWidth;
-
-  const vsbThumbHeight = Math.max(normViewportHeight * vsbTrackHeight, MIN_THUMB_LENGTH);
-  const vsbMaxThumbPos = vsbTrackY + vsbTrackHeight - vsbThumbHeight;
-  const vsbThumbX = vsbTrackX;
-  const vsbThumbY = scale(scrollY, 0, maxScrollY, vsbTrackY, vsbMaxThumbPos);
-  
-  ct.mainRectWidth   = mainRectWidth;
-  ct.mainRectHeight = mainRectHeight;
-  ct.bodyRectWidth   = bodyRectWidth;
-  ct.bodyRectHeight = bodyRectHeight;
-  ct.headerRectWidth = headerRectWidth;
-  ct.scrollX = scrollX;
-  ct.scrollY = scrollY;
-  ct.maxScrollX = maxScrollX;
-  ct.maxScrollY = maxScrollY;
-  ct.normScrollX = normScrollX;
-  ct.normScrollY = normScrollY;
-  ct.scrollWidth = scrollWidth;
-  ct.scrollHeight = scrollHeight;
-  ct.viewportWidth = viewportWidth;
-  ct.viewportHeight = viewportHeight;
-  ct.normViewportWidth = normViewportWidth;
-  ct.normViewportHeight = normViewportHeight;
-  ct.gridWidth = gridWidth;
-  ct.gridHeight = gridHeight;
-  ct.overflowX = overflowX;
-  ct.overflowY = overflowY;
-  ct.hsbX = hsbX;
-  ct.hsbY = hsbY;
-  ct.hsbWidth = hsbWidth;
-  ct.hsbHeight = hsbHeight;
-  ct.hsbTrackX = hsbTrackX;
-  ct.hsbTrackY = hsbTrackY;
-  ct.hsbTrackWidth = hsbTrackWidth;
-  ct.hsbTrackHeight = hsbTrackHeight;
-  ct.hsbThumbWidth = hsbThumbWidth;
-  ct.hsbThumbHeight = hsbThumbHeight;
-  ct.hsbMaxThumbPos = hsbMaxThumbPos;
-  ct.hsbThumbX = hsbThumbX;
-  ct.hsbThumbY = hsbThumbY;
-  ct.vsbX = vsbX;
-  ct.vsbY = vsbY;
-  ct.vsbWidth = vsbWidth;
-  ct.vsbHeight = vsbHeight;
-  ct.vsbTrackX = vsbTrackX;
-  ct.vsbTrackY = vsbTrackY;
-  ct.vsbTrackWidth = vsbTrackWidth;
-  ct.vsbTrackHeight = vsbTrackHeight;
-  ct.vsbThumbWidth = vsbThumbWidth;
-  ct.vsbThumbHeight = vsbThumbHeight;
-  ct.vsbMaxThumbPos = vsbMaxThumbPos;
-  ct.vsbThumbX = vsbThumbX;
-  ct.vsbThumbY = vsbThumbY;
+  return {
+    contentWidth,
+    contentHeight,
+    tableWidth,
+    tableHeight,
+    bodyWidth,
+    bodyHeight,
+    scrollWidth,
+    scrollHeight,
+    maxScrollX,
+    maxScrollY,
+    gridWidth,
+    gridHeight,
+    hsbRect,
+    hsbTrackRect,
+    vsbRect,
+    vsbTrackRect,
+    overflowX,
+    overflowY
+  };
 }
 
-function updateContentSize(ct: CanvasTable) {
-  const { columnStates, dataRows, theme } = ct;
-  const { rowHeight } = theme;
+function calculateViewport(ct: CanvasTable, layout: Layout): Viewport {
+  const { columnStates, dataRows, theme, scrollPos } = ct;
 
-  let contentWidth = 0;
-  for (const columnState of columnStates) {
-    const { width } = columnState;
-    contentWidth += width;
-  }
-
-  const contentHeight = dataRows.length * rowHeight;
-
-  ct.contentWidth = contentWidth;
-  ct.contentHeight = contentHeight;
-}
-
-function updateScreenData(ct: CanvasTable) {
-  const {
-    columnStates,
-    dataRows,
-    theme,
-    scrollX,
-    scrollY,
-    viewportWidth,
-    viewportHeight
-  } = ct;
-
-  const { rowHeight } = theme;
-
-  let columnLeft = 0;
+  let columnStart = 0;
   let columnPos = 0;
+  const columnPositions = new Map();
 
-  for (; columnLeft < columnStates.length - 1; columnLeft++) {
-    const columnState = columnStates[columnLeft];
-    if (columnPos + columnState.width > scrollX) {
+  for (; columnStart < columnStates.length; columnStart++) {
+    const columnState = columnStates[columnStart];
+    const nextColumnPos = columnPos + columnState.width;
+    if (nextColumnPos > scrollPos.x) {
       break;
     }
-    columnPos += columnState.width;
+
+    columnPositions.set(columnStart, columnPos - scrollPos.x);
+
+    columnPos = nextColumnPos;
   }
 
-  const columnPositions = [];
-  const scrollRight = scrollX + viewportWidth;
+  const scrollRight = scrollPos.x + layout.bodyWidth;
 
-  let columnRight = columnLeft;
-  for (; columnRight < columnStates.length; columnRight++) {
+  let columnEnd = columnStart;
+  for (; columnEnd < columnStates.length; columnEnd++) {
     if (columnPos >= scrollRight) {
       break;
     }
 
-    columnPositions.push(columnPos - scrollX);
+    columnPositions.set(columnEnd, columnPos - scrollPos.x);
 
-    const columnState = columnStates[columnRight];
+    const columnState = columnStates[columnEnd];
     columnPos += columnState.width;
   }
 
-  const rowTop = Math.floor(scrollY / rowHeight);
+  const rowStart = Math.floor(scrollPos.y / theme.rowHeight);
 
-  const scrollBottom = scrollY + viewportHeight;
-  const rowBottom = Math.min(Math.ceil(scrollBottom / rowHeight), dataRows.length);
+  const scrollBottom = scrollPos.y + layout.bodyHeight;
+  const rowEnd = Math.min(Math.ceil(scrollBottom / theme.rowHeight), dataRows.length);
 
-  const rowPositions = [];
-  for (let i = rowTop; i < rowBottom; i++) {
-    rowPositions.push(i * rowHeight + rowHeight - scrollY);
+  const rowPositions = new Map();
+  for (let i = rowStart; i < rowEnd; i++) {
+    const rowPosition = i * theme.rowHeight + theme.rowHeight - scrollPos.y;
+    rowPositions.set(i, rowPosition);
   }
 
-  ct.columnPositions = columnPositions;
-  ct.columnLeft  = columnLeft;
-  ct.columnRight = columnRight;
-  ct.rowPositions = rowPositions;
-  ct.rowTop    = rowTop;
-  ct.rowBottom = rowBottom;
+  const tableEndPosition = layout.scrollWidth - scrollPos.x;
+
+  return {
+    columnStart,
+    columnEnd,
+    columnPositions,
+    rowStart,
+    rowEnd,
+    rowPositions,
+    tableEndPosition
+  };
 }
 
-function updateFonts(ct: CanvasTable) {
-  const { theme } = ct;
+function doHorizontalScrollbarThumb(ct: CanvasTable, layout: Layout) {
+  const { ui, theme, scrollPos } = ct;
+  const { bodyWidth, scrollWidth, maxScrollX, hsbTrackRect } = layout;
 
-  const baseFont = {
-    family: theme.fontFamily,
-    size: theme.fontSize
+  const hsbThumbWidth = Math.max((bodyWidth / scrollWidth) * hsbTrackRect.width, MIN_THUMB_LENGTH);
+  const hsbThumbHeight = hsbTrackRect.height;
+
+  const hsbThumbMinX = hsbTrackRect.x;
+  const hsbThumbMaxX = hsbTrackRect.x + hsbTrackRect.width - hsbThumbWidth;
+
+  let hsbThumbX = scale(scrollPos.x, 0, maxScrollX, hsbThumbMinX, hsbThumbMaxX);
+  const hsbThumbY = hsbTrackRect.y;
+
+  let dragging = false;
+
+  if (UI.isActive(ui, "hsb-thumb")) {
+    dragging = true;
+  } else if (UI.isHot(ui, "hsb-thumb")) {
+    if (UI.isMousePressed(ui, UI.MOUSE_BUTTONS.PRIMARY)) {
+      UI.setAsActive(ui, "hsb-thumb");
+
+      const dragAnchorPosition = createVector(hsbThumbX, hsbThumbY);
+      ui.dragAnchorPosition = dragAnchorPosition;
+    }
+  }
+
+  if (dragging) {
+    hsbThumbX = clamp(ui.dragAnchorPosition.x + ui.dragDistance.x, hsbThumbMinX, hsbThumbMaxX);
+    const newScrollX = Math.round(scale(hsbThumbX, hsbThumbMinX, hsbThumbMaxX, 0, maxScrollX));
+    scrollPos.x = newScrollX;
+  }
+
+  const hsbThumbRect = {
+    x: hsbThumbX,
+    y: hsbThumbY,
+    width:  hsbThumbWidth,
+    height: hsbThumbHeight,
   };
 
-  const bodyFont = { ...baseFont,
-    color: theme.bodyFontColor ?? theme.fontColor,
-    style: theme.bodyFontStyle ?? theme.fontStyle
-  };
-  ct.bodyFont = bodyFont;
+  const inside = pointInRect(ui.currentMousePosition, hsbThumbRect);
+  if (inside) {
+    UI.setAsHot(ui, "hsb-thumb");
+  } else {
+    UI.unsetAsHot(ui, "hsb-thumb");
+  }
 
-  const headerFont = {
-    ...baseFont,
-    color: theme.headerFontColor ?? theme.fontColor,
-    style: theme.headerFontStyle ?? theme.fontStyle
-  };
-  ct.headerFont = headerFont;
+  let color: string;
+  if (UI.isActive(ui, "hsb-thumb")) {
+    color = theme.scrollbarThumbPressedColor ?? theme.scrollbarThumbHoverColor ?? theme.scrollbarThumbColor;
+  } else if (UI.isHot(ui, "hsb-thumb")) {
+    color = theme.scrollbarThumbHoverColor ?? theme.scrollbarThumbColor;
+  } else {
+    color = theme.scrollbarThumbColor;
+  }
+
+  UI.submitDraw(ui, {
+    type: "rect",
+    color,
+    sortOrder: 2,
+    ...hsbThumbRect
+  });
 }
 
-function getRelativeMousePos(wrapperEl: HTMLDivElement, eventPos: VectorLike): VectorLike {
-  const bcr = wrapperEl.getBoundingClientRect();
-  const x = eventPos.x - bcr.x;
-  const y = eventPos.y - bcr.y;
-  return { x, y };
+function doVerticalScrolbarThumb(ct: CanvasTable, layout: Layout) {
+  const { ui, theme, scrollPos } = ct;
+  const { bodyHeight, scrollHeight, maxScrollY, vsbTrackRect } = layout;
+
+  const vsbThumbHeight = Math.max((bodyHeight / scrollHeight) * vsbTrackRect.height, MIN_THUMB_LENGTH);
+  const vsbThumbWidth = vsbTrackRect.width;
+
+  const vsbThumbMinY = vsbTrackRect.y;
+  const vsbThumbMaxY = vsbTrackRect.y + vsbTrackRect.height - vsbThumbHeight;
+
+  let vsbThumbY = scale(scrollPos.y, 0, maxScrollY, vsbThumbMinY, vsbThumbMaxY);
+  const vsbThumbX = vsbTrackRect.x;
+
+  let dragging = false;
+
+  if (UI.isActive(ui, "vsb-thumb")) {
+    dragging = true;
+  } else if (UI.isHot(ui, "vsb-thumb")) {
+    if (UI.isMousePressed(ui, UI.MOUSE_BUTTONS.PRIMARY)) {
+      UI.setAsActive(ui, "vsb-thumb");
+
+      const dragAnchorPosition = createVector(vsbThumbX, vsbThumbY);
+      ui.dragAnchorPosition = dragAnchorPosition;
+    }
+  }
+
+  if (dragging) {
+    vsbThumbY = clamp(ui.dragAnchorPosition.y + ui.dragDistance.y, vsbThumbMinY, vsbThumbMaxY);
+    const newScrollY = Math.round(scale(vsbThumbY, vsbThumbMinY, vsbThumbMaxY, 0, maxScrollY));
+    scrollPos.y = newScrollY;
+  }
+
+  const vsbThumbRect = {
+    x: vsbThumbX,
+    y: vsbThumbY,
+    width: vsbThumbWidth,
+    height: vsbThumbHeight
+  };
+
+  const inside = pointInRect(ui.currentMousePosition, vsbThumbRect);
+  if (inside) {
+    UI.setAsHot(ui, "vsb-thumb");
+  } else {
+    UI.unsetAsHot(ui, "vsb-thumb");
+  }
+
+  let color: string;
+  if (UI.isActive(ui, "vsb-thumb")) {
+    color = theme.scrollbarThumbPressedColor ?? theme.scrollbarThumbHoverColor ?? theme.scrollbarThumbColor;
+  } else if (UI.isHot(ui, "vsb-thumb")) {
+    color = theme.scrollbarThumbHoverColor ?? theme.scrollbarThumbColor;
+  } else {
+    color = theme.scrollbarThumbColor;
+  }
+
+  UI.submitDraw(ui, {
+    type: "rect",
+    color,
+    sortOrder: 2,
+    ...vsbThumbRect
+  });
+}
+
+function calculateColumnResizerRect(rowHeight: number, tableEndPosition: number, columnEndPosition: number) {
+  const right = Math.min(columnEndPosition + COLUMN_RESIZER_LEFT_WIDTH + 1, tableEndPosition);
+  const left = right - COLUMN_RESIZER_WIDTH;
+
+  const rect = {
+    x: left,
+    y: 1,
+    width: COLUMN_RESIZER_WIDTH,
+    height: rowHeight - 1
+  }
+
+  return rect;
+}
+
+function getColumnEndPosition(ct: CanvasTable, viewport: Viewport, columnIndex: number) {
+  const { columnStates } = ct;
+
+  const columnState = columnStates[columnIndex];
+  const columnPosStart = viewport.columnPositions.get(columnIndex)!;
+  const columnPosEnd = columnPosStart + columnState.width;
+
+  return columnPosEnd;
+}
+
+export function createVector(): Vector;
+export function createVector(partial: Partial<Vector> | undefined): Vector;
+export function createVector(x: number, y: number): Vector;
+export function createVector(...args: any[]): Vector {
+  if (args.length === 0) {
+    return { x: 0, y: 0 };
+  } else if (args.length === 1) {
+    return { x: 0, y: 0, ...args[0] };
+  } else {
+    return { x: args[0], y: args[1] };
+  }
+}
+
+export function createRect(): Rect;
+export function createRect(partial: Partial<Rect> | undefined): Rect;
+export function createRect(x: number, y: number, width: number, height: number): Rect;
+export function createRect(...args: any[]): Rect {
+  if (args.length === 0) {
+    return { x: 0, y: 0, width: 1, height: 1 };
+  } else if (args.length === 1) {
+    return { x: 0, y: 0, width: 1, height: 1, ...args[0] };
+  } else {
+    return { x: args[0], y: args[1], width: args[2], height: args[3] };
+  }
+}
+
+function pointInRect(point: Vector, rect: Rect) {
+  return point.x >= rect.x && point.x < rect.x + rect.width &&
+         point.y >= rect.y && point.y < rect.y + rect.height;
 }
 
 function columnDefsToColumnStates(columnDefs: ColumnDef[]) {

@@ -2,126 +2,18 @@ import { LineRenderer } from "./LineRenderer";
 import { TextRenderer } from "./TextRenderer";
 
 export type CanvasTable = {
-  canvas: HTMLCanvasElement;
-  containerEl: HTMLElement;
-  wrapperEl: HTMLDivElement;
+  ui: UiContext;
 
-  lineRenderer: LineRenderer;
-  textRenderer: TextRenderer;
-
-  bodyFont: Font;
-  headerFont: Font;
-
-  mouseDownHandler: (event: MouseEvent) => void;
-  mouseUpHandler:   (event: MouseEvent) => void;
-  mouseMoveHandler: (event: MouseEvent) => void;
-  wheelHandler:     (event: WheelEvent) => void;
+  rafId: number;
 
   columnStates: ColumnState[];
-  dataRows:     DataRow[];
-
+  dataRows: DataRow[];
   theme: Theme;
 
-  mainRectX:      number;
-  mainRectY:      number;
-  mainRectWidth:  number;
-  mainRectHeight: number;
-
-  bodyRectX:      number;
-  bodyRectY:      number;
-  bodyRectWidth:  number;
-  bodyRectHeight: number;
-
-  headerRectX: number;
-  headerRectY: number;
-  headerRectWidth: number;
-  headerRectHeight: number;
-
-  scrollX: number;
-  scrollY: number;
-
-  maxScrollX: number;
-  maxScrollY: number;
-
-  normScrollX: number;
-  normScrollY: number;
-
-  contentWidth:  number;
-  contentHeight: number;
-
-  scrollWidth:  number;
-  scrollHeight: number;
-
-  viewportWidth:  number;
-  viewportHeight: number;
-
-  normViewportWidth:  number;
-  normViewportHeight: number;
-
-  gridWidth:  number;
-  gridHeight: number;
-
-  overflowX: boolean;
-  overflowY: boolean;
-  
-  columnPositions: number[];
-  columnLeft:  number;
-  columnRight: number;
-
-  rowPositions: number[];
-  rowTop:      number;
-  rowBottom:   number;
-
-  hsbX:      number;
-  hsbY:      number;
-  hsbWidth:  number;
-  hsbHeight: number;
-
-  hsbTrackX:      number;
-  hsbTrackY:      number;
-  hsbTrackWidth:  number;
-  hsbTrackHeight: number;
-
-  hsbThumbX:      number;
-  hsbThumbY:      number;
-  hsbThumbWidth:  number;
-  hsbThumbHeight: number;
-
-  hsbMaxThumbPos: number;
-
-  hsbDragOffset: number;
-  hsbIsHovering: boolean;
-  hsbIsDragging: boolean;
-
-  vsbX:      number;
-  vsbY:      number;
-  vsbWidth:  number;
-  vsbHeight: number;
-
-  vsbTrackX: number;
-  vsbTrackY: number;
-  vsbTrackWidth: number;
-  vsbTrackHeight: number;
-
-  vsbThumbX:      number;
-  vsbThumbY:      number;
-  vsbThumbWidth:  number;
-  vsbThumbHeight: number;
-
-  vsbMaxThumbPos: number;
-
-  vsbDragOffset: number;
-  vsbIsHovering: boolean;
-  vsbIsDragging: boolean;
-
-  indexOfColumnWhoseResizerIsBeingHovered: number;
-  indexOfColumnBeingResized: number;
-
-  hoveredRowIndex:  number;
-  selectedRowIndex: number;
+  scrollPos: Vector;
 }
 
-export type CanvasTableParams = {
+export type CreateCanvasTableParams = {
   container: string;
   columnDefs: ColumnDef[];
   dataRows: DataRow[];
@@ -129,12 +21,7 @@ export type CanvasTableParams = {
   size?: Size;
 }
 
-export type CanvasTableConfig = {
-  columnDefs: ColumnDef[];
-  dataRows: DataRow[];
-  theme: Partial<Theme>;
-  size: Size;
-}
+export type SetCanvasTableParams = Partial<Omit<CreateCanvasTableParams, "container">>;
 
 export type ColumnDef = {
   title: string;
@@ -147,30 +34,6 @@ export type ColumnState = Omit<ColumnDef, "width"> & {
 }
 
 export type DataRow = Record<string, string>;
-
-export type TableRanges = {
-  columnLeft:  number;
-  columnRight: number;
-  rowTop:      number;
-  rowBottom:   number;
-}
-
-export type Grid = {
-  width: number;
-  height: number;
-}
-
-export type GridPositions = {
-  columns: number[];
-  rows: number[];
-}
-
-export type TextData = {
-  x: number;
-  y: number;
-  maxWidth: number;
-  text: string;
-}
 
 export type Theme = {
   rowHeight: number;
@@ -198,24 +61,6 @@ export type Theme = {
   headerFontColor?: string;
 }
 
-export type GlyphAtlasOptions = {
-  textureWidth?:  number;
-  textureHeight?: number;
-}
-
-export type TextureNode = {
-  rect: RectLike;
-  left: TextureNode | null;
-  right: TextureNode | null;
-  filled: boolean;
-  glyphData?: GlyphData;
-}
-
-export type GlyphData = {
-  rect: RectLike;
-  verticalShift: number;
-}
-
 export type Font = {
   family: string;
   size: number;
@@ -225,19 +70,167 @@ export type Font = {
 
 export type FontStyle = "normal" | "bold" | "italic" | "both";
 
+export type UiContext = {
+  canvas:      HTMLCanvasElement;
+  containerEl: HTMLDivElement;
+  wrapperEl:   HTMLDivElement;
+
+  hot:    UiId | null;
+  active: UiId | null;
+
+  dragAnchorPosition:     Vector;
+  mouseDragStartPosition: Vector;
+  dragDistance:           Vector;
+
+  currentMousePosition: Vector;
+  currentMouseButtons: number;
+
+  previousMousePosition: Vector;
+  previousMouseButtons: number;
+
+  renderQueue: Shape[];
+
+  lineRenderer: LineRenderer;
+  textRenderer: TextRenderer;
+
+  onMouseDown: (event: MouseEvent) => void;
+  onMouseUp:   (event: MouseEvent) => void;
+  onMouseMove: (event: MouseEvent) => void;
+  onWheel:     (event: WheelEvent) => void;
+}
+
+export type UiId = {
+  name:   string;
+  index?: number;
+}
+
+export type DraggableProps = {
+  rect: Rect;
+  color?: string;
+  hotColor?: string;
+  activeColor?: string;
+}
+
+export type BaseShape = {
+  type: string;
+  x: number;
+  y: number;
+  opacity?: number;
+  clipRegion?: Path2D;
+  sortOrder?: number;
+}
+
+export type LineOrientation = "horizontal" | "vertical";
+
+export type LineShape = BaseShape & {
+  type: "line";
+  orientation: LineOrientation;
+  length: number;
+  color: string;
+}
+
+export type RectShape = BaseShape & {
+  type: "rect";
+  width: number;
+  height: number;
+  color: string;
+}
+
+export type TextShape = BaseShape & {
+  type: "text";
+  font: Font;
+  text: string;
+  maxWidth?: number;
+  ellipsis?: boolean;
+}
+
+export type Shape =
+  LineShape
+  | RectShape
+  | TextShape;
+
+export type Rect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export type Vector = {
+  x: number;
+  y: number;
+}
+
 export type Size = {
-  width:  number;
+  width: number;
   height: number;
 }
 
-export type RectLike = {
-  x: number;
-  y: number;
-  width:  number;
-  height: number;
+export type CreateUiContextParams = {
+  container: string;
+  size?: Size;
 }
 
-export type VectorLike = {
-  x: number;
-  y: number;
+export type Layout = {
+  tableWidth:  number;
+  tableHeight: number;
+
+  bodyWidth:  number;
+  bodyHeight: number;
+
+  scrollWidth:  number;
+  scrollHeight: number;
+
+  contentWidth:  number;
+  contentHeight: number;
+
+  gridWidth:  number;
+  gridHeight: number;
+
+  maxScrollX: number;
+  maxScrollY: number;
+
+  hsbRect:      Rect;
+  hsbTrackRect: Rect;
+
+  vsbRect: Rect;
+  vsbTrackRect: Rect;
+
+  overflowX: boolean;
+  overflowY: boolean;
+}
+
+export type Viewport = {
+  columnStart: number;
+  columnEnd: number;
+  columnPositions: Map<number, number>;
+
+  rowStart: number;
+  rowEnd: number;
+  rowPositions: Map<number, number>;
+
+  tableEndPosition: number;
+}
+
+export type FrameState = {
+  layout:   Layout;
+  viewport: Viewport;
+}
+
+export type GlyphAtlasOptions = {
+  textureWidth?:  number;
+  textureHeight?: number;
+}
+
+export type TextureNode = {
+  rect: Rect;
+  left: TextureNode | null;
+  right: TextureNode | null;
+  filled: boolean;
+  glyphData?: GlyphData;
+}
+
+export type GlyphData = {
+  rect: Rect;
+  verticalShift: number;
 }

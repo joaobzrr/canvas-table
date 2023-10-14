@@ -53,6 +53,10 @@ export class LineRenderer {
     ctx.drawImage(this.vCanvas, 0, 0, 1, length, x, y, 1, length);
   }
 
+  public getColor() {
+    return this.color;
+  }
+
   public setColor(color: string) {
     this.color = color;
     this.fillCanvas(this.hCanvas, this.hCtx);
