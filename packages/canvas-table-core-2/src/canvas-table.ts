@@ -162,7 +162,8 @@ function update(ct: CanvasTable) {
     const columnState = columnStates[columnIndex];
     const columnPos = viewport.columnPositions.get(columnIndex)!;
 
-    const columnWidth = Math.max(dragAnchorPosition.x + dragDistance.x - columnPos, MIN_COLUMN_WIDTH);
+    const calculatedColumnWidth = dragAnchorPosition.x + dragDistance.x - columnPos;
+    const columnWidth = Math.max(calculatedColumnWidth, MIN_COLUMN_WIDTH);
     columnState.width = columnWidth;
 
     layout = reflow(ct);

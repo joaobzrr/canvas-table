@@ -264,6 +264,7 @@ export function isMouseReleased(uiContext: UiContext, button: number) {
 }
 
 function onMouseDown(uiContext: UiContext, event: MouseEvent) {
+  event.preventDefault();
   updateMouseState(uiContext, event);
 }
 
