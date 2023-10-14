@@ -105,9 +105,6 @@ function update(ct: CanvasTable) {
 
   const currentMousePosition = getCurrentMousePosition(uiContext);
 
-  scrollPos.x = Math.min(scrollPos.x, layout.maxScrollX);
-  scrollPos.y = Math.min(scrollPos.y, layout.maxScrollY);
-
   if (theme.tableBackgroundColor) {
     submitDraw(uiContext, {
       type: "rect",
@@ -143,7 +140,7 @@ function update(ct: CanvasTable) {
 
   let indexOfColumnBeingHovered = -1;
   for (let columnIndex = viewport.columnStart; columnIndex < viewport.columnEnd; columnIndex++) {
-    const rect = calculateColumnResizerRect(ct, layout, viewport, columnIndex);
+    const rect = calculateColumnResizerRect(ct, viewport, columnIndex);
     if (pointInRect(currentMousePosition, rect)) {
       indexOfColumnBeingHovered = columnIndex;
       if (isMousePressed(uiContext, MOUSE_BUTTONS.PRIMARY)) {
@@ -163,6 +160,9 @@ function update(ct: CanvasTable) {
     const newLayout = reflow(ct);
     shallowMerge(layout, newLayout);
 
+    scrollPos.x = Math.min(scrollPos.x, layout.maxScrollX);
+    scrollPos.y = Math.min(scrollPos.y, layout.maxScrollY);
+
     const newViewport = calculateViewport(ct, layout);
     shallowMerge(viewport, newViewport);
   }
@@ -172,12 +172,12 @@ function update(ct: CanvasTable) {
     : indexOfColumnBeingHovered;
 
   if (indexOfColumnWhoseResizerWillBeDrawn !== -1) {
-    const rect = calculateColumnResizerRect(ct, layout, viewport, indexOfColumnWhoseResizerWillBeDrawn);
+    const rect = calculateColumnResizerRect(ct, viewport, indexOfColumnWhoseResizerWillBeDrawn);
 
     submitDraw(uiContext, {
       type: "rect",
       ...rect,
-      color: "red",
+      color: theme.columnResizerColor,
       sortOrder: 2
     });
   }
@@ -530,6 +530,8 @@ function reflow(ct: CanvasTable): Layout {
   };
 
   return {
+    contentWidth,
+    contentHeight,
     tableWidth,
     tableHeight,
     bodyWidth,
@@ -550,16 +552,13 @@ function reflow(ct: CanvasTable): Layout {
 }
 
 function calculateViewport(ct: CanvasTable, layout: Layout): Viewport {
-  const { columnStates, dataRows, theme, scrollPos, } = ct;
-  const { rowHeight } = theme;
-
-  const { bodyWidth, bodyHeight } = layout;
+  const { columnStates, dataRows, theme, scrollPos } = ct;
 
   let columnStart = 0;
   let columnPos = 0;
   const columnPositions = new Map();
-  // @Note: Why subtract 1 from length here?
-  for (; columnStart < columnStates.length - 1; columnStart++) {
+
+  for (; columnStart < columnStates.length; columnStart++) {
     const columnState = columnStates[columnStart];
     const nextColumnPos = columnPos + columnState.width;
     if (nextColumnPos > scrollPos.x) {
@@ -571,7 +570,8 @@ function calculateViewport(ct: CanvasTable, layout: Layout): Viewport {
     columnPos = nextColumnPos;
   }
 
-  const scrollRight = scrollPos.x + bodyWidth;
+  const scrollRight = scrollPos.x + layout.bodyWidth;
+
   let columnEnd = columnStart;
   for (; columnEnd < columnStates.length; columnEnd++) {
     if (columnPos >= scrollRight) {
@@ -584,14 +584,14 @@ function calculateViewport(ct: CanvasTable, layout: Layout): Viewport {
     columnPos += columnState.width;
   }
 
-  const rowStart = Math.floor(scrollPos.y / rowHeight);
+  const rowStart = Math.floor(scrollPos.y / theme.rowHeight);
 
-  const scrollBottom = scrollPos.y + bodyHeight;
-  const rowEnd = Math.min(Math.ceil(scrollBottom / rowHeight), dataRows.length);
+  const scrollBottom = scrollPos.y + layout.bodyHeight;
+  const rowEnd = Math.min(Math.ceil(scrollBottom / theme.rowHeight), dataRows.length);
 
   const rowPositions = new Map();
   for (let i = rowStart; i < rowEnd; i++) {
-    const rowPosition = i * rowHeight + rowHeight - scrollPos.y;
+    const rowPosition = i * theme.rowHeight + theme.rowHeight - scrollPos.y;
     rowPositions.set(i, rowPosition);
   }
 
@@ -756,19 +756,24 @@ function doVerticalScrolbarThumb(ct: CanvasTable, layout: Layout) {
 
 function calculateColumnResizerRect(
   ct: CanvasTable,
-  layout: Layout,
   viewport: Viewport,
   columnIndex: number
 ) {
   const { columnStates, theme } = ct;
-  const { gridWidth } = layout;
   const { columnPositions } = viewport;
 
   const rectWidth = (COLUMN_RESIZER_LEFT_WIDTH * 2) + 1;
 
-  const x = columnIndex < columnStates.length - 1
-    ? columnPositions.get(columnIndex + 1)! - COLUMN_RESIZER_LEFT_WIDTH
-    : gridWidth - rectWidth;
+  const columnState = columnStates[columnIndex];
+  const columnPos = columnPositions.get(columnIndex)!;
+  const nextColumnPos = columnPos + columnState.width;
+
+  let x = nextColumnPos;
+  if (columnIndex < columnStates.length - 1) {
+    x -= COLUMN_RESIZER_LEFT_WIDTH;
+  } else {
+    x -= rectWidth;
+  }
 
   const rect = {
     x,

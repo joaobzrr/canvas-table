@@ -182,6 +182,9 @@ export type Layout = {
   scrollWidth:  number;
   scrollHeight: number;
 
+  contentWidth:  number;
+  contentHeight: number;
+
   gridWidth:  number;
   gridHeight: number;
 
