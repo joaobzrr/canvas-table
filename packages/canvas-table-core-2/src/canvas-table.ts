@@ -17,8 +17,7 @@ import {
   setDragAnchorPosition,
   getDragDistance,
   MOUSE_BUTTONS,
-  createUiId,
-  isMouseReleased,
+  createUiId
 } from "./ui";
 import { defaultTheme } from "./default-theme";
 import { shallowMerge, scale, clamp } from "./utils";
@@ -52,15 +51,12 @@ export function create(params: CreateCanvasTableParams): CanvasTable {
 
   const scrollPos = { x: 0, y: 0 };
 
-  const indexOfColumnBeingResized = -1;
-
   const ct = {
     uiContext,
     columnStates,
     dataRows,
     theme,
     scrollPos,
-    indexOfColumnBeingResized
   } as CanvasTable;
 
   const rafId = requestAnimationFrame(() => update(ct));
@@ -94,15 +90,11 @@ function update(ct: CanvasTable) {
 
   beginFrame(uiContext);
 
-  if (isMouseReleased(uiContext, MOUSE_BUTTONS.PRIMARY)) {
-    ct.indexOfColumnBeingResized = -1;
-  }
-
   const canvasSize = getCanvasSize(uiContext);
 
-  const layout = reflow(ct);
+  let layout = reflow(ct);
 
-  const viewport = calculateViewport(ct, layout);
+  let viewport = calculateViewport(ct, layout);
 
   const currentMousePosition = getCurrentMousePosition(uiContext);
 
@@ -139,54 +131,54 @@ function update(ct: CanvasTable) {
     });
   }
 
-  let indexOfColumnBeingHovered = -1;
   for (let columnIndex = viewport.columnStart; columnIndex < viewport.columnEnd; columnIndex++) {
     const columnEndPosition = getColumnEndPosition(ct, viewport, columnIndex);
     const rect = calculateColumnResizerRect(theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
 
+    const id = { item: "column-resizer", index: columnIndex };
     if (pointInRect(currentMousePosition, rect)) {
-      indexOfColumnBeingHovered = columnIndex;
+      setAsHot(uiContext, id);
 
       if (isMousePressed(uiContext, MOUSE_BUTTONS.PRIMARY)) {
-        ct.indexOfColumnBeingResized = columnIndex;
+        setAsActive(uiContext, id);
 
-        const itemDragStartPosition = {
-          x: columnEndPosition,
-          y: rect.y
-        };
-        setDragAnchorPosition(uiContext, itemDragStartPosition);
+        const dragAnchorPosition = { x: columnEndPosition, y: rect.y };
+        setDragAnchorPosition(uiContext, dragAnchorPosition);
       }
+
       break;
+    } else {
+      unsetAsHot(uiContext, id);
     }
   }
 
-  if (ct.indexOfColumnBeingResized !== -1) {
+  const id = { item: "column-resizer" };
+  if (isActive(uiContext, id)) {
+    const id = uiContext.active!;
+    const columnIndex = id.index!;
+
     const dragAnchorPosition = getDragAnchorPosition(uiContext);
     const dragDistance = getDragDistance(uiContext);
 
-    const columnState = columnStates[ct.indexOfColumnBeingResized];
-    const columnPos = viewport.columnPositions.get(ct.indexOfColumnBeingResized)!;
+    const columnState = columnStates[columnIndex];
+    const columnPos = viewport.columnPositions.get(columnIndex)!;
 
     const columnWidth = Math.max(dragAnchorPosition.x + dragDistance.x - columnPos, MIN_COLUMN_WIDTH);
     columnState.width = columnWidth;
 
-    const newLayout = reflow(ct);
-    shallowMerge(layout, newLayout);
+    layout = reflow(ct);
 
     scrollPos.x = Math.min(scrollPos.x, layout.maxScrollX);
     scrollPos.y = Math.min(scrollPos.y, layout.maxScrollY);
 
-    const newViewport = calculateViewport(ct, layout);
-    shallowMerge(viewport, newViewport);
+    viewport = calculateViewport(ct, layout);
   }
 
-  const indexOfColumnWhoseResizerWillBeDrawn = ct.indexOfColumnBeingResized !== -1
-    ? ct.indexOfColumnBeingResized
-    : indexOfColumnBeingHovered;
+  if (isActive(uiContext, id) || isHot(uiContext, id)) {
+    const id = uiContext.active ?? uiContext.hot!;
+    const columnIndex = id.index!;
 
-
-  if (indexOfColumnWhoseResizerWillBeDrawn !== -1) {
-    const columnEndPosition = getColumnEndPosition(ct, viewport, indexOfColumnWhoseResizerWillBeDrawn);
+    const columnEndPosition = getColumnEndPosition(ct, viewport, columnIndex);
     const rect = calculateColumnResizerRect(theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
 
     const clipRegion = new Path2D();

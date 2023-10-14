@@ -11,7 +11,6 @@ export type CanvasTable = {
   theme: Theme;
 
   scrollPos: Vector;
-  indexOfColumnBeingResized: number;
 }
 
 export type CreateCanvasTableParams = {

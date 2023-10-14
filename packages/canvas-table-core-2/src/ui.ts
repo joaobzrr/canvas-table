@@ -8,6 +8,7 @@ import {
   Shape,
   Size
 } from "./types";
+import { shallowMatch } from "./utils";
 
 export const MOUSE_BUTTONS = {
   PRIMARY:   1,
@@ -217,11 +218,11 @@ export function unsetAsHot(uiContext: UiContext, id: UiId) {
 }
 
 export function isActive(uiContext: UiContext, id: UiId) {
-  return uiContext.active ? isSameItem(uiContext.active, id): false;
+  return uiContext.active ? shallowMatch(id, uiContext.active): false;
 }
 
-export function isHot(uiContext: UiContext, id: UiId) {
-  return uiContext.hot ? isSameItem(uiContext.hot, id): false;
+export function isHot(uiContext: UiContext, id: Partial<UiId>) {
+  return uiContext.hot ? shallowMatch(id, uiContext.hot): false;
 }
 
 export function createUiId(item: string, index?: number) {
@@ -264,10 +265,6 @@ export function isMousePressed(uiContext: UiContext, button: number) {
 export function isMouseReleased(uiContext: UiContext, button: number) {
   const { currMouseButtons, prevMouseButtons } = uiContext;
   return (currMouseButtons & button) === 0 && (prevMouseButtons & button) === 1;
-}
-
-function isSameItem(id1: UiId, id2: UiId) {
-  return id1.item === id2.item && id1.index === id2.index;
 }
 
 function onMouseDown(uiContext: UiContext, event: MouseEvent) {
