@@ -79,7 +79,7 @@ export type UiContext = {
   hot:    UiId | null;
   active: UiId | null;
 
-  itemDragStartPosition:  Vector;
+  dragAnchorPosition:     Vector;
   mouseDragStartPosition: Vector;
   dragDistance:           Vector;
 
@@ -209,4 +209,6 @@ export type Viewport = {
   rowStart: number;
   rowEnd: number;
   rowPositions: Map<number, number>;
+
+  tableEndPosition: number;
 }

@@ -13,17 +13,18 @@ import {
   unsetAsHot,
   isMousePressed,
   getCurrentMousePosition,
-  getItemDragStartPosition,
-  setItemDragStartPosition,
+  getDragAnchorPosition,
+  setDragAnchorPosition,
   getDragDistance,
   MOUSE_BUTTONS,
   createUiId,
-  isMouseReleased
+  isMouseReleased,
 } from "./ui";
 import { defaultTheme } from "./default-theme";
 import { shallowMerge, scale, clamp } from "./utils";
 import {
   COLUMN_RESIZER_LEFT_WIDTH,
+  COLUMN_RESIZER_WIDTH,
   DEFAULT_COLUMN_WIDTH,
   MIN_COLUMN_WIDTH,
   MIN_THUMB_LENGTH
@@ -140,21 +141,33 @@ function update(ct: CanvasTable) {
 
   let indexOfColumnBeingHovered = -1;
   for (let columnIndex = viewport.columnStart; columnIndex < viewport.columnEnd; columnIndex++) {
-    const rect = calculateColumnResizerRect(ct, viewport, columnIndex);
+    const columnEndPosition = getColumnEndPosition(ct, viewport, columnIndex);
+    const rect = calculateColumnResizerRect(theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
+
     if (pointInRect(currentMousePosition, rect)) {
       indexOfColumnBeingHovered = columnIndex;
+
       if (isMousePressed(uiContext, MOUSE_BUTTONS.PRIMARY)) {
         ct.indexOfColumnBeingResized = columnIndex;
+
+        const itemDragStartPosition = {
+          x: columnEndPosition,
+          y: rect.y
+        };
+        setDragAnchorPosition(uiContext, itemDragStartPosition);
       }
       break;
     }
   }
 
   if (ct.indexOfColumnBeingResized !== -1) {
+    const dragAnchorPosition = getDragAnchorPosition(uiContext);
+    const dragDistance = getDragDistance(uiContext);
+
     const columnState = columnStates[ct.indexOfColumnBeingResized];
     const columnPos = viewport.columnPositions.get(ct.indexOfColumnBeingResized)!;
 
-    const columnWidth = Math.max(currentMousePosition.x - columnPos, MIN_COLUMN_WIDTH);
+    const columnWidth = Math.max(dragAnchorPosition.x + dragDistance.x - columnPos, MIN_COLUMN_WIDTH);
     columnState.width = columnWidth;
 
     const newLayout = reflow(ct);
@@ -171,14 +184,20 @@ function update(ct: CanvasTable) {
     ? ct.indexOfColumnBeingResized
     : indexOfColumnBeingHovered;
 
+
   if (indexOfColumnWhoseResizerWillBeDrawn !== -1) {
-    const rect = calculateColumnResizerRect(ct, viewport, indexOfColumnWhoseResizerWillBeDrawn);
+    const columnEndPosition = getColumnEndPosition(ct, viewport, indexOfColumnWhoseResizerWillBeDrawn);
+    const rect = calculateColumnResizerRect(theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
+
+    const clipRegion = new Path2D();
+    clipRegion.rect(0, 0, layout.tableWidth, theme.rowHeight);
 
     submitDraw(uiContext, {
       type: "rect",
       ...rect,
       color: theme.columnResizerColor,
-      sortOrder: 2
+      sortOrder: 2,
+      clipRegion
     });
   }
 
@@ -595,13 +614,16 @@ function calculateViewport(ct: CanvasTable, layout: Layout): Viewport {
     rowPositions.set(i, rowPosition);
   }
 
+  const tableEndPosition = layout.scrollWidth - scrollPos.x;
+
   return {
     columnStart,
     columnEnd,
     columnPositions,
     rowStart,
     rowEnd,
-    rowPositions
+    rowPositions,
+    tableEndPosition
   };
 }
 
@@ -631,15 +653,15 @@ function doHorizontalScrollbarThumb(ct: CanvasTable, layout: Layout) {
         x: hsbThumbX,
         y: hsbThumbY
       };
-      setItemDragStartPosition(uiContext, itemDragStartPosition);
+      setDragAnchorPosition(uiContext, itemDragStartPosition);
     }
   }
 
   if (dragging) {
-    const itemDragStartPosition = getItemDragStartPosition(uiContext);
+    const dragAnchorPosition = getDragAnchorPosition(uiContext);
     const dragDistance = getDragDistance(uiContext);
 
-    hsbThumbX = clamp(itemDragStartPosition.x + dragDistance.x, hsbThumbMinX, hsbThumbMaxX);
+    hsbThumbX = clamp(dragAnchorPosition.x + dragDistance.x, hsbThumbMinX, hsbThumbMaxX);
 
     const newScrollX = Math.round(scale(hsbThumbX, hsbThumbMinX, hsbThumbMaxX, 0, maxScrollX));
     scrollPos.x = newScrollX;
@@ -706,15 +728,15 @@ function doVerticalScrolbarThumb(ct: CanvasTable, layout: Layout) {
         x: vsbThumbX,
         y: vsbThumbY
       };
-      setItemDragStartPosition(uiContext, itemDragStartPosition);
+      setDragAnchorPosition(uiContext, itemDragStartPosition);
     }
   }
 
   if (dragging) {
-    const itemDragStartPosition = getItemDragStartPosition(uiContext);
+    const dragAnchorPosition = getDragAnchorPosition(uiContext);
     const dragDistance = getDragDistance(uiContext);
 
-    vsbThumbY = clamp(itemDragStartPosition.y + dragDistance.y, vsbThumbMinY, vsbThumbMaxY);
+    vsbThumbY = clamp(dragAnchorPosition.y + dragDistance.y, vsbThumbMinY, vsbThumbMaxY);
     const newScrollY = Math.round(scale(vsbThumbY, vsbThumbMinY, vsbThumbMaxY, 0, maxScrollY));
     scrollPos.y = newScrollY;
   }
@@ -754,35 +776,28 @@ function doVerticalScrolbarThumb(ct: CanvasTable, layout: Layout) {
   });
 }
 
-function calculateColumnResizerRect(
-  ct: CanvasTable,
-  viewport: Viewport,
-  columnIndex: number
-) {
-  const { columnStates, theme } = ct;
-  const { columnPositions } = viewport;
-
-  const rectWidth = (COLUMN_RESIZER_LEFT_WIDTH * 2) + 1;
-
-  const columnState = columnStates[columnIndex];
-  const columnPos = columnPositions.get(columnIndex)!;
-  const nextColumnPos = columnPos + columnState.width;
-
-  let x = nextColumnPos;
-  if (columnIndex < columnStates.length - 1) {
-    x -= COLUMN_RESIZER_LEFT_WIDTH;
-  } else {
-    x -= rectWidth;
-  }
+function calculateColumnResizerRect(rowHeight: number, tableEndPosition: number, columnEndPosition: number) {
+  const right = Math.min(columnEndPosition + COLUMN_RESIZER_LEFT_WIDTH + 1, tableEndPosition);
+  const left = right - COLUMN_RESIZER_WIDTH;
 
   const rect = {
-    x,
+    x: left,
     y: 1,
-    width: rectWidth,
-    height: theme.rowHeight - 1
+    width: COLUMN_RESIZER_WIDTH,
+    height: rowHeight - 1
   }
 
   return rect;
+}
+
+function getColumnEndPosition(ct: CanvasTable, viewport: Viewport, columnIndex: number) {
+  const { columnStates } = ct;
+
+  const columnState = columnStates[columnIndex];
+  const columnPosStart = viewport.columnPositions.get(columnIndex)!;
+  const columnPosEnd = columnPosStart + columnState.width;
+
+  return columnPosEnd;
 }
 
 export function createRect(): Rect;

@@ -45,7 +45,7 @@ export function create(params: CreateUiContextParams) {
   const prevMousePosition = { x: 0, y: 0 };
   const prevMouseButtons = 0;
 
-  const itemDragStartPosition  = { x: 0, y: 0 };
+  const dragAnchorPosition     = { x: 0, y: 0 };
   const mouseDragStartPosition = { x: 0, y: 0 };
   const dragDistance           = { x: 0, y: 0 };
 
@@ -64,7 +64,7 @@ export function create(params: CreateUiContextParams) {
     currMouseButtons,
     prevMousePosition,
     prevMouseButtons,
-    itemDragStartPosition,
+    dragAnchorPosition,
     mouseDragStartPosition,
     dragDistance,
     renderQueue,
@@ -232,12 +232,16 @@ export function getCurrentMousePosition(uiContext: UiContext) {
   return uiContext.currMousePosition;
 }
 
-export function getItemDragStartPosition(uiContext: UiContext) {
-  return uiContext.itemDragStartPosition;
+export function getMouseDragStartPosition(uiContext: UiContext) {
+  return uiContext.mouseDragStartPosition;
 }
 
-export function setItemDragStartPosition(uiContext: UiContext, itemDragStartPos: Vector) {
-  uiContext.itemDragStartPosition = itemDragStartPos;
+export function getDragAnchorPosition(uiContext: UiContext) {
+  return uiContext.dragAnchorPosition;
+}
+
+export function setDragAnchorPosition(uiContext: UiContext, dragAnchorPosition: Vector) {
+  uiContext.dragAnchorPosition = dragAnchorPosition;
 }
 
 export function getDragDistance(uiContext: UiContext) {
