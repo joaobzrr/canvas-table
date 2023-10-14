@@ -2,7 +2,7 @@ import { LineRenderer } from "./LineRenderer";
 import { TextRenderer } from "./TextRenderer";
 
 export type CanvasTable = {
-  uiContext: UiContext;
+  ui: UiContext;
 
   rafId: number;
 
@@ -82,11 +82,11 @@ export type UiContext = {
   mouseDragStartPosition: Vector;
   dragDistance:           Vector;
 
-  currMousePosition: Vector;
-  currMouseButtons: number;
+  currentMousePosition: Vector;
+  currentMouseButtons: number;
 
-  prevMousePosition: Vector;
-  prevMouseButtons: number;
+  previousMousePosition: Vector;
+  previousMouseButtons: number;
 
   renderQueue: Shape[];
 
@@ -100,7 +100,7 @@ export type UiContext = {
 }
 
 export type UiId = {
-  item:   string;
+  name:   string;
   index?: number;
 }
 
@@ -210,4 +210,9 @@ export type Viewport = {
   rowPositions: Map<number, number>;
 
   tableEndPosition: number;
+}
+
+export type FrameState = {
+  layout:   Layout;
+  viewport: Viewport;
 }

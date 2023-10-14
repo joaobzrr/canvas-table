@@ -1,14 +1,7 @@
 import { LineRenderer } from "./LineRenderer";
 import { TextRenderer } from "./TextRenderer";
-import {
-  UiContext,
-  UiId,
-  Vector,
-  CreateUiContextParams,
-  Shape,
-  Size
-} from "./types";
-import { shallowMatch } from "./utils";
+import { UiContext, UiId, CreateUiContextParams, Shape, Size } from "./types";
+import { isObject, shallowMatch } from "./utils";
 
 export const MOUSE_BUTTONS = {
   PRIMARY:   1,
@@ -41,10 +34,10 @@ export function create(params: CreateUiContextParams) {
   const hot = null;
   const active = null;
 
-  const currMousePosition = { x: 0, y: 0 };
-  const currMouseButtons = 0;
-  const prevMousePosition = { x: 0, y: 0 };
-  const prevMouseButtons = 0;
+  const currentMousePosition = { x: 0, y: 0 };
+  const currentMouseButtons = 0;
+  const previousMousePosition = { x: 0, y: 0 };
+  const previousMouseButtons = 0;
 
   const dragAnchorPosition     = { x: 0, y: 0 };
   const mouseDragStartPosition = { x: 0, y: 0 };
@@ -55,16 +48,16 @@ export function create(params: CreateUiContextParams) {
   const lineRenderer = new LineRenderer();
   const textRenderer = new TextRenderer();
 
-  const uiContext = {
+  const ui = {
     canvas,
     containerEl,
     wrapperEl,
     hot,
     active,
-    currMousePosition,
-    currMouseButtons,
-    prevMousePosition,
-    prevMouseButtons,
+    currentMousePosition,
+    currentMouseButtons,
+    previousMousePosition,
+    previousMouseButtons,
     dragAnchorPosition,
     mouseDragStartPosition,
     dragDistance,
@@ -73,73 +66,69 @@ export function create(params: CreateUiContextParams) {
     textRenderer
   } as Partial<UiContext> as UiContext;
 
-  uiContext.onMouseDown = (e) => onMouseDown(uiContext, e);
-  uiContext.onMouseUp   = (e) => onMouseUp(uiContext, e);
-  uiContext.onMouseMove = (e) => onMouseMove(uiContext, e);
-  uiContext.onWheel     = (e) => onWheel(uiContext, e);
+  ui.onMouseDown = (e) => onMouseDown(ui, e);
+  ui.onMouseUp   = (e) => onMouseUp(ui, e);
+  ui.onMouseMove = (e) => onMouseMove(ui, e);
+  ui.onWheel     = (e) => onWheel(ui, e);
 
-  canvas.addEventListener("mousedown",   uiContext.onMouseDown);
-  canvas.addEventListener("wheel",       uiContext.onMouseUp);
-  document.addEventListener("mousemove", uiContext.onMouseMove);
-  document.addEventListener("mouseup",   uiContext.onMouseMove);
+  canvas.addEventListener("mousedown",   ui.onMouseDown);
+  canvas.addEventListener("wheel",       ui.onMouseUp);
+  document.addEventListener("mousemove", ui.onMouseMove);
+  document.addEventListener("mouseup",   ui.onMouseMove);
 
-  return uiContext;
+  return ui;
 }
 
-export function removeDocumentEventListeners(uiContext: UiContext) {
-  const { onMouseMove, onMouseUp } = uiContext;
+export function removeDocumentEventListeners(ui: UiContext) {
+  const { onMouseMove, onMouseUp } = ui;
 
   document.removeEventListener("mousemove", onMouseMove);
   document.removeEventListener("mouseup", onMouseUp);
 }
 
-export function getCanvasSize(uiContext: UiContext) {
-  const { canvas } = uiContext;
+export function getCanvasSize(ui: UiContext) {
+  const { canvas } = ui;
   return {
     width: canvas.width,
     height: canvas.height
   };
 }
 
-export function setCanvasSize(uiContext: UiContext, size: Size) {
-  const { canvas } = uiContext;
+export function setCanvasSize(ui: UiContext, size: Size) {
+  const { canvas } = ui;
 
   canvas.width  = size && size.width  > 0 ? size.width  : 1;
   canvas.height = size && size.height > 0 ? size.height : 1;
 }
 
-export function beginFrame(uiContext: UiContext) {
-  const { currMousePosition, mouseDragStartPosition } = uiContext;
+export function beginFrame(ui: UiContext) {
+  const { currentMousePosition, mouseDragStartPosition } = ui;
 
-  if (isMousePressed(uiContext, MOUSE_BUTTONS.PRIMARY)) {
-    mouseDragStartPosition.x = currMousePosition.x;
-    mouseDragStartPosition.y = currMousePosition.y;
+  if (isMousePressed(ui, MOUSE_BUTTONS.PRIMARY)) {
+    mouseDragStartPosition.x = currentMousePosition.x;
+    mouseDragStartPosition.y = currentMousePosition.y;
   }
 
-  if (isMouseReleased(uiContext, MOUSE_BUTTONS.PRIMARY)) {
-    uiContext.active = null;
+  if (isMouseReleased(ui, MOUSE_BUTTONS.PRIMARY)) {
+    ui.active = null;
   }
 
-  if (isMouseDown(uiContext, MOUSE_BUTTONS.PRIMARY)) {
-    const dragDistanceX = currMousePosition.x - mouseDragStartPosition.x;
-    const dragDistanceY = currMousePosition.y - mouseDragStartPosition.y;
-    uiContext.dragDistance = {
-      x: dragDistanceX,
-      y: dragDistanceY
-    };
+  if (isMouseDown(ui, MOUSE_BUTTONS.PRIMARY)) {
+    ui.dragDistance.x = currentMousePosition.x - mouseDragStartPosition.x;
+    ui.dragDistance.y = currentMousePosition.y - mouseDragStartPosition.y;
   }
 }
 
-export function endFrame(uiContext: UiContext) {
-  uiContext.prevMousePosition.x = uiContext.currMousePosition.x;
-  uiContext.prevMousePosition.y = uiContext.currMousePosition.y;
-  uiContext.prevMouseButtons    = uiContext.currMouseButtons;
+export function endFrame(ui: UiContext) {
+  ui.previousMousePosition.x = ui.currentMousePosition.x;
+  ui.previousMousePosition.y = ui.currentMousePosition.y;
+  ui.previousMouseButtons    = ui.currentMouseButtons;
 
-  render(uiContext);
+  render(ui);
 }
 
-function render(uiContext: UiContext) {
-  const { canvas, lineRenderer, textRenderer, renderQueue } = uiContext;
+function render(ui: UiContext) {
+  const { canvas, lineRenderer, textRenderer, renderQueue } = ui;
 
   renderQueue.sort((a, b) => {
     const { sortOrder: aSortOrder = 0 } = a;
@@ -196,84 +185,98 @@ function render(uiContext: UiContext) {
   }
 }
 
-export function submitDraw(uiContext: UiContext, shape: Shape) {
-  const { renderQueue } = uiContext;
+export function submitDraw(ui: UiContext, shape: Shape) {
+  const { renderQueue } = ui;
   renderQueue.unshift(shape);
 }
 
-export function setAsActive(uiContext: UiContext, id: UiId | null) {
-  uiContext.active = id;
+export function setAsActive(ui: UiContext, name: string, index?: number): void;
+export function setAsActive(ui: UiContext, id: Partial<UiId>): void;
+export function setAsActive(ui: UiContext, ...args: any[]) {
+  const id = idFromArgs(...args);
+  ui.active = id;
 }
 
-export function setAsHot(uiContext: UiContext, id: UiId) {
-  if (!uiContext.active) {
-    uiContext.hot = id;
+export function setAsHot(ui: UiContext, name: string, index?: number): void;
+export function setAsHot(ui: UiContext, id: Partial<UiId>): void;
+export function setAsHot(ui: UiContext, ...args: any[]) {
+  if (!ui.active) {
+    const id = idFromArgs(...args);
+    ui.hot = id;
   }
 }
 
-export function unsetAsHot(uiContext: UiContext, id: UiId) {
-  if (isHot(uiContext, id)) {
-    uiContext.hot = null;
+export function unsetAsHot(ui: UiContext, name: string, index?: number): void;
+export function unsetAsHot(ui: UiContext, id: Partial<UiId>): void;
+export function unsetAsHot(ui: UiContext, ...args: any[]) {
+  const id = idFromArgs(...args);
+  if (isHot(ui, id)) {
+    ui.hot = null;
   }
 }
+export function isActive(ui: UiContext, name: string, index?: number): boolean;
+export function isActive(ui: UiContext, id: Partial<UiId>): boolean;
+export function isActive(ui: UiContext, ...args: any[]) {
+  const { active } = ui;
+  if (active === null) {
+    return false;
+  }
 
-export function isActive(uiContext: UiContext, id: UiId) {
-  return uiContext.active ? shallowMatch(id, uiContext.active): false;
+  const id = idFromArgs(...args);
+  return shallowMatch(id, active);
 }
 
-export function isHot(uiContext: UiContext, id: Partial<UiId>) {
-  return uiContext.hot ? shallowMatch(id, uiContext.hot): false;
+export function isHot(ui: UiContext, name: string, index?: number): boolean;
+export function isHot(ui: UiContext, id: Partial<UiId>): boolean;
+export function isHot(ui: UiContext, ...args: any[]) {
+  const { hot } = ui;
+  if (hot === null) {
+    return false;
+  }
+
+  const id = idFromArgs(...args); 
+  return shallowMatch(id, hot);
 }
 
-export function isAnyActive(uiContext: UiContext) {
-  return uiContext.active !== null;
+export function isAnyActive(ui: UiContext) {
+  return ui.active !== null;
 }
 
-export function isNoneActive(uiContext: UiContext) {
-  return uiContext.active === null;
+export function isNoneActive(ui: UiContext) {
+  return ui.active === null;
 }
 
-export function getCurrentMousePosition(uiContext: UiContext) {
-  return uiContext.currMousePosition;
+export function isMouseDown(ui: UiContext, button: number) {
+  return ui.currentMouseButtons & button;
 }
 
-export function getMouseDragStartPosition(uiContext: UiContext) {
-  return uiContext.mouseDragStartPosition;
+export function isMouseUp(ui: UiContext, button: number) {
+  return !(ui.currentMouseButtons & button);
 }
 
-export function getDragAnchorPosition(uiContext: UiContext) {
-  return uiContext.dragAnchorPosition;
+export function isMousePressed(ui: UiContext, button: number) {
+  const { currentMouseButtons, previousMouseButtons } = ui;
+  return (currentMouseButtons & button) === 1 && (previousMouseButtons & button) === 0;
 }
 
-export function setDragAnchorPosition(uiContext: UiContext, dragAnchorPosition: Vector) {
-  uiContext.dragAnchorPosition = dragAnchorPosition;
+export function isMouseReleased(ui: UiContext, button: number) {
+  const { currentMouseButtons, previousMouseButtons } = ui;
+  return (currentMouseButtons & button) === 0 && (previousMouseButtons & button) === 1;
 }
 
-export function getDragDistance(uiContext: UiContext) {
-  return uiContext.dragDistance;
-}
-
-export function isMouseDown(uiContext: UiContext, button: number) {
-  return uiContext.currMouseButtons & button;
-}
-
-export function isMouseUp(uiContext: UiContext, button: number) {
-  return !(uiContext.currMouseButtons & button);
-}
-
-export function isMousePressed(uiContext: UiContext, button: number) {
-  const { currMouseButtons, prevMouseButtons } = uiContext;
-  return (currMouseButtons & button) === 1 && (prevMouseButtons & button) === 0;
-}
-
-export function isMouseReleased(uiContext: UiContext, button: number) {
-  const { currMouseButtons, prevMouseButtons } = uiContext;
-  return (currMouseButtons & button) === 0 && (prevMouseButtons & button) === 1;
-}
-
-function onMouseDown(uiContext: UiContext, event: MouseEvent) {
+function onMouseDown(ui: UiContext, event: MouseEvent) {
   event.preventDefault();
-  updateMouseState(uiContext, event);
+  updateMouseState(ui, event);
+}
+
+function idFromArgs(...args: any[]) {
+  let id: UiId;
+  if (isObject(args[0])) {
+    id = args[0];
+  } else {
+    id = { name: args[0], index: args[1] }
+  }
+  return id;
 }
 
 function onMouseUp(ct: UiContext, event: MouseEvent) {
@@ -287,15 +290,15 @@ function onMouseMove(ct: UiContext, event: MouseEvent)  {
 function onWheel(_ct: UiContext, _event: WheelEvent) {
 }
 
-function updateMouseState(uiContext: UiContext, event: MouseEvent) {
-  const { wrapperEl } = uiContext;
+function updateMouseState(ui: UiContext, event: MouseEvent) {
+  const { wrapperEl } = ui;
 
   const bcr = wrapperEl.getBoundingClientRect();
 
-  const currMousePos = {
+  const currentMousePosition = {
     x: event.clientX - bcr.x,
     y: event.clientY - bcr.y 
   };
-  uiContext.currMousePosition = currMousePos;
-  uiContext.currMouseButtons = event.buttons;
+  ui.currentMousePosition = currentMousePosition;
+  ui.currentMouseButtons = event.buttons;
 }
