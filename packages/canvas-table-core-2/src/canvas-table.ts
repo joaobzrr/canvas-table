@@ -17,7 +17,6 @@ import {
   setDragAnchorPosition,
   getDragDistance,
   MOUSE_BUTTONS,
-  createUiId
 } from "./ui";
 import { defaultTheme } from "./default-theme";
 import { shallowMerge, scale, clamp } from "./utils";
@@ -634,7 +633,7 @@ function doHorizontalScrollbarThumb(ct: CanvasTable, layout: Layout) {
 
   let dragging = false;
 
-  const hsbThumbId = createUiId("hsb-thumb");
+  const hsbThumbId = { item: "hsb-thumb" } ;
   if (isActive(uiContext, hsbThumbId)) {
     dragging = true;
   } else if (isHot(uiContext, hsbThumbId)) {
@@ -709,7 +708,7 @@ function doVerticalScrolbarThumb(ct: CanvasTable, layout: Layout) {
 
   let dragging = false;
 
-  const vsbThumbId = createUiId("vs-thumb");
+  const vsbThumbId = { item: "vs-thumb" };
   if (isActive(uiContext, vsbThumbId)) {
     dragging = true;
   } else if (isHot(uiContext, vsbThumbId)) {

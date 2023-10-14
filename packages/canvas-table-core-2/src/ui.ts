@@ -225,10 +225,6 @@ export function isHot(uiContext: UiContext, id: Partial<UiId>) {
   return uiContext.hot ? shallowMatch(id, uiContext.hot): false;
 }
 
-export function createUiId(item: string, index?: number) {
-  return { item, index };
-}
-
 export function getCurrentMousePosition(uiContext: UiContext) {
   return uiContext.currMousePosition;
 }
