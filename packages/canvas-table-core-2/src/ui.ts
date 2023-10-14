@@ -225,6 +225,14 @@ export function isHot(uiContext: UiContext, id: Partial<UiId>) {
   return uiContext.hot ? shallowMatch(id, uiContext.hot): false;
 }
 
+export function isAnyActive(uiContext: UiContext) {
+  return uiContext.active !== null;
+}
+
+export function isNoneActive(uiContext: UiContext) {
+  return uiContext.active === null;
+}
+
 export function getCurrentMousePosition(uiContext: UiContext) {
   return uiContext.currMousePosition;
 }

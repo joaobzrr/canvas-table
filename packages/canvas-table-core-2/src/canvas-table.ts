@@ -17,6 +17,7 @@ import {
   setDragAnchorPosition,
   getDragDistance,
   MOUSE_BUTTONS,
+  isNoneActive
 } from "./ui";
 import { defaultTheme } from "./default-theme";
 import { shallowMerge, scale, clamp } from "./utils";
@@ -215,6 +216,61 @@ function update(ct: CanvasTable) {
     }
 
     doVerticalScrolbarThumb(ct, layout);
+  }
+
+  {
+    const bodyRect = {
+      x: 0,
+      y: theme.rowHeight,
+      width: layout.bodyWidth,
+      height: layout.bodyHeight
+    };
+
+    if ((!isActive(uiContext, { item: "row-hover" }) || isNoneActive(uiContext)) && theme.hoveredRowColor) {
+      if (pointInRect(currentMousePosition, bodyRect)) {
+        for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
+          const rowPos = viewport.rowPositions.get(rowIndex)!;
+
+          const rect = {
+            x: 0,
+            y: rowPos,
+            width: layout.gridWidth,
+            height: theme.rowHeight,
+          };
+
+          const id = { item: "row-hover", index: rowIndex }
+          if (pointInRect(currentMousePosition, rect)) {
+            setAsHot(uiContext, id);
+          }
+        }
+      } else {
+        unsetAsHot(uiContext, { item: "row-hover" });
+      }
+    }
+
+    if (isHot(uiContext, { item: "row-hover" })) {
+      const id = uiContext.hot!;
+      const rowIndex = id.index!;
+
+      const rowPos = viewport.rowPositions.get(rowIndex)!;
+
+      const rect = {
+        x: 0,
+        y: rowPos,
+        width: layout.gridWidth,
+        height: theme.rowHeight
+      };
+
+      const clipRegion = new Path2D();
+      clipRegion.rect(bodyRect.x, bodyRect.y, bodyRect.width, bodyRect.height);
+
+      submitDraw(uiContext, {
+        type: "rect",
+        color: theme.hoveredRowColor!,
+        clipRegion: clipRegion,
+        ...rect,
+      });
+    }
   }
 
   // Draw outer canvas border
@@ -654,7 +710,6 @@ function doHorizontalScrollbarThumb(ct: CanvasTable, layout: Layout) {
     const dragDistance = getDragDistance(uiContext);
 
     hsbThumbX = clamp(dragAnchorPosition.x + dragDistance.x, hsbThumbMinX, hsbThumbMaxX);
-
     const newScrollX = Math.round(scale(hsbThumbX, hsbThumbMinX, hsbThumbMaxX, 0, maxScrollX));
     scrollPos.x = newScrollX;
   }
@@ -690,6 +745,7 @@ function doHorizontalScrollbarThumb(ct: CanvasTable, layout: Layout) {
   submitDraw(uiContext, {
     type: "rect",
     color,
+    sortOrder: 2,
     ...hsbThumbRect
   });
 }
@@ -764,6 +820,7 @@ function doVerticalScrolbarThumb(ct: CanvasTable, layout: Layout) {
   submitDraw(uiContext, {
     type: "rect",
     color,
+    sortOrder: 2,
     ...vsbThumbRect
   });
 }
