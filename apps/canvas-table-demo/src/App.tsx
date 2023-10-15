@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { debounce } from "lodash";
 import CanvasTable, { DataRow, Theme } from "canvas-table-react";
-import { columnDefs, dataRows } from "./pokemon";
+import { columnDefs, dataRows } from "./generated.json";
 import { useElementSize } from "./useElementSize";
 import styles from "./App.module.css";
 
