@@ -1,6 +1,6 @@
 import * as UI from "./ui";
 import { defaultTheme } from "./default-theme";
-import { shallowMerge, scale, clamp } from "./utils";
+import { shallowMerge, scale, clamp, isNumber } from "./utils";
 import {
   COLUMN_RESIZER_LEFT_WIDTH,
   COLUMN_RESIZER_WIDTH,
@@ -228,7 +228,7 @@ function update(ct: CanvasTable) {
 
         UI.submitDraw(ui, {
           type: "rect",
-          color: "lightblue",
+          color: theme.selectedRowColor,
           clipRegion: clipRegion,
           ...rect
         });
@@ -411,7 +411,9 @@ function update(ct: CanvasTable) {
         const rowPos = viewport.rowPositions.get(rowIndex)!;
 
         const y = rowPos + theme.rowHeight / 2;
-        const text = dataRow[columnState.field];
+
+        const value = dataRow[columnState.field];
+        const text = isNumber(value) ? value.toString() : value;
 
         UI.submitDraw(ui, {
           type: "text",

@@ -53,3 +53,7 @@ export function clamp(value: number, min: number, max: number) {
 export function isObject(val: any) {
   return val != null && val.constructor.name === "Object"
 }
+
+export function isNumber(val: any) {
+  return typeof val === "number";
+}

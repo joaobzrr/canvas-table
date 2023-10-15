@@ -4,6 +4,7 @@ export const defaultTheme: Theme = {
   rowHeight: 30,
   cellPadding: 12,
   tableBorderColor: "#665C54",
+  selectedRowColor: "#99C8FF",
   scrollbarThickness: 20,
   scrollbarTrackMargin: 0,
   scrollbarThumbColor: "#C1C1C1",
