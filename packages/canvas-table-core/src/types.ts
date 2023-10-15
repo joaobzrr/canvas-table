@@ -11,6 +11,7 @@ export type CanvasTable = {
   theme: Theme;
 
   scrollPos: Vector;
+  selectedRowId: string | null;
 }
 
 export type CreateCanvasTableParams = {
@@ -33,7 +34,10 @@ export type ColumnState = Omit<ColumnDef, "width"> & {
   width: number;
 }
 
-export type DataRow = Record<string, string>;
+export type DataRow = {
+  id: string;
+  [name: string]: string;
+};
 
 export type Theme = {
   rowHeight: number;
@@ -172,11 +176,9 @@ export type CreateUiContextParams = {
 }
 
 export type Layout = {
-  tableWidth:  number;
-  tableHeight: number;
-
-  bodyWidth:  number;
-  bodyHeight: number;
+  tableRect:  Rect;
+  bodyRect:   Rect;
+  headerRect: Rect;
 
   scrollWidth:  number;
   scrollHeight: number;

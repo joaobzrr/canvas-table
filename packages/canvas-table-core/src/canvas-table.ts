@@ -31,12 +31,15 @@ export function create(params: CreateCanvasTableParams): CanvasTable {
 
   const scrollPos = { x: 0, y: 0 };
 
+  const selectedRowId = null;
+
   const ct = {
     ui,
     columnStates,
     dataRows,
     theme,
     scrollPos,
+    selectedRowId
   } as CanvasTable;
 
   const rafId = requestAnimationFrame(() => update(ct));
@@ -84,22 +87,16 @@ function update(ct: CanvasTable) {
   if (theme.bodyBackgroundColor) {
     UI.submitDraw(ui, {
       type: "rect",
-      x: 0,
-      y: theme.rowHeight,
-      width: layout.bodyWidth,
-      height: layout.bodyHeight,
-      color: theme.bodyBackgroundColor
+      color: theme.bodyBackgroundColor,
+      ...layout.bodyRect
     });
   }
 
   if (theme.headerBackgroundColor) {
     UI.submitDraw(ui, {
       type: "rect",
-      x: 0,
-      y: 0,
-      width: layout.tableWidth,
-      height: theme.rowHeight,
-      color: theme.headerBackgroundColor
+      color: theme.headerBackgroundColor,
+      ...layout.headerRect
     });
   }
 
@@ -149,8 +146,7 @@ function update(ct: CanvasTable) {
     const columnEndPosition = getColumnEndPosition(ct, viewport, columnIndex);
     const rect = calculateColumnResizerRect(theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
 
-    const clipRegion = new Path2D();
-    clipRegion.rect(0, 0, layout.tableWidth, theme.rowHeight);
+    const clipRegion = pathFromRect(layout.headerRect);
 
     UI.submitDraw(ui, {
       type: "rect",
@@ -186,38 +182,57 @@ function update(ct: CanvasTable) {
   }
 
   {
-    const bodyRect = createRect(0, theme.rowHeight, layout.bodyWidth, layout.bodyHeight);
+    if (pointInRect(ui.currentMousePosition, layout.bodyRect)) {
+      for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
+        const rect = calculateRowRect(ct, layout, viewport, rowIndex);
 
-    if ((!UI.isActive(ui, "row-hover") || UI.isNoneActive(ui)) && theme.hoveredRowColor) {
-      if (pointInRect(ui.currentMousePosition, bodyRect)) {
-        for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
-          const rowPos = viewport.rowPositions.get(rowIndex)!;
-          const rect = createRect(0, rowPos, layout.gridWidth, theme.rowHeight);
-          if (pointInRect(ui.currentMousePosition, rect)) {
-            UI.setAsHot(ui, "row-hover", rowIndex);
+        if (pointInRect(ui.currentMousePosition, rect)) {
+          UI.setAsHot(ui, "row-hover", rowIndex);
+
+          if (UI.isMousePressed(ui, UI.MOUSE_BUTTONS.PRIMARY)) {
+            const dataRow = dataRows[rowIndex];
+            ct.selectedRowId = dataRow.id;
           }
+
+          break;
         }
-      } else {
-        UI.unsetAsHot(ui, "row-hover");
       }
+    } else {
+      UI.unsetAsHot(ui, "row-hover");
     }
 
-    if (UI.isHot(ui, "row-hover")) {
+    if (UI.isHot(ui, "row-hover") && theme.hoveredRowColor) {
       const id = ui.hot!;
       const rowIndex = id.index!;
 
-      const rowPos = viewport.rowPositions.get(rowIndex)!;
-      const rect = createRect(0, rowPos, layout.gridWidth, theme.rowHeight);
+      const rect = calculateRowRect(ct, layout, viewport, rowIndex);
 
-      const clipRegion = new Path2D();
-      clipRegion.rect(bodyRect.x, bodyRect.y, bodyRect.width, bodyRect.height);
+      const clipRegion = pathFromRect(layout.bodyRect);
 
       UI.submitDraw(ui, {
         type: "rect",
-        color: theme.hoveredRowColor!,
+        color: theme.hoveredRowColor,
         clipRegion: clipRegion,
         ...rect,
       });
+    }
+  }
+
+  {
+    for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
+      const dataRow = dataRows[rowIndex];
+      if (dataRow.id === ct.selectedRowId) {
+        const rect = calculateRowRect(ct, layout, viewport, rowIndex);
+
+        const clipRegion = pathFromRect(layout.bodyRect);
+
+        UI.submitDraw(ui, {
+          type: "rect",
+          color: "lightblue",
+          clipRegion: clipRegion,
+          ...rect
+        });
+      }
     }
   }
 
@@ -347,8 +362,7 @@ function update(ct: CanvasTable) {
       color: theme.headerFontColor ?? theme.fontColor
     } as const;
 
-    const clipRegion = new Path2D();
-    clipRegion.rect(0, 0, layout.tableWidth, theme.rowHeight);
+    const clipRegion = pathFromRect(layout.headerRect);
 
     for (let columnIndex = viewport.columnStart; columnIndex < viewport.columnEnd; columnIndex++) {
       const columnState = columnStates[columnIndex];
@@ -381,8 +395,7 @@ function update(ct: CanvasTable) {
       color: theme.bodyFontColor ?? theme.fontColor
     } as const;
 
-    const clipRegion = new Path2D();
-    clipRegion.rect(0, theme.rowHeight, layout.bodyWidth, layout.bodyHeight);
+    const clipRegion = pathFromRect(layout.bodyRect);
 
     for (let columnIndex = viewport.columnStart; columnIndex < viewport.columnEnd; columnIndex++) {
       const columnState = columnStates[columnIndex];
@@ -467,6 +480,27 @@ function reflow(ct: CanvasTable): Layout {
     bodyHeight = outerBodyHeight;
   }
 
+  const tableRect = {
+    x: 0,
+    y: 0,
+    width: tableWidth,
+    height: tableHeight
+  };
+
+  const bodyRect = {
+    x: 0,
+    y: rowHeight,
+    width: bodyWidth,
+    height: bodyHeight
+  };
+
+  const headerRect = {
+    x: 0,
+    y: 0,
+    width: tableWidth,
+    height: rowHeight
+  };
+
   const scrollWidth  = Math.max(contentWidth,  bodyWidth);
   const scrollHeight = Math.max(contentHeight, bodyHeight);
 
@@ -507,10 +541,9 @@ function reflow(ct: CanvasTable): Layout {
   return {
     contentWidth,
     contentHeight,
-    tableWidth,
-    tableHeight,
-    bodyWidth,
-    bodyHeight,
+    tableRect,
+    bodyRect,
+    headerRect,
     scrollWidth,
     scrollHeight,
     maxScrollX,
@@ -545,7 +578,7 @@ function calculateViewport(ct: CanvasTable, layout: Layout): Viewport {
     columnPos = nextColumnPos;
   }
 
-  const scrollRight = scrollPos.x + layout.bodyWidth;
+  const scrollRight = scrollPos.x + layout.bodyRect.width;
 
   let columnEnd = columnStart;
   for (; columnEnd < columnStates.length; columnEnd++) {
@@ -561,7 +594,7 @@ function calculateViewport(ct: CanvasTable, layout: Layout): Viewport {
 
   const rowStart = Math.floor(scrollPos.y / theme.rowHeight);
 
-  const scrollBottom = scrollPos.y + layout.bodyHeight;
+  const scrollBottom = scrollPos.y + layout.bodyRect.height;
   const rowEnd = Math.min(Math.ceil(scrollBottom / theme.rowHeight), dataRows.length);
 
   const rowPositions = new Map();
@@ -585,9 +618,9 @@ function calculateViewport(ct: CanvasTable, layout: Layout): Viewport {
 
 function doHorizontalScrollbarThumb(ct: CanvasTable, layout: Layout) {
   const { ui, theme, scrollPos } = ct;
-  const { bodyWidth, scrollWidth, maxScrollX, hsbTrackRect } = layout;
+  const { scrollWidth, maxScrollX, hsbTrackRect } = layout;
 
-  const hsbThumbWidth = Math.max((bodyWidth / scrollWidth) * hsbTrackRect.width, MIN_THUMB_LENGTH);
+  const hsbThumbWidth = Math.max((layout.bodyRect.width / scrollWidth) * hsbTrackRect.width, MIN_THUMB_LENGTH);
   const hsbThumbHeight = hsbTrackRect.height;
 
   const hsbThumbMinX = hsbTrackRect.x;
@@ -648,9 +681,9 @@ function doHorizontalScrollbarThumb(ct: CanvasTable, layout: Layout) {
 
 function doVerticalScrolbarThumb(ct: CanvasTable, layout: Layout) {
   const { ui, theme, scrollPos } = ct;
-  const { bodyHeight, scrollHeight, maxScrollY, vsbTrackRect } = layout;
+  const { scrollHeight, maxScrollY, vsbTrackRect } = layout;
 
-  const vsbThumbHeight = Math.max((bodyHeight / scrollHeight) * vsbTrackRect.height, MIN_THUMB_LENGTH);
+  const vsbThumbHeight = Math.max((layout.bodyRect.height / scrollHeight) * vsbTrackRect.height, MIN_THUMB_LENGTH);
   const vsbThumbWidth = vsbTrackRect.width;
 
   const vsbThumbMinY = vsbTrackRect.y;
@@ -709,6 +742,16 @@ function doVerticalScrolbarThumb(ct: CanvasTable, layout: Layout) {
   });
 }
 
+function getColumnEndPosition(ct: CanvasTable, viewport: Viewport, columnIndex: number) {
+  const { columnStates } = ct;
+
+  const columnState = columnStates[columnIndex];
+  const columnPosStart = viewport.columnPositions.get(columnIndex)!;
+  const columnPosEnd = columnPosStart + columnState.width;
+
+  return columnPosEnd;
+}
+
 function calculateColumnResizerRect(rowHeight: number, tableEndPosition: number, columnEndPosition: number) {
   const right = Math.min(columnEndPosition + COLUMN_RESIZER_LEFT_WIDTH + 1, tableEndPosition);
   const left = right - COLUMN_RESIZER_WIDTH;
@@ -723,14 +766,33 @@ function calculateColumnResizerRect(rowHeight: number, tableEndPosition: number,
   return rect;
 }
 
-function getColumnEndPosition(ct: CanvasTable, viewport: Viewport, columnIndex: number) {
-  const { columnStates } = ct;
+function calculateRowRect(ct: CanvasTable, layout: Layout, viewport: Viewport, rowIndex: number) {
+  return {
+    x: 0,
+    y: viewport.rowPositions.get(rowIndex)!,
+    width: layout.gridWidth,
+    height: ct.theme.rowHeight
+  };
+}
 
-  const columnState = columnStates[columnIndex];
-  const columnPosStart = viewport.columnPositions.get(columnIndex)!;
-  const columnPosEnd = columnPosStart + columnState.width;
+function pointInRect(point: Vector, rect: Rect) {
+  return point.x >= rect.x && point.x < rect.x + rect.width &&
+         point.y >= rect.y && point.y < rect.y + rect.height;
+}
 
-  return columnPosEnd;
+function pathFromRect(rect: Rect) {
+  const path = new Path2D();
+  path.rect(rect.x, rect.y, rect.width, rect.height);
+  return path;
+}
+
+function columnDefsToColumnStates(columnDefs: ColumnDef[]) {
+  const columnStates = [] as ColumnState[];
+  for (const { width, ...rest } of columnDefs) {
+    const _width = width ?? DEFAULT_COLUMN_WIDTH;
+    columnStates.push({...rest, width: _width });
+  }
+  return columnStates;
 }
 
 export function createVector(): Vector;
@@ -757,18 +819,4 @@ export function createRect(...args: any[]): Rect {
   } else {
     return { x: args[0], y: args[1], width: args[2], height: args[3] };
   }
-}
-
-function pointInRect(point: Vector, rect: Rect) {
-  return point.x >= rect.x && point.x < rect.x + rect.width &&
-         point.y >= rect.y && point.y < rect.y + rect.height;
-}
-
-function columnDefsToColumnStates(columnDefs: ColumnDef[]) {
-  const columnStates = [] as ColumnState[];
-  for (const { width, ...rest } of columnDefs) {
-    const _width = width ?? DEFAULT_COLUMN_WIDTH;
-    columnStates.push({...rest, width: _width });
-  }
-  return columnStates;
 }
