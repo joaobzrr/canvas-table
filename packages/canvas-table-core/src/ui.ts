@@ -1,7 +1,7 @@
 import { LineRenderer } from "./LineRenderer";
 import { TextRenderer } from "./TextRenderer";
-import { UiContext, UiId, CreateUiContextParams, Shape, Size } from "./types";
-import { isObject, shallowMatch } from "./utils";
+import { UiContext, UiId, CreateUiContextParams, Shape, Size, Rect } from "./types";
+import { isObject, isPointInRect, shallowMatch } from "./utils";
 
 export const MOUSE_BUTTONS = {
   PRIMARY:   1,
@@ -263,6 +263,10 @@ export function isMousePressed(ui: UiContext, button: number) {
 export function isMouseReleased(ui: UiContext, button: number) {
   const { currentMouseButtons, previousMouseButtons } = ui;
   return (currentMouseButtons & button) === 0 && (previousMouseButtons & button) === 1;
+}
+
+export function isMouseInRect(ui: UiContext, rect: Rect) {
+  return isPointInRect(ui.currentMousePosition, rect);
 }
 
 function onMouseDown(ui: UiContext, event: MouseEvent) {

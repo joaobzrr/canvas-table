@@ -1,3 +1,5 @@
+import { Rect, Vector } from "./types";
+
 export function shallowMerge<T1, T2>(obj1: T1, obj2: T2): T1 & T2;
 export function shallowMerge<T1, T2, T3>(obj1: T1, obj2: T2, obj3: T3): T1 & T2 & T3;
 export function shallowMerge<T extends any[]>(...args: T): any {
@@ -56,4 +58,9 @@ export function isObject(val: any) {
 
 export function isNumber(val: any) {
   return typeof val === "number";
+}
+
+export function isPointInRect(point: Vector, rect: Rect) {
+  return point.x >= rect.x && point.x < rect.x + rect.width &&
+         point.y >= rect.y && point.y < rect.y + rect.height;
 }

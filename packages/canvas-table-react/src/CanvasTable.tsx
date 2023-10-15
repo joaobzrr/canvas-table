@@ -34,7 +34,8 @@ const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>((props
       columnDefs,
       dataRows,
       theme,
-      size
+      size,
+      onSelect: (id, row) => console.log(id, row)
     });
 
     return () => {

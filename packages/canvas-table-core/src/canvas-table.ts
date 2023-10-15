@@ -21,7 +21,7 @@ import {
 } from "./types";
 
 export function create(params: CreateCanvasTableParams): CanvasTable {
-  const { columnDefs, dataRows,  container, size } = params;
+  const { columnDefs, dataRows,  container, size, onSelect } = params;
 
   const ui = UI.create({ container: container, size: size });
 
@@ -39,7 +39,8 @@ export function create(params: CreateCanvasTableParams): CanvasTable {
     dataRows,
     theme,
     scrollPos,
-    selectedRowId
+    selectedRowId,
+    onSelect
   } as CanvasTable;
 
   const rafId = requestAnimationFrame(() => update(ct));
@@ -104,7 +105,7 @@ function update(ct: CanvasTable) {
     const columnEndPosition = getColumnEndPosition(ct, viewport, columnIndex);
     const rect = calculateColumnResizerRect(theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
 
-    if (pointInRect(ui.currentMousePosition, rect)) {
+    if (UI.isMouseInRect(ui, rect)) {
       UI.setAsHot(ui, "column-resizer", columnIndex);
 
       if (UI.isMousePressed(ui, UI.MOUSE_BUTTONS.PRIMARY)) {
@@ -181,58 +182,58 @@ function update(ct: CanvasTable) {
     doVerticalScrolbarThumb(ct, layout);
   }
 
-  {
-    if (pointInRect(ui.currentMousePosition, layout.bodyRect)) {
-      for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
-        const rect = calculateRowRect(ct, layout, viewport, rowIndex);
+  if (UI.isMouseInRect(ui, layout.bodyRect)) {
+    for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
+      const rect = calculateRowRect(ct, layout, viewport, rowIndex);
 
-        if (pointInRect(ui.currentMousePosition, rect)) {
-          UI.setAsHot(ui, "row-hover", rowIndex);
+      if (UI.isMouseInRect(ui, rect)) {
+        UI.setAsHot(ui, "row-hover", rowIndex);
 
-          if (UI.isMousePressed(ui, UI.MOUSE_BUTTONS.PRIMARY)) {
-            const dataRow = dataRows[rowIndex];
-            ct.selectedRowId = dataRow.id;
+        if (UI.isMousePressed(ui, UI.MOUSE_BUTTONS.PRIMARY)) {
+          const dataRow = dataRows[rowIndex];
+          ct.selectedRowId = dataRow.id;
+
+          if (ct.onSelect) {
+            ct.onSelect(dataRow.id, dataRow);
           }
-
-          break;
         }
+
+        break;
       }
-    } else {
-      UI.unsetAsHot(ui, "row-hover");
     }
+  } else {
+    UI.unsetAsHot(ui, "row-hover");
+  }
 
-    if (UI.isHot(ui, "row-hover") && theme.hoveredRowColor) {
-      const id = ui.hot!;
-      const rowIndex = id.index!;
+  if (UI.isHot(ui, "row-hover") && theme.hoveredRowColor) {
+    const id = ui.hot!;
+    const rowIndex = id.index!;
 
+    const rect = calculateRowRect(ct, layout, viewport, rowIndex);
+
+    const clipRegion = pathFromRect(layout.bodyRect);
+
+    UI.submitDraw(ui, {
+      type: "rect",
+      color: theme.hoveredRowColor,
+      clipRegion: clipRegion,
+      ...rect,
+    });
+  }
+
+  for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
+    const dataRow = dataRows[rowIndex];
+    if (dataRow.id === ct.selectedRowId) {
       const rect = calculateRowRect(ct, layout, viewport, rowIndex);
 
       const clipRegion = pathFromRect(layout.bodyRect);
 
       UI.submitDraw(ui, {
         type: "rect",
-        color: theme.hoveredRowColor,
+        color: theme.selectedRowColor,
         clipRegion: clipRegion,
-        ...rect,
+        ...rect
       });
-    }
-  }
-
-  {
-    for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
-      const dataRow = dataRows[rowIndex];
-      if (dataRow.id === ct.selectedRowId) {
-        const rect = calculateRowRect(ct, layout, viewport, rowIndex);
-
-        const clipRegion = pathFromRect(layout.bodyRect);
-
-        UI.submitDraw(ui, {
-          type: "rect",
-          color: theme.selectedRowColor,
-          clipRegion: clipRegion,
-          ...rect
-        });
-      }
     }
   }
 
@@ -657,7 +658,7 @@ function doHorizontalScrollbarThumb(ct: CanvasTable, layout: Layout) {
     height: hsbThumbHeight,
   };
 
-  const inside = pointInRect(ui.currentMousePosition, hsbThumbRect);
+  const inside = UI.isMouseInRect(ui, hsbThumbRect);
   if (inside) {
     UI.setAsHot(ui, "hsb-thumb");
   } else {
@@ -720,7 +721,7 @@ function doVerticalScrolbarThumb(ct: CanvasTable, layout: Layout) {
     height: vsbThumbHeight
   };
 
-  const inside = pointInRect(ui.currentMousePosition, vsbThumbRect);
+  const inside = UI.isMouseInRect(ui, vsbThumbRect);
   if (inside) {
     UI.setAsHot(ui, "vsb-thumb");
   } else {
@@ -775,11 +776,6 @@ function calculateRowRect(ct: CanvasTable, layout: Layout, viewport: Viewport, r
     width: layout.gridWidth,
     height: ct.theme.rowHeight
   };
-}
-
-function pointInRect(point: Vector, rect: Rect) {
-  return point.x >= rect.x && point.x < rect.x + rect.width &&
-         point.y >= rect.y && point.y < rect.y + rect.height;
 }
 
 function pathFromRect(rect: Rect) {

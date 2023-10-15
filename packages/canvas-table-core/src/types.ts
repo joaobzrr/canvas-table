@@ -11,7 +11,9 @@ export type CanvasTable = {
   theme: Theme;
 
   scrollPos: Vector;
+
   selectedRowId: DataRowValue | null;
+  onSelect?: (id: DataRowValue, dataRow: DataRow) => void;
 }
 
 export type CreateCanvasTableParams = {
@@ -20,6 +22,7 @@ export type CreateCanvasTableParams = {
   dataRows: DataRow[];
   theme?: Partial<Theme>;
   size?: Size;
+  onSelect?: (id: DataRowValue, dataRow: DataRow) => void;
 }
 
 export type SetCanvasTableParams = Partial<Omit<CreateCanvasTableParams, "container">>;
