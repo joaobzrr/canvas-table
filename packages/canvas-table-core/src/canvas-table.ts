@@ -413,7 +413,7 @@ function update(ct: CanvasTable) {
         const y = rowPos + theme.rowHeight / 2;
 
         const value = dataRow[columnState.field];
-        const text = isNumber(value) ? value.toString() : value;
+        const text = isNumber(value) ? value.toString() : value as string;
 
         UI.submitDraw(ui, {
           type: "text",

@@ -11,7 +11,7 @@ export type CanvasTable = {
   theme: Theme;
 
   scrollPos: Vector;
-  selectedRowId: string | null;
+  selectedRowId: DataRowValue | null;
 }
 
 export type CreateCanvasTableParams = {
@@ -34,9 +34,11 @@ export type ColumnState = Omit<ColumnDef, "width"> & {
   width: number;
 }
 
+export type DataRowValue = string | number;
+
 export type DataRow = {
-  id: string;
-  [name: string]: string;
+  id: DataRowValue;
+  [name: string]: DataRowValue;
 };
 
 export type Theme = {
