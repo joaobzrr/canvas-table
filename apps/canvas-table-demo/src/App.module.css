@@ -25,7 +25,7 @@
   height: 100%;
 }
 
-.sidebar {
+.left-sidebar {
   display: flex;
   flex-direction: column;
   width: 300px;
@@ -34,7 +34,20 @@
   overflow-y: scroll;
 }
 
-.sidebar form {
+.left-sidebar form {
+  padding: 1rem;
+}
+
+.right-sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  border-left: 1px solid var(--colors-border);
+  background-color: var(--colors-background1);
+  overflow-y: scroll;
+}
+
+.right-sidebar {
   padding: 1rem;
 }
 

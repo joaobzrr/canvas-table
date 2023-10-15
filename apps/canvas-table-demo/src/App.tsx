@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { debounce } from "lodash";
-import CanvasTable, { Theme } from "canvas-table-react";
+import CanvasTable, { DataRow, Theme } from "canvas-table-react";
 import { columnDefs, dataRows } from "./pokemon";
 import { useElementSize } from "./useElementSize";
 import styles from "./App.module.css";
@@ -9,13 +9,15 @@ function App() {
   const [containerSize, containerRef] = useElementSize();
   const [theme, setTheme] = useState<Partial<Theme>>();
 
+  const [selectedRow, setSelectedRow] = useState<DataRow>();
+
   const updateTheme = debounce((theme: Partial<Theme>) => {
     setTheme(prevTheme => ({ ...prevTheme, ...theme }));
   }, 250);
   
   return (
     <div className={styles.app}>
-      <div className={styles.sidebar}>
+      <div className={styles["left-sidebar"]}>
         <form>
           <div className={styles.row}>
             <label className={styles.label}>Background Color</label>
@@ -205,11 +207,28 @@ function App() {
           dataRows={dataRows}
           size={containerSize}
           theme={theme}
+          onSelect={(_, row) => setSelectedRow(row)}
           containerClassName={styles["canvas-table"]}
           ref={containerRef}
           {...containerSize}
         />
       </main>
+      <div className={styles["right-sidebar"]}>
+        {selectedRow && (
+          <form>
+            {columnDefs.map(({ title, field }) => (
+              <div className={styles.row}>
+                <label className={styles.label}>{title}</label>
+                <input
+                  value={selectedRow[field]}
+                  className={styles.input}
+                  disabled={true}
+                />
+              </div>
+            ))}
+          </form>
+        )}
+      </div>
     </div>
   );
 }
