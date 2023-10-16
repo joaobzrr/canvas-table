@@ -71,16 +71,10 @@ importers:
 
   packages/canvas-table-core:
     dependencies:
-      graphemer:
-        specifier: ^1.4.0
-        version: 1.4.0
-      uuid:
-        specifier: ^9.0.0
-        version: 9.0.0
+      text-renderer:
+        specifier: workspace:^
+        version: link:../text-renderer
     devDependencies:
-      '@types/uuid':
-        specifier: ^9.0.2
-        version: 9.0.2
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.7.4
         version: 6.7.4(@typescript-eslint/parser@6.7.4)(eslint@8.44.0)(typescript@5.0.4)
@@ -155,6 +149,31 @@ importers:
       '@types/react-dom':
         specifier: ^18.2.6
         version: 18.2.6
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^5.61.0
+        version: 5.61.0(@typescript-eslint/parser@5.61.0)(eslint@8.44.0)(typescript@5.0.4)
+      '@typescript-eslint/parser':
+        specifier: ^5.61.0
+        version: 5.61.0(eslint@8.44.0)(typescript@5.0.4)
+      eslint:
+        specifier: ^8.44.0
+        version: 8.44.0
+      typescript:
+        specifier: ^5.0.2
+        version: 5.0.4
+      vite:
+        specifier: ^4.4.0
+        version: 4.4.5
+      vite-plugin-dts:
+        specifier: ^3.5.2
+        version: 3.5.2(typescript@5.0.4)(vite@4.4.5)
+
+  packages/text-renderer:
+    dependencies:
+      graphemer:
+        specifier: ^1.4.0
+        version: 1.4.0
+    devDependencies:
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.61.0
         version: 5.61.0(@typescript-eslint/parser@5.61.0)(eslint@8.44.0)(typescript@5.0.4)

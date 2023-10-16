@@ -1,5 +1,5 @@
+import { TextRenderer } from "text-renderer";
 import { LineRenderer } from "./LineRenderer";
-import { TextRenderer } from "./TextRenderer";
 import { UiContext, UiId, CreateUiContextParams, Shape, Size, Rect } from "./types";
 import { isObject, isPointInRect, shallowMatch } from "./utils";
 

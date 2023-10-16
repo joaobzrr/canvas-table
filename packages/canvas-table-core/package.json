@@ -26,7 +26,6 @@
     "lint": "eslint --ext .js,.ts ./src"
   },
   "devDependencies": {
-    "@types/uuid": "^9.0.2",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
     "eslint": "^8.44.0",
@@ -36,7 +35,6 @@
     "vite-plugin-eslint": "^1.8.1"
   },
   "dependencies": {
-    "graphemer": "^1.4.0",
-    "uuid": "^9.0.0"
+    "text-renderer": "workspace:^"
   }
 }

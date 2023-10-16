@@ -1,5 +1,5 @@
+import { TextRenderer, Font, FontStyle } from "text-renderer";
 import { LineRenderer } from "./LineRenderer";
-import { TextRenderer } from "./TextRenderer";
 
 export type CanvasTable = {
   ui: UiContext;
@@ -70,15 +70,6 @@ export type Theme = {
   bodyFontColor?: string;
   headerFontColor?: string;
 }
-
-export type Font = {
-  family: string;
-  size: number;
-  style: FontStyle
-  color: string;
-}
-
-export type FontStyle = "normal" | "bold" | "italic" | "both";
 
 export type UiContext = {
   canvas:      HTMLCanvasElement;
