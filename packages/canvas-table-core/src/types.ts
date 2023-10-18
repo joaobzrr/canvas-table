@@ -1,4 +1,4 @@
-import { TextRenderer, Font, FontStyle } from "text-renderer";
+import { TextRenderer } from "text-renderer";
 import { LineRenderer } from "./LineRenderer";
 
 export type CanvasTable = {
@@ -52,12 +52,12 @@ export type Theme = {
   scrollbarTrackMargin: number;
   scrollbarThumbColor: string;
   columnResizerOpacity: number;
-  fontSize: number;
+  fontSize: string;
   fontFamily: string;
   fontColor: string;
-  fontStyle: FontStyle;
-  bodyFontStyle?: FontStyle;
-  headerFontStyle?: FontStyle;
+  fontStyle: string;
+  bodyFontStyle?: string;
+  headerFontStyle?: string;
   tableBackgroundColor?: string;
   bodyBackgroundColor?: string;
   headerBackgroundColor?: string;
@@ -116,6 +116,7 @@ export type BaseShape = {
   type: string;
   x: number;
   y: number;
+  color: string;
   opacity?: number;
   clipRegion?: Path2D;
   sortOrder?: number;
@@ -127,19 +128,17 @@ export type LineShape = BaseShape & {
   type: "line";
   orientation: LineOrientation;
   length: number;
-  color: string;
 }
 
 export type RectShape = BaseShape & {
   type: "rect";
   width: number;
   height: number;
-  color: string;
 }
 
 export type TextShape = BaseShape & {
   type: "text";
-  font: Font;
+  font: string;
   text: string;
   maxWidth?: number;
   ellipsis?: boolean;

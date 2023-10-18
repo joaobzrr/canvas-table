@@ -14,7 +14,7 @@ export const defaultTheme: Theme = {
   scrollbarTrackColor: "#F1F1F1",
   columnResizerColor: "#257AFD",
   columnResizerOpacity: 0.5,
-  fontSize: 14,
+  fontSize: "14px",
   fontColor: "black",
   fontFamily: "Arial",
   fontStyle: "normal",

@@ -1,2 +1,2 @@
-export { TextRenderer } from "./TextRenderer";
-export type { Font, FontStyle } from "./types";
+export * from "./text-renderer";
+export type { TextRenderer } from "./types";

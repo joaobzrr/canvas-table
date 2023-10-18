@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { debounce } from "lodash";
 import CanvasTable, { DataRow, Theme } from "canvas-table-react";
-import { columnDefs, dataRows } from "./generated.json";
+import { columnDefs, dataRows } from "./data/pokemon";
 import { useElementSize } from "./useElementSize";
 import styles from "./App.module.css";
 
@@ -86,7 +86,7 @@ function App() {
             <label className={styles.label}>Font Size</label>
             <input
               onChange={event => updateTheme({
-                fontSize: parseInt(event.target.value) || undefined
+                fontSize: event.target.value || undefined
               })}
               className={styles.input}
             />

@@ -356,12 +356,10 @@ function update(ct: CanvasTable) {
   }
 
   {
-    const font = {
-      family: theme.fontFamily,
-      size: theme.fontSize,
-      style: theme.headerFontStyle ?? theme.fontStyle,
-      color: theme.headerFontColor ?? theme.fontColor
-    } as const;
+    const fontStyle = theme.headerFontStyle ?? theme.fontStyle;
+    const font = createFontSpecifier(theme.fontFamily, theme.fontSize, fontStyle);
+
+    const fontColor = theme.headerFontColor ?? theme.fontColor;
 
     const clipRegion = pathFromRect(layout.headerRect);
 
@@ -379,6 +377,7 @@ function update(ct: CanvasTable) {
         type: "text",
         x,
         y,
+        color: fontColor,
         text,
         font,
         maxWidth,
@@ -389,12 +388,10 @@ function update(ct: CanvasTable) {
   }
 
   {
-    const font = {
-      family: theme.fontFamily,
-      size: theme.fontSize,
-      style: theme.bodyFontStyle ?? theme.fontStyle,
-      color: theme.bodyFontColor ?? theme.fontColor
-    } as const;
+    const fontStyle = theme.bodyFontStyle ?? theme.fontStyle;
+    const font = createFontSpecifier(theme.fontFamily, theme.fontSize, fontStyle);
+
+    const fontColor = theme.bodyFontColor ?? theme.fontColor;
 
     const clipRegion = pathFromRect(layout.bodyRect);
 
@@ -420,6 +417,7 @@ function update(ct: CanvasTable) {
           type: "text",
           x,
           y,
+          color: fontColor,
           text,
           font,
           maxWidth,
@@ -793,10 +791,10 @@ function columnDefsToColumnStates(columnDefs: ColumnDef[]) {
   return columnStates;
 }
 
-export function createVector(): Vector;
-export function createVector(partial: Partial<Vector> | undefined): Vector;
-export function createVector(x: number, y: number): Vector;
-export function createVector(...args: any[]): Vector {
+function createVector(): Vector;
+function createVector(partial: Partial<Vector> | undefined): Vector;
+function createVector(x: number, y: number): Vector;
+function createVector(...args: any[]): Vector {
   if (args.length === 0) {
     return { x: 0, y: 0 };
   } else if (args.length === 1) {
@@ -806,15 +804,6 @@ export function createVector(...args: any[]): Vector {
   }
 }
 
-export function createRect(): Rect;
-export function createRect(partial: Partial<Rect> | undefined): Rect;
-export function createRect(x: number, y: number, width: number, height: number): Rect;
-export function createRect(...args: any[]): Rect {
-  if (args.length === 0) {
-    return { x: 0, y: 0, width: 1, height: 1 };
-  } else if (args.length === 1) {
-    return { x: 0, y: 0, width: 1, height: 1, ...args[0] };
-  } else {
-    return { x: args[0], y: args[1], width: args[2], height: args[3] };
-  }
+function createFontSpecifier(fontFamily: string, fontSize: string, fontStyle: string) {
+  return [fontStyle, fontSize, fontFamily].join(" ");
 }
