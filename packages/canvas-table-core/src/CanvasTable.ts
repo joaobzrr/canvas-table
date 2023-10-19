@@ -9,7 +9,8 @@ import {
   isNumber,
   createVector,
   pathFromRect,
-  createFontSpecifier
+  createFontSpecifier,
+  getFontMetrics
 } from "./utils";
 import {
   COLUMN_RESIZER_LEFT_WIDTH,
@@ -35,7 +36,6 @@ import {
 export class CanvasTable {
   stage: Stage;
   renderer: Renderer;
-
   ui: UiContext;
 
   columnStates: ColumnState[];
@@ -43,8 +43,8 @@ export class CanvasTable {
   theme: Theme;
 
   scrollPos: Vector;
-
   selectedRowId: DataRowValue | null;
+
   onSelect?: (id: DataRowValue, dataRow: DataRow) => void;
 
   constructor(params: CreateCanvasTableParams) {
@@ -81,6 +81,7 @@ export class CanvasTable {
   }
 
   update() {
+    const ctx = this.stage.getContext();
     const stageSize = this.stage.getSize();
 
     if (this.stage.isMouseReleased(Stage.MOUSE_BUTTONS.PRIMARY)) {
@@ -370,9 +371,12 @@ export class CanvasTable {
       });
     }
 
-  {
+    {
       const fontStyle = this.theme.headerFontStyle ?? this.theme.fontStyle;
       const font = createFontSpecifier(this.theme.fontFamily, this.theme.fontSize, fontStyle);
+
+      const { fontBoundingBoxAscent } = getFontMetrics(ctx, font);
+      const halfFontBounginxBoxAscent = Math.floor(fontBoundingBoxAscent / 2);
 
       const fontColor = this.theme.headerFontColor ?? this.theme.fontColor;
 
@@ -384,7 +388,7 @@ export class CanvasTable {
         const columnPos = viewport.columnPositions.get(columnIndex)!;
 
         const x = columnPos + this.theme.cellPadding;
-        const y = this.theme.rowHeight / 2;
+        const y = this.theme.rowHeight / 2 + halfFontBounginxBoxAscent;
         const maxWidth = columnState.width - this.theme.cellPadding * 2;
         const text = columnState.title;
 
@@ -401,9 +405,12 @@ export class CanvasTable {
       }
     }
 
-  {
+    {
       const fontStyle = this.theme.bodyFontStyle ?? this.theme.fontStyle;
       const font = createFontSpecifier(this.theme.fontFamily, this.theme.fontSize, fontStyle);
+
+      const { fontBoundingBoxAscent } = getFontMetrics(ctx, font);
+      const halfFontBoundingBoxAscent = Math.floor(fontBoundingBoxAscent / 2);
 
       const fontColor = this.theme.bodyFontColor ?? this.theme.fontColor;
 
@@ -422,7 +429,7 @@ export class CanvasTable {
 
           const rowPos = viewport.rowPositions.get(rowIndex)!;
 
-          const y = rowPos + this.theme.rowHeight / 2;
+          const y = rowPos + this.theme.rowHeight / 2 + halfFontBoundingBoxAscent;
 
           const value = dataRow[columnState.field];
           const text = isNumber(value) ? value.toString() : value as string;
@@ -441,7 +448,6 @@ export class CanvasTable {
       }
     }
 
-    const ctx = this.stage.getContext();
     this.renderer.render(ctx, stageSize);
   }
 

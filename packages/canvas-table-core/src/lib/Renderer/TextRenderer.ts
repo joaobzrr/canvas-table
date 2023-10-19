@@ -17,9 +17,6 @@ export class TextRenderer {
     y: number,
     maxWidth = Infinity,
   ) {
-    // Take this out of here
-    y += Math.floor(this.glyphAtlas.fontBoundingBoxAscent / 2);
-
     let availableContentWidth: number;
     if (this.ellipsis && maxWidth !== Infinity) {
       const { advance } = this.glyphAtlas.getGlyphMetrics(".");

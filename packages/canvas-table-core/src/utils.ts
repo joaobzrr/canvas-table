@@ -87,3 +87,20 @@ export function pathFromRect(rect: Rect) {
   path.rect(rect.x, rect.y, rect.width, rect.height);
   return path;
 }
+
+export function getFontMetrics(ctx: CanvasRenderingContext2D, font: string) {
+  ctx.save();
+
+  ctx.font = font;
+  const {
+    fontBoundingBoxAscent,
+    fontBoundingBoxDescent
+  } = ctx.measureText("M");
+
+  ctx.restore();
+
+  return {
+    fontBoundingBoxAscent,
+    fontBoundingBoxDescent
+  }
+}
