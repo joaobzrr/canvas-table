@@ -1,4 +1,5 @@
-import { GlyphAtlasParams, GlyphMetrics, Node, Size } from "./types";
+import { Size } from "../../types";
+import { GlyphAtlasParams, GlyphMetrics, Node } from "./types";
 
 const DEFAULT_ATLAS_WIDTH  = 1024;
 const DEFAULT_ATLAS_HEIGHT = 1024;
@@ -104,6 +105,10 @@ export class GlyphAtlas {
   }
 
   setFont(font: string) {
+    if (font === this.font) {
+      return;
+    }
+
     this.font = font;
 
     const ctx = this.getContext();
@@ -114,6 +119,10 @@ export class GlyphAtlas {
 
     this.fontBoundingBoxAscent = fontBoundingBoxAscent;
     this.fontBoundingBoxDescent = fontBoundingBoxDescent;
+  }
+
+  setColor(color: string) {
+    this.color = color;
   }
 
   pack(node: Node, size: Size): Node | null {

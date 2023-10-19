@@ -96,7 +96,7 @@ export class TextRenderer {
   }
 
   setColor(color: string) {
-    this.glyphAtlas.color = color;
+    this.glyphAtlas.setColor(color);
   }
 
   setEllipsis(ellipsis: boolean) {
