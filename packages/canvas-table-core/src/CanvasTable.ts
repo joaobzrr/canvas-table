@@ -1,4 +1,4 @@
-import * as UI from "./ui";
+import { UiContext } from "./UiContext";
 import { defaultTheme } from "./default-theme";
 import {
   shallowMerge,
@@ -28,7 +28,6 @@ import {
   Vector,
   Layout,
   Viewport,
-  UiContext
 } from "./types";
 
 export class CanvasTable {
@@ -48,7 +47,7 @@ export class CanvasTable {
   constructor(params: CreateCanvasTableParams) {
     const { columnDefs, dataRows,  container, size, onSelect } = params;
 
-    this.ui = UI.create({ container: container, size: size });
+    this.ui = new UiContext({ container: container, size: size });
 
     this.columnStates = CanvasTable.columnDefsToColumnStates(columnDefs);
     this.dataRows = dataRows;
@@ -62,7 +61,7 @@ export class CanvasTable {
 
   set(params: Partial<SetCanvasTableParams>) {
     if (params.size) {
-      UI.setCanvasSize(this.ui, params.size);
+      this.ui.setCanvasSize(this.ui, params.size);
     }
 
     if (params.theme) {
@@ -71,20 +70,20 @@ export class CanvasTable {
   }
 
   cleanup() {
-    UI.removeDocumentEventListeners(this.ui);
+    this.ui.removeDocumentEventListeners();
     cancelAnimationFrame(this.rafId);
   }
 
   update() {
-    UI.beginFrame(this.ui);
+    this.ui.beginFrame();
 
-    const canvasSize = UI.getCanvasSize(this.ui);
+    const canvasSize = this.ui.getCanvasSize();
 
     let layout = this.reflow();
     let viewport = this.calculateViewport(layout);
 
     if (this.theme.tableBackgroundColor) {
-      UI.submitDraw(this.ui, {
+      this.ui.submitDraw({
         type: "rect",
         x: 0,
         y: 0,
@@ -95,7 +94,7 @@ export class CanvasTable {
     }
 
     if (this.theme.bodyBackgroundColor) {
-      UI.submitDraw(this.ui, {
+      this.ui.submitDraw({
         type: "rect",
         color: this.theme.bodyBackgroundColor,
         ...layout.bodyRect
@@ -103,7 +102,7 @@ export class CanvasTable {
     }
 
     if (this.theme.headerBackgroundColor) {
-      UI.submitDraw(this.ui, {
+      this.ui.submitDraw({
         type: "rect",
         color: this.theme.headerBackgroundColor,
         ...layout.headerRect
@@ -114,11 +113,11 @@ export class CanvasTable {
       const columnEndPosition = this.getColumnEndPosition(viewport, columnIndex);
       const rect = this.calculateColumnResizerRect(this.theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
 
-      if (UI.isMouseInRect(this.ui, rect)) {
-        UI.setAsHot(this.ui, "column-resizer", columnIndex);
+      if (this.ui.isMouseInRect(rect)) {
+        this.ui.setAsHot("column-resizer", columnIndex);
 
-        if (UI.isMousePressed(this.ui, UI.MOUSE_BUTTONS.PRIMARY)) {
-          UI.setAsActive(this.ui, "column-resizer", columnIndex);
+        if (this.ui.isMousePressed(UiContext.MOUSE_BUTTONS.PRIMARY)) {
+          this.ui.setAsActive("column-resizer", columnIndex);
 
           const dragAnchorPosition = createVector(columnEndPosition, rect.y);
           this.ui.dragAnchorPosition = dragAnchorPosition;
@@ -126,11 +125,11 @@ export class CanvasTable {
 
         break;
       } else {
-        UI.unsetAsHot(this.ui, "column-resizer", columnIndex);
+        this.ui.unsetAsHot("column-resizer", columnIndex);
       }
     }
 
-    if (UI.isActive(this.ui, "column-resizer")) {
+    if (this.ui.isActive("column-resizer")) {
       const id = this.ui.active!;
       const columnIndex = id.index!;
 
@@ -149,7 +148,7 @@ export class CanvasTable {
       viewport = this.calculateViewport(layout);
     }
 
-    if (UI.isActive(this.ui, "column-resizer") || UI.isHot(this.ui, "column-resizer")) {
+    if (this.ui.isActive("column-resizer") || this.ui.isHot("column-resizer")) {
       const id = this.ui.active ?? this.ui.hot!;
       const columnIndex = id.index!;
 
@@ -158,7 +157,7 @@ export class CanvasTable {
 
       const clipRegion = pathFromRect(layout.headerRect);
 
-      UI.submitDraw(this.ui, {
+      this.ui.submitDraw({
         type: "rect",
         ...rect,
         color: this.theme.columnResizerColor,
@@ -169,7 +168,7 @@ export class CanvasTable {
 
     if (layout.overflowX) {
       if (this.theme.scrollbarTrackColor) {
-        UI.submitDraw(this.ui, {
+        this.ui.submitDraw({
           type: "rect",
           color: this.theme.scrollbarTrackColor,
           ...layout.hsbRect
@@ -181,7 +180,7 @@ export class CanvasTable {
 
     if (layout.overflowY) {
       if (this.theme.scrollbarTrackColor) {
-        UI.submitDraw(this.ui, {
+        this.ui.submitDraw({
           type: "rect",
           color: this.theme.scrollbarTrackColor,
           ...layout.vsbRect
@@ -191,14 +190,14 @@ export class CanvasTable {
       this.doVerticalScrolbarThumb(layout);
     }
 
-    if (UI.isMouseInRect(this.ui, layout.bodyRect)) {
+    if (this.ui.isMouseInRect(layout.bodyRect)) {
       for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
         const rect = this.calculateRowRect(layout, viewport, rowIndex);
 
-        if (UI.isMouseInRect(this.ui, rect)) {
-          UI.setAsHot(this.ui, "row-hover", rowIndex);
+        if (this.ui.isMouseInRect(rect)) {
+          this.ui.setAsHot("row-hover", rowIndex);
 
-          if (UI.isMousePressed(this.ui, UI.MOUSE_BUTTONS.PRIMARY)) {
+          if (this.ui.isMousePressed(UiContext.MOUSE_BUTTONS.PRIMARY)) {
             const dataRow = this.dataRows[rowIndex];
             this.selectedRowId = dataRow.id;
 
@@ -211,10 +210,10 @@ export class CanvasTable {
         }
       }
     } else {
-      UI.unsetAsHot(this.ui, "row-hover");
+      this.ui.unsetAsHot("row-hover");
     }
 
-    if (UI.isHot(this.ui, "row-hover") && this.theme.hoveredRowColor) {
+    if (this.ui.isHot("row-hover") && this.theme.hoveredRowColor) {
       const id = this.ui.hot!;
       const rowIndex = id.index!;
 
@@ -222,7 +221,7 @@ export class CanvasTable {
 
       const clipRegion = pathFromRect(layout.bodyRect);
 
-      UI.submitDraw(this.ui, {
+      this.ui.submitDraw({
         type: "rect",
         color: this.theme.hoveredRowColor,
         clipRegion: clipRegion,
@@ -237,7 +236,7 @@ export class CanvasTable {
 
         const clipRegion = pathFromRect(layout.bodyRect);
 
-        UI.submitDraw(this.ui, {
+        this.ui.submitDraw({
           type: "rect",
           color: this.theme.selectedRowColor,
           clipRegion: clipRegion,
@@ -247,7 +246,7 @@ export class CanvasTable {
     }
 
     // Draw outer canvas border
-    UI.submitDraw(this.ui, {
+    this.ui.submitDraw({
       type: "line",
       orientation: "horizontal",
       x: 0,
@@ -256,7 +255,7 @@ export class CanvasTable {
       color: this.theme.tableBorderColor
     });
 
-    UI.submitDraw(this.ui, {
+    this.ui.submitDraw({
       type: "line",
       orientation: "horizontal",
       x: 0,
@@ -265,7 +264,7 @@ export class CanvasTable {
       color: this.theme.tableBorderColor
     });
 
-    UI.submitDraw(this.ui, {
+    this.ui.submitDraw({
       type: "line",
       orientation: "vertical",
       x: 0,
@@ -274,7 +273,7 @@ export class CanvasTable {
       color: this.theme.tableBorderColor
     });
 
-    UI.submitDraw(this.ui, {
+    this.ui.submitDraw({
       type: "line",
       orientation: "vertical",
       x: canvasSize.width - 1,
@@ -284,7 +283,7 @@ export class CanvasTable {
     });
 
     // Draw header bottom border
-    UI.submitDraw(this.ui, {
+    this.ui.submitDraw({
       type: "line",
       orientation: "horizontal",
       x: 0,
@@ -296,7 +295,7 @@ export class CanvasTable {
     // If horizontal scrollbar is visible, draw its border, otherwise,
     // draw table content right border
     if (layout.overflowX) {
-      UI.submitDraw(this.ui, {
+      this.ui.submitDraw({
         type: "line",
         orientation: "horizontal",
         x: 0,
@@ -305,7 +304,7 @@ export class CanvasTable {
         color: this.theme.tableBorderColor
       });
     } else {
-      UI.submitDraw(this.ui, {
+      this.ui.submitDraw({
         type: "line",
         orientation: "vertical",
         x: layout.gridWidth,
@@ -318,7 +317,7 @@ export class CanvasTable {
     // If vertical scrollbar is visible, draw its border, otherwise,
     // draw table content bottom border
     if (layout.overflowY) {
-      UI.submitDraw(this.ui, {
+      this.ui.submitDraw({
         type: "line",
         orientation: "vertical",
         x: layout.vsbRect.x - 1,
@@ -327,7 +326,7 @@ export class CanvasTable {
         color: this.theme.tableBorderColor
       });
     } else {
-      UI.submitDraw(this.ui, {
+      this.ui.submitDraw({
         type: "line",
         orientation: "horizontal",
         x: 0,
@@ -341,7 +340,7 @@ export class CanvasTable {
     for (let rowIndex = viewport.rowStart + 1; rowIndex < viewport.rowEnd; rowIndex++) {
       const rowPos = viewport.rowPositions.get(rowIndex)!;
 
-      UI.submitDraw(this.ui, {
+      this.ui.submitDraw({
         type: "line",
         orientation: "horizontal",
         x: 0,
@@ -355,7 +354,7 @@ export class CanvasTable {
     for (let columnIndex = viewport.columnStart + 1; columnIndex < viewport.columnEnd; columnIndex++) {
       const columnPos = viewport.columnPositions.get(columnIndex)!;
 
-      UI.submitDraw(this.ui, {
+      this.ui.submitDraw({
         type: "line",
         orientation: "vertical",
         x: columnPos,
@@ -383,7 +382,7 @@ export class CanvasTable {
         const maxWidth = columnState.width - this.theme.cellPadding * 2;
         const text = columnState.title;
 
-        UI.submitDraw(this.ui, {
+        this.ui.submitDraw({
           type: "text",
           x,
           y,
@@ -422,7 +421,7 @@ export class CanvasTable {
           const value = dataRow[columnState.field];
           const text = isNumber(value) ? value.toString() : value as string;
 
-          UI.submitDraw(this.ui, {
+          this.ui.submitDraw({
             type: "text",
             x,
             y,
@@ -436,7 +435,7 @@ export class CanvasTable {
       }
     }
 
-    UI.endFrame(this.ui);
+    this.ui.endFrame();
     this.rafId = requestAnimationFrame(() => this.update());
   }
 
@@ -449,7 +448,7 @@ export class CanvasTable {
     }
     const contentHeight = this.dataRows.length * rowHeight;
 
-    const canvasSize = UI.getCanvasSize(this.ui);
+    const canvasSize = this.ui.getCanvasSize();
     const outerTableWidth  = canvasSize.width - 1;
     const outerTableHeight = canvasSize.height - 1;
 
@@ -636,11 +635,11 @@ export class CanvasTable {
 
     let dragging = false;
 
-    if (UI.isActive(this.ui, "hsb-thumb")) {
+    if (this.ui.isActive("hsb-thumb")) {
       dragging = true;
-    } else if (UI.isHot(this.ui, "hsb-thumb")) {
-      if (UI.isMousePressed(this.ui, UI.MOUSE_BUTTONS.PRIMARY)) {
-        UI.setAsActive(this.ui, "hsb-thumb");
+    } else if (this.ui.isHot("hsb-thumb")) {
+      if (this.ui.isMousePressed(UiContext.MOUSE_BUTTONS.PRIMARY)) {
+        this.ui.setAsActive("hsb-thumb");
 
         const dragAnchorPosition = createVector(hsbThumbX, hsbThumbY);
         this.ui.dragAnchorPosition = dragAnchorPosition;
@@ -660,23 +659,23 @@ export class CanvasTable {
       height: hsbThumbHeight,
     };
 
-    const inside = UI.isMouseInRect(this.ui, hsbThumbRect);
+    const inside = this.ui.isMouseInRect(hsbThumbRect);
     if (inside) {
-      UI.setAsHot(this.ui, "hsb-thumb");
+      this.ui.setAsHot("hsb-thumb");
     } else {
-      UI.unsetAsHot(this.ui, "hsb-thumb");
+      this.ui.unsetAsHot("hsb-thumb");
     }
 
     let color: string;
-    if (UI.isActive(this.ui, "hsb-thumb")) {
+    if (this.ui.isActive("hsb-thumb")) {
       color = this.theme.scrollbarThumbPressedColor ?? this.theme.scrollbarThumbHoverColor ?? this.theme.scrollbarThumbColor;
-    } else if (UI.isHot(this.ui, "hsb-thumb")) {
+    } else if (this.ui.isHot("hsb-thumb")) {
       color = this.theme.scrollbarThumbHoverColor ?? this.theme.scrollbarThumbColor;
     } else {
       color = this.theme.scrollbarThumbColor;
     }
 
-    UI.submitDraw(this.ui, {
+    this.ui.submitDraw({
       type: "rect",
       color,
       sortOrder: 2,
@@ -698,11 +697,11 @@ export class CanvasTable {
 
     let dragging = false;
 
-    if (UI.isActive(this.ui, "vsb-thumb")) {
+    if (this.ui.isActive("vsb-thumb")) {
       dragging = true;
-    } else if (UI.isHot(this.ui, "vsb-thumb")) {
-      if (UI.isMousePressed(this.ui, UI.MOUSE_BUTTONS.PRIMARY)) {
-        UI.setAsActive(this.ui, "vsb-thumb");
+    } else if (this.ui.isHot("vsb-thumb")) {
+      if (this.ui.isMousePressed(UiContext.MOUSE_BUTTONS.PRIMARY)) {
+        this.ui.setAsActive("vsb-thumb");
 
         const dragAnchorPosition = createVector(vsbThumbX, vsbThumbY);
         this.ui.dragAnchorPosition = dragAnchorPosition;
@@ -722,23 +721,23 @@ export class CanvasTable {
       height: vsbThumbHeight
     };
 
-    const inside = UI.isMouseInRect(this.ui, vsbThumbRect);
+    const inside = this.ui.isMouseInRect(vsbThumbRect);
     if (inside) {
-      UI.setAsHot(this.ui, "vsb-thumb");
+      this.ui.setAsHot("vsb-thumb");
     } else {
-      UI.unsetAsHot(this.ui, "vsb-thumb");
+      this.ui.unsetAsHot("vsb-thumb");
     }
 
     let color: string;
-    if (UI.isActive(this.ui, "vsb-thumb")) {
+    if (this.ui.isActive("vsb-thumb")) {
       color = this.theme.scrollbarThumbPressedColor ?? this.theme.scrollbarThumbHoverColor ?? this.theme.scrollbarThumbColor;
-    } else if (UI.isHot(this.ui, "vsb-thumb")) {
+    } else if (this.ui.isHot("vsb-thumb")) {
       color = this.theme.scrollbarThumbHoverColor ?? this.theme.scrollbarThumbColor;
     } else {
       color = this.theme.scrollbarThumbColor;
     }
 
-    UI.submitDraw(this.ui, {
+    this.ui.submitDraw({
       type: "rect",
       color,
       sortOrder: 2,

@@ -1,6 +1,3 @@
-import { TextRenderer } from "text-renderer";
-import { LineRenderer } from "./LineRenderer";
-
 export type CreateCanvasTableParams = {
   container: string;
   columnDefs: ColumnDef[];
@@ -54,35 +51,6 @@ export type Theme = {
   columnResizerColor: string;
   bodyFontColor?: string;
   headerFontColor?: string;
-}
-
-export type UiContext = {
-  canvas:      HTMLCanvasElement;
-  containerEl: HTMLDivElement;
-  wrapperEl:   HTMLDivElement;
-
-  hot:    UiId | null;
-  active: UiId | null;
-
-  dragAnchorPosition:     Vector;
-  mouseDragStartPosition: Vector;
-  dragDistance:           Vector;
-
-  currentMousePosition: Vector;
-  currentMouseButtons: number;
-
-  previousMousePosition: Vector;
-  previousMouseButtons: number;
-
-  renderQueue: Shape[];
-
-  lineRenderer: LineRenderer;
-  textRenderer: TextRenderer;
-
-  onMouseDown: (event: MouseEvent) => void;
-  onMouseUp:   (event: MouseEvent) => void;
-  onMouseMove: (event: MouseEvent) => void;
-  onWheel:     (event: WheelEvent) => void;
 }
 
 export type UiId = {
