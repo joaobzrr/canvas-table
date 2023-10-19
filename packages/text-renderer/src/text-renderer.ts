@@ -21,7 +21,7 @@ export function render(
   const { glyphAtlas } = renderer;
 
   // Take this out of here
-  y += Math.floor(glyphAtlas.fontHeight);
+  y += Math.floor(glyphAtlas.fontBoundingBoxAscent / 2);
 
   let availableContentWidth = maxWidth;
   if (ellipsis && maxWidth !== Infinity) {

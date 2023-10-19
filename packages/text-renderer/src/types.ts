@@ -7,7 +7,8 @@ export type GlyphAtlas = {
   cache: Map<string, Node>;
   root: Node;
   font: string;
-  fontHeight: number;
+  fontBoundingBoxAscent: number;
+  fontBoundingBoxDescent: number;
   color: string;
 }
 

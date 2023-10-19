@@ -103,9 +103,13 @@ export function setFont(atlas: GlyphAtlas, font: string) {
   atlas.font = font;
 
   const ctx = getContext(atlas);
-  const { fontBoundingBoxAscent } = ctx.measureText("M");
+  const {
+    fontBoundingBoxAscent,
+    fontBoundingBoxDescent
+  } = ctx.measureText("M");
 
-  atlas.fontHeight = fontBoundingBoxAscent / 2;
+  atlas.fontBoundingBoxAscent = fontBoundingBoxAscent;
+  atlas.fontBoundingBoxDescent = fontBoundingBoxDescent;
 }
 
 function pack(node: Node, size: Size): Node | null {
