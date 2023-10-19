@@ -1,15 +1,7 @@
+import { GlyphAtlas } from "./GlyphAtlas";
+
 export type TextRenderer = {
   glyphAtlas: GlyphAtlas;
-}
-
-export type GlyphAtlas = {
-  canvas: HTMLCanvasElement;
-  cache: Map<string, Node>;
-  root: Node;
-  font: string;
-  fontBoundingBoxAscent: number;
-  fontBoundingBoxDescent: number;
-  color: string;
 }
 
 export type GlyphAtlasParams = {

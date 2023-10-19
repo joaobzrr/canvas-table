@@ -1,11 +1,11 @@
-import * as Atlas from "./glyph-atlas";
+import { GlyphAtlas } from "./GlyphAtlas";
 import { TextRenderer, GlyphAtlasParams } from "./types";
 
 import Graphemer from "graphemer";
 
 // ---------- Code ----------
 export function create(params?: Partial<GlyphAtlasParams>): TextRenderer {
-  const glyphAtlas = Atlas.create(params);
+  const glyphAtlas = new GlyphAtlas(params);
   return { glyphAtlas };
 }
 
@@ -25,7 +25,7 @@ export function render(
 
   let availableContentWidth = maxWidth;
   if (ellipsis && maxWidth !== Infinity) {
-    const { advance } = Atlas.getGlyphMetrics(glyphAtlas, ".");
+    const { advance } = glyphAtlas.getGlyphMetrics(".");
     const ellipsisAdvance = advance * 3;
     availableContentWidth = Math.max(maxWidth - ellipsisAdvance, 0);
   }
@@ -50,7 +50,7 @@ export function render(
       hshift,
       vshift,
       advance
-    } = Atlas.getGlyphMetrics(glyphAtlas, grapheme);
+    } = glyphAtlas.getGlyphMetrics(grapheme);
 
     if (usedWidth + advance > availableContentWidth) {
       doEllipsis = true;
@@ -74,7 +74,7 @@ export function render(
       hshift,
       vshift,
       advance
-    } = Atlas.getGlyphMetrics(glyphAtlas, ".");
+    } = glyphAtlas.getGlyphMetrics(".");
 
     const dy = y - vshift;
 
@@ -93,7 +93,8 @@ export function render(
 }
 
 export function setFont(renderer: TextRenderer, font: string) {
-  Atlas.setFont(renderer.glyphAtlas, font);
+  const { glyphAtlas } = renderer;
+  glyphAtlas.setFont(font);
 }
 
 export function setColor(renderer: TextRenderer, color: string) {
@@ -101,5 +102,6 @@ export function setColor(renderer: TextRenderer, color: string) {
 }
 
 export function clearAtlas(renderer: TextRenderer) {
-  Atlas.clear(renderer.glyphAtlas);
+  const { glyphAtlas } = renderer;
+  glyphAtlas.clear();
 }
