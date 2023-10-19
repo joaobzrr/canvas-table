@@ -53,11 +53,6 @@ export type Theme = {
   headerFontColor?: string;
 }
 
-export type UiId = {
-  name:   string;
-  index?: number;
-}
-
 export type DraggableProps = {
   rect: Rect;
   color?: string;
@@ -116,11 +111,6 @@ export type Vector = {
 export type Size = {
   width: number;
   height: number;
-}
-
-export type CreateUiContextParams = {
-  container: string;
-  size?: Size;
 }
 
 export type Layout = {

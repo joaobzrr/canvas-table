@@ -1,18 +1,20 @@
-import { TextRenderer } from "text-renderer";
-import { LineRenderer } from "./LineRenderer";
+import { TextRenderer } from "../TextRenderer";
+import { LineRenderer } from "../LineRenderer";
 import {
   shallowMatch,
   createVector,
   isPointInRect,
   isObject
-} from "./utils";
+} from "../../utils";
 import {
-  CreateUiContextParams,
   Shape,
-  UiId,
   Rect,
   Vector,
   Size
+} from "../../types";
+import {
+  CreateUiContextParams,
+  UiId
 } from "./types";
 
 export class UiContext {

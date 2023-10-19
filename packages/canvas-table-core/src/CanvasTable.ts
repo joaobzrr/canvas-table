@@ -1,4 +1,4 @@
-import { UiContext } from "./UiContext";
+import { UiContext } from "./lib/UiContext";
 import { defaultTheme } from "./default-theme";
 import {
   shallowMerge,
