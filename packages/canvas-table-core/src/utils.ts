@@ -64,3 +64,26 @@ export function isPointInRect(point: Vector, rect: Rect) {
   return point.x >= rect.x && point.x < rect.x + rect.width &&
          point.y >= rect.y && point.y < rect.y + rect.height;
 }
+
+export function createVector(): Vector;
+export function createVector(partial: Partial<Vector> | undefined): Vector;
+export function createVector(x: number, y: number): Vector;
+export function createVector(...args: any[]): Vector {
+  if (args.length === 0) {
+    return { x: 0, y: 0 };
+  } else if (args.length === 1) {
+    return { x: 0, y: 0, ...args[0] };
+  } else {
+    return { x: args[0], y: args[1] };
+  }
+}
+
+export function createFontSpecifier(fontFamily: string, fontSize: string, fontStyle: string) {
+  return [fontStyle, fontSize, fontFamily].join(" ");
+}
+
+export function pathFromRect(rect: Rect) {
+  const path = new Path2D();
+  path.rect(rect.x, rect.y, rect.width, rect.height);
+  return path;
+}

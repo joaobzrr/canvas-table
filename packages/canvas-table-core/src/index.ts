@@ -1,7 +1,6 @@
-export { create, set, cleanup } from "./canvas-table";
+export { CanvasTable } from "./CanvasTable";
 
 export type {
-  CanvasTable,
   CreateCanvasTableParams,
   SetCanvasTableParams,
   ColumnDef,

@@ -1,5 +1,5 @@
 import { useRef, useLayoutEffect, forwardRef } from "react";
-import { create, set, cleanup, CanvasTable, CreateCanvasTableParams } from "canvas-table-core";
+import { CanvasTable, CreateCanvasTableParams } from "canvas-table-core";
 import { useUpdateEffect } from "./hooks";
 
 let count = 0;
@@ -30,7 +30,7 @@ const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>((props
   const containerIdRef = useRef(getContainerId());
 
   useLayoutEffect(() => {
-    canvasTableRef.current = create({
+    canvasTableRef.current = new CanvasTable({
       container: containerIdRef.current,
       columnDefs,
       dataRows,
@@ -40,14 +40,14 @@ const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>((props
     });
 
     return () => {
-      cleanup(canvasTableRef.current!);
+      canvasTableRef.current!.cleanup();
       canvasTableRef.current = null;
     }
   }, []);
 
   useUpdateEffect(() => {
     if (canvasTableRef.current) {
-      set(canvasTableRef.current, {
+      canvasTableRef.current.set({
         columnDefs,
         dataRows,
         size,

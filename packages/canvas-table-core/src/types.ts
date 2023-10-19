@@ -1,21 +1,6 @@
 import { TextRenderer } from "text-renderer";
 import { LineRenderer } from "./LineRenderer";
 
-export type CanvasTable = {
-  ui: UiContext;
-
-  rafId: number;
-
-  columnStates: ColumnState[];
-  dataRows: DataRow[];
-  theme: Theme;
-
-  scrollPos: Vector;
-
-  selectedRowId: DataRowValue | null;
-  onSelect?: (id: DataRowValue, dataRow: DataRow) => void;
-}
-
 export type CreateCanvasTableParams = {
   container: string;
   columnDefs: ColumnDef[];
