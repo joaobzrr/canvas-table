@@ -86,10 +86,10 @@ export class UiContext {
     this.textRenderer = new TextRenderer();
     this.textRenderer.setEllipsis(true);
 
-    this.onMouseDown = (e) => this.onMouseDown(e);
-    this.onMouseUp   = (e) => this.onMouseUp(e);
-    this.onMouseMove = (e) => this.onMouseMove(e);
-    this.onWheel     = (e) => this.onWheel(e);
+    this.onMouseDown = this.onMouseDown.bind(this);
+    this.onMouseUp   = this.onMouseUp.bind(this);
+    this.onMouseMove = this.onMouseMove.bind(this);
+    this.onWheel     = this.onWheel.bind(this);
 
     this.canvas.addEventListener("mousedown",   this.onMouseDown);
     this.canvas.addEventListener("wheel",       this.onMouseUp);
