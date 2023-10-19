@@ -1,4 +1,4 @@
-import * as TextRenderer from "text-renderer";
+import { TextRenderer } from "text-renderer";
 import { LineRenderer } from "./LineRenderer";
 import { UiContext, UiId, CreateUiContextParams, Shape, Size, Rect } from "./types";
 import { isObject, isPointInRect, shallowMatch } from "./utils";
@@ -46,7 +46,8 @@ export function create(params: CreateUiContextParams) {
   const renderQueue: Shape[] = [];
 
   const lineRenderer = new LineRenderer();
-  const textRenderer = TextRenderer.create();
+  const textRenderer = new TextRenderer();
+  textRenderer.setEllipsis(true);
 
   const ui = {
     canvas,
@@ -174,12 +175,12 @@ function render(ui: UiContext) {
         ctx.fillRect(x, y, width, height);
       } break;
       case "text": {
-        const { x, y, color, font, text, maxWidth, ellipsis } = shape;
+        const { x, y, color, font, text, maxWidth } = shape;
 
-        if (font !== textRenderer.glyphAtlas.font) TextRenderer.setFont(textRenderer, font);
-        if (color !== textRenderer.glyphAtlas.color) TextRenderer.setColor(textRenderer, color);
+        if (font !== textRenderer.glyphAtlas.font) textRenderer.setFont(font);
+        if (color !== textRenderer.glyphAtlas.color) textRenderer.setColor(color);
 
-        TextRenderer.render(textRenderer, ctx, text, x, y, maxWidth, ellipsis);
+        textRenderer.render(ctx, text, x, y, maxWidth);
       } break;
     }
 

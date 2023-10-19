@@ -342,6 +342,7 @@ function update(ct: CanvasTable) {
     });
   }
 
+  // Draw grid vertical lines
   for (let columnIndex = viewport.columnStart + 1; columnIndex < viewport.columnEnd; columnIndex++) {
     const columnPos = viewport.columnPositions.get(columnIndex)!;
 
@@ -381,7 +382,6 @@ function update(ct: CanvasTable) {
         text,
         font,
         maxWidth,
-        ellipsis: true,
         clipRegion
       });
     }
@@ -421,7 +421,6 @@ function update(ct: CanvasTable) {
           text,
           font,
           maxWidth,
-          ellipsis: true,
           clipRegion
         });
       }

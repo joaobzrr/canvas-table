@@ -1,2 +1,1 @@
-export * from "./text-renderer";
-export type { TextRenderer } from "./types";
+export { TextRenderer } from "./TextRenderer";

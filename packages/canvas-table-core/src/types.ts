@@ -141,7 +141,6 @@ export type TextShape = BaseShape & {
   font: string;
   text: string;
   maxWidth?: number;
-  ellipsis?: boolean;
 }
 
 export type Shape =
