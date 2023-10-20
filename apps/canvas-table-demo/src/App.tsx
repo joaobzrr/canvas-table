@@ -216,8 +216,8 @@ function App() {
       <div className={styles["right-sidebar"]}>
         {selectedRow && (
           <form>
-            {columnDefs.map(({ title, field }) => (
-              <div className={styles.row}>
+            {columnDefs.map(({ title, field }, index) => (
+              <div className={styles.row} key={index}>
                 <label className={styles.label}>{title}</label>
                 <input
                   value={selectedRow[field]}
