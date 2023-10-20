@@ -19,7 +19,8 @@ export default defineConfig({
         "lib/TextRenderer/index": "./src/lib/TextRenderer/index.ts",
         "lib/GlyphAtlas/index": "./src/lib/GlyphAtlas/index.ts",
         "lib/UiContext/index": "./src/lib/UiContext/index.ts"
-      }
+      },
+      formats: ["es"]
     }
   }
 });

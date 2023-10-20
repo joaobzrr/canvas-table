@@ -5,39 +5,14 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "main": "index.js",
-  "module": "./dist/canvas-table-core.js",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/canvas-table-core.js",
-      "default": "./dist/canvas-table-core.js"
-    },
-    "./lib/Stage": {
-      "import": "./dist/lib/Stage/index.js",
-      "require": "./dist/lib/Stage/index.cjs"
-    },
-    "./lib/Renderer": {
-      "import": "./dist/lib/Renderer/index.js",
-      "require": "./dist/lib/Renderer/index.cjs"
-    },
-    "./lib/LineRenderer": {
-      "import": "./dist/lib/LineRenderer/index.js",
-      "require": "./dist/lib/LineRenderer/index.cjs"
-    },
-    "./lib/TextRenderer": {
-      "import": "./dist/lib/TextRenderer/index.js",
-      "require": "./dist/lib/TextRenderer/index.cjs"
-    },
-    "./lib/GlyphAtlas": {
-      "import": "./dist/lib/GlyphAtlas/index.js",
-      "require": "./dist/lib/GlyphAtlas/index.cjs"
-    },
-    "./lib/UiContext": {
-      "import": "./dist/lib/UiContext/index.js",
-      "require": "./dist/lib/UiContext/index.cjs"
-    }
+    ".": "./dist/canvas-table-core.js",
+    "./lib/Stage": "./dist/lib/Stage/index.js",
+    "./lib/Renderer": "./dist/lib/Renderer/index.js",
+    "./lib/LineRenderer": "./dist/lib/LineRenderer/index.js",
+    "./lib/TextRenderer": "./dist/lib/TextRenderer/index.js",
+    "./lib/GlyphAtlas": "./dist/lib/GlyphAtlas/index.js",
+    "./lib/UiContext": "./dist/lib/UiContext/index.js"
   },
   "private": true,
   "type": "module",
