@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "graphemer": "^1.4.0",
-    "text-renderer": "workspace:^"
+    "canvas-table-core": "workspace:^",
+    "graphemer": "^1.4.0"
   },
   "devDependencies": {
     "@typescript-eslint/parser": "^5.61.0",

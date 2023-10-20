@@ -13,6 +13,30 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/canvas-table-core.js",
       "default": "./dist/canvas-table-core.js"
+    },
+    "./lib/Stage": {
+      "import": "./dist/lib/Stage/index.js",
+      "require": "./dist/lib/Stage/index.cjs"
+    },
+    "./lib/Renderer": {
+      "import": "./dist/lib/Renderer/index.js",
+      "require": "./dist/lib/Renderer/index.cjs"
+    },
+    "./lib/LineRenderer": {
+      "import": "./dist/lib/LineRenderer/index.js",
+      "require": "./dist/lib/LineRenderer/index.cjs"
+    },
+    "./lib/TextRenderer": {
+      "import": "./dist/lib/TextRenderer/index.js",
+      "require": "./dist/lib/TextRenderer/index.cjs"
+    },
+    "./lib/GlyphAtlas": {
+      "import": "./dist/lib/GlyphAtlas/index.js",
+      "require": "./dist/lib/GlyphAtlas/index.cjs"
+    },
+    "./lib/UiContext": {
+      "import": "./dist/lib/UiContext/index.js",
+      "require": "./dist/lib/UiContext/index.cjs"
     }
   },
   "private": true,
@@ -29,6 +53,7 @@
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
     "eslint": "^8.44.0",
+    "glob": "^10.3.10",
     "typescript": "^5.0.2",
     "vite": "^4.4.0",
     "vite-plugin-dts": "^3.5.2",

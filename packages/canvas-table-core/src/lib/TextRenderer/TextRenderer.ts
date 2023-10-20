@@ -1,6 +1,5 @@
 import Graphemer from "graphemer";
-import { GlyphAtlas } from "./GlyphAtlas";
-import { GlyphAtlasParams } from "./types";
+import { GlyphAtlas, GlyphAtlasParams } from "../GlyphAtlas";
 
 export class TextRenderer {
   glyphAtlas: GlyphAtlas;

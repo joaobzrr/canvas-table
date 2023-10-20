@@ -1,6 +1,6 @@
 import { Size } from "../../types";
-import { LineRenderer } from "./LineRenderer";
-import { TextRenderer } from "./TextRenderer";
+import { LineRenderer } from "../LineRenderer";
+import { TextRenderer } from "../TextRenderer";
 import { Shape } from "./types";
 
 export class Renderer {
