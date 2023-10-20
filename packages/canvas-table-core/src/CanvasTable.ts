@@ -84,15 +84,22 @@ export class CanvasTable {
     const ctx = this.stage.getContext();
     const stageSize = this.stage.getSize();
 
-
     if (this.stage.isMouseReleased(Stage.MOUSE_BUTTONS.PRIMARY)) {
       this.ui.setAsActive(null);
     }
 
     let layout = this.reflow();
 
-    this.scrollPos.x = clamp(this.scrollPos.x + this.stage.scrollAmount.x, 0, layout.maxScrollX);
-    this.scrollPos.y = clamp(this.scrollPos.y + this.stage.scrollAmount.y, 0, layout.maxScrollY);
+    {
+      const scrollPos = createVector(this.scrollPos);
+      if (this.ui.active === null) {
+        scrollPos.x += this.stage.scrollAmount.x;
+        scrollPos.y += this.stage.scrollAmount.y;
+      }
+
+      this.scrollPos.x = clamp(scrollPos.x, 0, layout.maxScrollX);
+      this.scrollPos.y = clamp(scrollPos.y, 0, layout.maxScrollY);
+    }
 
     let viewport = this.calculateViewport(layout);
 
