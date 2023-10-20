@@ -17,7 +17,12 @@ export default defineConfig({
       fileName: "canvas-table-react",
     },
     rollupOptions: {
-      external: ['react', 'react-dom']
+      external: ['react', 'react-dom'],
+      output: {
+        globals: {
+          react: "React"
+        }
+      }
     }
   },
   resolve: {
