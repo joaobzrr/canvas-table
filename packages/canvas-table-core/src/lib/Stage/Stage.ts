@@ -24,6 +24,8 @@ export class Stage {
   mouseDragStartPosition: Vector;
   dragDistance:           Vector;
 
+  scrollAmount: Vector;
+
   updateFunction?: () => void;
   rafId?: number;
 
@@ -53,6 +55,8 @@ export class Stage {
     this.mouseDragStartPosition = createVector();
     this.dragDistance = createVector();
 
+    this.scrollAmount = createVector();
+
     if (size) {
       this.setSize(size);
     }
@@ -63,10 +67,10 @@ export class Stage {
     this.onWheel     = this.onWheel.bind(this);
 
     this.canvas.addEventListener("mousedown",   this.onMouseDown);
-    this.canvas.addEventListener("wheel",       this.onMouseUp);
+    this.canvas.addEventListener("wheel",       this.onWheel);
 
     window.addEventListener("mousemove", this.onMouseMove);
-    window.addEventListener("mouseup",   this.onMouseMove);
+    window.addEventListener("mouseup",   this.onMouseUp);
 
     this.loop = this.loop.bind(this);
   }
@@ -147,6 +151,9 @@ export class Stage {
     this.previousMousePosition.y = this.currentMousePosition.y;
     this.previousMouseButtons    = this.currentMouseButtons;
 
+    this.scrollAmount.x = 0;
+    this.scrollAmount.y = 0;
+
     this.rafId = requestAnimationFrame(this.loop);
   }
 
@@ -163,7 +170,9 @@ export class Stage {
     this.updateMouseState(event);
   }
 
-  onWheel(_event: WheelEvent) {
+  onWheel(event: WheelEvent) {
+    this.scrollAmount.x = event.deltaX;
+    this.scrollAmount.y = event.deltaY;
   }
 
   updateMouseState(event: MouseEvent) {
