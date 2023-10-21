@@ -6,13 +6,7 @@
   "license": "ISC",
   "description": "",
   "exports": {
-    ".": "./dist/canvas-table-core.js",
-    "./lib/Stage": "./dist/lib/Stage/index.js",
-    "./lib/Renderer": "./dist/lib/Renderer/index.js",
-    "./lib/LineRenderer": "./dist/lib/LineRenderer/index.js",
-    "./lib/TextRenderer": "./dist/lib/TextRenderer/index.js",
-    "./lib/GlyphAtlas": "./dist/lib/GlyphAtlas/index.js",
-    "./lib/UiContext": "./dist/lib/UiContext/index.js"
+    ".": "./dist/canvas-table-core.js"
   },
   "private": true,
   "type": "module",
