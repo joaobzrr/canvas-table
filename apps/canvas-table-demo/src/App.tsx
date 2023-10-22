@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { debounce } from "lodash";
-import CanvasTable, { DataRow, Theme } from "canvas-table-react";
+import { CanvasTable } from "canvas-table-react";
+import { DataRow, Theme } from "canvas-table-core";
 import { columnDefs, dataRows } from "./data/data.json";
 import { useElementSize } from "./useElementSize";
 import styles from "./App.module.css";
@@ -14,7 +15,7 @@ function App() {
   const updateTheme = debounce((theme: Partial<Theme>) => {
     setTheme(prevTheme => ({ ...prevTheme, ...theme }));
   }, 250);
-  
+
   return (
     <div className={styles.app}>
       <div className={styles["left-sidebar"]}>

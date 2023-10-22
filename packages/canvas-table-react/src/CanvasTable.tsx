@@ -15,7 +15,7 @@ export type CanvasTableProps = Omit<CreateCanvasTableParams, "container"> & {
   containerStyle?: React.CSSProperties;
 }
 
-const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>((props, ref) => {
+export const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>((props, ref) => {
   const {
     columnDefs,
     dataRows,
@@ -65,5 +65,3 @@ const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>((props
     />
   );
 });
-
-export default CanvasTableComponent;

@@ -4,14 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "serve": "vite",
+    "build": "vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@react-hook/resize-observer": "^1.2.6",
+    "canvas-table-core": "workspace:^",
     "canvas-table-react": "workspace:^",
     "gh-pages": "^6.0.0",
     "lodash": "^4.17.21",
