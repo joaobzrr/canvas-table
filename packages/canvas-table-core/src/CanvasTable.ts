@@ -67,6 +67,14 @@ export class CanvasTable {
   }
 
   set(params: Partial<SetCanvasTableParams>) {
+    if (params.columnDefs) {
+      this.columnStates = CanvasTable.columnDefsToColumnStates(params.columnDefs);
+    }
+
+    if (params.dataRows) {
+      this.dataRows = params.dataRows;
+    }
+
     if (params.size) {
       this.stage.setSize(params.size);
     }

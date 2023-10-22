@@ -1,0 +1,23 @@
+.theme-form {
+  padding: 1rem;
+}
+
+.row {
+  padding: 0.5rem 0;
+}
+
+.label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.input {
+  width: 100%;
+  padding: 0.4rem;
+  border: 1px solid var(--colors-border);
+  outline: 0;
+  font-size: var(--font-size);
+  background-color: var(--colors-background1);
+  color: var(--colors-foreground0);
+}

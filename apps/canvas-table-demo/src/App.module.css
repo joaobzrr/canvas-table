@@ -34,10 +34,6 @@
   overflow-y: scroll;
 }
 
-.left-sidebar form {
-  padding: 1rem;
-}
-
 .right-sidebar {
   display: flex;
   flex-direction: column;
@@ -49,6 +45,9 @@
 
 .right-sidebar {
   padding: 1rem;
+}
+
+.tabs {
 }
 
 .row {

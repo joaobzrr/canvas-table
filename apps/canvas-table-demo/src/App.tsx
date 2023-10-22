@@ -2,13 +2,22 @@ import { useState } from "react";
 import { debounce } from "lodash";
 import { CanvasTable } from "canvas-table-react";
 import { DataRow, Theme } from "canvas-table-core";
-import { columnDefs, dataRows } from "./data/data.json";
+import ThemeForm from "./ThemeForm";
+import TableList from "./TableList";
+import TabButton from "./TabButton";
+import { tables } from "./tables";
 import { useElementSize } from "./useElementSize";
 import styles from "./App.module.css";
+import { Table } from "./types";
 
 function App() {
-  const [containerSize, containerRef] = useElementSize();
+  const [table, setTable] = useState<Table>(tables[0]);
+
   const [theme, setTheme] = useState<Partial<Theme>>();
+
+  const [containerSize, containerRef] = useElementSize();
+
+  const [selectedTab, setSelectedTab] = useState<"tables" | "theme">("tables");
 
   const [selectedRow, setSelectedRow] = useState<DataRow>();
 
@@ -16,196 +25,51 @@ function App() {
     setTheme(prevTheme => ({ ...prevTheme, ...theme }));
   }, 250);
 
+  const onTableChange = (id: string) => {
+    const table = tables.find(table => table.id === id);
+    if (!table) {
+      throw new Error(`Table with id "${id}" could not be found`);
+    }
+    setTable(table);
+  }
+
   return (
     <div className={styles.app}>
       <div className={styles["left-sidebar"]}>
-        <form>
-          <div className={styles.row}>
-            <label className={styles.label}>Background Color</label>
-            <input
-              onChange={event => updateTheme({
-                tableBackgroundColor: event.target.value || undefined
-              })}
-              className={styles.input}
+        <div className={styles.tabs}>
+          <TabButton
+            selected={selectedTab === "tables"}
+            onClick={() => setSelectedTab("tables")}
+            className={styles["tab-button"]}
+          >
+            Tables
+          </TabButton>
+          <TabButton
+            selected={selectedTab === "theme"}
+            onClick={() => setSelectedTab("theme")}
+            className={styles["tab-button"]}
+          >
+            Theme
+          </TabButton>
+        </div>
+        {selectedTab === "tables"
+          ?
+            <TableList
+              value={table.id}
+              tables={tables}
+              onChange={onTableChange}
             />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Body Background Color</label>
-            <input
-              onChange={event => updateTheme({
-                bodyBackgroundColor: event.target.value || undefined
-              })}
-              className={styles.input}
+          :
+            <ThemeForm
+              style={{ flex: 1 }}
+              onChange={updateTheme}
             />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Header Background Color</label>
-            <input
-              onChange={event => updateTheme({
-                headerBackgroundColor: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Hovered Row Color</label>
-            <input
-              onChange={event => updateTheme({
-                hoveredRowColor: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Selected Row Color</label>
-            <input
-              onChange={event => updateTheme({
-                selectedRowColor: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Border Color</label>
-            <input
-              onChange={event => updateTheme({
-                tableBorderColor: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Font Family</label>
-            <input
-              onChange={event => updateTheme({
-                fontFamily: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Font Size</label>
-            <input
-              onChange={event => updateTheme({
-                fontSize: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Font Color</label>
-            <input
-              onChange={event => updateTheme({
-                fontColor: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Body Font Color</label>
-            <input
-              onChange={event => updateTheme({
-                bodyFontColor: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Header Font Color</label>
-            <input
-              onChange={event => updateTheme({
-                headerFontColor: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Font Style</label>
-            <input
-              onChange={event => updateTheme({
-                fontStyle: (event.target.value as any) || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Body Font Style</label>
-            <input
-              onChange={event => updateTheme({
-                bodyFontStyle: (event.target.value as any) || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Header Font Style</label>
-            <input
-              onChange={event => updateTheme({
-                headerFontStyle: (event.target.value as any) || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Scrollbar Thickness</label>
-            <input
-              onChange={event => updateTheme({
-                scrollbarThickness: parseInt(event.target.value) || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Scrollbar Track Margin</label>
-            <input
-              onChange={event => updateTheme({
-                scrollbarTrackMargin: parseInt(event.target.value) || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Scrollbar Thumb Color</label>
-            <input
-              onChange={event => updateTheme({
-                scrollbarThumbColor: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Scrollbar Track Color</label>
-            <input
-              onChange={event => updateTheme({
-                scrollbarTrackColor: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Scrollbar Thumb Hover Color</label>
-            <input
-              onChange={event => updateTheme({
-                scrollbarThumbHoverColor: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.row}>
-            <label className={styles.label}>Scrollbar Thumb Pressed Color</label>
-            <input
-              onChange={event => updateTheme({
-                scrollbarThumbPressedColor: event.target.value || undefined
-              })}
-              className={styles.input}
-            />
-          </div>
-        </form>
+        }
       </div>
       <main className={styles.main}>
         <CanvasTable
-          columnDefs={columnDefs}
-          dataRows={dataRows}
+          columnDefs={table.columnDefs}
+          dataRows={table.dataRows}
           size={containerSize}
           theme={theme}
           onSelect={(_, row) => setSelectedRow(row)}
@@ -217,7 +81,7 @@ function App() {
       <div className={styles["right-sidebar"]}>
         {selectedRow && (
           <form>
-            {columnDefs.map(({ title, field }, index) => (
+            {table.columnDefs.map(({ title, field }, index) => (
               <div className={styles.row} key={index}>
                 <label className={styles.label}>{title}</label>
                 <input
