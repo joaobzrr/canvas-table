@@ -17,7 +17,7 @@ pnpm install @bzrr/canvas-table-core  @bzrr/canvas-table-react
 ```tsx
 import React from "react";
 import { CanvasTable } from "@bzrr/canvas-table-react";
-import { ColumnDef, DataRow } from "@bzrr/canas-table-core";
+import { ColumnDef, DataRow } from "@bzrr/canvas-table-core";
 
 export function App() {
   const columnDefs: ColumnDef[] = [
