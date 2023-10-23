@@ -1,3 +1,4 @@
+import { clsx } from "clsx";
 import { Theme } from "canvas-table-core";
 import styles from "./ThemeForm.module.css";
 
@@ -10,7 +11,7 @@ type PropsType = {
 export default function ThemeForm(props: PropsType) {
   const { onChange, style } = props;
 
-  const className = [props.className, styles["theme-form"]].join(" ");
+  const className = clsx(props.className, styles.themeForm);
 
   return (
     <form className={className} style={style}>

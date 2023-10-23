@@ -35,7 +35,7 @@ function App() {
 
   return (
     <div className={styles.app}>
-      <div className={styles["left-sidebar"]}>
+      <div className={styles.leftSidebar}>
         <Tabs
           items={[
             {
@@ -71,12 +71,12 @@ function App() {
           size={containerSize}
           theme={theme}
           onSelect={(_, row) => setSelectedRow(row)}
-          containerClassName={styles["canvas-table"]}
+          containerClassName={styles.canvasTable}
           ref={containerRef}
           {...containerSize}
         />
       </main>
-      <div className={styles["right-sidebar"]}>
+      <div className={styles.rightSidebar}>
         {selectedRow && (
           <form>
             {table.columnDefs.map(({ title, field }, index) => (

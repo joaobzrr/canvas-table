@@ -11,7 +11,7 @@ export default function TableList(props: PropsType) {
   const { tables, value, onChange } = props;
 
   return (
-    <div className={styles["table-list"]}>
+    <div className={styles.tableList}>
       <select
         value={value}
         onChange={(event) => onChange?.(event.target.value)}
