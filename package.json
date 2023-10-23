@@ -1,10 +1,9 @@
 {
-  "name": "canvas-table-mono",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build:all": "pnpm --filter canvas-table-core run build && pnpm --filter canvas-table-react run build && pnpm --filter canvas-table-demo run build",
+    "build:all": "pnpm --filter @canvas-table/core run build && pnpm --filter @canvas-table/react run build && pnpm --filter canvas-table-demo run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

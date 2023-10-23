@@ -1,10 +1,14 @@
 {
-  "name": "canvas-table-react",
+  "name": "@canvas-table/react",
   "version": "0.0.1",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": [
+    "table",
+    "canvas",
+    "datagrid"
+  ],
+  "author": "João Bezerra",
+  "license": "MIT",
+  "description": "High performance table component made with Canvas.",
   "type": "module",
   "files": [
     "dist"
@@ -15,7 +19,8 @@
   "scripts": {
     "watch": "vite build --watch",
     "build": "vite build",
-    "lint": "eslint --ext .js,.ts ./src"
+    "lint": "eslint --ext .js,.ts ./src",
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "@types/react": "^18.2.14",
@@ -28,7 +33,7 @@
     "vite-plugin-dts": "^3.5.2"
   },
   "peerDependencies": {
-    "canvas-table-core": "workspace:^",
+    "@canvas-table/core": "workspace:^",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }

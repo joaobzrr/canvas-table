@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { debounce } from "lodash";
-import { CanvasTable } from "canvas-table-react";
-import { DataRow, Theme } from "canvas-table-core";
+import { CanvasTable } from "@canvas-table/react";
+import { DataRow, Theme } from "@canvas-table/core";
 import ThemeForm from "./ThemeForm";
 import TableList from "./TableList";
 import Tabs from "./Tabs";

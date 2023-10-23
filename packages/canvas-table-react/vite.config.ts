@@ -17,7 +17,7 @@ export default defineConfig({
       external: [
         'react',
         'react-dom',
-        'canvas-table-core'
+        '@canvas-table/core'
       ],
       output: {
         globals: {

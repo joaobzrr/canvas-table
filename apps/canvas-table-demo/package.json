@@ -1,6 +1,5 @@
 {
   "name": "canvas-table-demo",
-  "private": true,
   "version": "0.0.q",
   "type": "module",
   "scripts": {
@@ -11,9 +10,9 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@canvas-table/core": "workspace:^",
+    "@canvas-table/react": "workspace:^",
     "@react-hook/resize-observer": "^1.2.6",
-    "canvas-table-core": "workspace:^",
-    "canvas-table-react": "workspace:^",
     "clsx": "^2.0.0",
     "gh-pages": "^6.0.0",
     "lodash": "^4.17.21",

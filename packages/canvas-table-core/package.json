@@ -1,10 +1,14 @@
 {
-  "name": "canvas-table-core",
+  "name": "@canvas-table/core",
   "version": "0.0.1",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": [
+    "table",
+    "canvas",
+    "datagrid"
+  ],
+  "author": "João Bezerra",
+  "license": "MIT",
+  "description": "High performance table component made with Canvas.",
   "type": "module",
   "files": [
     "dist"
@@ -15,7 +19,8 @@
   "scripts": {
     "watch": "vite build --watch",
     "build": "vite build",
-    "lint": "eslint --ext .js,.ts ./src"
+    "lint": "eslint --ext .js,.ts ./src",
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^20.8.7",
