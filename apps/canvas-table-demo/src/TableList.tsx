@@ -15,6 +15,7 @@ export default function TableList(props: PropsType) {
       <select
         value={value}
         onChange={(event) => onChange?.(event.target.value)}
+        className={styles.select}
       >
       {
         tables.map(({ id, name }) => (

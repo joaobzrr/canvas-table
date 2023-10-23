@@ -1,0 +1,29 @@
+.tabs {
+  height: 2rem;
+  position: relative;
+  background-color: #F0F0F0;
+  border-bottom: 1px solid lightgray;
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.button {
+  box-sizing: content-box;
+  padding: 0 0.5rem;
+  height: 100%;
+  border: 0;
+  border-bottom: 1px solid lightgray;
+  cursor: pointer;
+}
+
+.selected {
+  border-bottom: 1px solid blue;
+}

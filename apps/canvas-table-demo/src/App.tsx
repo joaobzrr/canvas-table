@@ -4,7 +4,7 @@ import { CanvasTable } from "canvas-table-react";
 import { DataRow, Theme } from "canvas-table-core";
 import ThemeForm from "./ThemeForm";
 import TableList from "./TableList";
-import TabButton from "./TabButton";
+import Tabs from "./Tabs";
 import { tables } from "./tables";
 import { useElementSize } from "./useElementSize";
 import styles from "./App.module.css";
@@ -17,7 +17,7 @@ function App() {
 
   const [containerSize, containerRef] = useElementSize();
 
-  const [selectedTab, setSelectedTab] = useState<"tables" | "theme">("tables");
+  const [selectedTab, setSelectedTab] = useState<React.Key>("tables");
 
   const [selectedRow, setSelectedRow] = useState<DataRow>();
 
@@ -36,22 +36,20 @@ function App() {
   return (
     <div className={styles.app}>
       <div className={styles["left-sidebar"]}>
-        <div className={styles.tabs}>
-          <TabButton
-            selected={selectedTab === "tables"}
-            onClick={() => setSelectedTab("tables")}
-            className={styles["tab-button"]}
-          >
-            Tables
-          </TabButton>
-          <TabButton
-            selected={selectedTab === "theme"}
-            onClick={() => setSelectedTab("theme")}
-            className={styles["tab-button"]}
-          >
-            Theme
-          </TabButton>
-        </div>
+        <Tabs
+          items={[
+            {
+              key: "tables",
+              label: "Tables"
+            },
+            {
+              key: "theme",
+              label: "Theme"
+            }
+          ]}
+          selected={selectedTab}
+          onTabClick={(key => setSelectedTab(key))}
+        />
         {selectedTab === "tables"
           ?
             <TableList
