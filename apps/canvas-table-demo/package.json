@@ -1,7 +1,7 @@
 {
   "name": "canvas-table-demo",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.q",
   "type": "module",
   "scripts": {
     "serve": "vite",
