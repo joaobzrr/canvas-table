@@ -6,10 +6,10 @@ High performance table component made with Canvas.
 
 ```
 # npm
-pnpm install @bzrr/canvas-table-core  @bzrr/canvas-table-react
+pnpm install @bzrr/canvas-table-core @bzrr/canvas-table-react
 
 # pnpm
-pnpm install @bzrr/canvas-table-core  @bzrr/canvas-table-react
+pnpm install @bzrr/canvas-table-core @bzrr/canvas-table-react
 ```
 
 ## Usage
