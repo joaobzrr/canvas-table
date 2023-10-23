@@ -1,5 +1,5 @@
 {
-  "name": "@canvas-table/react",
+  "name": "@bzrr/canvas-table-react",
   "version": "0.0.1",
   "keywords": [
     "table",
@@ -33,7 +33,7 @@
     "vite-plugin-dts": "^3.5.2"
   },
   "peerDependencies": {
-    "@canvas-table/core": "workspace:^",
+    "@bzrr/canvas-table-core": "workspace:^",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }

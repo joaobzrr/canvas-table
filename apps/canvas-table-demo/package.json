@@ -10,8 +10,8 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "@canvas-table/core": "workspace:^",
-    "@canvas-table/react": "workspace:^",
+    "@bzrr/canvas-table-core": "workspace:^",
+    "@bzrr/canvas-table-react": "workspace:^",
     "@react-hook/resize-observer": "^1.2.6",
     "clsx": "^2.0.0",
     "gh-pages": "^6.0.0",

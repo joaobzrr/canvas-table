@@ -10,10 +10,10 @@ importers:
 
   apps/canvas-table-demo:
     dependencies:
-      '@canvas-table/core':
+      '@bzrr/canvas-table-core':
         specifier: workspace:^
         version: link:../../packages/canvas-table-core
-      '@canvas-table/react':
+      '@bzrr/canvas-table-react':
         specifier: workspace:^
         version: link:../../packages/canvas-table-react
       '@react-hook/resize-observer':
@@ -111,7 +111,7 @@ importers:
 
   packages/canvas-table-react:
     dependencies:
-      '@canvas-table/core':
+      '@bzrr/canvas-table-core':
         specifier: workspace:^
         version: link:../canvas-table-core
       react:

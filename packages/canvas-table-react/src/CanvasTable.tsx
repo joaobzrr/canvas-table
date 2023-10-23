@@ -1,5 +1,5 @@
 import { useRef, useLayoutEffect, forwardRef } from "react";
-import { CanvasTable, CreateCanvasTableParams } from "@canvas-table/core";
+import { CanvasTable, CreateCanvasTableParams } from "@bzrr/canvas-table-core";
 import { useUpdateEffect } from "./hooks";
 
 let count = 0;
