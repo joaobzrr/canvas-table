@@ -31,6 +31,8 @@ import {
   Vector,
   Layout,
   Viewport,
+  IdSelector,
+  SelectRowCallback,
 } from "./types";
 
 export class CanvasTable {
@@ -45,23 +47,28 @@ export class CanvasTable {
   scrollPos: Vector;
   selectedRowId: DataRowValue | null;
 
-  onSelect?: (id: DataRowValue, dataRow: DataRow) => void;
+  selectId: IdSelector;
+
+  onSelect?: SelectRowCallback;
 
   constructor(params: CreateCanvasTableParams) {
-    const { columnDefs, dataRows,  container, size, onSelect } = params;
-
-    this.stage = new Stage(container, size);
+    this.stage = new Stage(params.container, params.size);
     this.stage.setUpdateFunction(this.update.bind(this));
 
     this.renderer = new Renderer();
     this.ui = new UiContext();
 
-    this.columnStates = CanvasTable.columnDefsToColumnStates(columnDefs);
-    this.dataRows = dataRows;
+    this.columnStates = CanvasTable.columnDefsToColumnStates(params.columnDefs);
+    this.dataRows = params.dataRows;
     this.theme = shallowMerge({}, defaultTheme, params.theme);
     this.scrollPos = { x: 0, y: 0 };
     this.selectedRowId = null;
-    this.onSelect = onSelect;
+    this.onSelect = params.onSelect;
+
+    const selectId = params?.selectId ?? ((dataRow: any) => dataRow.id);
+    this.selectId = selectId;
+
+    console.log("Selecting id...");
 
     this.stage.run();
   }
@@ -226,10 +233,11 @@ export class CanvasTable {
 
           if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
             const dataRow = this.dataRows[rowIndex];
-            this.selectedRowId = dataRow.id;
+            const dataRowId = this.selectId(dataRow)
+            this.selectedRowId = dataRowId;
 
             if (this.onSelect) {
-              this.onSelect(dataRow.id, dataRow);
+              this.onSelect(dataRowId, dataRow);
             }
           }
 
@@ -258,7 +266,8 @@ export class CanvasTable {
 
     for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
       const dataRow = this.dataRows[rowIndex];
-      if (dataRow.id === this.selectedRowId) {
+      const dataRowId = this.selectId(dataRow);
+      if (dataRowId === this.selectedRowId) {
         const rect = this.calculateRowRect(layout, viewport, rowIndex);
 
         const clipRegion = pathFromRect(layout.bodyRect);

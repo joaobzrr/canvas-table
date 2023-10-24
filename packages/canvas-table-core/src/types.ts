@@ -4,8 +4,13 @@ export type CreateCanvasTableParams = {
   dataRows: DataRow[];
   theme?: Partial<Theme>;
   size?: Size;
-  onSelect?: (id: DataRowValue, dataRow: DataRow) => void;
+  selectId?: IdSelector;
+  onSelect?: SelectRowCallback;
 }
+
+export type SelectRowCallback = (id: DataRowId, dataRow: DataRow) => void;
+
+export type IdSelector = (dataRow: DataRow) => DataRowId;
 
 export type SetCanvasTableParams = Partial<Omit<CreateCanvasTableParams, "container">>;
 
@@ -19,12 +24,11 @@ export type ColumnState = Omit<ColumnDef, "width"> & {
   width: number;
 }
 
+export type DataRowId = DataRowValue;
+
 export type DataRowValue = string | number;
 
-export type DataRow = {
-  id: DataRowValue;
-  [name: string]: DataRowValue;
-};
+export type DataRow = Record<string, DataRowValue>;
 
 export type Theme = {
   rowHeight: number;
