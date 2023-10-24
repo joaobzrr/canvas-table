@@ -1,3 +1,5 @@
+import { UiId } from "./lib/UiContext/types";
+
 export type CreateCanvasTableParams = {
   container: string;
   columnDefs: ColumnDef[];
@@ -58,47 +60,14 @@ export type Theme = {
 }
 
 export type DraggableProps = {
+  id: UiId;
   rect: Rect;
   color?: string;
   hotColor?: string;
   activeColor?: string;
-}
-
-export type BaseShape = {
-  type: string;
-  x: number;
-  y: number;
-  color: string;
-  opacity?: number;
   clipRegion?: Path2D;
-  sortOrder?: number;
+  onDrag?: (id: UiId, pos: Vector) => void;
 }
-
-export type LineOrientation = "horizontal" | "vertical";
-
-export type LineShape = BaseShape & {
-  type: "line";
-  orientation: LineOrientation;
-  length: number;
-}
-
-export type RectShape = BaseShape & {
-  type: "rect";
-  width: number;
-  height: number;
-}
-
-export type TextShape = BaseShape & {
-  type: "text";
-  font: string;
-  text: string;
-  maxWidth?: number;
-}
-
-export type Shape =
-  LineShape
-  | RectShape
-  | TextShape;
 
 export type Rect = {
   x: number;
@@ -136,9 +105,15 @@ export type Layout = {
 
   hsbRect:      Rect;
   hsbTrackRect: Rect;
+  hsbThumbRect: Rect;
+  hsbThumbMinX: number;
+  hsbThumbMaxX: number;
 
   vsbRect: Rect;
   vsbTrackRect: Rect;
+  vsbThumbRect: Rect;
+  vsbThumbMinY: number;
+  vsbThumbMaxY: number;
 
   overflowX: boolean;
   overflowY: boolean;
@@ -159,22 +134,4 @@ export type Viewport = {
 export type FrameState = {
   layout:   Layout;
   viewport: Viewport;
-}
-
-export type GlyphAtlasOptions = {
-  textureWidth?:  number;
-  textureHeight?: number;
-}
-
-export type TextureNode = {
-  rect: Rect;
-  left: TextureNode | null;
-  right: TextureNode | null;
-  filled: boolean;
-  glyphData?: GlyphData;
-}
-
-export type GlyphData = {
-  rect: Rect;
-  verticalShift: number;
 }

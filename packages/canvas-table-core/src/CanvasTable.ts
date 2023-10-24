@@ -10,7 +10,8 @@ import {
   createVector,
   pathFromRect,
   createFontSpecifier,
-  getFontMetrics
+  getFontMetrics,
+  createRect
 } from "./utils";
 import {
   COLUMN_RESIZER_LEFT_WIDTH,
@@ -33,7 +34,10 @@ import {
   Viewport,
   IdSelector,
   SelectRowCallback,
+  DraggableProps,
+  FrameState,
 } from "./types";
+import { UiId } from "./lib/UiContext/types";
 
 export class CanvasTable {
   stage: Stage;
@@ -51,6 +55,8 @@ export class CanvasTable {
 
   onSelect?: SelectRowCallback;
 
+  frameState: FrameState = undefined!;
+
   constructor(params: CreateCanvasTableParams) {
     this.stage = new Stage(params.container, params.size);
     this.stage.setUpdateFunction(this.update.bind(this));
@@ -67,8 +73,6 @@ export class CanvasTable {
 
     const selectId = params?.selectId ?? ((dataRow: any) => dataRow.id);
     this.selectId = selectId;
-
-    console.log("Selecting id...");
 
     this.stage.run();
   }
@@ -99,11 +103,14 @@ export class CanvasTable {
     const ctx = this.stage.getContext();
     const stageSize = this.stage.getSize();
 
-    if (this.stage.isMouseReleased(Stage.MOUSE_BUTTONS.PRIMARY)) {
-      this.ui.setAsActive(null);
-    }
+    this.frameState = {} as FrameState;
 
-    let layout = this.reflow();
+    this.frameState.layout = this.reflow();
+
+    // @Todo Get rid of this
+    if (this.stage.isMouseReleased(Stage.MOUSE_BUTTONS.PRIMARY)) {
+      this.ui.active = null;
+    }
 
     {
       const scrollPos = createVector(this.scrollPos);
@@ -112,11 +119,11 @@ export class CanvasTable {
         scrollPos.y += this.stage.scrollAmount.y;
       }
 
-      this.scrollPos.x = clamp(scrollPos.x, 0, layout.maxScrollX);
-      this.scrollPos.y = clamp(scrollPos.y, 0, layout.maxScrollY);
+      this.scrollPos.x = clamp(scrollPos.x, 0, this.frameState.layout.maxScrollX);
+      this.scrollPos.y = clamp(scrollPos.y, 0, this.frameState.layout.maxScrollY);
     }
 
-    let viewport = this.calculateViewport(layout);
+    this.frameState.viewport = this.calculateViewport(this.frameState.layout);
 
     if (this.theme.tableBackgroundColor) {
       this.renderer.submit({
@@ -133,7 +140,7 @@ export class CanvasTable {
       this.renderer.submit({
         type: "rect",
         color: this.theme.bodyBackgroundColor,
-        ...layout.bodyRect
+        ...this.frameState.layout.bodyRect
       });
     }
 
@@ -141,89 +148,120 @@ export class CanvasTable {
       this.renderer.submit({
         type: "rect",
         color: this.theme.headerBackgroundColor,
-        ...layout.headerRect
+        ...this.frameState.layout.headerRect
       });
     }
 
-    for (let columnIndex = viewport.columnStart; columnIndex < viewport.columnEnd; columnIndex++) {
-      const columnEndPosition = this.getColumnEndPosition(viewport, columnIndex);
-      const rect = this.calculateColumnResizerRect(this.theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
+    this.doColumnResizer();
 
-      if (this.stage.isMouseInRect(rect)) {
-        this.ui.setAsHot("column-resizer", columnIndex);
+    // {
 
-        if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
-          this.ui.setAsActive("column-resizer", columnIndex);
+    //   for (let columnIndex = viewport.columnStart; columnIndex < viewport.columnEnd; columnIndex++) {
+    //     const id = UiContext.idFromArgs("column-resizer", columnIndex);
 
-          const dragAnchorPosition = createVector(columnEndPosition, rect.y);
-          this.stage.dragAnchorPosition = dragAnchorPosition;
-        }
+    //     const columnEndPosition = this.getColumnEndPosition(viewport, columnIndex);
+    //     const rect = this.calculateColumnResizerRect(this.theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
 
-        break;
-      } else {
-        this.ui.unsetAsHot("column-resizer", columnIndex);
-      }
-    }
+    //     if (this.stage.isMouseInRect(rect)) {
+    //       this.ui.setAsHot(id);
 
-    if (this.ui.isActive("column-resizer")) {
-      const columnIndex = this.ui.getActiveIndex()!;
+    //       if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
+    //         // @Todo Unset as active
+    //         this.ui.setActive(id);
 
-      const columnState = this.columnStates[columnIndex];
-      const columnPos = viewport.columnPositions.get(columnIndex)!;
+    //         const dragAnchorPosition = createVector(columnEndPosition, rect.y);
+    //         this.stage.dragAnchorPosition = dragAnchorPosition;
+    //       }
 
-      const calculatedColumnWidth = this.stage.dragAnchorPosition.x + this.stage.dragDistance.x - columnPos;
-      const columnWidth = Math.max(calculatedColumnWidth, MIN_COLUMN_WIDTH);
-      columnState.width = columnWidth;
+    //       break;
+    //     } else {
+    //       this.ui.unsetAsHot("column-resizer", columnIndex);
+    //     }
+    //   }
 
-      layout = this.reflow();
+    //   if (this.ui.isActive("column-resizer")) {
+    //     const columnIndex = this.ui.getActiveIndex()!;
 
-      this.scrollPos.x = Math.min(this.scrollPos.x, layout.maxScrollX);
-      this.scrollPos.y = Math.min(this.scrollPos.y, layout.maxScrollY);
+    //     const columnState = this.columnStates[columnIndex];
+    //     const columnPos = viewport.columnPositions.get(columnIndex)!;
 
-      viewport = this.calculateViewport(layout);
-    }
+    //     const calculatedColumnWidth = this.stage.dragAnchorPosition.x + this.stage.dragDistance.x - columnPos;
+    //     const columnWidth = Math.max(calculatedColumnWidth, MIN_COLUMN_WIDTH);
+    //     columnState.width = columnWidth;
 
-    if (this.ui.isActive("column-resizer") || this.ui.isHot("column-resizer")) {
-      const columnIndex = this.ui.getActiveIndex() ?? this.ui.getHotIndex()!;
+    //     layout = this.reflow();
 
-      const columnEndPosition = this.getColumnEndPosition(viewport, columnIndex);
-      const rect = this.calculateColumnResizerRect(this.theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
+    //     this.scrollPos.x = Math.min(this.scrollPos.x, layout.maxScrollX);
+    //     this.scrollPos.y = Math.min(this.scrollPos.y, layout.maxScrollY);
 
-      const clipRegion = pathFromRect(layout.headerRect);
+    //     viewport = this.calculateViewport(layout);
+    //   }
 
-      this.renderer.submit({
-        type: "rect",
-        ...rect,
-        color: this.theme.columnResizerColor,
-        sortOrder: 2,
-        clipRegion
-      });
-    }
+    //   if (this.ui.isActive("column-resizer") || this.ui.isHot("column-resizer")) {
+    //     const columnIndex = this.ui.getActiveIndex() ?? this.ui.getHotIndex()!;
 
-    if (layout.overflowX) {
+    //     const columnEndPosition = this.getColumnEndPosition(viewport, columnIndex);
+    //     const rect = this.calculateColumnResizerRect(this.theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
+
+    //     const clipRegion = pathFromRect(layout.headerRect);
+
+    //     this.renderer.submit({
+    //       type: "rect",
+    //       ...rect,
+    //       color: this.theme.columnResizerColor,
+    //       sortOrder: 2,
+    //       clipRegion
+    //     });
+    //   }
+    // }
+
+    if (this.frameState.layout.overflowX) {
       if (this.theme.scrollbarTrackColor) {
         this.renderer.submit({
           type: "rect",
           color: this.theme.scrollbarTrackColor,
-          ...layout.hsbRect
+          ...this.frameState.layout.hsbRect
         });
       }
 
-      this.doHorizontalScrollbarThumb(layout);
+      {
+        const id = UiContext.idFromArgs("horizontal-scrollbar-thumb");
+
+        this.doDraggable({
+          id,
+          rect: this.frameState.layout.hsbThumbRect,
+          onDrag: (_id, pos) => this.onDragHorizontalScrollbar(pos),
+          activeColor: this.theme.scrollbarThumbPressedColor,
+          hotColor: this.theme.scrollbarThumbHoverColor,
+          color: this.theme.scrollbarThumbColor
+        });
+      }
     }
 
-    if (layout.overflowY) {
+    if (this.frameState.layout.overflowY) {
       if (this.theme.scrollbarTrackColor) {
         this.renderer.submit({
           type: "rect",
           color: this.theme.scrollbarTrackColor,
-          ...layout.vsbRect
+          ...this.frameState.layout.vsbRect
         });
       }
 
-      this.doVerticalScrolbarThumb(layout);
+      {
+        const id = UiContext.idFromArgs("vertical-scrollbar-thumb");
+
+        this.doDraggable({
+          id,
+          rect: this.frameState.layout.vsbThumbRect,
+          onDrag: (_id, pos) => this.onDragVerticalScrollbar(pos, this.frameState.layout),
+          activeColor: this.theme.scrollbarThumbPressedColor,
+          hotColor: this.theme.scrollbarThumbHoverColor,
+          color: this.theme.scrollbarThumbColor
+        });
+      }
     }
 
+    /*
     if (this.stage.isMouseInRect(layout.bodyRect)) {
       for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
         const rect = this.calculateRowRect(layout, viewport, rowIndex);
@@ -280,6 +318,7 @@ export class CanvasTable {
         });
       }
     }
+    */
 
     // Draw outer canvas border
     this.renderer.submit({
@@ -330,12 +369,12 @@ export class CanvasTable {
 
     // If horizontal scrollbar is visible, draw its border, otherwise,
     // draw table content right border
-    if (layout.overflowX) {
+    if (this.frameState.layout.overflowX) {
       this.renderer.submit({
         type: "line",
         orientation: "horizontal",
         x: 0,
-        y: layout.hsbRect.y - 1,
+        y: this.frameState.layout.hsbRect.y - 1,
         length: stageSize.width,
         color: this.theme.tableBorderColor
       });
@@ -343,20 +382,20 @@ export class CanvasTable {
       this.renderer.submit({
         type: "line",
         orientation: "vertical",
-        x: layout.gridWidth,
+        x: this.frameState.layout.gridWidth,
         y: 0,
-        length: layout.gridHeight,
+        length: this.frameState.layout.gridHeight,
         color: this.theme.tableBorderColor
       });
     }
 
     // If vertical scrollbar is visible, draw its border, otherwise,
     // draw table content bottom border
-    if (layout.overflowY) {
+    if (this.frameState.layout.overflowY) {
       this.renderer.submit({
         type: "line",
         orientation: "vertical",
-        x: layout.vsbRect.x - 1,
+        x: this.frameState.layout.vsbRect.x - 1,
         y: 0,
         length: stageSize.height,
         color: this.theme.tableBorderColor
@@ -366,36 +405,36 @@ export class CanvasTable {
         type: "line",
         orientation: "horizontal",
         x: 0,
-        y: layout.gridHeight,
-        length: layout.gridWidth,
+        y: this.frameState.layout.gridHeight,
+        length: this.frameState.layout.gridWidth,
         color: this.theme.tableBorderColor
       });
     }
 
     // Draw grid horizontal lines
-    for (let rowIndex = viewport.rowStart + 1; rowIndex < viewport.rowEnd; rowIndex++) {
-      const rowPos = viewport.rowPositions.get(rowIndex)!;
+    for (let rowIndex = this.frameState.viewport.rowStart + 1; rowIndex < this.frameState.viewport.rowEnd; rowIndex++) {
+      const rowPos = this.frameState.viewport.rowPositions.get(rowIndex)!;
 
       this.renderer.submit({
         type: "line",
         orientation: "horizontal",
         x: 0,
         y: rowPos,
-        length: layout.gridWidth,
+        length: this.frameState.layout.gridWidth,
         color: this.theme.tableBorderColor
       });
     }
 
     // Draw grid vertical lines
-    for (let columnIndex = viewport.columnStart + 1; columnIndex < viewport.columnEnd; columnIndex++) {
-      const columnPos = viewport.columnPositions.get(columnIndex)!;
+    for (let columnIndex = this.frameState.viewport.columnStart + 1; columnIndex < this.frameState.viewport.columnEnd; columnIndex++) {
+      const columnPos = this.frameState.viewport.columnPositions.get(columnIndex)!;
 
       this.renderer.submit({
         type: "line",
         orientation: "vertical",
         x: columnPos,
         y: 0,
-        length: layout.gridHeight,
+        length: this.frameState.layout.gridHeight,
         color: this.theme.tableBorderColor
       });
     }
@@ -409,12 +448,12 @@ export class CanvasTable {
 
       const fontColor = this.theme.headerFontColor ?? this.theme.fontColor;
 
-      const clipRegion = pathFromRect(layout.headerRect);
+      const clipRegion = pathFromRect(this.frameState.layout.headerRect);
 
-      for (let columnIndex = viewport.columnStart; columnIndex < viewport.columnEnd; columnIndex++) {
+      for (let columnIndex = this.frameState.viewport.columnStart; columnIndex < this.frameState.viewport.columnEnd; columnIndex++) {
         const columnState = this.columnStates[columnIndex];
 
-        const columnPos = viewport.columnPositions.get(columnIndex)!;
+        const columnPos = this.frameState.viewport.columnPositions.get(columnIndex)!;
 
         const x = columnPos + this.theme.cellPadding;
         const y = this.theme.rowHeight / 2 + halfFontBounginxBoxAscent;
@@ -443,20 +482,20 @@ export class CanvasTable {
 
       const fontColor = this.theme.bodyFontColor ?? this.theme.fontColor;
 
-      const clipRegion = pathFromRect(layout.bodyRect);
+      const clipRegion = pathFromRect(this.frameState.layout.bodyRect);
 
-      for (let columnIndex = viewport.columnStart; columnIndex < viewport.columnEnd; columnIndex++) {
+      for (let columnIndex = this.frameState.viewport.columnStart; columnIndex < this.frameState.viewport.columnEnd; columnIndex++) {
         const columnState = this.columnStates[columnIndex];
 
-        const columnPos = viewport.columnPositions.get(columnIndex)!;
+        const columnPos = this.frameState.viewport.columnPositions.get(columnIndex)!;
 
         const x = columnPos + this.theme.cellPadding;
         const maxWidth = columnState.width - this.theme.cellPadding * 2;
 
-        for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
+        for (let rowIndex = this.frameState.viewport.rowStart; rowIndex < this.frameState.viewport.rowEnd; rowIndex++) {
           const dataRow = this.dataRows[rowIndex];
 
-          const rowPos = viewport.rowPositions.get(rowIndex)!;
+          const rowPos = this.frameState.viewport.rowPositions.get(rowIndex)!;
 
           const y = rowPos + this.theme.rowHeight / 2 + halfFontBoundingBoxAscent;
 
@@ -558,33 +597,51 @@ export class CanvasTable {
     const gridWidth  = Math.min(tableWidth,  contentWidth);
     const gridHeight = Math.min(tableHeight, contentHeight + rowHeight);
 
-    const hsbRect = {
-      x: 1,
-      y: tableHeight + 1,
-      width: tableWidth - 1,
-      height: scrollbarThickness
-    };
+    const hsbX = 1;
+    const hsbY = tableHeight + 1;
+    const hsbWidth = tableWidth - 1;
+    const hsbHeight = scrollbarThickness;
+    const hsbRect = createRect(hsbX, hsbY, hsbWidth, hsbHeight);
 
-    const hsbTrackRect = {
-      x: hsbRect.x + scrollbarTrackMargin,
-      y: hsbRect.y + scrollbarTrackMargin,
-      width:  hsbRect.width  - (scrollbarTrackMargin * 2),
-      height: hsbRect.height - (scrollbarTrackMargin * 2)
-    };
+    const hsbTrackX = hsbX + scrollbarTrackMargin;
+    const hsbTrackY = hsbY + scrollbarTrackMargin;
+    const hsbTrackWidth  = hsbRect.width  - (scrollbarTrackMargin * 2);
+    const hsbTrackHeight = hsbRect.height - (scrollbarTrackMargin * 2);
+    const hsbTrackRect = createRect(hsbTrackX, hsbTrackY, hsbTrackWidth, hsbTrackHeight);
 
-    const vsbRect = {
-      x: tableWidth + 1,
-      y: rowHeight + 1,
-      width: scrollbarThickness,
-      height: bodyHeight - 1
-    };
+    const hsbThumbWidth = Math.max((bodyWidth / scrollWidth) * hsbTrackWidth, MIN_THUMB_LENGTH);
+    const hsbThumbHeight = hsbTrackHeight;
 
-    const vsbTrackRect = {
-      x: vsbRect.x + scrollbarTrackMargin,
-      y: vsbRect.y + scrollbarTrackMargin,
-      width:  vsbRect.width  - (scrollbarTrackMargin * 2),
-      height: vsbRect.height - (scrollbarTrackMargin * 2)
-    };
+    const hsbThumbMinX = hsbTrackX;
+    const hsbThumbMaxX = hsbTrackX + hsbTrackWidth - hsbThumbWidth;
+
+    const hsbThumbX = scale(this.scrollPos.x, 0, maxScrollX, hsbThumbMinX, hsbThumbMaxX);
+    const hsbThumbY = hsbTrackY;
+
+    const hsbThumbRect = createRect(hsbThumbX, hsbThumbY, hsbThumbWidth, hsbThumbHeight);
+
+    const vsbX = tableWidth + 1;
+    const vsbY = rowHeight + 1;
+    const vsbWidth = scrollbarThickness;
+    const vsbHeight = bodyHeight - 1;
+    const vsbRect = createRect(vsbX, vsbY, vsbWidth, vsbHeight);
+
+    const vsbTrackX = vsbRect.x + scrollbarTrackMargin;
+    const vsbTrackY = vsbRect.y + scrollbarTrackMargin;
+    const vsbTrackWidth = vsbRect.width  - (scrollbarTrackMargin * 2);
+    const vsbTrackHeight = vsbRect.height - (scrollbarTrackMargin * 2);
+    const vsbTrackRect = createRect(vsbTrackX, vsbTrackY, vsbTrackWidth, vsbTrackHeight);
+
+    const vsbThumbWidth = vsbTrackWidth;
+    const vsbThumbHeight = Math.max((bodyHeight / scrollHeight) * vsbTrackHeight, MIN_THUMB_LENGTH);
+
+    const vsbThumbMinY = vsbTrackY;
+    const vsbThumbMaxY = vsbTrackY + vsbTrackHeight - vsbThumbHeight;
+
+    const vsbThumbX = vsbTrackX;
+    const vsbThumbY = scale(this.scrollPos.y, 0, maxScrollY, vsbThumbMinY, vsbThumbMaxY);
+
+    const vsbThumbRect = createRect(vsbThumbX, vsbThumbY, vsbThumbWidth, vsbThumbHeight);
 
     return {
       contentWidth,
@@ -600,8 +657,14 @@ export class CanvasTable {
       gridHeight,
       hsbRect,
       hsbTrackRect,
+      hsbThumbRect,
+      hsbThumbMinX,
+      hsbThumbMaxX,
       vsbRect,
       vsbTrackRect,
+      vsbThumbRect,
+      vsbThumbMinY,
+      vsbThumbMaxY,
       overflowX,
       overflowY
     };
@@ -662,147 +725,160 @@ export class CanvasTable {
     };
   }
 
-  doHorizontalScrollbarThumb(layout: Layout) {
-    const { scrollWidth, maxScrollX, hsbTrackRect } = layout;
+  doColumnResizer() {
+    const { layout, viewport } = this.frameState;
+    const { headerRect } = layout;
+    const { columnStart, columnEnd } = viewport;
 
-    const hsbThumbWidth = Math.max((layout.bodyRect.width / scrollWidth) * hsbTrackRect.width, MIN_THUMB_LENGTH);
-    const hsbThumbHeight = hsbTrackRect.height;
+    const clipRegion = pathFromRect(headerRect);
 
-    const hsbThumbMinX = hsbTrackRect.x;
-    const hsbThumbMaxX = hsbTrackRect.x + hsbTrackRect.width - hsbThumbWidth;
+    if (this.ui.isActive("column-resizer")) {
+      this.doOneColumnResizer(this.ui.active!, clipRegion);
+      return;
+    }
 
-    let hsbThumbX = scale(this.scrollPos.x, 0, maxScrollX, hsbThumbMinX, hsbThumbMaxX);
-    const hsbThumbY = hsbTrackRect.y;
+    for (let columnIndex = columnStart; columnIndex < columnEnd; columnIndex++) {
+      const id = UiContext.idFromArgs("column-resizer", columnIndex);
+      this.doOneColumnResizer(id, clipRegion);
+    }
+  }
 
-    let dragging = false;
+  doOneColumnResizer(id: UiId, clipRegion: Path2D) {
+    const columnIndex = id.index!;
+    const rect = this.calculateColumnResizerRect(columnIndex);
 
-    if (this.ui.isActive("hsb-thumb")) {
-      dragging = true;
-    } else if (this.ui.isHot("hsb-thumb")) {
+    this.doDraggable({
+      id,
+      rect,
+      onDrag: (id, pos) => this.onDragColumnResizer(id, pos),
+      activeColor: "blue",
+      hotColor: "blue",
+      clipRegion
+    });
+  }
+
+  doDraggable(props: DraggableProps) {
+    if (this.ui.isActive(props.id)) {
+      if (this.stage.isMouseReleased(Stage.MOUSE_BUTTONS.PRIMARY)) {
+        // @Todo Move this to a separate function 
+        if (this.ui.active && this.ui.active.name === props.id.name) {
+          this.ui.active = null;
+        }
+      } else {
+        const pos = createVector(
+          this.stage.dragAnchorPosition.x + this.stage.dragDistance.x,
+          this.stage.dragAnchorPosition.y + this.stage.dragDistance.y
+        );
+
+        if (props.onDrag) {
+          props.onDrag(props.id, pos)
+        }
+
+        props.rect.x = pos.x;
+        props.rect.y = pos.y;
+      }
+    } else if (this.ui.isHot(props.id)) {
       if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
-        this.ui.setAsActive("hsb-thumb");
+        this.ui.setAsActive(props.id);
 
-        const dragAnchorPosition = createVector(hsbThumbX, hsbThumbY);
-        this.stage.dragAnchorPosition = dragAnchorPosition;
+        this.stage.dragAnchorPosition.x = props.rect.x;
+        this.stage.dragAnchorPosition.y = props.rect.y;
       }
     }
 
-    if (dragging) {
-      hsbThumbX = clamp(this.stage.dragAnchorPosition.x + this.stage.dragDistance.x, hsbThumbMinX, hsbThumbMaxX);
-      const newScrollX = Math.round(scale(hsbThumbX, hsbThumbMinX, hsbThumbMaxX, 0, maxScrollX));
-      this.scrollPos.x = newScrollX;
-    }
-
-    const hsbThumbRect = {
-      x: hsbThumbX,
-      y: hsbThumbY,
-      width:  hsbThumbWidth,
-      height: hsbThumbHeight,
-    };
-
-    const inside = this.stage.isMouseInRect(hsbThumbRect);
+    const inside = this.stage.isMouseInRect(props.rect);
     if (inside) {
-      this.ui.setAsHot("hsb-thumb");
+      this.ui.setAsHot(props.id);
     } else {
-      this.ui.unsetAsHot("hsb-thumb");
+      this.ui.unsetAsHot(props.id);
+    }
+    
+    let color: string | undefined;
+    if (this.ui.isActive(props.id)) {
+      color = props.activeColor;
+    } else if (this.ui.isHot(props.id)) {
+      color = props.hotColor;
+    } else {
+      color = props.color;
     }
 
-    let color: string;
-    if (this.ui.isActive("hsb-thumb")) {
-      color = this.theme.scrollbarThumbPressedColor ?? this.theme.scrollbarThumbHoverColor ?? this.theme.scrollbarThumbColor;
-    } else if (this.ui.isHot("hsb-thumb")) {
-      color = this.theme.scrollbarThumbHoverColor ?? this.theme.scrollbarThumbColor;
-    } else {
-      color = this.theme.scrollbarThumbColor;
+    if (!color) {
+      return;
     }
 
     this.renderer.submit({
       type: "rect",
       color,
       sortOrder: 2,
-      ...hsbThumbRect
+      clipRegion: props.clipRegion,
+      ...props.rect
     });
   }
 
-  doVerticalScrolbarThumb(layout: Layout) {
-    const { scrollHeight, maxScrollY, vsbTrackRect } = layout;
+  onDragHorizontalScrollbar(pos: Vector) {
+    const { maxScrollX, hsbTrackRect, hsbThumbMinX, hsbThumbMaxX } = this.frameState.layout;
 
-    const vsbThumbHeight = Math.max((layout.bodyRect.height / scrollHeight) * vsbTrackRect.height, MIN_THUMB_LENGTH);
-    const vsbThumbWidth = vsbTrackRect.width;
+    pos.y = hsbTrackRect.y;
 
-    const vsbThumbMinY = vsbTrackRect.y;
-    const vsbThumbMaxY = vsbTrackRect.y + vsbTrackRect.height - vsbThumbHeight;
+    const hsbThumbX = clamp(pos.x, hsbThumbMinX, hsbThumbMaxX);
+    pos.x = hsbThumbX;
 
-    let vsbThumbY = scale(this.scrollPos.y, 0, maxScrollY, vsbThumbMinY, vsbThumbMaxY);
-    const vsbThumbX = vsbTrackRect.x;
-
-    let dragging = false;
-
-    if (this.ui.isActive("vsb-thumb")) {
-      dragging = true;
-    } else if (this.ui.isHot("vsb-thumb")) {
-      if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
-        this.ui.setAsActive("vsb-thumb");
-
-        const dragAnchorPosition = createVector(vsbThumbX, vsbThumbY);
-        this.stage.dragAnchorPosition = dragAnchorPosition;
-      }
-    }
-
-    if (dragging) {
-      vsbThumbY = clamp(this.stage.dragAnchorPosition.y + this.stage.dragDistance.y, vsbThumbMinY, vsbThumbMaxY);
-      const newScrollY = Math.round(scale(vsbThumbY, vsbThumbMinY, vsbThumbMaxY, 0, maxScrollY));
-      this.scrollPos.y = newScrollY;
-    }
-
-    const vsbThumbRect = {
-      x: vsbThumbX,
-      y: vsbThumbY,
-      width: vsbThumbWidth,
-      height: vsbThumbHeight
-    };
-
-    const inside = this.stage.isMouseInRect(vsbThumbRect);
-    if (inside) {
-      this.ui.setAsHot("vsb-thumb");
-    } else {
-      this.ui.unsetAsHot("vsb-thumb");
-    }
-
-    let color: string;
-    if (this.ui.isActive("vsb-thumb")) {
-      color = this.theme.scrollbarThumbPressedColor ?? this.theme.scrollbarThumbHoverColor ?? this.theme.scrollbarThumbColor;
-    } else if (this.ui.isHot("vsb-thumb")) {
-      color = this.theme.scrollbarThumbHoverColor ?? this.theme.scrollbarThumbColor;
-    } else {
-      color = this.theme.scrollbarThumbColor;
-    }
-
-    this.renderer.submit({
-      type: "rect",
-      color,
-      sortOrder: 2,
-      ...vsbThumbRect
-    });
+    const newScrollX = Math.round(scale(hsbThumbX, hsbThumbMinX, hsbThumbMaxX, 0, maxScrollX));
+    this.scrollPos.x = newScrollX;
   }
 
-  getColumnEndPosition(viewport: Viewport, columnIndex: number) {
+  onDragVerticalScrollbar(pos: Vector, layout: Layout) {
+    const { maxScrollY, vsbTrackRect, vsbThumbMinY, vsbThumbMaxY } = layout;
+
+    pos.x = vsbTrackRect.x;
+
+    const vsbThumbY = clamp(pos.y, vsbThumbMinY, vsbThumbMaxY);
+    pos.y = vsbThumbY;
+
+    const newScrollY = Math.round(scale(vsbThumbY, vsbThumbMinY, vsbThumbMaxY, 0, maxScrollY));
+    this.scrollPos.y = newScrollY;
+  }
+
+  onDragColumnResizer(id: UiId, pos: Vector) {
+    pos.y = 1;
+
+    const columnIndex = id.index!;
+
     const columnState = this.columnStates[columnIndex];
-    const columnPosStart = viewport.columnPositions.get(columnIndex)!;
-    const columnPosEnd = columnPosStart + columnState.width;
+    const columnPos = this.frameState.viewport.columnPositions.get(columnIndex)!;
 
-    return columnPosEnd;
+    const calculatedColumnWidth = pos.x - columnPos + COLUMN_RESIZER_LEFT_WIDTH;
+    const columnWidth = Math.max(calculatedColumnWidth, MIN_COLUMN_WIDTH);
+    columnState.width = columnWidth;
+
+    this.frameState.layout = this.reflow();
+
+    this.scrollPos.x = Math.min(this.scrollPos.x, this.frameState.layout.maxScrollX);
+    this.scrollPos.y = Math.min(this.scrollPos.y, this.frameState.layout.maxScrollY);
+
+    this.frameState.viewport = this.calculateViewport(this.frameState.layout);
+
+    const rect = this.calculateColumnResizerRect(columnIndex);
+    pos.x = rect.x;
   }
 
-  calculateColumnResizerRect(rowHeight: number, tableEndPosition: number, columnEndPosition: number) {
-    const right = Math.min(columnEndPosition + COLUMN_RESIZER_LEFT_WIDTH + 1, tableEndPosition);
-    const left = right - COLUMN_RESIZER_WIDTH;
+  calculateColumnResizerRect(columnIndex: number) {
+    const { viewport } = this.frameState;
+    const { columnPositions, tableEndPosition } = viewport;
+
+    const columnState = this.columnStates[columnIndex];
+    const columnLeft = columnPositions.get(columnIndex)!;
+    const columnRight = columnLeft + columnState.width;
+
+    const calculatedResizerRight = columnRight + COLUMN_RESIZER_LEFT_WIDTH + 1;
+    const resizerRight = Math.min(calculatedResizerRight, tableEndPosition);
+    const resizerLeft = resizerRight - COLUMN_RESIZER_WIDTH;
 
     const rect = {
-      x: left,
+      x: resizerLeft,
       y: 1,
       width: COLUMN_RESIZER_WIDTH,
-      height: rowHeight - 1
+      height: this.theme.rowHeight - 1
     }
 
     return rect;
