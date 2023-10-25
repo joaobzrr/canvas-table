@@ -36,6 +36,7 @@ import {
   SelectRowCallback,
   DraggableProps,
   FrameState,
+  RowProps,
 } from "./types";
 import { UiId } from "./lib/UiContext/types";
 
@@ -67,7 +68,7 @@ export class CanvasTable {
     this.columnStates = CanvasTable.columnDefsToColumnStates(params.columnDefs);
     this.dataRows = params.dataRows;
     this.theme = shallowMerge({}, defaultTheme, params.theme);
-    this.scrollPos = { x: 0, y: 0 };
+    this.scrollPos = createVector();
     this.selectedRowId = null;
     this.onSelect = params.onSelect;
 
@@ -106,11 +107,6 @@ export class CanvasTable {
     this.frameState = {} as FrameState;
 
     this.frameState.layout = this.reflow();
-
-    // @Todo Get rid of this
-    if (this.stage.isMouseReleased(Stage.MOUSE_BUTTONS.PRIMARY)) {
-      this.ui.active = null;
-    }
 
     {
       const scrollPos = createVector(this.scrollPos);
@@ -153,67 +149,6 @@ export class CanvasTable {
     }
 
     this.doColumnResizer();
-
-    // {
-
-    //   for (let columnIndex = viewport.columnStart; columnIndex < viewport.columnEnd; columnIndex++) {
-    //     const id = UiContext.idFromArgs("column-resizer", columnIndex);
-
-    //     const columnEndPosition = this.getColumnEndPosition(viewport, columnIndex);
-    //     const rect = this.calculateColumnResizerRect(this.theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
-
-    //     if (this.stage.isMouseInRect(rect)) {
-    //       this.ui.setAsHot(id);
-
-    //       if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
-    //         // @Todo Unset as active
-    //         this.ui.setActive(id);
-
-    //         const dragAnchorPosition = createVector(columnEndPosition, rect.y);
-    //         this.stage.dragAnchorPosition = dragAnchorPosition;
-    //       }
-
-    //       break;
-    //     } else {
-    //       this.ui.unsetAsHot("column-resizer", columnIndex);
-    //     }
-    //   }
-
-    //   if (this.ui.isActive("column-resizer")) {
-    //     const columnIndex = this.ui.getActiveIndex()!;
-
-    //     const columnState = this.columnStates[columnIndex];
-    //     const columnPos = viewport.columnPositions.get(columnIndex)!;
-
-    //     const calculatedColumnWidth = this.stage.dragAnchorPosition.x + this.stage.dragDistance.x - columnPos;
-    //     const columnWidth = Math.max(calculatedColumnWidth, MIN_COLUMN_WIDTH);
-    //     columnState.width = columnWidth;
-
-    //     layout = this.reflow();
-
-    //     this.scrollPos.x = Math.min(this.scrollPos.x, layout.maxScrollX);
-    //     this.scrollPos.y = Math.min(this.scrollPos.y, layout.maxScrollY);
-
-    //     viewport = this.calculateViewport(layout);
-    //   }
-
-    //   if (this.ui.isActive("column-resizer") || this.ui.isHot("column-resizer")) {
-    //     const columnIndex = this.ui.getActiveIndex() ?? this.ui.getHotIndex()!;
-
-    //     const columnEndPosition = this.getColumnEndPosition(viewport, columnIndex);
-    //     const rect = this.calculateColumnResizerRect(this.theme.rowHeight, viewport.tableEndPosition, columnEndPosition);
-
-    //     const clipRegion = pathFromRect(layout.headerRect);
-
-    //     this.renderer.submit({
-    //       type: "rect",
-    //       ...rect,
-    //       color: this.theme.columnResizerColor,
-    //       sortOrder: 2,
-    //       clipRegion
-    //     });
-    //   }
-    // }
 
     if (this.frameState.layout.overflowX) {
       if (this.theme.scrollbarTrackColor) {
@@ -261,64 +196,7 @@ export class CanvasTable {
       }
     }
 
-    /*
-    if (this.stage.isMouseInRect(layout.bodyRect)) {
-      for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
-        const rect = this.calculateRowRect(layout, viewport, rowIndex);
-
-        if (this.stage.isMouseInRect(rect)) {
-          this.ui.setAsHot("row-hover", rowIndex);
-
-          if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
-            const dataRow = this.dataRows[rowIndex];
-            const dataRowId = this.selectId(dataRow)
-            this.selectedRowId = dataRowId;
-
-            if (this.onSelect) {
-              this.onSelect(dataRowId, dataRow);
-            }
-          }
-
-          break;
-        }
-      }
-    } else {
-      this.ui.unsetAsHot("row-hover");
-    }
-
-    if (this.ui.isHot("row-hover") && this.theme.hoveredRowColor) {
-      const id = this.ui.hot!;
-      const rowIndex = id.index!;
-
-      const rect = this.calculateRowRect(layout, viewport, rowIndex);
-
-      const clipRegion = pathFromRect(layout.bodyRect);
-
-      this.renderer.submit({
-        type: "rect",
-        color: this.theme.hoveredRowColor,
-        clipRegion: clipRegion,
-        ...rect,
-      });
-    }
-
-    for (let rowIndex = viewport.rowStart; rowIndex < viewport.rowEnd; rowIndex++) {
-      const dataRow = this.dataRows[rowIndex];
-      const dataRowId = this.selectId(dataRow);
-      if (dataRowId === this.selectedRowId) {
-        const rect = this.calculateRowRect(layout, viewport, rowIndex);
-
-        const clipRegion = pathFromRect(layout.bodyRect);
-
-        this.renderer.submit({
-          type: "rect",
-          color: this.theme.selectedRowColor,
-          clipRegion: clipRegion,
-          ...rect
-        });
-      }
-    }
-    */
+    this.doRow();
 
     // Draw outer canvas border
     this.renderer.submit({
@@ -712,8 +590,6 @@ export class CanvasTable {
       rowPositions.set(i, rowPosition);
     }
 
-    const tableEndPosition = layout.scrollWidth - this.scrollPos.x;
-
     return {
       columnStart,
       columnEnd,
@@ -721,7 +597,6 @@ export class CanvasTable {
       rowStart,
       rowEnd,
       rowPositions,
-      tableEndPosition
     };
   }
 
@@ -751,8 +626,8 @@ export class CanvasTable {
       id,
       rect,
       onDrag: (id, pos) => this.onDragColumnResizer(id, pos),
-      activeColor: "blue",
-      hotColor: "blue",
+      activeColor: this.theme.columnResizerColor,
+      hotColor: this.theme.columnResizerColor,
       clipRegion
     });
   }
@@ -815,6 +690,68 @@ export class CanvasTable {
     });
   }
 
+  doRow() {
+    const clipRegion = this.pathFromRect(this.frameState.layout.bodyRect);
+
+    for (let rowIndex = this.frameState.viewport.rowStart; rowIndex < this.frameState.viewport.rowEnd; rowIndex++) {
+      const id = UiContext.idFromArgs("row", rowIndex);
+      const rect = this.calculateRowRect(this.frameState.layout, this.frameState.viewport, rowIndex);
+
+      this.doOneRow({
+        id,
+        rect,
+        hotColor: this.theme.hoveredRowColor,
+        activeColor: this.theme.selectedRowColor,
+        clipRegion
+      });
+    }
+  }
+
+  doOneRow(props: RowProps) {
+    const rowIndex = props.id.index!;
+    const dataRow = this.dataRows[rowIndex];
+
+    if (this.ui.isHot(props.id)) {
+      if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
+        this.selectedRowId = dataRow.id;
+
+        if (this.onSelect) {
+          this.onSelect(this.selectedRowId, dataRow);
+        }
+      }
+    }
+
+    if (this.selectedRowId === dataRow.id) {
+      this.renderer.submit({
+        type: "rect",
+        color: this.theme.selectedRowColor,
+        clipRegion: props.clipRegion,
+        ...props.rect
+      });
+    } else if (this.theme.hoveredRowColor) {
+      const insideBody = this.stage.isMouseInRect(this.frameState.layout.bodyRect);
+      if (!insideBody) {
+        this.ui.unsetAsHot(props.id);
+      } else {
+        const insideRect = this.stage.isMouseInRect(props.rect);
+        if (!insideRect) {
+          this.ui.unsetAsHot(props.id);
+        } else {
+          this.ui.setAsHot(props.id);
+
+          if (this.ui.isHot(props.id)) {
+            this.renderer.submit({
+              type: "rect",
+              color: this.theme.hoveredRowColor,
+              clipRegion: props.clipRegion,
+              ...props.rect
+            })
+          }
+        }
+      }
+    }
+  }
+
   onDragHorizontalScrollbar(pos: Vector) {
     const { maxScrollX, hsbTrackRect, hsbThumbMinX, hsbThumbMaxX } = this.frameState.layout;
 
@@ -863,15 +800,18 @@ export class CanvasTable {
   }
 
   calculateColumnResizerRect(columnIndex: number) {
-    const { viewport } = this.frameState;
-    const { columnPositions, tableEndPosition } = viewport;
+    const { layout, viewport } = this.frameState;
+    const { scrollWidth } = layout;
+    const { columnPositions } = viewport;
 
     const columnState = this.columnStates[columnIndex];
     const columnLeft = columnPositions.get(columnIndex)!;
     const columnRight = columnLeft + columnState.width;
 
+    const scrollEndRelX = this.relX(scrollWidth);
+
     const calculatedResizerRight = columnRight + COLUMN_RESIZER_LEFT_WIDTH + 1;
-    const resizerRight = Math.min(calculatedResizerRight, tableEndPosition);
+    const resizerRight = Math.min(calculatedResizerRight, scrollEndRelX);
     const resizerLeft = resizerRight - COLUMN_RESIZER_WIDTH;
 
     const rect = {
@@ -891,6 +831,18 @@ export class CanvasTable {
       width: layout.gridWidth,
       height: this.theme.rowHeight
     };
+  }
+
+  relPos(pos: Vector) {
+    return createVector(this.relX(pos.x), this.relY(pos.y));
+  }
+
+  relX(x: number) {
+    return x - this.scrollPos.x;
+  }
+
+  relY(y: number) {
+    return y - this.scrollPos.y;
   }
 
   pathFromRect(rect: Rect) {

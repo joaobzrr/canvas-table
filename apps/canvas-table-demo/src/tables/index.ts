@@ -1,6 +1,7 @@
 import * as random from "./random.json";
 import * as pokemon from "./pokemon";
 import * as empty from "./empty";
+import * as beatles from "./beatles";
 
 export const tables = [
   {
@@ -20,5 +21,11 @@ export const tables = [
     name: "Empty",
     columnDefs: empty.columnDefs,
     dataRows: empty.dataRows
+  },
+  {
+    id: "4",
+    name: "Beatles",
+    columnDefs: beatles.columnDefs,
+    dataRows: beatles.dataRows
   }
 ];
