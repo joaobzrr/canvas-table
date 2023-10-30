@@ -4,7 +4,7 @@ export type CreateCanvasTableParams = {
   container: string;
   columnDefs: ColumnDef[];
   dataRows: DataRow[];
-  theme?: Partial<Theme>;
+  theme?: Theme;
   size?: Size;
   selectId?: IdSelector;
   onSelect?: SelectRowCallback;
@@ -13,8 +13,6 @@ export type CreateCanvasTableParams = {
 export type SelectRowCallback = (id: DataRowId, dataRow: DataRow) => void;
 
 export type IdSelector = (dataRow: DataRow) => DataRowId;
-
-export type SetCanvasTableParams = Partial<Omit<CreateCanvasTableParams, "container">>;
 
 export type ColumnDef = {
   title: string;

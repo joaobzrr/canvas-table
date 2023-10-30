@@ -1,8 +1,8 @@
 export { CanvasTable } from "./CanvasTable";
+export { defaultTheme } from "./defaultTheme";
 
 export type {
   CreateCanvasTableParams,
-  SetCanvasTableParams,
   ColumnDef,
   DataRow,
   Theme

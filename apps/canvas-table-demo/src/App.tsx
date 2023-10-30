@@ -1,19 +1,21 @@
 import { useState } from "react";
 import { debounce } from "lodash";
 import { CanvasTable } from "@bzrr/canvas-table-react";
-import { DataRow, Theme } from "@bzrr/canvas-table-core";
+import { defaultTheme, DataRow, Theme } from "@bzrr/canvas-table-core";
 import ThemeForm from "./ThemeForm";
 import TableList from "./TableList";
 import Tabs from "./Tabs";
 import { tables } from "./tables";
 import { useElementSize } from "./useElementSize";
+import { shallowMerge } from "./utils";
 import styles from "./App.module.css";
 import { Table } from "./types";
 
 function App() {
   const [table, setTable] = useState<Table>(tables[0]);
 
-  const [theme, setTheme] = useState<Partial<Theme>>();
+  const [themeSettings, setThemeSettings] = useState<Partial<Theme>>({});
+  const theme = shallowMerge({}, defaultTheme, themeSettings);
 
   const [containerSize, containerRef] = useElementSize();
 
@@ -21,8 +23,11 @@ function App() {
 
   const [selectedRow, setSelectedRow] = useState<DataRow>();
 
-  const updateTheme = debounce((theme: Partial<Theme>) => {
-    setTheme(prevTheme => ({ ...prevTheme, ...theme }));
+  const updateTheme = debounce((partial: Partial<Theme>) => {
+    setThemeSettings((prevThemeSettings) => ({
+      ...prevThemeSettings,
+      ...partial
+    }));
   }, 250);
 
   const onTableChange = (id: string) => {

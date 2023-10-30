@@ -1,9 +1,8 @@
 import { Stage } from "./lib/Stage";
 import { Renderer } from "./lib/Renderer";
 import { UiContext } from "./lib/UiContext";
-import { defaultTheme } from "./default-theme";
+import { defaultTheme } from "./defaultTheme";
 import {
-  shallowMerge,
   scale,
   clamp,
   isNumber,
@@ -22,7 +21,6 @@ import {
 } from "./constants";
 import {
   CreateCanvasTableParams,
-  SetCanvasTableParams,
   ColumnDef,
   ColumnState,
   DataRow,
@@ -37,6 +35,7 @@ import {
   DraggableProps,
   FrameState,
   RowProps,
+  Size
 } from "./types";
 import { UiId } from "./lib/UiContext/types";
 
@@ -67,7 +66,7 @@ export class CanvasTable {
 
     this.columnStates = CanvasTable.columnDefsToColumnStates(params.columnDefs);
     this.dataRows = params.dataRows;
-    this.theme = shallowMerge({}, defaultTheme, params.theme);
+    this.theme = params?.theme ?? defaultTheme;
     this.scrollPos = createVector();
     this.selectedRowId = null;
     this.onSelect = params.onSelect;
@@ -78,22 +77,20 @@ export class CanvasTable {
     this.stage.run();
   }
 
-  set(params: Partial<SetCanvasTableParams>) {
-    if (params.columnDefs) {
-      this.columnStates = CanvasTable.columnDefsToColumnStates(params.columnDefs);
-    }
+  setColumnDefs(columnDefs: ColumnDef[]) {
+    this.columnStates = CanvasTable.columnDefsToColumnStates(columnDefs);
+  }
 
-    if (params.dataRows) {
-      this.dataRows = params.dataRows;
-    }
+  setDataRows(dataRows: DataRow[]) {
+    this.dataRows = dataRows;
+  }
 
-    if (params.size) {
-      this.stage.setSize(params.size);
-    }
+  setTheme(theme: Theme) {
+    this.theme = theme;
+  }
 
-    if (params.theme) {
-      this.theme = shallowMerge({}, defaultTheme, params.theme);
-    }
+  setSize(size: Size) {
+    this.stage.setSize(size);
   }
 
   cleanup() {

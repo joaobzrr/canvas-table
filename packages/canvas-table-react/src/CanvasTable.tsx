@@ -19,8 +19,8 @@ export const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>
   const {
     columnDefs,
     dataRows,
-    size,
     theme,
+    size,
     onSelect,
     containerClassName,
     containerStyle
@@ -46,15 +46,24 @@ export const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>
   }, []);
 
   useUpdateEffect(() => {
-    if (canvasTableRef.current) {
-      canvasTableRef.current.set({
-        columnDefs,
-        dataRows,
-        size,
-        theme
-      });
+    canvasTableRef.current!.setColumnDefs(columnDefs);
+  }, [columnDefs]);
+
+  useUpdateEffect(() => {
+    canvasTableRef.current!.setDataRows(dataRows);
+  }, [dataRows]);
+
+  useUpdateEffect(() => {
+    if (theme) {
+      canvasTableRef.current!.setTheme(theme);
     }
-  }, [columnDefs, dataRows, size, theme]);
+  }, [theme]);
+
+  useUpdateEffect(() => {
+    if (size) {
+      canvasTableRef.current!.setSize(size);
+    }
+  }, [size]);
 
   return (
     <div
