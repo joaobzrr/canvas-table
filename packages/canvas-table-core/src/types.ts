@@ -7,7 +7,7 @@ export type CreateCanvasTableParams = {
   theme?: Theme;
   size?: Size;
   selectId?: IdSelector;
-  onSelect?: SelectRowCallback;
+  onSelectRow?: SelectRowCallback;
 }
 
 export type SelectRowCallback = (id: DataRowId, dataRow: DataRow) => void;

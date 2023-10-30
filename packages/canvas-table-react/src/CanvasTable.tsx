@@ -21,7 +21,11 @@ export const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>
     dataRows,
     theme,
     size,
-    onSelect,
+
+    // @Note Callbacks are only set once when CanvasTable is created.
+    // In the future we should allow the user to update these callbacks.
+    onSelectRow, 
+
     containerClassName,
     containerStyle
   } = props;
@@ -36,7 +40,7 @@ export const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>
       dataRows,
       theme,
       size,
-      onSelect
+      onSelectRow
     });
 
     return () => {

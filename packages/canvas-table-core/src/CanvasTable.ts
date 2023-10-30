@@ -53,7 +53,7 @@ export class CanvasTable {
 
   selectId: IdSelector;
 
-  onSelect?: SelectRowCallback;
+  onSelectRow?: SelectRowCallback;
 
   frameState: FrameState = undefined!;
 
@@ -69,7 +69,7 @@ export class CanvasTable {
     this.theme = params?.theme ?? defaultTheme;
     this.scrollPos = createVector();
     this.selectedRowId = null;
-    this.onSelect = params.onSelect;
+    this.onSelectRow = params.onSelect;
 
     const selectId = params?.selectId ?? ((dataRow: any) => dataRow.id);
     this.selectId = selectId;
@@ -712,8 +712,8 @@ export class CanvasTable {
       if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
         this.selectedRowId = dataRow.id;
 
-        if (this.onSelect) {
-          this.onSelect(this.selectedRowId, dataRow);
+        if (this.onSelectRow) {
+          this.onSelectRow(this.selectedRowId, dataRow);
         }
       }
     }

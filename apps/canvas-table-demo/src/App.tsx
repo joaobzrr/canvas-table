@@ -75,11 +75,10 @@ function App() {
           dataRows={table.dataRows}
           size={containerSize}
           theme={theme}
-          selectId={(dataRow) => dataRow.id}
-          onSelect={(_, row) => setSelectedRow(row)}
           containerClassName={styles.canvasTable}
           ref={containerRef}
-          {...containerSize}
+          selectId={(dataRow) => dataRow.id}
+          onSelectRow={(_, row) => setSelectedRow(row)}
         />
       </main>
       <div className={styles.rightSidebar}>
