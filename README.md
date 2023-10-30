@@ -23,15 +23,15 @@ export function App() {
   const columnDefs: ColumnDef[] = [
     {
       title: "First Name",
-      field: "firstName"
+      key: "firstName"
     },
     {
       title: "Last Name",
-      field: "lastName"
+      key: "lastName"
     },
     {
       title: "Age",
-      field: "age"
+      key: "age"
     }
   ];
 

@@ -84,11 +84,11 @@ function App() {
       <div className={styles.rightSidebar}>
         {selectedRow && (
           <form>
-            {table.columnDefs.map(({ title, field }, index) => (
-              <div className={styles.row} key={index}>
+            {table.columnDefs.map(({ title, key }) => (
+              <div className={styles.row} key={key}>
                 <label className={styles.label}>{title}</label>
                 <input
-                  value={selectedRow[field]}
+                  value={selectedRow[key]}
                   className={styles.input}
                   disabled={true}
                 />

@@ -69,7 +69,7 @@ export class CanvasTable {
     this.theme = params?.theme ?? defaultTheme;
     this.scrollPos = createVector();
     this.selectedRowId = null;
-    this.onSelectRow = params.onSelect;
+    this.onSelectRow = params.onSelectRow;
 
     const selectId = params?.selectId ?? ((dataRow: any) => dataRow.id);
     this.selectId = selectId;
@@ -374,7 +374,7 @@ export class CanvasTable {
 
           const y = rowPos + this.theme.rowHeight / 2 + halfFontBoundingBoxAscent;
 
-          const value = dataRow[columnState.field];
+          const value = dataRow[columnState.key];
           const text = isNumber(value) ? value.toString() : value as string;
 
           this.renderer.submit({

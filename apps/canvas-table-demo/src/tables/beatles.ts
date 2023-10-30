@@ -1,11 +1,11 @@
 export const columnDefs = [
   {
     title: "Name",
-    field: "name"
+    key: "name"
   },
   {
     title: "Instrument",
-    field: "instrument"
+    key: "instrument"
   }
 ];
 

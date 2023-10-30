@@ -1,55 +1,55 @@
 export const columnDefs = [
   {
     title: "ID",
-    field: "id",
+    key: "id",
   },
   {
     title: "Name",
-    field: "name"
+    key: "name"
   },
   {
     title: "Type 1",
-    field: "type_1"
+    key: "type_1"
   },
   {
     title: "Type 2",
-    field: "type_2"
+    key: "type_2"
   },
   {
     title: "Total",
-    field: "total"
+    key: "total"
   },
   {
     title: "HP",
-    field: "hp"
+    key: "hp"
   },
   {
     title: "Attack",
-    field: "attack"
+    key: "attack"
   },
   {
     title: "Defense",
-    field: "defense"
+    key: "defense"
   },
   {
     title: "Sp. Atk",
-    field: "sp_atk"
+    key: "sp_atk"
   },
   {
     title: "Sp. Def",
-    field: "sp_def"
+    key: "sp_def"
   },
   {
     title: "Speed",
-    field: "speed"
+    key: "speed"
   },
   {
     title: "Generation",
-    field: "generation"
+    key: "generation"
   },
   {
     title: "Legendary",
-    field: "legendary"
+    key: "legendary"
   }
 ];
 

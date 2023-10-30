@@ -33,7 +33,7 @@ function generateTableData(params) {
   for (let columnIndex = 0; columnIndex < numberOfColumns; columnIndex++) {
     columnDefs.push({
       title: `Column ${columnIndex + 1}`,
-      field: `column-${columnIndex + 1}`,
+      key:   `column-${columnIndex + 1}`,
       width: randint(100, 200)
     });
   }
@@ -42,7 +42,7 @@ function generateTableData(params) {
 
   for (let rowIndex = 0; rowIndex < numberOfRows; rowIndex++) {
     const row = Object.fromEntries(columnDefs.map(column => {
-      return [column.field, randstr(charset, 16)];
+      return [column.key, randstr(charset, 16)];
     }));
     row.id = rowIndex;
     dataRows.push(row);

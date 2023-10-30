@@ -15,8 +15,8 @@ export type SelectRowCallback = (id: DataRowId, dataRow: DataRow) => void;
 export type IdSelector = (dataRow: DataRow) => DataRowId;
 
 export type ColumnDef = {
+  key:   string;
   title: string;
-  field: string;
   width?: number;
 }
 
