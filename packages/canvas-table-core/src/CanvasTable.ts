@@ -35,7 +35,8 @@ import {
   DraggableProps,
   FrameState,
   RowProps,
-  Size
+  Size,
+  ResizeColumnCallback
 } from "./types";
 import { UiId } from "./lib/UiContext/types";
 
@@ -54,6 +55,7 @@ export class CanvasTable {
   selectId: IdSelector;
 
   onSelectRow?: SelectRowCallback;
+  onResizeColumn?: ResizeColumnCallback;
 
   frameState: FrameState = undefined!;
 
@@ -69,7 +71,10 @@ export class CanvasTable {
     this.theme = params?.theme ?? defaultTheme;
     this.scrollPos = createVector();
     this.selectedRowId = null;
+
     this.onSelectRow = params.onSelectRow;
+
+    this.onResizeColumn = params.onResizeColumn;
 
     const selectId = params?.selectId ?? ((dataRow: any) => dataRow.id);
     this.selectId = selectId;
@@ -783,6 +788,7 @@ export class CanvasTable {
 
     const calculatedColumnWidth = pos.x - columnPos + COLUMN_RESIZER_LEFT_WIDTH;
     const columnWidth = Math.max(calculatedColumnWidth, MIN_COLUMN_WIDTH);
+    const columnWidthChanged = columnWidth !== columnState.width;
     columnState.width = columnWidth;
 
     this.frameState.layout = this.reflow();
@@ -794,6 +800,10 @@ export class CanvasTable {
 
     const rect = this.calculateColumnResizerRect(columnIndex);
     pos.x = rect.x;
+
+    if (this.onResizeColumn && columnWidthChanged) {
+      this.onResizeColumn(columnState.key, columnState.width);
+    }
   }
 
   calculateColumnResizerRect(columnIndex: number) {
