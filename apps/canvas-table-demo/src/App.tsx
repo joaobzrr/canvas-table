@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { debounce } from "lodash";
 import { CanvasTable } from "@bzrr/canvas-table-react";
-import { defaultTheme, DataRow, Theme } from "@bzrr/canvas-table-core";
+import {
+  defaultTheme,
+  DataRow,
+  Theme,
+  DataRowId,
+  PropValue
+} from "@bzrr/canvas-table-core";
 import ThemeForm from "./ThemeForm";
 import TableList from "./TableList";
 import Tabs from "./Tabs";
@@ -77,7 +83,7 @@ function App() {
           theme={theme}
           containerClassName={styles.canvasTable}
           ref={containerRef}
-          selectId={(dataRow) => dataRow.id}
+          selectId={(row) => row.id as DataRowId}
           onSelectRow={(_, row) => setSelectedRow(row)}
         />
       </main>
@@ -88,7 +94,7 @@ function App() {
               <div className={styles.row} key={key}>
                 <label className={styles.label}>{title}</label>
                 <input
-                  value={selectedRow[key]}
+                  value={selectedRow[key] as PropValue}
                   className={styles.input}
                   disabled={true}
                 />

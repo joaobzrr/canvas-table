@@ -24,7 +24,6 @@ import {
   ColumnDef,
   ColumnState,
   DataRow,
-  DataRowValue,
   Theme,
   Rect,
   Vector,
@@ -37,7 +36,9 @@ import {
   RowProps,
   Size,
   ResizeColumnCallback,
-  PropSelector
+  PropSelector,
+  DataRowId,
+  PropType
 } from "./types";
 import { UiId } from "./lib/UiContext/types";
 
@@ -51,7 +52,7 @@ export class CanvasTable {
   theme: Theme;
 
   scrollPos: Vector;
-  selectedRowId: DataRowValue | null;
+  selectedRowId: DataRowId | null;
 
   selectId: IdSelector;
   selectProp: PropSelector;
@@ -78,9 +79,9 @@ export class CanvasTable {
 
     this.onResizeColumn = params.onResizeColumn;
 
-    this.selectId = params?.selectId ?? ((dataRow) => dataRow.id)
+    this.selectId = params?.selectId ?? ((row) => row.id as DataRowId);
 
-    this.selectProp = params.selectProp ?? ((dataRow, key) => dataRow[key]);
+    this.selectProp = params.selectProp ?? ((row, key) => row[key] as PropType);
 
     this.stage.run();
   }

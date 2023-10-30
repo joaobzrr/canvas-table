@@ -5,5 +5,7 @@ export type {
   CreateCanvasTableParams,
   ColumnDef,
   DataRow,
-  Theme
+  Theme,
+  DataRowId,
+  PropValue
 } from "./types";

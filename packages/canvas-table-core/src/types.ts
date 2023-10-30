@@ -20,7 +20,7 @@ export type ResizeColumnCallback = (key: string, width: number) => void;
 
 export type IdSelector = (dataRow: DataRow) => DataRowId;
 
-export type PropSelector = (dataRow: DataRow, key: string) => DataRowValue;
+export type PropSelector = (dataRow: DataRow, key: string) => PropValue;
 
 export type ColumnDef = {
   key:   string;
@@ -32,11 +32,11 @@ export type ColumnState = Omit<ColumnDef, "width"> & {
   width: number;
 }
 
-export type DataRowId = DataRowValue;
+export type PropValue = string | number;
 
-export type DataRowValue = string | number;
+export type DataRowId = PropValue;
 
-export type DataRow = Record<string, DataRowValue>;
+export type DataRow = Record<string, unknown>;
 
 export type Theme = {
   rowHeight: number;
