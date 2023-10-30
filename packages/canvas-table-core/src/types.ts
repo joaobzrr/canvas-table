@@ -8,6 +8,7 @@ export type CreateCanvasTableParams = {
   size?: Size;
 
   selectId?: IdSelector;
+  selectProp?: PropSelector;
 
   onSelectRow?: SelectRowCallback;
   onResizeColumn?: ResizeColumnCallback;
@@ -18,6 +19,8 @@ export type SelectRowCallback = (id: DataRowId, dataRow: DataRow) => void;
 export type ResizeColumnCallback = (key: string, width: number) => void;
 
 export type IdSelector = (dataRow: DataRow) => DataRowId;
+
+export type PropSelector = (dataRow: DataRow, key: string) => DataRowValue;
 
 export type ColumnDef = {
   key:   string;

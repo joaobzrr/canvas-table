@@ -36,7 +36,8 @@ import {
   FrameState,
   RowProps,
   Size,
-  ResizeColumnCallback
+  ResizeColumnCallback,
+  PropSelector
 } from "./types";
 import { UiId } from "./lib/UiContext/types";
 
@@ -53,6 +54,7 @@ export class CanvasTable {
   selectedRowId: DataRowValue | null;
 
   selectId: IdSelector;
+  selectProp: PropSelector;
 
   onSelectRow?: SelectRowCallback;
   onResizeColumn?: ResizeColumnCallback;
@@ -76,8 +78,9 @@ export class CanvasTable {
 
     this.onResizeColumn = params.onResizeColumn;
 
-    const selectId = params?.selectId ?? ((dataRow: any) => dataRow.id);
-    this.selectId = selectId;
+    this.selectId = params?.selectId ?? ((dataRow) => dataRow.id)
+
+    this.selectProp = params.selectProp ?? ((dataRow, key) => dataRow[key]);
 
     this.stage.run();
   }
@@ -379,7 +382,7 @@ export class CanvasTable {
 
           const y = rowPos + this.theme.rowHeight / 2 + halfFontBoundingBoxAscent;
 
-          const value = dataRow[columnState.key];
+          const value = this.selectProp(dataRow, columnState.key);
           const text = isNumber(value) ? value.toString() : value as string;
 
           this.renderer.submit({
@@ -712,10 +715,11 @@ export class CanvasTable {
   doOneRow(props: RowProps) {
     const rowIndex = props.id.index!;
     const dataRow = this.dataRows[rowIndex];
+    const dataRowId = this.selectId(dataRow);
 
     if (this.ui.isHot(props.id)) {
       if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
-        this.selectedRowId = dataRow.id;
+        this.selectedRowId = dataRowId;
 
         if (this.onSelectRow) {
           this.onSelectRow(this.selectedRowId, dataRow);
@@ -723,7 +727,7 @@ export class CanvasTable {
       }
     }
 
-    if (this.selectedRowId === dataRow.id) {
+    if (this.selectedRowId === dataRowId) {
       this.renderer.submit({
         type: "rect",
         color: this.theme.selectedRowColor,
