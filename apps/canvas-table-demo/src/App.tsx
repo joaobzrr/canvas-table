@@ -6,13 +6,12 @@ import {
   DataRow,
   Theme,
   DataRowId,
-  PropValue
+  PropValue,
 } from "@bzrr/canvas-table-core";
 import ThemeForm from "./ThemeForm";
 import TableList from "./TableList";
 import Tabs from "./Tabs";
 import { tables } from "./tables";
-import { useElementSize } from "./useElementSize";
 import { shallowMerge } from "./utils";
 import styles from "./App.module.css";
 import { Table } from "./types";
@@ -23,8 +22,6 @@ function App() {
   const [themeSettings, setThemeSettings] = useState<Partial<Theme>>({});
   const theme = shallowMerge({}, defaultTheme, themeSettings);
 
-  const [containerSize, containerRef] = useElementSize();
-
   const [selectedTab, setSelectedTab] = useState<React.Key>("tables");
 
   const [selectedRow, setSelectedRow] = useState<DataRow>();
@@ -32,17 +29,17 @@ function App() {
   const updateTheme = debounce((partial: Partial<Theme>) => {
     setThemeSettings((prevThemeSettings) => ({
       ...prevThemeSettings,
-      ...partial
+      ...partial,
     }));
   }, 250);
 
   const onTableChange = (id: string) => {
-    const table = tables.find(table => table.id === id);
+    const table = tables.find((table) => table.id === id);
     if (!table) {
       throw new Error(`Table with id "${id}" could not be found`);
     }
     setTable(table);
-  }
+  };
 
   return (
     <div className={styles.app}>
@@ -51,38 +48,32 @@ function App() {
           items={[
             {
               key: "tables",
-              label: "Tables"
+              label: "Tables",
             },
             {
               key: "theme",
-              label: "Theme"
-            }
+              label: "Theme",
+            },
           ]}
           selected={selectedTab}
-          onTabClick={(key => setSelectedTab(key))}
+          onTabClick={(key) => setSelectedTab(key)}
         />
-        {selectedTab === "tables"
-          ?
-            <TableList
-              value={table.id}
-              tables={tables}
-              onChange={onTableChange}
-            />
-          :
-            <ThemeForm
-              style={{ flex: 1 }}
-              onChange={updateTheme}
-            />
-        }
+        {selectedTab === "tables" ? (
+          <TableList
+            value={table.id}
+            tables={tables}
+            onChange={onTableChange}
+          />
+        ) : (
+          <ThemeForm style={{ flex: 1 }} onChange={updateTheme} />
+        )}
       </div>
       <main className={styles.main}>
         <CanvasTable
           columnDefs={table.columnDefs}
           dataRows={table.dataRows}
-          size={containerSize}
           theme={theme}
           containerClassName={styles.canvasTable}
-          ref={containerRef}
           selectId={(row) => row.id as DataRowId}
           onSelectRow={(_, row) => setSelectedRow(row)}
         />

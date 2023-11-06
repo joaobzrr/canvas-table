@@ -1,6 +1,6 @@
-import { useRef, useLayoutEffect, forwardRef } from "react";
+import { useRef, useLayoutEffect } from "react";
 import { CanvasTable, CreateCanvasTableParams } from "@bzrr/canvas-table-core";
-import { useUpdateEffect } from "./hooks";
+import { useElementSize, useUpdateEffect } from "./hooks";
 
 let count = 0;
 
@@ -13,14 +13,13 @@ function getContainerId() {
 export type CanvasTableProps = Omit<CreateCanvasTableParams, "container"> & {
   containerClassName?: string;
   containerStyle?: React.CSSProperties;
-}
+};
 
-export const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>((props, ref) => {
+export function CanvasTableComponent(props: CanvasTableProps) {
   const {
     columnDefs,
     dataRows,
     theme,
-    size,
     containerClassName,
     containerStyle,
     ...rest
@@ -29,20 +28,22 @@ export const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>
   const canvasTableRef = useRef<CanvasTable | null>(null);
   const containerIdRef = useRef(getContainerId());
 
+  const [elementSize, elementRef] = useElementSize();
+
   useLayoutEffect(() => {
     canvasTableRef.current = new CanvasTable({
       container: containerIdRef.current,
       columnDefs,
       dataRows,
       theme,
-      size,
-      ...rest
+      size: elementSize,
+      ...rest,
     });
 
     return () => {
       canvasTableRef.current!.cleanup();
       canvasTableRef.current = null;
-    }
+    };
   }, []);
 
   useUpdateEffect(() => {
@@ -60,17 +61,17 @@ export const CanvasTableComponent = forwardRef<HTMLDivElement, CanvasTableProps>
   }, [theme]);
 
   useUpdateEffect(() => {
-    if (size) {
-      canvasTableRef.current!.setSize(size);
+    if (elementSize) {
+      canvasTableRef.current!.setSize(elementSize);
     }
-  }, [size]);
+  }, [elementSize]);
 
   return (
     <div
       id={containerIdRef.current}
       className={containerClassName}
       style={containerStyle}
-      ref={ref}
+      ref={elementRef}
     />
   );
-});
+}
