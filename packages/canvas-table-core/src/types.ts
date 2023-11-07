@@ -75,15 +75,6 @@ export type DraggableProps = {
   onDrag?: (id: UiId, pos: Vector) => void;
 };
 
-export type RowProps = {
-  id: UiId;
-  rect: Rect;
-  color?: string;
-  hotColor?: string;
-  activeColor?: string;
-  clipRegion?: Path2D;
-};
-
 export type Rect = {
   x: number;
   y: number;

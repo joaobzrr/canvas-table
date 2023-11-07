@@ -17,7 +17,7 @@ export class UiContext {
     if (args[0] === null) {
       this.active = null;
     } else {
-      const id = UiContext.idFromArgs(...args);
+      const id = UiContext.createId(...args);
       this.active = id;
     }
   }
@@ -26,7 +26,7 @@ export class UiContext {
   setAsHot(id: Partial<UiId>): void;
   setAsHot(...args: any[]) {
     if (!this.active) {
-      const id = UiContext.idFromArgs(...args);
+      const id = UiContext.createId(...args);
       this.hot = id;
     }
   }
@@ -34,7 +34,7 @@ export class UiContext {
   unsetAsHot(name: string, index?: number): void;
   unsetAsHot(id: Partial<UiId>): void;
   unsetAsHot(...args: any[]) {
-    const id = UiContext.idFromArgs(...args);
+    const id = UiContext.createId(...args);
     if (this.isHot(id)) {
       this.hot = null;
     }
@@ -47,7 +47,7 @@ export class UiContext {
       return false;
     }
 
-    const id = UiContext.idFromArgs(...args);
+    const id = UiContext.createId(...args);
     return shallowMatch(id, this.active);
   }
 
@@ -58,19 +58,19 @@ export class UiContext {
       return false;
     }
 
-    const id = UiContext.idFromArgs(...args);
+    const id = UiContext.createId(...args);
     return shallowMatch(id, this.hot);
   }
 
-  getActiveIndex() {
-    return this.active?.index;
+  isAnyHot() {
+    return this.hot !== null;
   }
 
-  getHotIndex() {
-    return this.hot?.index;
+  isAnyActive() {
+    return this.active !== null;
   }
 
-  static idFromArgs(...args: any[]) {
+  static createId(...args: any[]) {
     let id: UiId;
     if (isObject(args[0])) {
       id = args[0];

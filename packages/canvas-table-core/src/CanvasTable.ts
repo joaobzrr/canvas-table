@@ -31,7 +31,6 @@ import {
   IdSelector,
   SelectRowCallback,
   DraggableProps,
-  RowProps,
   Size,
   ResizeColumnCallback,
   PropSelector,
@@ -63,6 +62,9 @@ export class CanvasTable {
 
   layout: Layout = undefined!;
 
+  mouseCol: number;
+  mouseRow: number;
+
   constructor(params: CreateCanvasTableParams) {
     this.stage = new Stage(params.container, params.size);
     this.stage.setUpdateFunction(this.update.bind(this));
@@ -85,6 +87,9 @@ export class CanvasTable {
     this.selectProp = params.selectProp ?? ((row, key) => row[key] as PropValue);
 
     this.eventQueue = [];
+
+    this.mouseCol = -1;
+    this.mouseRow = -1;
 
     this.stage.run();
   }
@@ -171,6 +176,28 @@ export class CanvasTable {
       }
     }
 
+    this.mouseCol = -1;
+    this.mouseRow = -1;
+    if (this.stage.isMouseInRect(this.layout.bodyRect)) {
+      const { x: mouseX, y: mouseY } = this.stage.currentMousePosition;
+      const { columnStart, columnEnd, canonicalColumnPositions } = this.layout;
+      const { rowHeight } = this.theme;
+
+      for (let columnIndex = columnStart; columnIndex < columnEnd; columnIndex++) {
+        const columnState = this.columnStates[columnIndex];
+
+        const canonicalColumnLeft = canonicalColumnPositions[columnIndex];
+        const screenColumnLeft = this.calcScreenX(canonicalColumnLeft);
+        const screenColumnRight = screenColumnLeft + columnState.width;
+        if (mouseX >= screenColumnLeft && mouseX < screenColumnRight) {
+          this.mouseCol = columnIndex;
+          break;
+        }
+      }
+
+      this.mouseRow = Math.floor((this.calcCanonicalY(mouseY) - rowHeight) / rowHeight);
+    }
+
     const ctx = this.stage.getContext();
     const stageSize = this.stage.getSize();
 
@@ -212,18 +239,14 @@ export class CanvasTable {
         });
       }
 
-      {
-        const id = UiContext.idFromArgs("horizontal-scrollbar-thumb");
-
-        this.doDraggable({
-          id,
-          rect: this.layout.hsbThumbRect,
-          onDrag: (_id, pos) => this.onDragHorizontalScrollbar(pos),
-          activeColor: this.theme.scrollbarThumbPressedColor,
-          hotColor: this.theme.scrollbarThumbHoverColor,
-          color: this.theme.scrollbarThumbColor
-        });
-      }
+      this.doDraggable({
+        id: UiContext.createId("horizontal-scrollbar-thumb"),
+        rect: this.layout.hsbThumbRect,
+        onDrag: (_id, pos) => this.onDragHorizontalScrollbar(pos),
+        activeColor: this.theme.scrollbarThumbPressedColor,
+        hotColor: this.theme.scrollbarThumbHoverColor,
+        color: this.theme.scrollbarThumbColor
+      });
     }
 
     if (this.layout.overflowY) {
@@ -235,21 +258,61 @@ export class CanvasTable {
         });
       }
 
-      {
-        const id = UiContext.idFromArgs("vertical-scrollbar-thumb");
-
-        this.doDraggable({
-          id,
-          rect: this.layout.vsbThumbRect,
-          onDrag: (_id, pos) => this.onDragVerticalScrollbar(pos),
-          activeColor: this.theme.scrollbarThumbPressedColor,
-          hotColor: this.theme.scrollbarThumbHoverColor,
-          color: this.theme.scrollbarThumbColor
-        });
-      }
+      this.doDraggable({
+        id: UiContext.createId("vertical-scrollbar-thumb"),
+        rect: this.layout.vsbThumbRect,
+        onDrag: (_id, pos) => this.onDragVerticalScrollbar(pos),
+        activeColor: this.theme.scrollbarThumbPressedColor,
+        hotColor: this.theme.scrollbarThumbHoverColor,
+        color: this.theme.scrollbarThumbColor
+      });
     }
 
-    this.doRow();
+    if (!this.ui.isAnyActive() && this.mouseRow !== -1 && this.theme.hoveredRowColor) {
+      if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
+        const dataRow = this.dataRows[this.mouseRow];
+        const dataRowId = this.selectId(dataRow);
+
+        this.selectedRowId = dataRowId;
+        if (this.onSelectRow) {
+          this.onSelectRow(this.selectedRowId, dataRow);
+        }
+      }
+
+      const rect = this.calculateRowRect(this.layout, this.mouseRow);
+      const clipRegion = this.pathFromRect(this.layout.bodyRect);
+
+      this.renderer.submit({
+        type: "rect",
+        color: this.theme.hoveredRowColor,
+        clipRegion: clipRegion,
+        ...rect
+      });
+    }
+
+    if (this.selectedRowId !== null) {
+      const { rowStart, rowEnd } = this.layout;
+
+      const clipRegion = this.pathFromRect(this.layout.bodyRect);
+
+      for (let rowIndex = rowStart; rowIndex < rowEnd; rowIndex++) {
+        const dataRow = this.dataRows[rowIndex];
+        const dataRowId = this.selectId(dataRow);
+
+        if (this.selectedRowId === dataRowId) {
+          const rect = this.calculateRowRect(this.layout, rowIndex);
+
+          this.renderer.submit({
+            type: "rect",
+            color: this.theme.selectedRowColor,
+            clipRegion: clipRegion,
+            ...rect
+          });
+
+          break;
+        }
+      }
+    }
 
     // Draw outer canvas border
     this.renderer.submit({
@@ -670,7 +733,7 @@ export class CanvasTable {
     }
 
     for (let columnIndex = columnStart; columnIndex < columnEnd; columnIndex++) {
-      const id = UiContext.idFromArgs("column-resizer", columnIndex);
+      const id = UiContext.createId("column-resizer", columnIndex);
       this.doOneColumnResizer(id, clipRegion);
     }
   }
@@ -745,69 +808,6 @@ export class CanvasTable {
       clipRegion: props.clipRegion,
       ...props.rect
     });
-  }
-
-  doRow() {
-    const clipRegion = this.pathFromRect(this.layout.bodyRect);
-
-    for (let rowIndex = this.layout.rowStart; rowIndex < this.layout.rowEnd; rowIndex++) {
-      const id = UiContext.idFromArgs("row", rowIndex);
-      const rect = this.calculateRowRect(this.layout, rowIndex);
-
-      this.doOneRow({
-        id,
-        rect,
-        hotColor: this.theme.hoveredRowColor,
-        activeColor: this.theme.selectedRowColor,
-        clipRegion
-      });
-    }
-  }
-
-  doOneRow(props: RowProps) {
-    const rowIndex = props.id.index!;
-    const dataRow = this.dataRows[rowIndex];
-    const dataRowId = this.selectId(dataRow);
-
-    if (this.ui.isHot(props.id)) {
-      if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
-        this.selectedRowId = dataRowId;
-
-        if (this.onSelectRow) {
-          this.onSelectRow(this.selectedRowId, dataRow);
-        }
-      }
-    }
-
-    if (this.selectedRowId === dataRowId) {
-      this.renderer.submit({
-        type: "rect",
-        color: this.theme.selectedRowColor,
-        clipRegion: props.clipRegion,
-        ...props.rect
-      });
-    } else if (this.theme.hoveredRowColor) {
-      const insideBody = this.stage.isMouseInRect(this.layout.bodyRect);
-      if (!insideBody) {
-        this.ui.unsetAsHot(props.id);
-      } else {
-        const insideRect = this.stage.isMouseInRect(props.rect);
-        if (!insideRect) {
-          this.ui.unsetAsHot(props.id);
-        } else {
-          this.ui.setAsHot(props.id);
-
-          if (this.ui.isHot(props.id)) {
-            this.renderer.submit({
-              type: "rect",
-              color: this.theme.hoveredRowColor,
-              clipRegion: props.clipRegion,
-              ...props.rect
-            });
-          }
-        }
-      }
-    }
   }
 
   onDragHorizontalScrollbar(pos: Vector) {
@@ -919,6 +919,18 @@ export class CanvasTable {
 
   calcScreenY(canonicalY: number) {
     return canonicalY - this.scrollPos.y;
+  }
+
+  calcCanonicalPos(screenPos: Vector) {
+    return createVector(this.calcCanonicalX(screenPos.x), this.calcCanonicalY(screenPos.y));
+  }
+
+  calcCanonicalX(screenX: number) {
+    return screenX + this.scrollPos.x;
+  }
+
+  calcCanonicalY(screenY: number) {
+    return screenY + this.scrollPos.y;
   }
 
   pathFromRect(rect: Rect) {
