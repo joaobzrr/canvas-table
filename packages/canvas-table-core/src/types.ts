@@ -132,9 +132,7 @@ export type Layout = {
 
   overflowX: boolean;
   overflowY: boolean;
-};
 
-export type Viewport = {
   columnStart: number;
   columnEnd:   number;
   rowStart:    number;
@@ -143,7 +141,32 @@ export type Viewport = {
   canonicalColumnPositions: number[];
 };
 
-export type FrameState = {
-  layout: Layout;
-  viewport: Viewport;
+export type BaseTableEvent = {
+  requiresReflow: boolean;
+}
+
+export type ColumnDefsChangeTableEvent = BaseTableEvent & {
+  type: "columnDefsChange";
+  columnDefs: ColumnDef[];
+}
+
+export type DataRowsChangeTableEvent = BaseTableEvent & {
+  type: "dataRowsChange";
+  dataRows: DataRow[];
+}
+
+export type ThemeChangeTableEvent = BaseTableEvent & {
+  type: "themeChange";
+  theme: Theme;
+}
+
+export type SizeChangeTableEvent = BaseTableEvent & {
+  type: "sizeChange";
+  size: Size;
 };
+
+export type TableEvent =
+  ColumnDefsChangeTableEvent
+  | DataRowsChangeTableEvent
+  | ThemeChangeTableEvent
+  | SizeChangeTableEvent;
