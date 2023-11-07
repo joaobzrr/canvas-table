@@ -10,14 +10,14 @@ import {
   pathFromRect,
   createFontSpecifier,
   getFontMetrics,
-  createRect,
+  createRect
 } from "./utils";
 import {
   COLUMN_RESIZER_LEFT_WIDTH,
   COLUMN_RESIZER_WIDTH,
   DEFAULT_COLUMN_WIDTH,
   MIN_COLUMN_WIDTH,
-  MIN_THUMB_LENGTH,
+  MIN_THUMB_LENGTH
 } from "./constants";
 import {
   CreateCanvasTableParams,
@@ -37,7 +37,7 @@ import {
   PropSelector,
   DataRowId,
   PropValue,
-  TableEvent,
+  TableEvent
 } from "./types";
 import { UiId } from "./lib/UiContext/types";
 
@@ -82,8 +82,7 @@ export class CanvasTable {
 
     this.selectId = params?.selectId ?? ((row) => row.id as DataRowId);
 
-    this.selectProp =
-      params.selectProp ?? ((row, key) => row[key] as PropValue);
+    this.selectProp = params.selectProp ?? ((row, key) => row[key] as PropValue);
 
     this.eventQueue = [];
 
@@ -94,7 +93,7 @@ export class CanvasTable {
     this.eventQueue.push({
       type: "columnDefsChange",
       columnDefs,
-      requiresReflow: true,
+      requiresReflow: true
     });
   }
 
@@ -102,7 +101,7 @@ export class CanvasTable {
     this.eventQueue.push({
       type: "dataRowsChange",
       dataRows,
-      requiresReflow: true,
+      requiresReflow: true
     });
   }
 
@@ -110,7 +109,7 @@ export class CanvasTable {
     this.eventQueue.push({
       type: "themeChange",
       theme,
-      requiresReflow: true,
+      requiresReflow: true
     });
   }
 
@@ -118,7 +117,7 @@ export class CanvasTable {
     this.eventQueue.push({
       type: "sizeChange",
       size,
-      requiresReflow: true,
+      requiresReflow: true
     });
   }
 
@@ -137,9 +136,7 @@ export class CanvasTable {
 
       switch (event.type) {
         case "columnDefsChange":
-          this.columnStates = CanvasTable.columnDefsToColumnStates(
-            event.columnDefs,
-          );
+          this.columnStates = CanvasTable.columnDefsToColumnStates(event.columnDefs);
           break;
         case "dataRowsChange":
           this.dataRows = event.dataRows;
@@ -184,7 +181,7 @@ export class CanvasTable {
         y: 0,
         width: stageSize.width,
         height: stageSize.height,
-        color: this.theme.tableBackgroundColor,
+        color: this.theme.tableBackgroundColor
       });
     }
 
@@ -192,7 +189,7 @@ export class CanvasTable {
       this.renderer.submit({
         type: "rect",
         color: this.theme.bodyBackgroundColor,
-        ...this.layout.bodyRect,
+        ...this.layout.bodyRect
       });
     }
 
@@ -200,7 +197,7 @@ export class CanvasTable {
       this.renderer.submit({
         type: "rect",
         color: this.theme.headerBackgroundColor,
-        ...this.layout.headerRect,
+        ...this.layout.headerRect
       });
     }
 
@@ -211,7 +208,7 @@ export class CanvasTable {
         this.renderer.submit({
           type: "rect",
           color: this.theme.scrollbarTrackColor,
-          ...this.layout.hsbRect,
+          ...this.layout.hsbRect
         });
       }
 
@@ -224,7 +221,7 @@ export class CanvasTable {
           onDrag: (_id, pos) => this.onDragHorizontalScrollbar(pos),
           activeColor: this.theme.scrollbarThumbPressedColor,
           hotColor: this.theme.scrollbarThumbHoverColor,
-          color: this.theme.scrollbarThumbColor,
+          color: this.theme.scrollbarThumbColor
         });
       }
     }
@@ -234,7 +231,7 @@ export class CanvasTable {
         this.renderer.submit({
           type: "rect",
           color: this.theme.scrollbarTrackColor,
-          ...this.layout.vsbRect,
+          ...this.layout.vsbRect
         });
       }
 
@@ -247,7 +244,7 @@ export class CanvasTable {
           onDrag: (_id, pos) => this.onDragVerticalScrollbar(pos),
           activeColor: this.theme.scrollbarThumbPressedColor,
           hotColor: this.theme.scrollbarThumbHoverColor,
-          color: this.theme.scrollbarThumbColor,
+          color: this.theme.scrollbarThumbColor
         });
       }
     }
@@ -261,7 +258,7 @@ export class CanvasTable {
       x: 0,
       y: 0,
       length: stageSize.width,
-      color: this.theme.tableBorderColor,
+      color: this.theme.tableBorderColor
     });
 
     this.renderer.submit({
@@ -270,7 +267,7 @@ export class CanvasTable {
       x: 0,
       y: stageSize.height - 1,
       length: stageSize.width,
-      color: this.theme.tableBorderColor,
+      color: this.theme.tableBorderColor
     });
 
     this.renderer.submit({
@@ -279,7 +276,7 @@ export class CanvasTable {
       x: 0,
       y: 0,
       length: stageSize.height,
-      color: this.theme.tableBorderColor,
+      color: this.theme.tableBorderColor
     });
 
     this.renderer.submit({
@@ -288,7 +285,7 @@ export class CanvasTable {
       x: stageSize.width - 1,
       y: 0,
       length: stageSize.height,
-      color: this.theme.tableBorderColor,
+      color: this.theme.tableBorderColor
     });
 
     // Draw header bottom border
@@ -298,7 +295,7 @@ export class CanvasTable {
       x: 0,
       y: this.theme.rowHeight,
       length: stageSize.width,
-      color: this.theme.tableBorderColor,
+      color: this.theme.tableBorderColor
     });
 
     // If horizontal scrollbar is visible, draw its border, otherwise,
@@ -310,7 +307,7 @@ export class CanvasTable {
         x: 0,
         y: this.layout.hsbRect.y - 1,
         length: stageSize.width,
-        color: this.theme.tableBorderColor,
+        color: this.theme.tableBorderColor
       });
     } else {
       this.renderer.submit({
@@ -319,7 +316,7 @@ export class CanvasTable {
         x: this.layout.gridWidth,
         y: 0,
         length: this.layout.gridHeight,
-        color: this.theme.tableBorderColor,
+        color: this.theme.tableBorderColor
       });
     }
 
@@ -332,7 +329,7 @@ export class CanvasTable {
         x: this.layout.vsbRect.x - 1,
         y: 0,
         length: stageSize.height,
-        color: this.theme.tableBorderColor,
+        color: this.theme.tableBorderColor
       });
     } else {
       this.renderer.submit({
@@ -341,19 +338,14 @@ export class CanvasTable {
         x: 0,
         y: this.layout.gridHeight,
         length: this.layout.gridWidth,
-        color: this.theme.tableBorderColor,
+        color: this.theme.tableBorderColor
       });
     }
 
     // Draw grid horizontal lines
-    for (
-      let rowIndex = this.layout.rowStart + 1;
-      rowIndex < this.layout.rowEnd;
-      rowIndex++
-    ) {
+    for (let rowIndex = this.layout.rowStart + 1; rowIndex < this.layout.rowEnd; rowIndex++) {
       const canonicalRowPos = rowIndex * this.theme.rowHeight;
-      const screenRowPos =
-        this.calcScreenY(canonicalRowPos) + this.theme.rowHeight;
+      const screenRowPos = this.calcScreenY(canonicalRowPos) + this.theme.rowHeight;
 
       this.renderer.submit({
         type: "line",
@@ -361,7 +353,7 @@ export class CanvasTable {
         x: 0,
         y: screenRowPos,
         length: this.layout.gridWidth,
-        color: this.theme.tableBorderColor,
+        color: this.theme.tableBorderColor
       });
     }
 
@@ -371,8 +363,7 @@ export class CanvasTable {
       columnIndex < this.layout.columnEnd;
       columnIndex++
     ) {
-      const canonicalColumnPos =
-        this.layout.canonicalColumnPositions[columnIndex]!;
+      const canonicalColumnPos = this.layout.canonicalColumnPositions[columnIndex]!;
       const screenColumnPos = this.calcScreenX(canonicalColumnPos);
 
       this.renderer.submit({
@@ -381,17 +372,13 @@ export class CanvasTable {
         x: screenColumnPos,
         y: 0,
         length: this.layout.gridHeight,
-        color: this.theme.tableBorderColor,
+        color: this.theme.tableBorderColor
       });
     }
 
     {
       const fontStyle = this.theme.headerFontStyle ?? this.theme.fontStyle;
-      const font = createFontSpecifier(
-        this.theme.fontFamily,
-        this.theme.fontSize,
-        fontStyle,
-      );
+      const font = createFontSpecifier(this.theme.fontFamily, this.theme.fontSize, fontStyle);
 
       const { fontBoundingBoxAscent } = getFontMetrics(ctx, font);
       const halfFontBounginxBoxAscent = Math.floor(fontBoundingBoxAscent / 2);
@@ -407,8 +394,7 @@ export class CanvasTable {
       ) {
         const columnState = this.columnStates[columnIndex];
 
-        const canonicalColumnPos =
-          this.layout.canonicalColumnPositions[columnIndex];
+        const canonicalColumnPos = this.layout.canonicalColumnPositions[columnIndex];
         const screenColumnPos = this.calcScreenX(canonicalColumnPos);
 
         const x = screenColumnPos + this.theme.cellPadding;
@@ -424,18 +410,14 @@ export class CanvasTable {
           text,
           font,
           maxWidth,
-          clipRegion,
+          clipRegion
         });
       }
     }
 
     {
       const fontStyle = this.theme.bodyFontStyle ?? this.theme.fontStyle;
-      const font = createFontSpecifier(
-        this.theme.fontFamily,
-        this.theme.fontSize,
-        fontStyle,
-      );
+      const font = createFontSpecifier(this.theme.fontFamily, this.theme.fontSize, fontStyle);
 
       const { fontBoundingBoxAscent } = getFontMetrics(ctx, font);
       const halfFontBoundingBoxAscent = Math.floor(fontBoundingBoxAscent / 2);
@@ -451,26 +433,19 @@ export class CanvasTable {
       ) {
         const columnState = this.columnStates[columnIndex];
 
-        const canonicalColumnPos =
-          this.layout.canonicalColumnPositions[columnIndex]!;
+        const canonicalColumnPos = this.layout.canonicalColumnPositions[columnIndex]!;
         const screenColumnPos = this.calcScreenX(canonicalColumnPos);
 
         const x = screenColumnPos + this.theme.cellPadding;
         const maxWidth = columnState.width - this.theme.cellPadding * 2;
 
-        for (
-          let rowIndex = this.layout.rowStart;
-          rowIndex < this.layout.rowEnd;
-          rowIndex++
-        ) {
+        for (let rowIndex = this.layout.rowStart; rowIndex < this.layout.rowEnd; rowIndex++) {
           const dataRow = this.dataRows[rowIndex];
 
           const canonicalRowPos = rowIndex * this.theme.rowHeight;
-          const screenRowPos =
-            this.calcScreenY(canonicalRowPos) + this.theme.rowHeight;
+          const screenRowPos = this.calcScreenY(canonicalRowPos) + this.theme.rowHeight;
 
-          const y =
-            screenRowPos + this.theme.rowHeight / 2 + halfFontBoundingBoxAscent;
+          const y = screenRowPos + this.theme.rowHeight / 2 + halfFontBoundingBoxAscent;
 
           const value = this.selectProp(dataRow, columnState.key);
           const text = isNumber(value) ? value.toString() : (value as string);
@@ -483,7 +458,7 @@ export class CanvasTable {
             text,
             font,
             maxWidth,
-            clipRegion,
+            clipRegion
           });
         }
       }
@@ -549,21 +524,21 @@ export class CanvasTable {
       x: 0,
       y: 0,
       width: tableWidth,
-      height: tableHeight,
+      height: tableHeight
     };
 
     const bodyRect = {
       x: 0,
       y: rowHeight,
       width: bodyWidth,
-      height: bodyHeight,
+      height: bodyHeight
     };
 
     const headerRect = {
       x: 0,
       y: 0,
       width: tableWidth,
-      height: rowHeight,
+      height: rowHeight
     };
 
     const scrollWidth = Math.max(contentWidth, bodyWidth);
@@ -585,37 +560,18 @@ export class CanvasTable {
     const hsbTrackY = hsbY + scrollbarTrackMargin;
     const hsbTrackWidth = hsbRect.width - scrollbarTrackMargin * 2;
     const hsbTrackHeight = hsbRect.height - scrollbarTrackMargin * 2;
-    const hsbTrackRect = createRect(
-      hsbTrackX,
-      hsbTrackY,
-      hsbTrackWidth,
-      hsbTrackHeight,
-    );
+    const hsbTrackRect = createRect(hsbTrackX, hsbTrackY, hsbTrackWidth, hsbTrackHeight);
 
-    const hsbThumbWidth = Math.max(
-      (bodyWidth / scrollWidth) * hsbTrackWidth,
-      MIN_THUMB_LENGTH,
-    );
+    const hsbThumbWidth = Math.max((bodyWidth / scrollWidth) * hsbTrackWidth, MIN_THUMB_LENGTH);
     const hsbThumbHeight = hsbTrackHeight;
 
     const hsbThumbMinX = hsbTrackX;
     const hsbThumbMaxX = hsbTrackX + hsbTrackWidth - hsbThumbWidth;
 
-    const hsbThumbX = scale(
-      this.scrollPos.x,
-      0,
-      maxScrollX,
-      hsbThumbMinX,
-      hsbThumbMaxX,
-    );
+    const hsbThumbX = scale(this.scrollPos.x, 0, maxScrollX, hsbThumbMinX, hsbThumbMaxX);
     const hsbThumbY = hsbTrackY;
 
-    const hsbThumbRect = createRect(
-      hsbThumbX,
-      hsbThumbY,
-      hsbThumbWidth,
-      hsbThumbHeight,
-    );
+    const hsbThumbRect = createRect(hsbThumbX, hsbThumbY, hsbThumbWidth, hsbThumbHeight);
 
     const vsbX = tableWidth + 1;
     const vsbY = rowHeight + 1;
@@ -627,37 +583,18 @@ export class CanvasTable {
     const vsbTrackY = vsbRect.y + scrollbarTrackMargin;
     const vsbTrackWidth = vsbRect.width - scrollbarTrackMargin * 2;
     const vsbTrackHeight = vsbRect.height - scrollbarTrackMargin * 2;
-    const vsbTrackRect = createRect(
-      vsbTrackX,
-      vsbTrackY,
-      vsbTrackWidth,
-      vsbTrackHeight,
-    );
+    const vsbTrackRect = createRect(vsbTrackX, vsbTrackY, vsbTrackWidth, vsbTrackHeight);
 
     const vsbThumbWidth = vsbTrackWidth;
-    const vsbThumbHeight = Math.max(
-      (bodyHeight / scrollHeight) * vsbTrackHeight,
-      MIN_THUMB_LENGTH,
-    );
+    const vsbThumbHeight = Math.max((bodyHeight / scrollHeight) * vsbTrackHeight, MIN_THUMB_LENGTH);
 
     const vsbThumbMinY = vsbTrackY;
     const vsbThumbMaxY = vsbTrackY + vsbTrackHeight - vsbThumbHeight;
 
     const vsbThumbX = vsbTrackX;
-    const vsbThumbY = scale(
-      this.scrollPos.y,
-      0,
-      maxScrollY,
-      vsbThumbMinY,
-      vsbThumbMaxY,
-    );
+    const vsbThumbY = scale(this.scrollPos.y, 0, maxScrollY, vsbThumbMinY, vsbThumbMaxY);
 
-    const vsbThumbRect = createRect(
-      vsbThumbX,
-      vsbThumbY,
-      vsbThumbWidth,
-      vsbThumbHeight,
-    );
+    const vsbThumbRect = createRect(vsbThumbX, vsbThumbY, vsbThumbWidth, vsbThumbHeight);
 
     layout.contentWidth = contentWidth;
     layout.contentHeight = contentHeight;
@@ -713,10 +650,7 @@ export class CanvasTable {
     const rowStart = Math.floor(this.scrollPos.y / this.theme.rowHeight);
 
     const scrollBottom = this.scrollPos.y + layout.bodyRect.height;
-    const rowEnd = Math.min(
-      Math.ceil(scrollBottom / this.theme.rowHeight),
-      this.dataRows.length,
-    );
+    const rowEnd = Math.min(Math.ceil(scrollBottom / this.theme.rowHeight), this.dataRows.length);
 
     layout.columnStart = columnStart;
     layout.columnEnd = columnEnd;
@@ -735,11 +669,7 @@ export class CanvasTable {
       return;
     }
 
-    for (
-      let columnIndex = columnStart;
-      columnIndex < columnEnd;
-      columnIndex++
-    ) {
+    for (let columnIndex = columnStart; columnIndex < columnEnd; columnIndex++) {
       const id = UiContext.idFromArgs("column-resizer", columnIndex);
       this.doOneColumnResizer(id, clipRegion);
     }
@@ -755,7 +685,7 @@ export class CanvasTable {
       onDrag: (id, pos) => this.onDragColumnResizer(id, pos),
       activeColor: this.theme.columnResizerColor,
       hotColor: this.theme.columnResizerColor,
-      clipRegion,
+      clipRegion
     });
   }
 
@@ -769,7 +699,7 @@ export class CanvasTable {
       } else {
         const pos = createVector(
           this.stage.dragAnchorPosition.x + this.stage.dragDistance.x,
-          this.stage.dragAnchorPosition.y + this.stage.dragDistance.y,
+          this.stage.dragAnchorPosition.y + this.stage.dragDistance.y
         );
 
         if (props.onDrag) {
@@ -813,18 +743,14 @@ export class CanvasTable {
       color,
       sortOrder: 2,
       clipRegion: props.clipRegion,
-      ...props.rect,
+      ...props.rect
     });
   }
 
   doRow() {
     const clipRegion = this.pathFromRect(this.layout.bodyRect);
 
-    for (
-      let rowIndex = this.layout.rowStart;
-      rowIndex < this.layout.rowEnd;
-      rowIndex++
-    ) {
+    for (let rowIndex = this.layout.rowStart; rowIndex < this.layout.rowEnd; rowIndex++) {
       const id = UiContext.idFromArgs("row", rowIndex);
       const rect = this.calculateRowRect(this.layout, rowIndex);
 
@@ -833,7 +759,7 @@ export class CanvasTable {
         rect,
         hotColor: this.theme.hoveredRowColor,
         activeColor: this.theme.selectedRowColor,
-        clipRegion,
+        clipRegion
       });
     }
   }
@@ -858,7 +784,7 @@ export class CanvasTable {
         type: "rect",
         color: this.theme.selectedRowColor,
         clipRegion: props.clipRegion,
-        ...props.rect,
+        ...props.rect
       });
     } else if (this.theme.hoveredRowColor) {
       const insideBody = this.stage.isMouseInRect(this.layout.bodyRect);
@@ -876,7 +802,7 @@ export class CanvasTable {
               type: "rect",
               color: this.theme.hoveredRowColor,
               clipRegion: props.clipRegion,
-              ...props.rect,
+              ...props.rect
             });
           }
         }
@@ -885,34 +811,28 @@ export class CanvasTable {
   }
 
   onDragHorizontalScrollbar(pos: Vector) {
-    const { maxScrollX, hsbTrackRect, hsbThumbMinX, hsbThumbMaxX } =
-      this.layout;
+    const { maxScrollX, hsbTrackRect, hsbThumbMinX, hsbThumbMaxX } = this.layout;
 
     pos.y = hsbTrackRect.y;
 
     const hsbThumbX = clamp(pos.x, hsbThumbMinX, hsbThumbMaxX);
     pos.x = hsbThumbX;
 
-    const newScrollX = Math.round(
-      scale(hsbThumbX, hsbThumbMinX, hsbThumbMaxX, 0, maxScrollX),
-    );
+    const newScrollX = Math.round(scale(hsbThumbX, hsbThumbMinX, hsbThumbMaxX, 0, maxScrollX));
     this.scrollPos.x = newScrollX;
 
     this.calculateViewportLayout(this.layout);
   }
 
   onDragVerticalScrollbar(pos: Vector) {
-    const { maxScrollY, vsbTrackRect, vsbThumbMinY, vsbThumbMaxY } =
-      this.layout;
+    const { maxScrollY, vsbTrackRect, vsbThumbMinY, vsbThumbMaxY } = this.layout;
 
     pos.x = vsbTrackRect.x;
 
     const vsbThumbY = clamp(pos.y, vsbThumbMinY, vsbThumbMaxY);
     pos.y = vsbThumbY;
 
-    const newScrollY = Math.round(
-      scale(vsbThumbY, vsbThumbMinY, vsbThumbMaxY, 0, maxScrollY),
-    );
+    const newScrollY = Math.round(scale(vsbThumbY, vsbThumbMinY, vsbThumbMaxY, 0, maxScrollY));
     this.scrollPos.y = newScrollY;
 
     this.calculateViewportLayout(this.layout);
@@ -930,8 +850,7 @@ export class CanvasTable {
     const canonicalColumnPosition = canonicalColumnPositions[columnIndex];
     const screenColumnPos = canonicalColumnPosition - scrollX;
 
-    const calculatedColumnWidth =
-      pos.x - screenColumnPos + COLUMN_RESIZER_LEFT_WIDTH;
+    const calculatedColumnWidth = pos.x - screenColumnPos + COLUMN_RESIZER_LEFT_WIDTH;
     const columnWidth = Math.max(calculatedColumnWidth, MIN_COLUMN_WIDTH);
     const columnWidthChanged = columnWidth !== columnState.width;
     columnState.width = columnWidth;
@@ -957,13 +876,11 @@ export class CanvasTable {
 
     const canonicalColumnLeft = canonicalColumnPositions[columnIndex];
     const screenColumnLeft = canonicalColumnLeft - scrollX;
-    const screenColumnRight =
-      screenColumnLeft + this.columnStates[columnIndex].width;
+    const screenColumnRight = screenColumnLeft + this.columnStates[columnIndex].width;
 
     const screenScrollEnd = this.calcScreenX(scrollWidth);
 
-    const calculatedResizerRight =
-      screenColumnRight + COLUMN_RESIZER_LEFT_WIDTH + 1;
+    const calculatedResizerRight = screenColumnRight + COLUMN_RESIZER_LEFT_WIDTH + 1;
     const resizerRight = Math.min(calculatedResizerRight, screenScrollEnd);
     const resizerLeft = resizerRight - COLUMN_RESIZER_WIDTH;
 
@@ -971,7 +888,7 @@ export class CanvasTable {
       x: resizerLeft,
       y: 1,
       width: COLUMN_RESIZER_WIDTH,
-      height: this.theme.rowHeight - 1,
+      height: this.theme.rowHeight - 1
     };
 
     return rect;
@@ -988,15 +905,12 @@ export class CanvasTable {
       x: 0,
       y: screenRowPos,
       width: gridWidth,
-      height: rowHeight,
+      height: rowHeight
     };
   }
 
   calcScreenPos(canonicalPos: Vector) {
-    return createVector(
-      this.calcScreenX(canonicalPos.x),
-      this.calcScreenY(canonicalPos.y),
-    );
+    return createVector(this.calcScreenX(canonicalPos.x), this.calcScreenY(canonicalPos.y));
   }
 
   calcScreenX(canonicalX: number) {

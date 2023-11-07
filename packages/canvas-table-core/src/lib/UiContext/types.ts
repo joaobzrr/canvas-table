@@ -1,4 +1,4 @@
 export type UiId = {
-  name:   string;
+  name: string;
   index?: number;
-}
+};

@@ -1,7 +1,7 @@
 import { Size } from "../../types";
 import { GlyphAtlasParams, GlyphMetrics, Node } from "./types";
 
-const DEFAULT_ATLAS_WIDTH  = 1024;
+const DEFAULT_ATLAS_WIDTH = 1024;
 const DEFAULT_ATLAS_HEIGHT = 1024;
 const DEFAULT_FONT = "Arial";
 const DEFAULT_COLOR = "black";
@@ -22,9 +22,9 @@ export class GlyphAtlas {
   constructor(params?: Partial<GlyphAtlasParams>) {
     this.canvas = document.createElement("canvas");
 
-    const atlasWidth  = params?.atlasWidth  ?? DEFAULT_ATLAS_WIDTH;
+    const atlasWidth = params?.atlasWidth ?? DEFAULT_ATLAS_WIDTH;
     const atlasHeight = params?.atlasHeight ?? DEFAULT_ATLAS_HEIGHT;
-    this.canvas.width  = atlasWidth;
+    this.canvas.width = atlasWidth;
     this.canvas.height = atlasHeight;
 
     this.cache = new Map<string, Node>();
@@ -52,17 +52,17 @@ export class GlyphAtlas {
       actualBoundingBoxRight,
       actualBoundingBoxAscent,
       actualBoundingBoxDescent,
-      width,
+      width
     } = ctx.measureText(str);
 
-    const glyphWidth  = actualBoundingBoxLeft   + actualBoundingBoxRight;
+    const glyphWidth = actualBoundingBoxLeft + actualBoundingBoxRight;
     const glyphHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
 
-    const binWidth  = Math.ceil(glyphWidth  + (GLYPH_INNER_PADDING * 2) + GLYPH_OUTER_PADDING);
-    const binHeight = Math.ceil(glyphHeight + (GLYPH_INNER_PADDING * 2) + GLYPH_OUTER_PADDING);
+    const binWidth = Math.ceil(glyphWidth + GLYPH_INNER_PADDING * 2 + GLYPH_OUTER_PADDING);
+    const binHeight = Math.ceil(glyphHeight + GLYPH_INNER_PADDING * 2 + GLYPH_OUTER_PADDING);
     const binSize = {
-      width:  binWidth,
-      height: binHeight 
+      width: binWidth,
+      height: binHeight
     };
 
     let node = this.pack(this.root, binSize);
@@ -79,15 +79,15 @@ export class GlyphAtlas {
 
     const { metrics } = node;
 
-    const drawX = metrics.sx + actualBoundingBoxLeft   + GLYPH_INNER_PADDING;
+    const drawX = metrics.sx + actualBoundingBoxLeft + GLYPH_INNER_PADDING;
     const drawY = metrics.sy + actualBoundingBoxAscent + GLYPH_INNER_PADDING;
 
     ctx.fillText(str, drawX, drawY);
 
-    metrics.sw      = binWidth  - GLYPH_OUTER_PADDING;
-    metrics.sh      = binHeight - GLYPH_OUTER_PADDING;
-    metrics.hshift  = actualBoundingBoxLeft   + GLYPH_INNER_PADDING;
-    metrics.vshift  = actualBoundingBoxAscent + GLYPH_INNER_PADDING;
+    metrics.sw = binWidth - GLYPH_OUTER_PADDING;
+    metrics.sh = binHeight - GLYPH_OUTER_PADDING;
+    metrics.hshift = actualBoundingBoxLeft + GLYPH_INNER_PADDING;
+    metrics.vshift = actualBoundingBoxAscent + GLYPH_INNER_PADDING;
     metrics.advance = width;
 
     this.cache.set(key, node);
@@ -112,10 +112,7 @@ export class GlyphAtlas {
     this.font = font;
 
     const ctx = this.getContext();
-    const {
-      fontBoundingBoxAscent,
-      fontBoundingBoxDescent
-    } = ctx.measureText("M");
+    const { fontBoundingBoxAscent, fontBoundingBoxDescent } = ctx.measureText("M");
 
     this.fontBoundingBoxAscent = fontBoundingBoxAscent;
     this.fontBoundingBoxDescent = fontBoundingBoxDescent;
@@ -149,14 +146,34 @@ export class GlyphAtlas {
       const dw = node.binWidth - size.width;
       const dh = node.binHeight - size.height;
       if (dw > dh) {
-        node.left  = GlyphAtlas.createNode(node.metrics.sx, node.metrics.sy + size.height, size.width, dh);
-        node.right = GlyphAtlas.createNode(node.metrics.sx + size.width, node.metrics.sy, dw, node.binHeight);
+        node.left = GlyphAtlas.createNode(
+          node.metrics.sx,
+          node.metrics.sy + size.height,
+          size.width,
+          dh
+        );
+        node.right = GlyphAtlas.createNode(
+          node.metrics.sx + size.width,
+          node.metrics.sy,
+          dw,
+          node.binHeight
+        );
       } else {
-        node.left  = GlyphAtlas.createNode(node.metrics.sx, node.metrics.sy + size.height, node.binWidth, dh);
-        node.right = GlyphAtlas.createNode(node.metrics.sx + size.width, node.metrics.sy, dw, size.height);
+        node.left = GlyphAtlas.createNode(
+          node.metrics.sx,
+          node.metrics.sy + size.height,
+          node.binWidth,
+          dh
+        );
+        node.right = GlyphAtlas.createNode(
+          node.metrics.sx + size.width,
+          node.metrics.sy,
+          dw,
+          size.height
+        );
       }
 
-      node.binWidth  = size.width;
+      node.binWidth = size.width;
       node.binHeight = size.height;
       node.filled = true;
 
@@ -181,7 +198,12 @@ export class GlyphAtlas {
   }
 
   static createRootNode(canvas: HTMLCanvasElement) {
-    return GlyphAtlas.createNode(GLYPH_OUTER_PADDING, GLYPH_OUTER_PADDING, canvas.width, canvas.height);
+    return GlyphAtlas.createNode(
+      GLYPH_OUTER_PADDING,
+      GLYPH_OUTER_PADDING,
+      canvas.width,
+      canvas.height
+    );
   }
 
   static createNode(sx: number, sy: number, binWidth: number, binHeight: number): Node {

@@ -31,18 +31,18 @@ export function shallowMatch<T1 extends object, T2 extends object>(obj1: T1, obj
 }
 
 export function scale(
-  value:   number,
+  value: number,
   fromMin: number,
   fromMax: number,
-  toMin:   number,
-  toMax:   number
+  toMin: number,
+  toMax: number
 ) {
   if (value <= fromMin) {
     return toMin;
   } else if (value >= fromMax) {
     return toMax;
   } else {
-    return (value - fromMin) * (toMax - toMin) / (fromMax - fromMin) + toMin;
+    return ((value - fromMin) * (toMax - toMin)) / (fromMax - fromMin) + toMin;
   }
 }
 
@@ -53,7 +53,7 @@ export function clamp(value: number, min: number, max: number) {
 }
 
 export function isObject(val: any) {
-  return val != null && val.constructor.name === "Object"
+  return val != null && val.constructor.name === "Object";
 }
 
 export function isNumber(val: any) {
@@ -61,8 +61,12 @@ export function isNumber(val: any) {
 }
 
 export function isPointInRect(point: Vector, rect: Rect) {
-  return point.x >= rect.x && point.x < rect.x + rect.width &&
-         point.y >= rect.y && point.y < rect.y + rect.height;
+  return (
+    point.x >= rect.x &&
+    point.x < rect.x + rect.width &&
+    point.y >= rect.y &&
+    point.y < rect.y + rect.height
+  );
 }
 
 export function createVector(): Vector;
@@ -105,15 +109,12 @@ export function getFontMetrics(ctx: CanvasRenderingContext2D, font: string) {
   ctx.save();
 
   ctx.font = font;
-  const {
-    fontBoundingBoxAscent,
-    fontBoundingBoxDescent
-  } = ctx.measureText("M");
+  const { fontBoundingBoxAscent, fontBoundingBoxDescent } = ctx.measureText("M");
 
   ctx.restore();
 
   return {
     fontBoundingBoxAscent,
     fontBoundingBoxDescent
-  }
+  };
 }

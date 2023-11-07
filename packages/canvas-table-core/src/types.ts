@@ -134,31 +134,31 @@ export type Layout = {
   overflowY: boolean;
 
   columnStart: number;
-  columnEnd:   number;
-  rowStart:    number;
-  rowEnd:      number;
+  columnEnd: number;
+  rowStart: number;
+  rowEnd: number;
 
   canonicalColumnPositions: number[];
 };
 
 export type BaseTableEvent = {
   requiresReflow: boolean;
-}
+};
 
 export type ColumnDefsChangeTableEvent = BaseTableEvent & {
   type: "columnDefsChange";
   columnDefs: ColumnDef[];
-}
+};
 
 export type DataRowsChangeTableEvent = BaseTableEvent & {
   type: "dataRowsChange";
   dataRows: DataRow[];
-}
+};
 
 export type ThemeChangeTableEvent = BaseTableEvent & {
   type: "themeChange";
   theme: Theme;
-}
+};
 
 export type SizeChangeTableEvent = BaseTableEvent & {
   type: "sizeChange";
@@ -166,7 +166,7 @@ export type SizeChangeTableEvent = BaseTableEvent & {
 };
 
 export type TableEvent =
-  ColumnDefsChangeTableEvent
+  | ColumnDefsChangeTableEvent
   | DataRowsChangeTableEvent
   | ThemeChangeTableEvent
   | SizeChangeTableEvent;

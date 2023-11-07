@@ -3,11 +3,11 @@ import { Rect, Vector, Size } from "../../types";
 
 export class Stage {
   static MOUSE_BUTTONS = {
-    PRIMARY:   1,
+    PRIMARY: 1,
     SECONDARY: 2,
     AUXILIARY: 4,
-    FOURTH:    8,
-    FIFTH:     16
+    FOURTH: 8,
+    FIFTH: 16
   };
 
   canvas: HTMLCanvasElement;
@@ -20,9 +20,9 @@ export class Stage {
   previousMousePosition: Vector;
   previousMouseButtons: number;
 
-  dragAnchorPosition:     Vector;
+  dragAnchorPosition: Vector;
   mouseDragStartPosition: Vector;
-  dragDistance:           Vector;
+  dragDistance: Vector;
 
   scrollAmount: Vector;
 
@@ -62,15 +62,15 @@ export class Stage {
     }
 
     this.onMouseDown = this.onMouseDown.bind(this);
-    this.onMouseUp   = this.onMouseUp.bind(this);
+    this.onMouseUp = this.onMouseUp.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
-    this.onWheel     = this.onWheel.bind(this);
+    this.onWheel = this.onWheel.bind(this);
 
-    this.canvas.addEventListener("mousedown",   this.onMouseDown);
-    this.canvas.addEventListener("wheel",       this.onWheel);
+    this.canvas.addEventListener("mousedown", this.onMouseDown);
+    this.canvas.addEventListener("wheel", this.onWheel);
 
     window.addEventListener("mousemove", this.onMouseMove);
-    window.addEventListener("mouseup",   this.onMouseUp);
+    window.addEventListener("mouseup", this.onMouseUp);
 
     this.loop = this.loop.bind(this);
   }
@@ -92,7 +92,7 @@ export class Stage {
   }
 
   setSize(size: Size) {
-    this.canvas.width  = size && Math.max(size.width,  1);
+    this.canvas.width = size && Math.max(size.width, 1);
     this.canvas.height = size && Math.max(size.height, 1);
   }
 
@@ -149,7 +149,7 @@ export class Stage {
 
     this.previousMousePosition.x = this.currentMousePosition.x;
     this.previousMousePosition.y = this.currentMousePosition.y;
-    this.previousMouseButtons    = this.currentMouseButtons;
+    this.previousMouseButtons = this.currentMouseButtons;
 
     this.scrollAmount.x = 0;
     this.scrollAmount.y = 0;
@@ -180,7 +180,7 @@ export class Stage {
 
     const currentMousePosition = {
       x: event.clientX - bcr.x,
-      y: event.clientY - bcr.y 
+      y: event.clientY - bcr.y
     };
     this.currentMousePosition = currentMousePosition;
     this.currentMouseButtons = event.buttons;

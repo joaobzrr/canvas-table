@@ -9,13 +9,7 @@ export class TextRenderer {
     this.glyphAtlas = new GlyphAtlas(params);
   }
 
-  render(
-    ctx: CanvasRenderingContext2D,
-    str: string,
-    x: number,
-    y: number,
-    maxWidth = Infinity,
-  ) {
+  render(ctx: CanvasRenderingContext2D, str: string, x: number, y: number, maxWidth = Infinity) {
     let availableContentWidth: number;
     if (this.ellipsis && maxWidth !== Infinity) {
       const { advance } = this.glyphAtlas.getGlyphMetrics(".");
@@ -37,15 +31,7 @@ export class TextRenderer {
       const grapheme = str.slice(stringIndex, nextStringIndex);
       stringIndex = nextStringIndex;
 
-      const {
-        sx,
-        sy,
-        sw,
-        sh,
-        hshift,
-        vshift,
-        advance
-      } = this.glyphAtlas.getGlyphMetrics(grapheme);
+      const { sx, sy, sw, sh, hshift, vshift, advance } = this.glyphAtlas.getGlyphMetrics(grapheme);
 
       if (usedWidth + advance > availableContentWidth) {
         doEllipsis = true;
@@ -61,15 +47,7 @@ export class TextRenderer {
     }
 
     if (doEllipsis) {
-      const {
-        sx,
-        sy,
-        sw,
-        sh,
-        hshift,
-        vshift,
-        advance
-      } = this.glyphAtlas.getGlyphMetrics(".");
+      const { sx, sy, sw, sh, hshift, vshift, advance } = this.glyphAtlas.getGlyphMetrics(".");
 
       const dy = y - vshift;
 

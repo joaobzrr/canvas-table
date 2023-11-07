@@ -1,10 +1,10 @@
 import { Size } from "../../types";
 
 export type LineRendererOptions = {
-  initialHorizontalLength?: number,
-  initialVerticalLength?: number,
-  initialColor?: string
-}
+  initialHorizontalLength?: number;
+  initialVerticalLength?: number;
+  initialColor?: string;
+};
 
 export class LineRenderer {
   private hCanvas: HTMLCanvasElement;
@@ -19,7 +19,7 @@ export class LineRenderer {
     this.hCanvas = document.createElement("canvas");
     this.resizeCanvas(this.hCanvas, {
       width: options?.initialHorizontalLength ?? 1,
-      height: 1 
+      height: 1
     });
     this.hCtx = this.hCanvas.getContext("2d")!;
 
@@ -27,11 +27,11 @@ export class LineRenderer {
     this.resizeCanvas(this.vCanvas, {
       width: 1,
       height: options?.initialVerticalLength ?? 1
-    })
+    });
     this.vCtx = this.vCanvas.getContext("2d")!;
 
     this.color = options?.initialColor ?? "black";
-    this.fillCanvas(this.hCanvas, this.hCtx)
+    this.fillCanvas(this.hCanvas, this.hCtx);
     this.fillCanvas(this.vCanvas, this.vCtx);
   }
 

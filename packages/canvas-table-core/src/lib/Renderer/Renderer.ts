@@ -27,7 +27,7 @@ export class Renderer {
 
     ctx.save();
     ctx.imageSmoothingEnabled = false;
-    
+
     ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
 
     while (this.renderQueue.length > 0) {
@@ -39,30 +39,36 @@ export class Renderer {
       }
 
       switch (shape.type) {
-        case "text": {
-          const { x, y, color, font, text, maxWidth } = shape;
+        case "text":
+          {
+            const { x, y, color, font, text, maxWidth } = shape;
 
-          this.textRenderer.setFont(font);
-          this.textRenderer.setColor(color);
-          this.textRenderer.render(ctx, text, x, y, maxWidth);
-        } break;
-        case "line": {
-          const { x, y, length, orientation, color } = shape;
-
-          this.lineRenderer.setColor(color);
-
-          if (orientation === "horizontal") {
-            this.lineRenderer.hline(ctx, x, y, length);
-          } else {
-            this.lineRenderer.vline(ctx, x, y, length);
+            this.textRenderer.setFont(font);
+            this.textRenderer.setColor(color);
+            this.textRenderer.render(ctx, text, x, y, maxWidth);
           }
-        } break;
-        case "rect": {
-          const { x, y, width, height, color } = shape;
+          break;
+        case "line":
+          {
+            const { x, y, length, orientation, color } = shape;
 
-          ctx.fillStyle = color;
-          ctx.fillRect(x, y, width, height);
-        } break;
+            this.lineRenderer.setColor(color);
+
+            if (orientation === "horizontal") {
+              this.lineRenderer.hline(ctx, x, y, length);
+            } else {
+              this.lineRenderer.vline(ctx, x, y, length);
+            }
+          }
+          break;
+        case "rect":
+          {
+            const { x, y, width, height, color } = shape;
+
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, width, height);
+          }
+          break;
       }
 
       if (shape.clipRegion) {

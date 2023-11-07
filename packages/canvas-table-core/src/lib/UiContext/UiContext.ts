@@ -2,11 +2,11 @@ import { shallowMatch, isObject } from "../../utils";
 import { UiId } from "./types";
 
 export class UiContext {
-  hot:    UiId | null;
+  hot: UiId | null;
   active: UiId | null;
 
   constructor() {
-    this.hot    = null;
+    this.hot = null;
     this.active = null;
   }
 
@@ -15,7 +15,7 @@ export class UiContext {
   setAsActive(id: Partial<UiId>): void;
   setAsActive(...args: any[]) {
     if (args[0] === null) {
-      this.active = null
+      this.active = null;
     } else {
       const id = UiContext.idFromArgs(...args);
       this.active = id;
@@ -58,7 +58,7 @@ export class UiContext {
       return false;
     }
 
-    const id = UiContext.idFromArgs(...args); 
+    const id = UiContext.idFromArgs(...args);
     return shallowMatch(id, this.hot);
   }
 
@@ -75,7 +75,7 @@ export class UiContext {
     if (isObject(args[0])) {
       id = args[0];
     } else {
-      id = { name: args[0], index: args[1] }
+      id = { name: args[0], index: args[1] };
     }
     return id;
   }

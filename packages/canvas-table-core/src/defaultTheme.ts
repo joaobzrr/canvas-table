@@ -19,4 +19,4 @@ export const defaultTheme: Theme = {
   fontFamily: "Arial",
   fontStyle: "normal",
   headerFontStyle: "bold"
-}
+};
