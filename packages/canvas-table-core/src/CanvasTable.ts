@@ -38,7 +38,7 @@ import {
   ResizeColumnCallback,
   PropSelector,
   DataRowId,
-  PropValue
+  PropValue,
 } from "./types";
 import { UiId } from "./lib/UiContext/types";
 
@@ -81,7 +81,8 @@ export class CanvasTable {
 
     this.selectId = params?.selectId ?? ((row) => row.id as DataRowId);
 
-    this.selectProp = params.selectProp ?? ((row, key) => row[key] as PropValue);
+    this.selectProp =
+      params.selectProp ?? ((row, key) => row[key] as PropValue);
 
     this.stage.run();
   }
@@ -202,8 +203,7 @@ export class CanvasTable {
         this.doDraggable({
           id,
           rect: this.frameState.layout.vsbThumbRect,
-          onDrag: (_id, pos) =>
-            this.onDragVerticalScrollbar(pos, this.frameState.layout),
+          onDrag: (_id, pos) => this.onDragVerticalScrollbar(pos),
           activeColor: this.theme.scrollbarThumbPressedColor,
           hotColor: this.theme.scrollbarThumbHoverColor,
           color: this.theme.scrollbarThumbColor,
@@ -310,13 +310,15 @@ export class CanvasTable {
       rowIndex < this.frameState.viewport.rowEnd;
       rowIndex++
     ) {
-      const rowPos = this.frameState.viewport.rowPositions.get(rowIndex)!;
+      const canonicalRowPos = rowIndex * this.theme.rowHeight;
+      const screenRowPos =
+        this.calcScreenY(canonicalRowPos) + this.theme.rowHeight;
 
       this.renderer.submit({
         type: "line",
         orientation: "horizontal",
         x: 0,
-        y: rowPos,
+        y: screenRowPos,
         length: this.frameState.layout.gridWidth,
         color: this.theme.tableBorderColor,
       });
@@ -328,13 +330,14 @@ export class CanvasTable {
       columnIndex < this.frameState.viewport.columnEnd;
       columnIndex++
     ) {
-      const columnPos =
-        this.frameState.viewport.columnPositions.get(columnIndex)!;
+      const canonicalColumnPos =
+        this.frameState.viewport.canonicalColumnPositions[columnIndex]!;
+      const screenColumnPos = this.calcScreenX(canonicalColumnPos);
 
       this.renderer.submit({
         type: "line",
         orientation: "vertical",
-        x: columnPos,
+        x: screenColumnPos,
         y: 0,
         length: this.frameState.layout.gridHeight,
         color: this.theme.tableBorderColor,
@@ -363,10 +366,11 @@ export class CanvasTable {
       ) {
         const columnState = this.columnStates[columnIndex];
 
-        const columnPos =
-          this.frameState.viewport.columnPositions.get(columnIndex)!;
+        const canonicalColumnPos =
+          this.frameState.viewport.canonicalColumnPositions[columnIndex];
+        const screenColumnPos = this.calcScreenX(canonicalColumnPos);
 
-        const x = columnPos + this.theme.cellPadding;
+        const x = screenColumnPos + this.theme.cellPadding;
         const y = this.theme.rowHeight / 2 + halfFontBounginxBoxAscent;
         const maxWidth = columnState.width - this.theme.cellPadding * 2;
         const text = columnState.title;
@@ -406,10 +410,11 @@ export class CanvasTable {
       ) {
         const columnState = this.columnStates[columnIndex];
 
-        const columnPos =
-          this.frameState.viewport.columnPositions.get(columnIndex)!;
+        const canonicalColumnPos =
+          this.frameState.viewport.canonicalColumnPositions[columnIndex]!;
+        const screenColumnPos = this.calcScreenX(canonicalColumnPos);
 
-        const x = columnPos + this.theme.cellPadding;
+        const x = screenColumnPos + this.theme.cellPadding;
         const maxWidth = columnState.width - this.theme.cellPadding * 2;
 
         for (
@@ -419,10 +424,12 @@ export class CanvasTable {
         ) {
           const dataRow = this.dataRows[rowIndex];
 
-          const rowPos = this.frameState.viewport.rowPositions.get(rowIndex)!;
+          const canonicalRowPos = rowIndex * this.theme.rowHeight;
+          const screenRowPos =
+            this.calcScreenY(canonicalRowPos) + this.theme.rowHeight;
 
           const y =
-            rowPos + this.theme.rowHeight / 2 + halfFontBoundingBoxAscent;
+            screenRowPos + this.theme.rowHeight / 2 + halfFontBoundingBoxAscent;
 
           const value = this.selectProp(dataRow, columnState.key);
           const text = isNumber(value) ? value.toString() : (value as string);
@@ -636,7 +643,7 @@ export class CanvasTable {
   calculateViewport(layout: Layout): Viewport {
     let columnStart = 0;
     let columnPos = 0;
-    const columnPositions = new Map();
+    const canonicalColumnPositions = [];
 
     for (; columnStart < this.columnStates.length; columnStart++) {
       const columnState = this.columnStates[columnStart];
@@ -644,9 +651,7 @@ export class CanvasTable {
       if (nextColumnPos > this.scrollPos.x) {
         break;
       }
-
-      columnPositions.set(columnStart, columnPos - this.scrollPos.x);
-
+      canonicalColumnPositions.push(columnPos);
       columnPos = nextColumnPos;
     }
 
@@ -657,11 +662,8 @@ export class CanvasTable {
       if (columnPos >= scrollRight) {
         break;
       }
-
-      columnPositions.set(columnEnd, columnPos - this.scrollPos.x);
-
-      const columnState = this.columnStates[columnEnd];
-      columnPos += columnState.width;
+      canonicalColumnPositions.push(columnPos);
+      columnPos += this.columnStates[columnEnd].width;
     }
 
     const rowStart = Math.floor(this.scrollPos.y / this.theme.rowHeight);
@@ -672,20 +674,12 @@ export class CanvasTable {
       this.dataRows.length,
     );
 
-    const rowPositions = new Map();
-    for (let i = rowStart; i < rowEnd; i++) {
-      const rowPosition =
-        i * this.theme.rowHeight + this.theme.rowHeight - this.scrollPos.y;
-      rowPositions.set(i, rowPosition);
-    }
-
     return {
       columnStart,
       columnEnd,
-      columnPositions,
       rowStart,
       rowEnd,
-      rowPositions,
+      canonicalColumnPositions,
     };
   }
 
@@ -792,11 +786,7 @@ export class CanvasTable {
       rowIndex++
     ) {
       const id = UiContext.idFromArgs("row", rowIndex);
-      const rect = this.calculateRowRect(
-        this.frameState.layout,
-        this.frameState.viewport,
-        rowIndex,
-      );
+      const rect = this.calculateRowRect(this.frameState.layout, rowIndex);
 
       this.doOneRow({
         id,
@@ -857,8 +847,8 @@ export class CanvasTable {
   }
 
   onDragHorizontalScrollbar(pos: Vector) {
-    const { maxScrollX, hsbTrackRect, hsbThumbMinX, hsbThumbMaxX } =
-      this.frameState.layout;
+    const { layout } = this.frameState;
+    const { maxScrollX, hsbTrackRect, hsbThumbMinX, hsbThumbMaxX } = layout;
 
     pos.y = hsbTrackRect.y;
 
@@ -869,9 +859,12 @@ export class CanvasTable {
       scale(hsbThumbX, hsbThumbMinX, hsbThumbMaxX, 0, maxScrollX),
     );
     this.scrollPos.x = newScrollX;
+
+    this.frameState.viewport = this.calculateViewport(layout);
   }
 
-  onDragVerticalScrollbar(pos: Vector, layout: Layout) {
+  onDragVerticalScrollbar(pos: Vector) {
+    const { layout } = this.frameState;
     const { maxScrollY, vsbTrackRect, vsbThumbMinY, vsbThumbMaxY } = layout;
 
     pos.x = vsbTrackRect.x;
@@ -883,34 +876,36 @@ export class CanvasTable {
       scale(vsbThumbY, vsbThumbMinY, vsbThumbMaxY, 0, maxScrollY),
     );
     this.scrollPos.y = newScrollY;
+
+    this.frameState.viewport = this.calculateViewport(layout);
   }
 
   onDragColumnResizer(id: UiId, pos: Vector) {
+    const { x: scrollX } = this.scrollPos;
+    const { layout, viewport } = this.frameState;
+    const { maxScrollX, maxScrollY } = layout;
+    const { canonicalColumnPositions } = viewport;
+
     pos.y = 1;
 
     const columnIndex = id.index!;
 
     const columnState = this.columnStates[columnIndex];
-    const columnPos =
-      this.frameState.viewport.columnPositions.get(columnIndex)!;
+    const canonicalColumnPosition = canonicalColumnPositions[columnIndex];
+    const screenColumnPos = canonicalColumnPosition - scrollX;
 
-    const calculatedColumnWidth = pos.x - columnPos + COLUMN_RESIZER_LEFT_WIDTH;
+    const calculatedColumnWidth =
+      pos.x - screenColumnPos + COLUMN_RESIZER_LEFT_WIDTH;
     const columnWidth = Math.max(calculatedColumnWidth, MIN_COLUMN_WIDTH);
     const columnWidthChanged = columnWidth !== columnState.width;
     columnState.width = columnWidth;
 
     this.frameState.layout = this.reflow();
 
-    this.scrollPos.x = Math.min(
-      this.scrollPos.x,
-      this.frameState.layout.maxScrollX,
-    );
-    this.scrollPos.y = Math.min(
-      this.scrollPos.y,
-      this.frameState.layout.maxScrollY,
-    );
+    this.scrollPos.x = Math.min(this.scrollPos.x, maxScrollX);
+    this.scrollPos.y = Math.min(this.scrollPos.y, maxScrollY);
 
-    this.frameState.viewport = this.calculateViewport(this.frameState.layout);
+    this.frameState.viewport = this.calculateViewport(layout);
 
     const rect = this.calculateColumnResizerRect(columnIndex);
     pos.x = rect.x;
@@ -921,18 +916,19 @@ export class CanvasTable {
   }
 
   calculateColumnResizerRect(columnIndex: number) {
+    const { x: scrollX } = this.scrollPos;
     const { layout, viewport } = this.frameState;
     const { scrollWidth } = layout;
-    const { columnPositions } = viewport;
+    const { canonicalColumnPositions } = viewport;
 
-    const columnState = this.columnStates[columnIndex];
-    const columnLeft = columnPositions.get(columnIndex)!;
-    const columnRight = columnLeft + columnState.width;
+    const canonicalColumnLeft = canonicalColumnPositions[columnIndex];
+    const screenColumnLeft = canonicalColumnLeft - scrollX;
+    const screenColumnRight = screenColumnLeft + this.columnStates[columnIndex].width;
 
-    const scrollEndRelX = this.relX(scrollWidth);
+    const screenScrollEnd = this.calcScreenX(scrollWidth);
 
-    const calculatedResizerRight = columnRight + COLUMN_RESIZER_LEFT_WIDTH + 1;
-    const resizerRight = Math.min(calculatedResizerRight, scrollEndRelX);
+    const calculatedResizerRight = screenColumnRight + COLUMN_RESIZER_LEFT_WIDTH + 1;
+    const resizerRight = Math.min(calculatedResizerRight, screenScrollEnd);
     const resizerLeft = resizerRight - COLUMN_RESIZER_WIDTH;
 
     const rect = {
@@ -945,25 +941,34 @@ export class CanvasTable {
     return rect;
   }
 
-  calculateRowRect(layout: Layout, viewport: Viewport, rowIndex: number) {
+  calculateRowRect(layout: Layout, rowIndex: number) {
+    const { rowHeight } = this.theme;
+    const { gridWidth } = layout;
+
+    const canonicalRowPos = rowIndex * rowHeight;
+    const screenRowPos = this.calcScreenY(canonicalRowPos) + rowHeight;
+
     return {
       x: 0,
-      y: viewport.rowPositions.get(rowIndex)!,
-      width: layout.gridWidth,
-      height: this.theme.rowHeight,
+      y: screenRowPos,
+      width: gridWidth,
+      height: rowHeight,
     };
   }
 
-  relPos(pos: Vector) {
-    return createVector(this.relX(pos.x), this.relY(pos.y));
+  calcScreenPos(canonicalPos: Vector) {
+    return createVector(
+      this.calcScreenX(canonicalPos.x),
+      this.calcScreenY(canonicalPos.y),
+    );
   }
 
-  relX(x: number) {
-    return x - this.scrollPos.x;
+  calcScreenX(canonicalX: number) {
+    return canonicalX - this.scrollPos.x;
   }
 
-  relY(y: number) {
-    return y - this.scrollPos.y;
+  calcScreenY(canonicalY: number) {
+    return canonicalY - this.scrollPos.y;
   }
 
   pathFromRect(rect: Rect) {

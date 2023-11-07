@@ -136,12 +136,11 @@ export type Layout = {
 
 export type Viewport = {
   columnStart: number;
-  columnEnd: number;
-  columnPositions: Map<number, number>;
+  columnEnd:   number;
+  rowStart:    number;
+  rowEnd:      number;
 
-  rowStart: number;
-  rowEnd: number;
-  rowPositions: Map<number, number>;
+  canonicalColumnPositions: number[];
 };
 
 export type FrameState = {
