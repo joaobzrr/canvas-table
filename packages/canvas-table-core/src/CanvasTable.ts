@@ -178,24 +178,30 @@ export class CanvasTable {
 
     this.mouseCol = -1;
     this.mouseRow = -1;
-    if (this.stage.isMouseInRect(this.layout.bodyRect)) {
-      const { x: mouseX, y: mouseY } = this.stage.currentMousePosition;
-      const { columnStart, columnEnd, canonicalColumnPositions } = this.layout;
-      const { rowHeight } = this.theme;
 
-      for (let columnIndex = columnStart; columnIndex < columnEnd; columnIndex++) {
-        const columnState = this.columnStates[columnIndex];
+    {
+      const { gridWidth, gridHeight } = this.layout;
+      const gridRect = createRect({ width: gridWidth, height: gridHeight });
 
-        const canonicalColumnLeft = canonicalColumnPositions[columnIndex];
-        const screenColumnLeft = this.calcScreenX(canonicalColumnLeft);
-        const screenColumnRight = screenColumnLeft + columnState.width;
-        if (mouseX >= screenColumnLeft && mouseX < screenColumnRight) {
-          this.mouseCol = columnIndex;
-          break;
+      if (this.stage.isMouseInRect(gridRect)) {
+        const { x: mouseX, y: mouseY } = this.stage.currentMousePosition;
+        const { columnStart, columnEnd, canonicalColumnPositions } = this.layout;
+        const { rowHeight } = this.theme;
+
+        for (let columnIndex = columnStart; columnIndex < columnEnd; columnIndex++) {
+          const columnState = this.columnStates[columnIndex];
+
+          const canonicalColumnLeft = canonicalColumnPositions[columnIndex];
+          const screenColumnLeft = this.calcScreenX(canonicalColumnLeft);
+          const screenColumnRight = screenColumnLeft + columnState.width;
+          if (mouseX >= screenColumnLeft && mouseX < screenColumnRight) {
+            this.mouseCol = columnIndex;
+            break;
+          }
         }
-      }
 
-      this.mouseRow = Math.floor((this.calcCanonicalY(mouseY) - rowHeight) / rowHeight);
+        this.mouseRow = Math.floor((this.calcCanonicalY(mouseY) - rowHeight) / rowHeight);
+      }
     }
 
     const ctx = this.stage.getContext();
