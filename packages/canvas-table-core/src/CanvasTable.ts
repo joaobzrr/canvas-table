@@ -236,6 +236,84 @@ export class CanvasTable {
 
     this.doColumnResizer();
 
+    if (this.mouseRow !== -1) {
+      if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
+        const dataRow = this.dataRows[this.mouseRow];
+        const dataRowId = this.selectId(dataRow);
+
+        this.selectedRowId = dataRowId;
+        if (this.onSelectRow) {
+          this.onSelectRow(this.selectedRowId, dataRow);
+        }
+      }
+
+      const clipRegion = this.pathFromRect(this.layout.bodyRect);
+      if (!this.ui.isAnyActive() && this.theme.hoveredRowColor) {
+        const rowRect = this.calculateRowRect(this.layout, this.mouseRow);
+        this.renderer.submit({
+          type: "rect",
+          color: this.theme.hoveredRowColor,
+          clipRegion,
+          ...rowRect
+        });
+      }
+
+      if (this.mouseCol !== -1) {
+        const { canonicalColumnPositions, bodyRect } = this.layout;
+        const { rowHeight } = this.theme;
+        const { x: scrollLeft, y: scrollTop } = this.scrollPos;
+
+        const columnState = this.columnStates[this.mouseCol];
+        const canonicalColumnLeft = canonicalColumnPositions[this.mouseCol];
+        const canonicalColumnRight = canonicalColumnLeft + columnState.width;
+
+        const canonicalRowTop = this.mouseRow * rowHeight;
+        const canonicalRowBottom = canonicalRowTop + rowHeight;
+
+        if (this.stage.isMouseDoubleClicked(Stage.MOUSE_BUTTONS.PRIMARY)) {
+          const scrollColumnRight = canonicalColumnRight - bodyRect.width;
+          if (scrollLeft > canonicalColumnLeft) {
+            this.scrollPos.x = canonicalColumnLeft;
+          } else if (scrollLeft < scrollColumnRight) {
+            this.scrollPos.x = Math.min(canonicalColumnLeft, scrollColumnRight);
+          }
+
+          const scrollRowBottom = canonicalRowBottom - bodyRect.height;
+          if (scrollTop > canonicalRowTop) {
+            this.scrollPos.y = canonicalRowTop;
+          } else if (scrollTop < scrollRowBottom) {
+            this.scrollPos.y = scrollRowBottom;
+          }
+
+          this.calculateViewportLayout(this.layout);
+        }
+      }
+    }
+
+    if (this.selectedRowId !== null) {
+      const { rowStart, rowEnd } = this.layout;
+
+      const clipRegion = this.pathFromRect(this.layout.bodyRect);
+
+      for (let rowIndex = rowStart; rowIndex < rowEnd; rowIndex++) {
+        const dataRow = this.dataRows[rowIndex];
+        const dataRowId = this.selectId(dataRow);
+
+        if (this.selectedRowId === dataRowId) {
+          const rect = this.calculateRowRect(this.layout, rowIndex);
+
+          this.renderer.submit({
+            type: "rect",
+            color: this.theme.selectedRowColor,
+            clipRegion: clipRegion,
+            ...rect
+          });
+
+          break;
+        }
+      }
+    }
+
     if (this.layout.overflowX) {
       if (this.theme.scrollbarTrackColor) {
         this.renderer.submit({
@@ -272,52 +350,6 @@ export class CanvasTable {
         hotColor: this.theme.scrollbarThumbHoverColor,
         color: this.theme.scrollbarThumbColor
       });
-    }
-
-    if (!this.ui.isAnyActive() && this.mouseRow !== -1 && this.theme.hoveredRowColor) {
-      if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
-        const dataRow = this.dataRows[this.mouseRow];
-        const dataRowId = this.selectId(dataRow);
-
-        this.selectedRowId = dataRowId;
-        if (this.onSelectRow) {
-          this.onSelectRow(this.selectedRowId, dataRow);
-        }
-      }
-
-      const rect = this.calculateRowRect(this.layout, this.mouseRow);
-      const clipRegion = this.pathFromRect(this.layout.bodyRect);
-
-      this.renderer.submit({
-        type: "rect",
-        color: this.theme.hoveredRowColor,
-        clipRegion: clipRegion,
-        ...rect
-      });
-    }
-
-    if (this.selectedRowId !== null) {
-      const { rowStart, rowEnd } = this.layout;
-
-      const clipRegion = this.pathFromRect(this.layout.bodyRect);
-
-      for (let rowIndex = rowStart; rowIndex < rowEnd; rowIndex++) {
-        const dataRow = this.dataRows[rowIndex];
-        const dataRowId = this.selectId(dataRow);
-
-        if (this.selectedRowId === dataRowId) {
-          const rect = this.calculateRowRect(this.layout, rowIndex);
-
-          this.renderer.submit({
-            type: "rect",
-            color: this.theme.selectedRowColor,
-            clipRegion: clipRegion,
-            ...rect
-          });
-
-          break;
-        }
-      }
     }
 
     // Draw outer canvas border
