@@ -1,14 +1,20 @@
 import { createVector, isPointInRect } from "../../utils";
 import { Rect, Vector, Size } from "../../types";
 
+const MOUSE_BUTTONS = {
+  PRIMARY: 0,
+  SECONDARY: 1,
+  AUXILIARY: 2,
+  FOURTH: 3,
+  FIFTH: 4
+} as const;
+
+export type MouseButtons = typeof MOUSE_BUTTONS;
+
+export type MouseButtonValue = MouseButtons[keyof MouseButtons];
+
 export class Stage {
-  static MOUSE_BUTTONS = {
-    PRIMARY: 1,
-    SECONDARY: 2,
-    AUXILIARY: 4,
-    FOURTH: 8,
-    FIFTH: 16
-  };
+  static MOUSE_BUTTONS = MOUSE_BUTTONS;
 
   canvas: HTMLCanvasElement;
   containerEl: HTMLDivElement;
@@ -19,6 +25,8 @@ export class Stage {
 
   previousMousePosition: Vector;
   previousMouseButtons: number;
+
+  doubleClickButton: number;
 
   dragAnchorPosition: Vector;
   mouseDragStartPosition: Vector;
@@ -51,6 +59,8 @@ export class Stage {
     this.previousMousePosition = createVector();
     this.previousMouseButtons = 0;
 
+    this.doubleClickButton = -1;
+
     this.dragAnchorPosition = createVector();
     this.mouseDragStartPosition = createVector();
     this.dragDistance = createVector();
@@ -63,12 +73,13 @@ export class Stage {
 
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
+    this.onDoubleClick = this.onDoubleClick.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
     this.onWheel = this.onWheel.bind(this);
 
     this.canvas.addEventListener("mousedown", this.onMouseDown);
+    this.canvas.addEventListener("dblclick", this.onDoubleClick);
     this.canvas.addEventListener("wheel", this.onWheel);
-
     window.addEventListener("mousemove", this.onMouseMove);
     window.addEventListener("mouseup", this.onMouseUp);
 
@@ -112,20 +123,29 @@ export class Stage {
     window.removeEventListener("mouseup", this.onMouseUp);
   }
 
-  isMouseDown(button: number) {
-    return this.currentMouseButtons & button;
+  isMouseDown(button: MouseButtonValue) {
+    const value = this.normalizedToButtonsValue(button);
+    return this.currentMouseButtons & value;
   }
 
-  isMouseUp(button: number) {
-    return !(this.currentMouseButtons & button);
+  isMouseUp(button: MouseButtonValue) {
+    const value = this.normalizedToButtonsValue(button);
+    return !(this.currentMouseButtons & value);
   }
 
-  isMousePressed(button: number) {
-    return (this.currentMouseButtons & button) === 1 && (this.previousMouseButtons & button) === 0;
+  isMousePressed(button: MouseButtonValue) {
+    const value = this.normalizedToButtonsValue(button);
+    return (this.currentMouseButtons & value) === 1 && (this.previousMouseButtons & value) === 0;
   }
 
-  isMouseReleased(button: number) {
-    return (this.currentMouseButtons & button) === 0 && (this.previousMouseButtons & button) === 1;
+  isMouseReleased(button: MouseButtonValue) {
+    const value = this.normalizedToButtonsValue(button);
+    return (this.currentMouseButtons & value) === 0 && (this.previousMouseButtons & value) === 1;
+  }
+
+  isMouseDoubleClicked(button: MouseButtonValue) {
+    const value = this.normalizedToButtonValue(button);
+    return this.doubleClickButton !== -1 && this.doubleClickButton === value;
   }
 
   isMouseInRect(rect: Rect) {
@@ -151,6 +171,8 @@ export class Stage {
     this.previousMousePosition.y = this.currentMousePosition.y;
     this.previousMouseButtons = this.currentMouseButtons;
 
+    this.doubleClickButton = -1;
+
     this.scrollAmount.x = 0;
     this.scrollAmount.y = 0;
 
@@ -164,6 +186,10 @@ export class Stage {
 
   onMouseUp(event: MouseEvent) {
     this.updateMouseState(event);
+  }
+
+  onDoubleClick(event: MouseEvent) {
+    this.doubleClickButton = event.button;
   }
 
   onMouseMove(event: MouseEvent) {
@@ -184,5 +210,35 @@ export class Stage {
     };
     this.currentMousePosition = currentMousePosition;
     this.currentMouseButtons = event.buttons;
+  }
+
+  normalizedToButtonValue(value: MouseButtonValue) {
+    switch (value) {
+      case Stage.MOUSE_BUTTONS.PRIMARY:
+        return 0;
+      case Stage.MOUSE_BUTTONS.AUXILIARY:
+        return 1;
+      case Stage.MOUSE_BUTTONS.SECONDARY:
+        return 2;
+      case Stage.MOUSE_BUTTONS.FOURTH:
+        return 3;
+      case Stage.MOUSE_BUTTONS.FIFTH:
+        return 4;
+    }
+  }
+
+  normalizedToButtonsValue(value: MouseButtonValue): number {
+    switch (value) {
+      case Stage.MOUSE_BUTTONS.PRIMARY:
+        return 1;
+      case Stage.MOUSE_BUTTONS.SECONDARY:
+        return 2;
+      case Stage.MOUSE_BUTTONS.AUXILIARY:
+        return 4;
+      case Stage.MOUSE_BUTTONS.FOURTH:
+        return 8;
+      case Stage.MOUSE_BUTTONS.FIFTH:
+        return 16;
+    }
   }
 }
