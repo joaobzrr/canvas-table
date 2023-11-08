@@ -159,20 +159,22 @@ export class CanvasTable {
       }
     }
 
-    if (this.ui.active === null) {
-      this.scrollPos.x += this.stage.scrollAmount.x;
-      this.scrollPos.y += this.stage.scrollAmount.y;
-    }
-
     {
+      let { x: newScrollX, y: newScrollY } = this.scrollPos;
+
+      if (this.ui.active === null) {
+        newScrollX += this.stage.scrollAmount.x;
+        newScrollY += this.stage.scrollAmount.y;
+      }
+
       const { maxScrollX, maxScrollY } = this.layout;
 
-      const newScrollX = clamp(this.scrollPos.x, 0, maxScrollX);
-      const newScrollY = clamp(this.scrollPos.y, 0, maxScrollY);
+      newScrollX = clamp(newScrollX, 0, maxScrollX);
+      newScrollY = clamp(newScrollY, 0, maxScrollY);
       if (newScrollX !== this.scrollPos.x || newScrollY !== this.scrollPos.y) {
         this.scrollPos.x = newScrollX;
         this.scrollPos.y = newScrollY;
-        this.calculateViewportLayout(this.layout);
+        this.reflow();
       }
     }
 
@@ -248,6 +250,7 @@ export class CanvasTable {
       }
 
       const clipRegion = this.pathFromRect(this.layout.bodyRect);
+
       if (!this.ui.isAnyActive() && this.theme.hoveredRowColor) {
         const rowRect = this.calculateRowRect(this.layout, this.mouseRow);
         this.renderer.submit({
@@ -285,7 +288,7 @@ export class CanvasTable {
             this.scrollPos.y = scrollRowBottom;
           }
 
-          this.calculateViewportLayout(this.layout);
+          this.reflow();
         }
       }
     }
