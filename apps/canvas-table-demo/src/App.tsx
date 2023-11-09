@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { debounce } from "lodash";
 import { CanvasTable } from "@bzrr/canvas-table-react";
 import {
@@ -8,9 +8,9 @@ import {
   DataRowId,
   PropValue,
 } from "@bzrr/canvas-table-core";
-import ThemeForm from "./ThemeForm";
-import TableList from "./TableList";
-import Tabs from "./Tabs";
+import ThemeForm from "./components/ThemeForm";
+import TableList from "./components/TableList";
+import Tabs from "./components/Tabs";
 import { tables } from "./tables";
 import { shallowMerge } from "./utils";
 import styles from "./App.module.css";
@@ -26,6 +26,10 @@ function App() {
 
   const [selectedRow, setSelectedRow] = useState<DataRow>();
 
+  const [cellRect, setCellRect] = useState<Record<string, any> | null>(null);
+
+  const inputRef = useRef<HTMLInputElement>(null!);
+
   const updateTheme = debounce((partial: Partial<Theme>) => {
     setThemeSettings((prevThemeSettings) => ({
       ...prevThemeSettings,
@@ -40,6 +44,12 @@ function App() {
     }
     setTable(table);
   };
+
+  useLayoutEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [cellRect]);
 
   return (
     <div className={styles.app}>
@@ -69,14 +79,36 @@ function App() {
         )}
       </div>
       <main className={styles.main}>
-        <CanvasTable
-          columnDefs={table.columnDefs}
-          dataRows={table.dataRows}
-          theme={theme}
-          containerClassName={styles.canvasTable}
-          selectId={(row) => row.id as DataRowId}
-          onSelectRow={(_, row) => setSelectedRow(row)}
-        />
+        <div
+          style={{
+            position: "relative",
+            overflow: "hidden",
+            height: "100%"
+          }}
+        >
+          <CanvasTable
+            columnDefs={table.columnDefs}
+            dataRows={table.dataRows}
+            theme={theme}
+            containerClassName={styles.canvasTable}
+            selectId={(row) => row.id as DataRowId}
+            onSelectRow={(_, row) => setSelectedRow(row)}
+            onDoubleClickCell={(_, __, rect) => setCellRect(rect)}
+          />
+          {cellRect && (
+            <input
+              ref={inputRef}
+              style={{
+                pointerEvents: "auto",
+                position: "absolute",
+                left: cellRect.x,
+                top: cellRect.y,
+                width: cellRect.width,
+                height: cellRect.height,
+              }}
+            />
+          )}
+        </div>
       </main>
       <div className={styles.rightSidebar}>
         {selectedRow && (

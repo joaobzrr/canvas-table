@@ -11,10 +11,13 @@ export type CreateCanvasTableParams = {
   selectProp?: PropSelector;
 
   onSelectRow?: SelectRowCallback;
+  onDoubleClickCell?: DoubleClickCellCallback;
   onResizeColumn?: ResizeColumnCallback;
 };
 
 export type SelectRowCallback = (id: DataRowId, dataRow: DataRow) => void;
+
+export type DoubleClickCellCallback = (dataRow: DataRow, key: string, rect: Rect) => void;
 
 export type ResizeColumnCallback = (key: string, width: number) => void;
 

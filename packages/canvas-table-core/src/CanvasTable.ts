@@ -36,7 +36,8 @@ import {
   PropSelector,
   DataRowId,
   PropValue,
-  TableEvent
+  TableEvent,
+  DoubleClickCellCallback
 } from "./types";
 import { UiId } from "./lib/UiContext/types";
 
@@ -56,6 +57,7 @@ export class CanvasTable {
   selectProp: PropSelector;
 
   onSelectRow?: SelectRowCallback;
+  onDoubleClickCell?: DoubleClickCellCallback;
   onResizeColumn?: ResizeColumnCallback;
 
   eventQueue: TableEvent[];
@@ -79,7 +81,7 @@ export class CanvasTable {
     this.selectedRowId = null;
 
     this.onSelectRow = params.onSelectRow;
-
+    this.onDoubleClickCell = params.onDoubleClickCell;
     this.onResizeColumn = params.onResizeColumn;
 
     this.selectId = params?.selectId ?? ((row) => row.id as DataRowId);
@@ -240,10 +242,9 @@ export class CanvasTable {
     this.doColumnResizer();
 
     if (this.mouseRow !== -1) {
+      const dataRow = this.dataRows[this.mouseRow];
       if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
-        const dataRow = this.dataRows[this.mouseRow];
         const dataRowId = this.selectId(dataRow);
-
         this.selectedRowId = dataRowId;
         if (this.onSelectRow) {
           this.onSelectRow(this.selectedRowId, dataRow);
@@ -263,34 +264,29 @@ export class CanvasTable {
       }
 
       if (this.mouseCol !== -1) {
-        const { canonicalColumnPositions, bodyRect } = this.layout;
-        const { rowHeight } = this.theme;
-        const { x: scrollLeft, y: scrollTop } = this.scrollPos;
-
-        const columnState = this.columnStates[this.mouseCol];
-        const canonicalColumnLeft = canonicalColumnPositions[this.mouseCol];
-        const canonicalColumnRight = canonicalColumnLeft + columnState.width;
-
-        const canonicalRowTop = this.mouseRow * rowHeight;
-        const canonicalRowBottom = canonicalRowTop + rowHeight;
-
         if (this.stage.isMouseDoubleClicked(Stage.MOUSE_BUTTONS.PRIMARY)) {
-          const scrollColumnRight = canonicalColumnRight - bodyRect.width;
-          if (scrollLeft > canonicalColumnLeft) {
-            this.scrollPos.x = canonicalColumnLeft;
-          } else if (scrollLeft < scrollColumnRight) {
-            this.scrollPos.x = Math.min(canonicalColumnLeft, scrollColumnRight);
-          }
+          this.scrollToCell(this.mouseRow, this.mouseCol);
+          if (this.onDoubleClickCell) {
+            const { canonicalColumnPositions } = this.layout;
+            const { rowHeight } = this.theme;
 
-          const scrollRowBottom = canonicalRowBottom - bodyRect.height;
-          if (scrollTop > canonicalRowTop) {
-            this.scrollPos.y = canonicalRowTop;
-          } else if (scrollTop < scrollRowBottom) {
-            this.scrollPos.y = scrollRowBottom;
-          }
+            const columnState = this.columnStates[this.mouseCol];
 
-          this.updateScrollbarThumbPositions();
-          this.updateViewportLayout();
+            const canonicalColumnPosition = canonicalColumnPositions[this.mouseCol];
+            const screenColumnPosition = this.calcScreenX(canonicalColumnPosition);
+
+            const canonicalRowPosition = this.mouseRow * rowHeight;
+            const screenRowPosition = this.calcScreenY(canonicalRowPosition) + rowHeight;
+
+            const cellRect = {
+              x: screenColumnPosition,
+              y: screenRowPosition,
+              width: columnState.width,
+              height: rowHeight
+            };
+
+            this.onDoubleClickCell(dataRow, columnState.key, cellRect);
+          }
         }
       }
     }
@@ -776,6 +772,37 @@ export class CanvasTable {
 
     hsbThumbRect.x = scale(this.scrollPos.x, 0, maxScrollX, hsbThumbMinX, hsbThumbMaxX);
     vsbThumbRect.y = scale(this.scrollPos.y, 0, maxScrollY, vsbThumbMinY, vsbThumbMaxY);
+  }
+
+  scrollToCell(rowIndex: number, columnIndex: number) {
+    const { x: scrollLeft, y: scrollTop } = this.scrollPos;
+    const { bodyRect, canonicalColumnPositions } = this.layout;
+
+    const columnState = this.columnStates[columnIndex];
+    const canonicalColumnLeft = canonicalColumnPositions[columnIndex];
+    const canonicalColumnRight = canonicalColumnLeft + columnState.width;
+
+    const scrollColumnRight = canonicalColumnRight - bodyRect.width;
+    if (scrollLeft > canonicalColumnLeft) {
+      this.scrollPos.x = canonicalColumnLeft;
+    } else if (scrollLeft < scrollColumnRight) {
+      this.scrollPos.x = Math.min(canonicalColumnLeft, scrollColumnRight);
+    }
+
+    const { rowHeight } = this.theme;
+
+    const canonicalRowTop = rowIndex * rowHeight;
+    const canonicalRowBottom = canonicalRowTop + rowHeight;
+
+    const scrollRowBottom = canonicalRowBottom - bodyRect.height;
+    if (scrollTop > canonicalRowTop) {
+      this.scrollPos.y = canonicalRowTop;
+    } else if (scrollTop < scrollRowBottom) {
+      this.scrollPos.y = scrollRowBottom;
+    }
+
+    this.updateScrollbarThumbPositions();
+    this.updateViewportLayout();
   }
 
   createLayout(): Layout {
