@@ -7,28 +7,71 @@ import {
   Theme,
   DataRowId,
   PropValue,
+  Rect,
 } from "@bzrr/canvas-table-core";
 import ThemeForm from "./components/ThemeForm";
 import TableList from "./components/TableList";
 import Tabs from "./components/Tabs";
-import { tables } from "./tables";
+import CellInput from "./components/CellInput";
+import { tables as allTables } from "./tables";
 import { shallowMerge } from "./utils";
-import styles from "./App.module.css";
 import { Table } from "./types";
+import styles from "./App.module.css";
 
 function App() {
-  const [table, setTable] = useState<Table>(tables[0]);
+  const [tables, setTables] = useState<Table[]>(allTables);
+  const [selectedTableId, setSelectedTableId] = useState(tables[0].id);
 
-  const [themeSettings, setThemeSettings] = useState<Partial<Theme>>({});
+  const tableIndex = tables.findIndex((table) => table.id === selectedTableId);
+  if (tableIndex === -1) {
+    throw new Error("This should not happen");
+  }
+
+  const table = tables[tableIndex];
+
+  const [themeSettings, setThemeSettings] = useState<Partial<Theme>>();
   const theme = shallowMerge({}, defaultTheme, themeSettings);
 
   const [selectedTab, setSelectedTab] = useState<React.Key>("tables");
 
   const [selectedRow, setSelectedRow] = useState<DataRow>();
 
-  const [cellRect, setCellRect] = useState<Record<string, any> | null>(null);
+  const [selectedKey, setSelectedKey] = useState<string>();
 
   const inputRef = useRef<HTMLInputElement>(null!);
+
+  const [cellRect, setCellRect] = useState<Rect>();
+
+  const onEdit = (key: string, value: string) => {
+    if (!selectedRow) {
+      return;
+    }
+
+    const rowIndex = table.dataRows.findIndex(
+      ({ id }) => id === selectedRow.id,
+    );
+    if (rowIndex === -1) {
+      throw new Error("This should not happen");
+    }
+
+    const newRow = { ...selectedRow, [key]: value };
+    setSelectedRow(newRow);
+
+    const newTable = {
+      ...table,
+      dataRows: [
+        ...table.dataRows.slice(0, rowIndex),
+        newRow,
+        ...table.dataRows.slice(rowIndex + 1),
+      ],
+    };
+
+    setTables([
+      ...tables.slice(0, tableIndex),
+      newTable,
+      ...tables.slice(tableIndex + 1),
+    ]);
+  };
 
   const updateTheme = debounce((partial: Partial<Theme>) => {
     setThemeSettings((prevThemeSettings) => ({
@@ -36,14 +79,6 @@ function App() {
       ...partial,
     }));
   }, 250);
-
-  const onTableChange = (id: string) => {
-    const table = tables.find((table) => table.id === id);
-    if (!table) {
-      throw new Error(`Table with id "${id}" could not be found`);
-    }
-    setTable(table);
-  };
 
   useLayoutEffect(() => {
     if (inputRef.current) {
@@ -72,7 +107,7 @@ function App() {
           <TableList
             value={table.id}
             tables={tables}
-            onChange={onTableChange}
+            onChange={setSelectedTableId}
           />
         ) : (
           <ThemeForm style={{ flex: 1 }} onChange={updateTheme} />
@@ -83,7 +118,7 @@ function App() {
           style={{
             position: "relative",
             overflow: "hidden",
-            height: "100%"
+            height: "100%",
           }}
         >
           <CanvasTable
@@ -92,20 +127,37 @@ function App() {
             theme={theme}
             containerClassName={styles.canvasTable}
             selectId={(row) => row.id as DataRowId}
-            onSelectRow={(_, row) => setSelectedRow(row)}
-            onDoubleClickCell={(_, __, rect) => setCellRect(rect)}
+            onSelectRow={(_, row) => {
+              setSelectedRow(row);
+              setCellRect(undefined);
+            }}
+            onDoubleClickCell={(_, key, rect) => {
+              setCellRect(rect);
+              setSelectedKey(key);
+            }}
           />
           {cellRect && (
-            <input
+            <CellInput
+              initialValue={selectedRow![selectedKey!] as string}
               ref={inputRef}
               style={{
-                pointerEvents: "auto",
-                position: "absolute",
                 left: cellRect.x,
                 top: cellRect.y,
                 width: cellRect.width,
                 height: cellRect.height,
+                fontFamily: theme.fontFamily,
+                fontSize: theme.fontSize,
+                color: theme.fontColor,
+                paddingLeft: theme.cellPadding,
+                paddingRight: theme.cellPadding,
+                outline: "none",
+                border: "none",
               }}
+              onSubmit={(value) => {
+                setCellRect(undefined);
+                onEdit(selectedKey!, value);
+              }}
+              onCancel={() => setCellRect(undefined)}
             />
           )}
         </div>
@@ -118,8 +170,9 @@ function App() {
                 <label className={styles.label}>{title}</label>
                 <input
                   value={selectedRow[key] as PropValue}
+                  onChange={(e) => onEdit(key, e.target.value)}
                   className={styles.input}
-                  disabled={true}
+                  disabled={!selectedRow}
                 />
               </div>
             ))}

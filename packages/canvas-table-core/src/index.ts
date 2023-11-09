@@ -7,5 +7,6 @@ export type {
   DataRow,
   Theme,
   DataRowId,
-  PropValue
+  PropValue,
+  Rect
 } from "./types";

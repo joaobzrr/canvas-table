@@ -279,11 +279,11 @@ export class CanvasTable {
             const screenRowPosition = this.calcScreenY(canonicalRowPosition) + rowHeight;
 
             const cellRect = {
-              x: screenColumnPosition,
-              y: screenRowPosition,
-              width: columnState.width,
-              height: rowHeight
-            };
+              x: screenColumnPosition + 1,
+              y: screenRowPosition + 1,
+              width: columnState.width - 1,
+              height: rowHeight - 1
+            } as any;
 
             this.onDoubleClickCell(dataRow, columnState.key, cellRect);
           }
