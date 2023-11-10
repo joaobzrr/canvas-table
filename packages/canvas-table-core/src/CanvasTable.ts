@@ -10,7 +10,8 @@ import {
   pathFromRect,
   createFontSpecifier,
   getFontMetrics,
-  createRect
+  createRect,
+  shallowMerge
 } from "./utils";
 import {
   COLUMN_RESIZER_LEFT_WIDTH,
@@ -21,6 +22,7 @@ import {
 } from "./constants";
 import {
   CreateCanvasTableParams,
+  ConfigCanvasTableParams,
   ColumnDef,
   ColumnState,
   DataRow,
@@ -30,14 +32,14 @@ import {
   Layout,
   IdSelector,
   SelectRowCallback,
+  EditCellCallback,
+  ColumnResizeCallback,
   DraggableProps,
   Size,
-  ResizeColumnCallback,
   PropSelector,
   DataRowId,
   PropValue,
-  TableEvent,
-  DoubleClickCellCallback
+  TableEvent
 } from "./types";
 import { UiId } from "./lib/UiContext/types";
 
@@ -57,8 +59,8 @@ export class CanvasTable {
   selectProp: PropSelector;
 
   onSelectRow?: SelectRowCallback;
-  onDoubleClickCell?: DoubleClickCellCallback;
-  onResizeColumn?: ResizeColumnCallback;
+  onEditCell?: EditCellCallback;
+  onResizeColumn?: ColumnResizeCallback;
 
   eventQueue: TableEvent[];
 
@@ -66,6 +68,8 @@ export class CanvasTable {
 
   mouseCol: number;
   mouseRow: number;
+
+  cellInput: HTMLInputElement | null;
 
   constructor(params: CreateCanvasTableParams) {
     this.stage = new Stage(params.container, params.size);
@@ -81,7 +85,7 @@ export class CanvasTable {
     this.selectedRowId = null;
 
     this.onSelectRow = params.onSelectRow;
-    this.onDoubleClickCell = params.onDoubleClickCell;
+    this.onEditCell = params.onEditCell;
     this.onResizeColumn = params.onResizeColumn;
 
     this.selectId = params?.selectId ?? ((row) => row.id as DataRowId);
@@ -92,6 +96,8 @@ export class CanvasTable {
 
     this.mouseCol = -1;
     this.mouseRow = -1;
+
+    this.cellInput = null;
 
     this.stage.run();
   }
@@ -128,33 +134,13 @@ export class CanvasTable {
     });
   }
 
-  getCellRect(rowIndex: number, columnIndex: number) {
-    if (rowIndex < 0 || rowIndex > this.dataRows.length - 1) {
-      throw new Error("Row index out of bounds");
-    }
-
-    if (columnIndex < 0 || columnIndex > this.columnStates.length - 1) {
-      throw new Error("Column index out of bounds");
-    }
-
-    const { canonicalColumnPositions } = this.layout;
-
-    const canonicalColumnPosition = this.calcScreenX(canonicalColumnPositions[columnIndex]);
-    const screenColumnPosition = this.calcScreenY(canonicalColumnPosition);
-
-    const { rowHeight } = this.theme;
-
-    const canonicalRowPosition = this.mouseRow * rowHeight;
-    const screenRowPosition = this.calcScreenY(canonicalRowPosition) + rowHeight;
-
-    const columnState = this.columnStates[columnIndex];
-
-    return createRect({
-      x: screenColumnPosition,
-      y: screenRowPosition,
-      width: columnState.width,
-      height: rowHeight
-    });
+  config(params: Partial<ConfigCanvasTableParams>) {
+    const {columnDefs, dataRows, theme, size, ...rest } = params;
+    if (columnDefs !== undefined) this.setColumnDefs(columnDefs);
+    if (dataRows !== undefined) this.setDataRows(dataRows);
+    if (theme) this.setTheme(theme);
+    if (size) this.setSize(size);
+    shallowMerge(this, rest);
   }
 
   cleanup() {
@@ -275,6 +261,11 @@ export class CanvasTable {
       if (this.stage.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
         const dataRowId = this.selectId(dataRow);
         this.selectedRowId = dataRowId;
+
+        if (this.cellInput) {
+          this.cellInput!.remove();
+        }
+
         if (this.onSelectRow) {
           this.onSelectRow(this.selectedRowId, dataRow);
         }
@@ -295,10 +286,7 @@ export class CanvasTable {
       if (this.mouseCol !== -1) {
         if (this.stage.isMouseDoubleClicked(Stage.MOUSE_BUTTONS.PRIMARY)) {
           this.scrollToCell(this.mouseRow, this.mouseCol);
-          if (this.onDoubleClickCell) {
-            const columnState = this.columnStates[this.mouseCol];
-            this.onDoubleClickCell(this.mouseRow, this.mouseCol, columnState.key);
-          }
+          this.showCellInput(this.mouseRow, this.mouseCol);
         }
       }
     }
@@ -815,6 +803,71 @@ export class CanvasTable {
 
     this.updateScrollbarThumbPositions();
     this.updateViewportLayout();
+  }
+
+  createCellInput() {
+    this.cellInput = document.createElement("input");
+
+    this.cellInput.style.position = "absolute";
+    this.cellInput.style.border = "none";
+    this.cellInput.style.outline = "none";
+
+    return this.cellInput;
+  }
+
+  showCellInput(rowIndex: number, columnIndex: number) {
+    this.cellInput = this.createCellInput();
+
+    const columnState = this.columnStates[columnIndex];
+
+    const dataRow = this.dataRows[rowIndex];
+    const value = dataRow[columnState.key] as string;
+    this.cellInput.value = value;
+
+    this.cellInput.addEventListener("keydown", (event: KeyboardEvent) => {
+      if (event.key === "Enter") {
+        this.onEditCell?.(columnState.key, this.cellInput!.value);
+        this.cellInput!.remove();
+        this.cellInput = null;
+      }
+      if (event.key === "Escape") {
+        this.cellInput!.remove();
+        this.cellInput = null;
+      }
+    });
+
+    const { canonicalColumnPositions } = this.layout;
+
+    const canonicalColumnPosition = canonicalColumnPositions[columnIndex];
+    const screenColumnPosition = this.calcScreenX(canonicalColumnPosition);
+
+    const { rowHeight } = this.theme;
+
+    const canonicalRowPosition = rowIndex * rowHeight;
+    const screenRowPosition = this.calcScreenY(canonicalRowPosition) + rowHeight;
+
+    const inputX = screenColumnPosition + 1;
+    const inputY = screenRowPosition + 1;
+    const inputWidth = columnState.width - 1;
+    const inputHeight = rowHeight - 1;
+
+    const style = {
+      left: inputX + "px",
+      top: inputY + "px",
+      width: inputWidth + "px",
+      height: inputHeight + "px",
+      paddingLeft: this.theme.cellPadding + "px",
+      paddingRight: this.theme.cellPadding + "px",
+      fontFamily: this.theme.fontFamily,
+      fontSize: this.theme.fontSize,
+      color: this.theme.fontColor
+    };
+    Object.assign(this.cellInput.style, style);
+
+    this.stage.relativeEl.appendChild(this.cellInput);
+
+    this.cellInput.focus();
+    this.cellInput.scrollLeft = this.cellInput.scrollWidth;
   }
 
   createLayout(): Layout {

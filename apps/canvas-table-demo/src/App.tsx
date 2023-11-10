@@ -11,7 +11,6 @@ import {
 import ThemeForm from "./components/ThemeForm";
 import TableList from "./components/TableList";
 import Tabs from "./components/Tabs";
-import CellInput from "./components/CellInput";
 import { tables as allTables } from "./tables";
 import { shallowMerge } from "./utils";
 import { Table } from "./types";
@@ -108,8 +107,7 @@ function App() {
           containerClassName={styles.canvasTable}
           selectId={(row) => row.id as DataRowId}
           onSelectRow={(_, row) => setSelectedRow(row)}
-          CellInput={CellInput}
-          onCellInputChange={onEdit}
+          onEditCell={onEdit}
         />
       </main>
       <div className={styles.rightSidebar}>

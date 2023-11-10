@@ -11,15 +11,17 @@ export type CreateCanvasTableParams = {
   selectProp?: PropSelector;
 
   onSelectRow?: SelectRowCallback;
-  onDoubleClickCell?: DoubleClickCellCallback;
-  onResizeColumn?: ResizeColumnCallback;
+  onEditCell?: EditCellCallback;
+  onResizeColumn?: ColumnResizeCallback;
 };
+
+export type ConfigCanvasTableParams = Omit<CreateCanvasTableParams, "container">;
 
 export type SelectRowCallback = (id: DataRowId, dataRow: DataRow) => void;
 
-export type DoubleClickCellCallback = (rowIndex: number, columnIndex: number, key: string) => void;
+export type EditCellCallback = (key: string, value: string) => void;
 
-export type ResizeColumnCallback = (key: string, width: number) => void;
+export type ColumnResizeCallback = (key: string, width: number) => void;
 
 export type IdSelector = (dataRow: DataRow) => DataRowId;
 

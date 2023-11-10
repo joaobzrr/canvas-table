@@ -17,6 +17,7 @@ export class Stage {
   static MOUSE_BUTTONS = MOUSE_BUTTONS;
 
   canvas: HTMLCanvasElement;
+  relativeEl: HTMLDivElement;
   containerEl: HTMLDivElement;
   wrapperEl: HTMLDivElement;
 
@@ -47,9 +48,13 @@ export class Stage {
     this.containerEl.replaceChildren();
     this.containerEl.style.overflow = "hidden";
 
+    this.relativeEl = document.createElement("div");
+    this.relativeEl.style.position = "relative";
+    this.containerEl.appendChild(this.relativeEl);
+
     this.wrapperEl = document.createElement("div");
     this.wrapperEl.classList.add("canvas-table-wrapper");
-    this.containerEl.appendChild(this.wrapperEl);
+    this.relativeEl.appendChild(this.wrapperEl);
 
     this.canvas = document.createElement("canvas");
     this.wrapperEl.appendChild(this.canvas);
