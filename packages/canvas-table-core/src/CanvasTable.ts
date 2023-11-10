@@ -128,6 +128,35 @@ export class CanvasTable {
     });
   }
 
+  getCellRect(rowIndex: number, columnIndex: number) {
+    if (rowIndex < 0 || rowIndex > this.dataRows.length - 1) {
+      throw new Error("Row index out of bounds");
+    }
+
+    if (columnIndex < 0 || columnIndex > this.columnStates.length - 1) {
+      throw new Error("Column index out of bounds");
+    }
+
+    const { canonicalColumnPositions } = this.layout;
+
+    const canonicalColumnPosition = this.calcScreenX(canonicalColumnPositions[columnIndex]);
+    const screenColumnPosition = this.calcScreenY(canonicalColumnPosition);
+
+    const { rowHeight } = this.theme;
+
+    const canonicalRowPosition = this.mouseRow * rowHeight;
+    const screenRowPosition = this.calcScreenY(canonicalRowPosition) + rowHeight;
+
+    const columnState = this.columnStates[columnIndex];
+
+    return createRect({
+      x: screenColumnPosition,
+      y: screenRowPosition,
+      width: columnState.width,
+      height: rowHeight
+    });
+  }
+
   cleanup() {
     this.stage.cleanup();
   }
@@ -267,25 +296,8 @@ export class CanvasTable {
         if (this.stage.isMouseDoubleClicked(Stage.MOUSE_BUTTONS.PRIMARY)) {
           this.scrollToCell(this.mouseRow, this.mouseCol);
           if (this.onDoubleClickCell) {
-            const { canonicalColumnPositions } = this.layout;
-            const { rowHeight } = this.theme;
-
             const columnState = this.columnStates[this.mouseCol];
-
-            const canonicalColumnPosition = canonicalColumnPositions[this.mouseCol];
-            const screenColumnPosition = this.calcScreenX(canonicalColumnPosition);
-
-            const canonicalRowPosition = this.mouseRow * rowHeight;
-            const screenRowPosition = this.calcScreenY(canonicalRowPosition) + rowHeight;
-
-            const cellRect = {
-              x: screenColumnPosition + 1,
-              y: screenRowPosition + 1,
-              width: columnState.width - 1,
-              height: rowHeight - 1
-            } as any;
-
-            this.onDoubleClickCell(dataRow, columnState.key, cellRect);
+            this.onDoubleClickCell(this.mouseRow, this.mouseCol, columnState.key);
           }
         }
       }

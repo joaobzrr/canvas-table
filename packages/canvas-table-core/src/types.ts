@@ -17,7 +17,7 @@ export type CreateCanvasTableParams = {
 
 export type SelectRowCallback = (id: DataRowId, dataRow: DataRow) => void;
 
-export type DoubleClickCellCallback = (dataRow: DataRow, key: string, rect: Rect) => void;
+export type DoubleClickCellCallback = (rowIndex: number, columnIndex: number, key: string) => void;
 
 export type ResizeColumnCallback = (key: string, width: number) => void;
 

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { debounce } from "lodash";
 import { CanvasTable } from "@bzrr/canvas-table-react";
 import {
@@ -7,7 +7,6 @@ import {
   Theme,
   DataRowId,
   PropValue,
-  Rect,
 } from "@bzrr/canvas-table-core";
 import ThemeForm from "./components/ThemeForm";
 import TableList from "./components/TableList";
@@ -35,12 +34,6 @@ function App() {
   const [selectedTab, setSelectedTab] = useState<React.Key>("tables");
 
   const [selectedRow, setSelectedRow] = useState<DataRow>();
-
-  const [selectedKey, setSelectedKey] = useState<string>();
-
-  const inputRef = useRef<HTMLInputElement>(null!);
-
-  const [cellRect, setCellRect] = useState<Rect>();
 
   const onEdit = (key: string, value: string) => {
     if (!selectedRow) {
@@ -80,12 +73,6 @@ function App() {
     }));
   }, 250);
 
-  useLayoutEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [cellRect]);
-
   return (
     <div className={styles.app}>
       <div className={styles.leftSidebar}>
@@ -114,53 +101,16 @@ function App() {
         )}
       </div>
       <main className={styles.main}>
-        <div
-          style={{
-            position: "relative",
-            overflow: "hidden",
-            height: "100%",
-          }}
-        >
-          <CanvasTable
-            columnDefs={table.columnDefs}
-            dataRows={table.dataRows}
-            theme={theme}
-            containerClassName={styles.canvasTable}
-            selectId={(row) => row.id as DataRowId}
-            onSelectRow={(_, row) => {
-              setSelectedRow(row);
-              setCellRect(undefined);
-            }}
-            onDoubleClickCell={(_, key, rect) => {
-              setCellRect(rect);
-              setSelectedKey(key);
-            }}
-          />
-          {cellRect && (
-            <CellInput
-              initialValue={selectedRow![selectedKey!] as string}
-              ref={inputRef}
-              style={{
-                left: cellRect.x,
-                top: cellRect.y,
-                width: cellRect.width,
-                height: cellRect.height,
-                fontFamily: theme.fontFamily,
-                fontSize: theme.fontSize,
-                color: theme.fontColor,
-                paddingLeft: theme.cellPadding,
-                paddingRight: theme.cellPadding,
-                outline: "none",
-                border: "none",
-              }}
-              onSubmit={(value) => {
-                setCellRect(undefined);
-                onEdit(selectedKey!, value);
-              }}
-              onCancel={() => setCellRect(undefined)}
-            />
-          )}
-        </div>
+        <CanvasTable
+          columnDefs={table.columnDefs}
+          dataRows={table.dataRows}
+          theme={theme}
+          containerClassName={styles.canvasTable}
+          selectId={(row) => row.id as DataRowId}
+          onSelectRow={(_, row) => setSelectedRow(row)}
+          CellInput={CellInput}
+          onCellInputChange={onEdit}
+        />
       </main>
       <div className={styles.rightSidebar}>
         {selectedRow && (
