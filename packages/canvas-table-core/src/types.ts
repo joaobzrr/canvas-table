@@ -97,66 +97,22 @@ export type Size = {
   height: number;
 };
 
-export type Layout = {
-  tableRect: Rect;
-  bodyRect: Rect;
-  headerRect: Rect;
-
-  scrollWidth: number;
-  scrollHeight: number;
-
-  contentWidth: number;
-  contentHeight: number;
-
-  gridWidth: number;
-  gridHeight: number;
-
-  maxScrollX: number;
-  maxScrollY: number;
-
-  hsbRect: Rect;
-  hsbTrackRect: Rect;
-  hsbThumbRect: Rect;
-  hsbThumbMinX: number;
-  hsbThumbMaxX: number;
-
-  vsbRect: Rect;
-  vsbTrackRect: Rect;
-  vsbThumbRect: Rect;
-  vsbThumbMinY: number;
-  vsbThumbMaxY: number;
-
-  overflowX: boolean;
-  overflowY: boolean;
-
-  columnStart: number;
-  columnEnd: number;
-  rowStart: number;
-  rowEnd: number;
-
-  canonicalColumnPositions: number[];
-};
-
-export type BaseTableEvent = {
-  requiresReflow: boolean;
-};
-
-export type ColumnDefsChangeTableEvent = BaseTableEvent & {
+export type ColumnDefsChangeTableEvent = {
   type: "columnDefsChange";
   columnDefs: ColumnDef[];
 };
 
-export type DataRowsChangeTableEvent = BaseTableEvent & {
+export type DataRowsChangeTableEvent = {
   type: "dataRowsChange";
   dataRows: DataRow[];
 };
 
-export type ThemeChangeTableEvent = BaseTableEvent & {
+export type ThemeChangeTableEvent = {
   type: "themeChange";
   theme: Theme;
 };
 
-export type SizeChangeTableEvent = BaseTableEvent & {
+export type SizeChangeTableEvent = {
   type: "sizeChange";
   size: Size;
 };
