@@ -286,11 +286,9 @@ export class CanvasTable {
     }
 
     if (this.selectedRowId !== null) {
-      const { rowStart, rowEnd } = this.layout;
-
       const clipRegion = this.pathFromRect(this.layout.bodyRect);
 
-      for (let rowIndex = rowStart; rowIndex < rowEnd; rowIndex++) {
+      for (const rowIndex of this.layout.rowRange()) {
         const dataRow = this.dataRows[rowIndex];
         const dataRowId = this.selectId(dataRow);
 
