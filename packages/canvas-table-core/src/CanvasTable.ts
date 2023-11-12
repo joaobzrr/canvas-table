@@ -196,14 +196,12 @@ export class CanvasTable {
 
       if (this.stage.isMouseInRect(gridRect)) {
         const { x: mouseX, y: mouseY } = this.stage.currentMousePosition;
-        const { columnStart, columnEnd, canonicalColumnPositions } = this.layout;
         const { rowHeight } = this.theme;
 
-        for (let columnIndex = columnStart; columnIndex < columnEnd; columnIndex++) {
+        for (const columnIndex of this.layout.colRange()) {
           const columnState = this.columnStates[columnIndex];
 
-          const canonicalColumnLeft = canonicalColumnPositions[columnIndex];
-          const screenColumnLeft = this.layout.canonicalToScreenX(canonicalColumnLeft);
+          const screenColumnLeft = this.layout.getScreenColPos(columnIndex);
           const screenColumnRight = screenColumnLeft + columnState.width;
           if (mouseX >= screenColumnLeft && mouseX < screenColumnRight) {
             this.mouseCol = columnIndex;
@@ -441,33 +439,23 @@ export class CanvasTable {
     }
 
     // Draw grid horizontal lines
-    for (let rowIndex = this.layout.rowStart + 1; rowIndex < this.layout.rowEnd; rowIndex++) {
-      const canonicalRowPos = rowIndex * this.theme.rowHeight;
-      const screenRowPos = this.layout.canonicalToScreenY(canonicalRowPos) + this.theme.rowHeight;
-
+    for (const rowIndex of this.layout.rowRange(1)) {
       this.renderer.submit({
         type: "line",
         orientation: "horizontal",
         x: 0,
-        y: screenRowPos,
+        y: this.layout.getScreenRowPos(rowIndex),
         length: this.layout.gridWidth,
         color: this.theme.tableBorderColor
       });
     }
 
     // Draw grid vertical lines
-    for (
-      let columnIndex = this.layout.columnStart + 1;
-      columnIndex < this.layout.columnEnd;
-      columnIndex++
-    ) {
-      const canonicalColumnPos = this.layout.canonicalColumnPositions[columnIndex];
-      const screenColumnPos = this.layout.canonicalToScreenX(canonicalColumnPos);
-
+    for (const columnIndex of this.layout.colRange(1)) {
       this.renderer.submit({
         type: "line",
         orientation: "vertical",
-        x: screenColumnPos,
+        x: this.layout.getScreenColPos(columnIndex),
         y: 0,
         length: this.layout.gridHeight,
         color: this.theme.tableBorderColor
@@ -485,15 +473,10 @@ export class CanvasTable {
 
       const clipRegion = pathFromRect(this.layout.headerRect);
 
-      for (
-        let columnIndex = this.layout.columnStart;
-        columnIndex < this.layout.columnEnd;
-        columnIndex++
-      ) {
+      for (const columnIndex of this.layout.colRange()) {
         const columnState = this.columnStates[columnIndex];
 
-        const canonicalColumnPos = this.layout.canonicalColumnPositions[columnIndex];
-        const screenColumnPos = this.layout.canonicalToScreenX(canonicalColumnPos);
+        const screenColumnPos = this.layout.getScreenColPos(columnIndex);
 
         const x = screenColumnPos + this.theme.cellPadding;
         const y = this.theme.rowHeight / 2 + halfFontBounginxBoxAscent;
@@ -524,25 +507,18 @@ export class CanvasTable {
 
       const clipRegion = pathFromRect(this.layout.bodyRect);
 
-      for (
-        let columnIndex = this.layout.columnStart;
-        columnIndex < this.layout.columnEnd;
-        columnIndex++
-      ) {
+      for (const columnIndex of this.layout.colRange()) {
         const columnState = this.columnStates[columnIndex];
 
-        const canonicalColumnPos = this.layout.canonicalColumnPositions[columnIndex]!;
-        const screenColumnPos = this.layout.canonicalToScreenX(canonicalColumnPos);
+        const screenColumnPos = this.layout.getScreenColPos(columnIndex);
 
         const x = screenColumnPos + this.theme.cellPadding;
         const maxWidth = columnState.width - this.theme.cellPadding * 2;
 
-        for (let rowIndex = this.layout.rowStart; rowIndex < this.layout.rowEnd; rowIndex++) {
+        for (const rowIndex of this.layout.rowRange()) {
           const dataRow = this.dataRows[rowIndex];
 
-          const canonicalRowPos = rowIndex * this.theme.rowHeight;
-          const screenRowPos =
-            this.layout.canonicalToScreenY(canonicalRowPos) + this.theme.rowHeight;
+          const screenRowPos = this.layout.getScreenRowPos(rowIndex);
 
           const y = screenRowPos + this.theme.rowHeight / 2 + halfFontBoundingBoxAscent;
 
@@ -570,14 +546,8 @@ export class CanvasTable {
     this.layout.scrollTo(scrollPos);
 
     if (this.cellInput) {
-      const { canonicalColumnPositions } = this.layout;
-      const { rowHeight } = this.theme;
-
-      const canonicalColumnPosition = canonicalColumnPositions[this.selectedColumnIndex];
-      const screenColumnPosition = this.layout.canonicalToScreenX(canonicalColumnPosition);
-
-      const canonicalRowPosition = this.selectedRowIndex * rowHeight;
-      const screenRowPosition = this.layout.canonicalToScreenY(canonicalRowPosition) + rowHeight;
+      const screenColumnPosition = this.layout.getScreenColPos(this.selectedColumnIndex);
+      const screenRowPosition = this.layout.getScreenRowPos(this.selectedRowIndex);
 
       const cellX = screenColumnPosition + 1;
       const cellY = screenRowPosition + 1;
@@ -622,15 +592,10 @@ export class CanvasTable {
       }
     });
 
-    const { canonicalColumnPositions } = this.layout;
-
-    const canonicalColumnPosition = canonicalColumnPositions[columnIndex];
-    const screenColumnPosition = this.layout.canonicalToScreenX(canonicalColumnPosition);
+    const screenColumnPosition = this.layout.getScreenColPos(columnIndex);
+    const screenRowPosition = this.layout.getScreenRowPos(rowIndex);
 
     const { rowHeight } = this.theme;
-
-    const canonicalRowPosition = rowIndex * rowHeight;
-    const screenRowPosition = this.layout.canonicalToScreenY(canonicalRowPosition) + rowHeight;
 
     const inputX = screenColumnPosition + 1;
     const inputY = screenRowPosition + 1;
@@ -657,7 +622,7 @@ export class CanvasTable {
   }
 
   doColumnResizer() {
-    const { headerRect, columnStart, columnEnd } = this.layout;
+    const { headerRect } = this.layout;
 
     const clipRegion = pathFromRect(headerRect);
 
@@ -666,7 +631,7 @@ export class CanvasTable {
       return;
     }
 
-    for (let columnIndex = columnStart; columnIndex < columnEnd; columnIndex++) {
+    for (const columnIndex of this.layout.colRange()) {
       const id = UiContext.createId("column-resizer", columnIndex);
       this.doOneColumnResizer(id, clipRegion);
     }
@@ -769,17 +734,14 @@ export class CanvasTable {
   }
 
   onDragColumnResizer(id: UiId, pos: Vector) {
-    const { x: scrollX } = this.layout.scrollPos;
-    const { maxScrollX, maxScrollY, canonicalColumnPositions } = this.layout;
+    const { maxScrollX, maxScrollY } = this.layout;
 
     pos.y = 1;
 
     const columnIndex = id.index!;
-
     const columnState = this.columnStates[columnIndex];
-    const canonicalColumnPosition = canonicalColumnPositions[columnIndex];
-    const screenColumnPos = canonicalColumnPosition - scrollX;
 
+    const screenColumnPos = this.layout.getScreenColPos(columnIndex);
     const calculatedColumnWidth = pos.x - screenColumnPos + COLUMN_RESIZER_LEFT_WIDTH;
     const columnWidth = Math.max(calculatedColumnWidth, MIN_COLUMN_WIDTH);
     const columnWidthChanged = columnWidth !== columnState.width;
@@ -807,9 +769,9 @@ export class CanvasTable {
 
   calculateColumnResizerRect(columnIndex: number) {
     const { x: scrollX } = this.layout.scrollPos;
-    const { scrollWidth, canonicalColumnPositions } = this.layout;
+    const { scrollWidth } = this.layout;
 
-    const canonicalColumnLeft = canonicalColumnPositions[columnIndex];
+    const canonicalColumnLeft = this.layout.getCanonicalColPos(columnIndex);
     const screenColumnLeft = canonicalColumnLeft - scrollX;
     const screenColumnRight = screenColumnLeft + this.columnStates[columnIndex].width;
 
@@ -833,8 +795,7 @@ export class CanvasTable {
     const { rowHeight } = this.theme;
     const { gridWidth } = layout;
 
-    const canonicalRowPos = rowIndex * rowHeight;
-    const screenRowPos = this.layout.canonicalToScreenY(canonicalRowPos) + rowHeight;
+    const screenRowPos = this.layout.getScreenRowPos(rowIndex);
 
     return {
       x: 0,

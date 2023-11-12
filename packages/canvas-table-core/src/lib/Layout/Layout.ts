@@ -262,11 +262,36 @@ export class Layout {
     this.scrollTo(newScrollPos);
   }
 
-  canonicalToscreenPos(canonicalPos: Vector) {
-    return createVector(
-      this.canonicalToScreenX(canonicalPos.x),
-      this.canonicalToScreenY(canonicalPos.y)
-    );
+  *colRange(start = 0) {
+    for (let j = this.columnStart + start; j < this.columnEnd; j++) {
+      yield j;
+    }
+  }
+
+  *rowRange(start = 0) {
+    for (let i = this.rowStart + start; i < this.rowEnd; i++) {
+      yield i;
+    }
+  }
+
+  getCanonicalColPos(columnIndex: number) {
+    return this.canonicalColumnPositions[columnIndex];
+  }
+
+  getCanonicalRowPos(rowIndex: number) {
+    return rowIndex * this.ct.theme.rowHeight;
+  }
+
+  getScreenColPos(colIndex: number) {
+    const canonicalColumnPos = this.getCanonicalColPos(colIndex);
+    const screenColumnX = this.canonicalToScreenX(canonicalColumnPos);
+    return screenColumnX;
+  }
+
+  getScreenRowPos(rowIndex: number) {
+    const canonicalRowPos = this.getCanonicalRowPos(rowIndex);
+    const screenRowY = this.canonicalToScreenY(canonicalRowPos) + this.ct.theme.rowHeight;
+    return screenRowY;
   }
 
   canonicalToScreenX(canonicalX: number) {
@@ -275,10 +300,6 @@ export class Layout {
 
   canonicalToScreenY(canonicalY: number) {
     return canonicalY - this.scrollPos.y;
-  }
-
-  screenToCanonicalPos(screenPos: Vector) {
-    return createVector(this.screenToCanonicalX(screenPos.x), this.screenToCanonicalY(screenPos.y));
   }
 
   screenToCanonicalX(screenX: number) {
