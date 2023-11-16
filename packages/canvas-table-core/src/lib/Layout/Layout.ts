@@ -6,20 +6,19 @@ import { MIN_THUMB_LENGTH } from "../../constants";
 export class Layout {
   ct: CanvasTable;
 
-  tableRect = createRect();
-  bodyRect = createRect();
-  headerRect = createRect();
+  tableAreaRect = createRect();
+  bodyAreaRect = createRect();
+  headerAreaRect = createRect();
+
+  actualBodyWidth = 1;
+  actualBodyHeight = 1;
 
   scrollPos = createVector();
 
   scrollWidth = 1;
   scrollHeight = 1;
 
-  contentWidth = 1;
-  contentHeight = 1;
-
-  gridWidth = 1;
-  gridHeight = 1;
+  bodyRect = createRect();
 
   maxScrollX = 0;
   maxScrollY = 0;
@@ -57,16 +56,13 @@ export class Layout {
   }
 
   updateMain() {
-    const { stage, columnStates, dataRows, theme } = this.ct;
+    const { stage, dataRows, theme } = this.ct;
     const { rowHeight, scrollbarThickness, scrollbarTrackMargin } = theme;
 
     const canvasSize = stage.getSize();
 
-    this.contentWidth = 0;
-    for (const { width } of columnStates) {
-      this.contentWidth += width;
-    }
-    this.contentHeight = dataRows.length * rowHeight;
+    this.actualBodyWidth = this.sumColumnWidths();
+    this.actualBodyHeight = dataRows.length * rowHeight;
 
     const outerTableWidth = canvasSize.width - 1;
     const outerTableHeight = canvasSize.height - 1;
@@ -77,11 +73,11 @@ export class Layout {
     const outerBodyHeight = outerTableHeight - rowHeight;
     const innerBodyHeight = innerTableHeight - rowHeight;
 
-    if (outerTableWidth >= this.contentWidth && outerBodyHeight >= this.contentHeight) {
+    if (outerTableWidth >= this.actualBodyWidth && outerBodyHeight >= this.actualBodyHeight) {
       this.overflowX = this.overflowY = false;
     } else {
-      this.overflowX = innerTableWidth < this.contentWidth;
-      this.overflowY = innerBodyHeight < this.contentHeight;
+      this.overflowX = innerTableWidth < this.actualBodyWidth;
+      this.overflowY = innerBodyHeight < this.actualBodyHeight;
     }
 
     let tableWidth: number;
@@ -104,35 +100,36 @@ export class Layout {
       bodyHeight = outerBodyHeight;
     }
 
-    this.tableRect = {
+    this.tableAreaRect = {
       x: 0,
       y: 0,
       width: tableWidth,
       height: tableHeight
     };
 
-    this.bodyRect = {
+    this.bodyAreaRect = {
       x: 0,
       y: rowHeight,
       width: bodyWidth,
       height: bodyHeight
     };
 
-    this.headerRect = {
+    this.headerAreaRect = {
       x: 0,
       y: 0,
       width: tableWidth,
       height: rowHeight
     };
 
-    this.scrollWidth = Math.max(this.contentWidth, bodyWidth);
-    this.scrollHeight = Math.max(this.contentHeight, bodyHeight);
+    this.scrollWidth = Math.max(this.actualBodyWidth, bodyWidth);
+    this.scrollHeight = Math.max(this.actualBodyHeight, bodyHeight);
 
     this.maxScrollX = this.scrollWidth - bodyWidth;
     this.maxScrollY = this.scrollHeight - bodyHeight;
 
-    this.gridWidth = Math.min(tableWidth, this.contentWidth);
-    this.gridHeight = Math.min(tableHeight, this.contentHeight + rowHeight);
+    this.bodyRect.y = this.bodyAreaRect.y;
+    this.bodyRect.width = Math.min(this.bodyAreaRect.width, this.actualBodyWidth);
+    this.bodyRect.height = Math.min(this.bodyAreaRect.height, this.actualBodyHeight + rowHeight);
 
     this.hsbRect.x = 1;
     this.hsbRect.y = tableHeight + 1;
@@ -189,7 +186,7 @@ export class Layout {
       columnPos = nextColumnPos;
     }
 
-    const scrollRight = this.scrollPos.x + this.bodyRect.width;
+    const scrollRight = this.scrollPos.x + this.bodyAreaRect.width;
 
     for (
       this.columnEnd = this.columnStart;
@@ -205,7 +202,7 @@ export class Layout {
 
     this.rowStart = Math.floor(this.scrollPos.y / theme.rowHeight);
 
-    const scrollBottom = this.scrollPos.y + this.bodyRect.height;
+    const scrollBottom = this.scrollPos.y + this.bodyAreaRect.height;
     this.rowEnd = Math.min(Math.ceil(scrollBottom / theme.rowHeight), dataRows.length);
   }
 
@@ -242,7 +239,7 @@ export class Layout {
 
     const columnState = columnStates[columnIndex];
     const leftScrollX = this.canonicalColumnPositions[columnIndex];
-    const rightScrollX = leftScrollX + columnState.width - this.bodyRect.width;
+    const rightScrollX = leftScrollX + columnState.width - this.bodyAreaRect.width;
 
     if (scrollX > leftScrollX) {
       newScrollPos.x = leftScrollX;
@@ -251,7 +248,7 @@ export class Layout {
     }
 
     const topScrollY = rowIndex * theme.rowHeight;
-    const bottomScrollY = topScrollY + theme.rowHeight - this.bodyRect.height;
+    const bottomScrollY = topScrollY + theme.rowHeight - this.bodyAreaRect.height;
 
     if (scrollY > topScrollY) {
       newScrollPos.y = topScrollY;
@@ -308,5 +305,13 @@ export class Layout {
 
   screenToCanonicalY(screenY: number) {
     return screenY + this.scrollPos.y;
+  }
+
+  sumColumnWidths() {
+    let total = 0;
+    for (const { width } of this.ct.columnStates) {
+      total += width;
+    }
+    return total;
   }
 }

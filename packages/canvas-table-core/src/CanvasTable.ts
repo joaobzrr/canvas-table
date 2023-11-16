@@ -2,6 +2,7 @@ import { Stage } from "./lib/Stage";
 import { Layout } from "./lib/Layout";
 import { Renderer } from "./lib/Renderer";
 import { UiContext, UiId } from "./lib/UiContext";
+import { CellInput } from "./lib/CellInput";
 import { defaultTheme } from "./defaultTheme";
 import {
   scale,
@@ -11,8 +12,8 @@ import {
   pathFromRect,
   createFontSpecifier,
   getFontMetrics,
-  createRect,
-  shallowMerge
+  shallowMerge,
+  createRect
 } from "./utils";
 import {
   COLUMN_RESIZER_LEFT_WIDTH,
@@ -69,9 +70,11 @@ export class CanvasTable {
   mouseCol: number;
   mouseRow: number;
 
-  cellInput: HTMLInputElement | null;
+  cellInput: CellInput;
 
   constructor(params: CreateCanvasTableParams) {
+    this.theme = params?.theme ?? defaultTheme;
+
     this.stage = new Stage(params.container, params.size);
     this.stage.setUpdateFunction(this.update.bind(this));
 
@@ -80,7 +83,6 @@ export class CanvasTable {
 
     this.columnStates = CanvasTable.columnDefsToColumnStates(params.columnDefs);
     this.dataRows = params.dataRows;
-    this.theme = params?.theme ?? defaultTheme;
     this.selectedRowId = null;
 
     this.selectedRowIndex = -1;
@@ -99,7 +101,7 @@ export class CanvasTable {
     this.mouseCol = -1;
     this.mouseRow = -1;
 
-    this.cellInput = null;
+    this.cellInput = new CellInput(this);
 
     this.stage.run();
   }
@@ -144,27 +146,44 @@ export class CanvasTable {
       const event = this.eventQueue.shift()!;
 
       switch (event.type) {
-        case "columnDefsChange":
+        case "columnDefsChange": {
           this.columnStates = CanvasTable.columnDefsToColumnStates(event.columnDefs);
           shouldReflow = true;
           break;
-        case "dataRowsChange":
+        }
+        case "dataRowsChange": {
           this.dataRows = event.dataRows;
           shouldReflow = true;
           break;
-        case "themeChange":
+        }
+        case "themeChange": {
           this.theme = event.theme;
+          this.cellInput.onThemeChanged();
+
           shouldReflow = true;
           break;
-        case "sizeChange":
+        }
+        case "sizeChange": {
           this.stage.setSize(event.size);
           shouldReflow = true;
           break;
+        }
       }
     }
 
     if (shouldReflow) {
       this.layout.reflow();
+
+      const left = 1;
+      const top = this.theme.rowHeight + 1;
+      const width = this.layout.bodyAreaRect.width - 1;
+      const height = this.layout.bodyAreaRect.height - 1;
+
+      const { bodyEl } = this.stage;
+      bodyEl.style.left = `${left}px`;
+      bodyEl.style.top = `${top}px`;
+      bodyEl.style.width = `${width}px`;
+      bodyEl.style.height = `${height}px`;
     }
 
     {
@@ -191,10 +210,7 @@ export class CanvasTable {
     this.mouseRow = -1;
 
     {
-      const { gridWidth, gridHeight } = this.layout;
-      const gridRect = createRect({ width: gridWidth, height: gridHeight });
-
-      if (this.stage.isMouseInRect(gridRect)) {
+      if (this.stage.isMouseInRect(this.layout.bodyRect)) {
         const { x: mouseX, y: mouseY } = this.stage.currentMousePosition;
         const { rowHeight } = this.theme;
 
@@ -233,7 +249,7 @@ export class CanvasTable {
       this.renderer.submit({
         type: "rect",
         color: this.theme.bodyBackgroundColor,
-        ...this.layout.bodyRect
+        ...this.layout.bodyAreaRect
       });
     }
 
@@ -241,7 +257,7 @@ export class CanvasTable {
       this.renderer.submit({
         type: "rect",
         color: this.theme.headerBackgroundColor,
-        ...this.layout.headerRect
+        ...this.layout.headerAreaRect
       });
     }
 
@@ -253,16 +269,14 @@ export class CanvasTable {
         const dataRowId = this.selectId(dataRow);
         this.selectedRowId = dataRowId;
 
-        if (this.cellInput) {
-          this.cellInput!.remove();
-        }
+        this.cellInput.input.remove();
 
         if (this.onSelectRow) {
           this.onSelectRow(this.selectedRowId, dataRow);
         }
       }
 
-      const clipRegion = this.pathFromRect(this.layout.bodyRect);
+      const clipRegion = this.pathFromRect(this.layout.bodyAreaRect);
 
       if (!this.ui.isAnyActive() && this.theme.hoveredRowColor) {
         const rowRect = this.calculateRowRect(this.layout, this.mouseRow);
@@ -280,13 +294,13 @@ export class CanvasTable {
           this.selectedColumnIndex = this.mouseCol;
 
           this.layout.scrollSuchThatCellIsVisible(this.mouseRow, this.mouseCol);
-          this.showCellInput(this.mouseRow, this.mouseCol);
+          this.cellInput.show(this.mouseRow, this.mouseCol);
         }
       }
     }
 
     if (this.selectedRowId !== null) {
-      const clipRegion = this.pathFromRect(this.layout.bodyRect);
+      const clipRegion = this.pathFromRect(this.layout.bodyAreaRect);
 
       for (const rowIndex of this.layout.rowRange()) {
         const dataRow = this.dataRows[rowIndex];
@@ -382,6 +396,11 @@ export class CanvasTable {
       color: this.theme.tableBorderColor
     });
 
+    const gridRect = createRect({
+      width: this.layout.bodyRect.width,
+      height: this.layout.bodyRect.height + this.theme.rowHeight
+    });
+
     // Draw header bottom border
     this.renderer.submit({
       type: "line",
@@ -407,9 +426,9 @@ export class CanvasTable {
       this.renderer.submit({
         type: "line",
         orientation: "vertical",
-        x: this.layout.gridWidth,
+        x: gridRect.width,
         y: 0,
-        length: this.layout.gridHeight,
+        length: gridRect.height,
         color: this.theme.tableBorderColor
       });
     }
@@ -430,8 +449,8 @@ export class CanvasTable {
         type: "line",
         orientation: "horizontal",
         x: 0,
-        y: this.layout.gridHeight,
-        length: this.layout.gridWidth,
+        y: gridRect.height,
+        length: gridRect.width,
         color: this.theme.tableBorderColor
       });
     }
@@ -443,7 +462,7 @@ export class CanvasTable {
         orientation: "horizontal",
         x: 0,
         y: this.layout.getScreenRowPos(rowIndex),
-        length: this.layout.gridWidth,
+        length: gridRect.width,
         color: this.theme.tableBorderColor
       });
     }
@@ -455,7 +474,7 @@ export class CanvasTable {
         orientation: "vertical",
         x: this.layout.getScreenColPos(columnIndex),
         y: 0,
-        length: this.layout.gridHeight,
+        length: gridRect.height,
         color: this.theme.tableBorderColor
       });
     }
@@ -469,7 +488,7 @@ export class CanvasTable {
 
       const fontColor = this.theme.headerFontColor ?? this.theme.fontColor;
 
-      const clipRegion = pathFromRect(this.layout.headerRect);
+      const clipRegion = pathFromRect(this.layout.headerAreaRect);
 
       for (const columnIndex of this.layout.colRange()) {
         const columnState = this.columnStates[columnIndex];
@@ -503,7 +522,7 @@ export class CanvasTable {
 
       const fontColor = this.theme.bodyFontColor ?? this.theme.fontColor;
 
-      const clipRegion = pathFromRect(this.layout.bodyRect);
+      const clipRegion = pathFromRect(this.layout.bodyAreaRect);
 
       for (const columnIndex of this.layout.colRange()) {
         const columnState = this.columnStates[columnIndex];
@@ -542,85 +561,11 @@ export class CanvasTable {
 
   scrollTo(scrollPos: Vector) {
     this.layout.scrollTo(scrollPos);
-
-    if (this.cellInput) {
-      const screenColumnPosition = this.layout.getScreenColPos(this.selectedColumnIndex);
-      const screenRowPosition = this.layout.getScreenRowPos(this.selectedRowIndex);
-
-      const cellX = screenColumnPosition + 1;
-      const cellY = screenRowPosition + 1;
-
-      const style = {
-        left: cellX + "px",
-        top: cellY + "px"
-      };
-
-      Object.assign(this.cellInput.style, style);
-    }
-  }
-
-  createCellInput() {
-    this.cellInput = document.createElement("input");
-
-    this.cellInput.style.position = "absolute";
-    this.cellInput.style.border = "none";
-    this.cellInput.style.outline = "none";
-
-    return this.cellInput;
-  }
-
-  showCellInput(rowIndex: number, columnIndex: number) {
-    this.cellInput = this.createCellInput();
-
-    const columnState = this.columnStates[columnIndex];
-
-    const dataRow = this.dataRows[rowIndex];
-    const value = dataRow[columnState.key] as string;
-    this.cellInput.value = value;
-
-    this.cellInput.addEventListener("keydown", (event: KeyboardEvent) => {
-      if (event.key === "Enter") {
-        this.onEditCell?.(columnState.key, this.cellInput!.value);
-        this.cellInput!.remove();
-        this.cellInput = null;
-      }
-      if (event.key === "Escape") {
-        this.cellInput!.remove();
-        this.cellInput = null;
-      }
-    });
-
-    const screenColumnPosition = this.layout.getScreenColPos(columnIndex);
-    const screenRowPosition = this.layout.getScreenRowPos(rowIndex);
-
-    const { rowHeight } = this.theme;
-
-    const inputX = screenColumnPosition + 1;
-    const inputY = screenRowPosition + 1;
-    const inputWidth = columnState.width - 1;
-    const inputHeight = rowHeight - 1;
-
-    const style = {
-      left: inputX + "px",
-      top: inputY + "px",
-      width: inputWidth + "px",
-      height: inputHeight + "px",
-      paddingLeft: this.theme.cellPadding + "px",
-      paddingRight: this.theme.cellPadding + "px",
-      fontFamily: this.theme.fontFamily,
-      fontSize: this.theme.fontSize,
-      color: this.theme.fontColor
-    };
-    Object.assign(this.cellInput.style, style);
-
-    this.stage.relativeEl.appendChild(this.cellInput);
-
-    this.cellInput.focus();
-    this.cellInput.scrollLeft = this.cellInput.scrollWidth;
+    this.cellInput.onScroll();
   }
 
   doColumnResizer() {
-    const { headerRect } = this.layout;
+    const { headerAreaRect: headerRect } = this.layout;
 
     const clipRegion = pathFromRect(headerRect);
 
@@ -756,9 +701,7 @@ export class CanvasTable {
     const rect = this.calculateColumnResizerRect(columnIndex);
     pos.x = rect.x;
 
-    if (this.cellInput && columnIndex === this.selectedColumnIndex) {
-      this.cellInput.style.width = columnWidth - 1 + "px";
-    }
+    this.cellInput.onResizeColumn(columnIndex);
 
     if (this.onResizeColumn && columnWidthChanged) {
       this.onResizeColumn(columnState.key, columnState.width);
@@ -790,15 +733,15 @@ export class CanvasTable {
   }
 
   calculateRowRect(layout: Layout, rowIndex: number) {
+    const { bodyRect } = layout;
     const { rowHeight } = this.theme;
-    const { gridWidth } = layout;
 
     const screenRowPos = this.layout.getScreenRowPos(rowIndex);
 
     return {
       x: 0,
       y: screenRowPos,
-      width: gridWidth,
+      width: bodyRect.width,
       height: rowHeight
     };
   }

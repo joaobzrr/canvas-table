@@ -16,10 +16,11 @@ export type MouseButtonValue = MouseButtons[keyof MouseButtons];
 export class Stage {
   static MOUSE_BUTTONS = MOUSE_BUTTONS;
 
-  canvas: HTMLCanvasElement;
-  relativeEl: HTMLDivElement;
   containerEl: HTMLDivElement;
+  relativeEl: HTMLDivElement;
+  bodyEl: HTMLDivElement;
   wrapperEl: HTMLDivElement;
+  canvas: HTMLCanvasElement;
 
   currentMousePosition: Vector;
   currentMouseButtons: number;
@@ -50,7 +51,14 @@ export class Stage {
 
     this.relativeEl = document.createElement("div");
     this.relativeEl.style.position = "relative";
+    this.relativeEl.style.height = "100%";
     this.containerEl.appendChild(this.relativeEl);
+
+    this.bodyEl = document.createElement("div");
+    this.bodyEl.style.position = "absolute";
+    this.bodyEl.style.overflow = "hidden";
+    this.bodyEl.style.pointerEvents = "none";
+    this.relativeEl.appendChild(this.bodyEl);
 
     this.wrapperEl = document.createElement("div");
     this.wrapperEl.classList.add("canvas-table-wrapper");
