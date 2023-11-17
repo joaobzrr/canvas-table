@@ -2,7 +2,6 @@ export type BaseShape = {
   type: string;
   x: number;
   y: number;
-  color: string;
   opacity?: number;
   clipRegion?: Path2D;
   sortOrder?: number;
@@ -14,12 +13,16 @@ export type LineShape = BaseShape & {
   type: "line";
   orientation: LineOrientation;
   length: number;
+  color: string;
 };
 
 export type RectShape = BaseShape & {
   type: "rect";
   width: number;
   height: number;
+  strokeColor?: string;
+  strokeWidth?: number;
+  fillColor?: string;
 };
 
 export type TextShape = BaseShape & {
@@ -27,6 +30,7 @@ export type TextShape = BaseShape & {
   font: string;
   text: string;
   maxWidth?: number;
+  color: string;
 };
 
 export type Shape = LineShape | RectShape | TextShape;

@@ -13,14 +13,8 @@ function getContainerId() {
 
 export function CanvasTableComponent(props: CanvasTableProps) {
   const {
-    columnDefs,
-    dataRows,
-    theme,
     containerClassName,
     containerStyle,
-    onSelectRow,
-    onEditCell,
-    onResizeColumn,
     ...rest
   } = props;
 
@@ -32,13 +26,7 @@ export function CanvasTableComponent(props: CanvasTableProps) {
   useLayoutEffect(() => {
     canvasTableRef.current = new CanvasTable({
       container: containerIdRef.current,
-      columnDefs,
-      dataRows,
-      theme,
       size: elementSize,
-      onSelectRow,
-      onEditCell,
-      onResizeColumn,
       ...rest,
     });
 
@@ -49,32 +37,11 @@ export function CanvasTableComponent(props: CanvasTableProps) {
   }, []);
 
   useUpdateEffect(() => {
-    canvasTableRef.current!.setColumnDefs(columnDefs);
-  }, [columnDefs]);
-
-  useUpdateEffect(() => {
-    canvasTableRef.current!.setDataRows(dataRows);
-  }, [dataRows]);
-
-  useUpdateEffect(() => {
-    if (theme) {
-      canvasTableRef.current!.setTheme(theme);
-    }
-  }, [theme]);
-
-  useUpdateEffect(() => {
-    if (elementSize) {
-      canvasTableRef.current!.setSize(elementSize);
-    }
-  }, [elementSize]);
-
-  useUpdateEffect(() => {
     canvasTableRef.current!.config({
-      onSelectRow,
-      onEditCell,
-      onResizeColumn
+      size: elementSize,
+      ...rest
     });
-  }, [onSelectRow, onEditCell, onResizeColumn]);
+  }, [elementSize, rest]);
 
   return (
     <div

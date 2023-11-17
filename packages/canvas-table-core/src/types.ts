@@ -1,21 +1,24 @@
 import { UiId } from "./lib/UiContext/types";
 
-export type CreateCanvasTableParams = {
+export type CreateCanvasTableParams = Omit<TableProps, "selectId" | "selectProp"> & {
   container: string;
-  columnDefs: ColumnDef[];
-  dataRows: DataRow[];
   theme?: Theme;
   size?: Size;
-
   selectId?: IdSelector;
   selectProp?: PropSelector;
+};
 
+export type ConfigCanvasTableParams = Omit<CreateCanvasTableParams, "container">;
+
+export type TableProps = {
+  columnDefs: ColumnDef[];
+  dataRows: DataRow[];
+  selectId: IdSelector;
+  selectProp: PropSelector;
   onSelectRow?: SelectRowCallback;
   onEditCell?: EditCellCallback;
   onResizeColumn?: ColumnResizeCallback;
 };
-
-export type ConfigCanvasTableParams = Omit<CreateCanvasTableParams, "container">;
 
 export type SelectRowCallback = (id: DataRowId, dataRow: DataRow) => void;
 
@@ -31,10 +34,6 @@ export type ColumnDef = {
   key: string;
   title: string;
   width?: number;
-};
-
-export type ColumnState = Omit<ColumnDef, "width"> & {
-  width: number;
 };
 
 export type PropValue = string | number;
@@ -56,6 +55,8 @@ export type Theme = {
   fontColor: string;
   fontStyle: string;
   bodyFontStyle?: string;
+  bodyFontColor?: string;
+  headerFontColor?: string;
   headerFontStyle?: string;
   tableBackgroundColor?: string;
   bodyBackgroundColor?: string;
@@ -66,17 +67,21 @@ export type Theme = {
   scrollbarThumbHoverColor?: string;
   scrollbarThumbPressedColor?: string;
   columnResizerColor: string;
-  bodyFontColor?: string;
-  headerFontColor?: string;
+  selectedCellBorderColor: string;
+  selectedCellBackgroundColor?: string;
 };
 
 export type DraggableProps = {
   id: UiId;
-  rect: Rect;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
   color?: string;
   hotColor?: string;
   activeColor?: string;
   clipRegion?: Path2D;
+  sortOrder?: number;
   onDrag?: (id: UiId, pos: Vector) => void;
 };
 
@@ -96,29 +101,3 @@ export type Size = {
   width: number;
   height: number;
 };
-
-export type ColumnDefsChangeTableEvent = {
-  type: "columnDefsChange";
-  columnDefs: ColumnDef[];
-};
-
-export type DataRowsChangeTableEvent = {
-  type: "dataRowsChange";
-  dataRows: DataRow[];
-};
-
-export type ThemeChangeTableEvent = {
-  type: "themeChange";
-  theme: Theme;
-};
-
-export type SizeChangeTableEvent = {
-  type: "sizeChange";
-  size: Size;
-};
-
-export type TableEvent =
-  | ColumnDefsChangeTableEvent
-  | DataRowsChangeTableEvent
-  | ThemeChangeTableEvent
-  | SizeChangeTableEvent;

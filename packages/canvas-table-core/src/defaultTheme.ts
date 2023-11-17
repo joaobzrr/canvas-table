@@ -2,7 +2,7 @@ import { Theme } from "./types";
 
 export const defaultTheme: Theme = {
   rowHeight: 30,
-  cellPadding: 6,
+  cellPadding: 4,
   tableBorderColor: "#665C54",
   hoveredRowColor: "#d6e9ff",
   selectedRowColor: "#99C8FF",
@@ -18,5 +18,6 @@ export const defaultTheme: Theme = {
   fontColor: "black",
   fontFamily: "Arial",
   fontStyle: "normal",
-  headerFontStyle: "bold"
+  headerFontStyle: "bold",
+  selectedCellBorderColor: "blue"
 };

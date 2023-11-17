@@ -1,37 +1,69 @@
-import { CanvasTable } from "../../CanvasTable";
-import { createRect, createVector, scale } from "../../utils";
-import { Vector } from "../../types";
+import { scale } from "../../utils";
 import { MIN_THUMB_LENGTH } from "../../constants";
+import { TableContext } from "../TableContext";
 
 export class Layout {
-  ct: CanvasTable;
+  tblctx: TableContext;
 
-  tableAreaRect = createRect();
-  bodyAreaRect = createRect();
-  headerAreaRect = createRect();
+  tableAreaX = 0;
+  tableAreaY = 0;
+  tableAreaWidth = 1;
+  tableAreaHeight = 1;
+
+  bodyAreaX = 0;
+  bodyAreaY = 0;
+  bodyAreaWidth = 1;
+  bodyAreaHeight = 1;
+
+  headerAreaX = 0;
+  headerAreaY = 0;
+  headerAreaWidth = 1;
+  headerAreaHeight = 1;
 
   actualBodyWidth = 1;
   actualBodyHeight = 1;
 
-  scrollPos = createVector();
+  bodyX = 0;
+  bodyY = 0;
+  bodyWidth = 0;
+  bodyHeight = 0;
+
+  scrollX = 0;
+  scrollY = 0;
 
   scrollWidth = 1;
   scrollHeight = 1;
 
-  bodyRect = createRect();
-
   maxScrollX = 0;
   maxScrollY = 0;
 
-  hsbRect = createRect();
-  hsbTrackRect = createRect();
-  hsbThumbRect = createRect();
+  hsbX = 0;
+  hsbY = 0;
+  hsbWidth = 1;
+  hsbHeight = 1;
+  hsbTrackX = 0;
+  hsbTrackY = 0;
+  hsbTrackWidth = 1;
+  hsbTrackHeight = 1;
+  hsbThumbX = 0;
+  hsbThumbY = 0;
+  hsbThumbWidth = 1;
+  hsbThumbHeight = 1;
   hsbThumbMinX = 0;
   hsbThumbMaxX = 0;
 
-  vsbRect = createRect();
-  vsbTrackRect = createRect();
-  vsbThumbRect = createRect();
+  vsbX = 0;
+  vsbY = 0;
+  vsbWidth = 1;
+  vsbHeight = 1;
+  vsbTrackX = 0;
+  vsbTrackY = 0;
+  vsbTrackWidth = 1;
+  vsbTrackHeight = 1;
+  vsbThumbX = 0;
+  vsbThumbY = 0;
+  vsbThumbWidth = 1;
+  vsbThumbHeight = 1;
   vsbThumbMinY = 0;
   vsbThumbMaxY = 0;
 
@@ -45,21 +77,23 @@ export class Layout {
 
   canonicalColumnPositions: number[] = [];
 
-  constructor(ct: CanvasTable) {
-    this.ct = ct;
+  constructor(tblctx: TableContext) {
+    this.tblctx = tblctx;
   }
 
   reflow() {
     this.updateMain();
     this.updateScrollbarThumbPositions();
     this.updateViewport();
+
+    this.tblctx.emit("reflow", this);
   }
 
-  updateMain() {
-    const { stage, dataRows, theme } = this.ct;
-    const { rowHeight, scrollbarThickness, scrollbarTrackMargin } = theme;
+  private updateMain() {
+    const { dataRows } = this.tblctx.props;
+    const { rowHeight, scrollbarThickness, scrollbarTrackMargin } = this.tblctx.theme;
 
-    const canvasSize = stage.getSize();
+    const canvasSize = this.tblctx.stage.getSize();
 
     this.actualBodyWidth = this.sumColumnWidths();
     this.actualBodyHeight = dataRows.length * rowHeight;
@@ -100,26 +134,20 @@ export class Layout {
       bodyHeight = outerBodyHeight;
     }
 
-    this.tableAreaRect = {
-      x: 0,
-      y: 0,
-      width: tableWidth,
-      height: tableHeight
-    };
+    this.tableAreaX = 0;
+    this.tableAreaY = 0;
+    this.tableAreaWidth = tableWidth;
+    this.tableAreaHeight = tableHeight;
 
-    this.bodyAreaRect = {
-      x: 0,
-      y: rowHeight,
-      width: bodyWidth,
-      height: bodyHeight
-    };
+    this.bodyAreaX = 0;
+    this.bodyAreaY = rowHeight;
+    this.bodyAreaWidth = bodyWidth;
+    this.bodyAreaHeight = bodyHeight;
 
-    this.headerAreaRect = {
-      x: 0,
-      y: 0,
-      width: tableWidth,
-      height: rowHeight
-    };
+    this.headerAreaX = 0;
+    this.headerAreaY = 0;
+    this.headerAreaWidth = tableWidth;
+    this.headerAreaHeight = rowHeight;
 
     this.scrollWidth = Math.max(this.actualBodyWidth, bodyWidth);
     this.scrollHeight = Math.max(this.actualBodyHeight, bodyHeight);
@@ -127,136 +155,147 @@ export class Layout {
     this.maxScrollX = this.scrollWidth - bodyWidth;
     this.maxScrollY = this.scrollHeight - bodyHeight;
 
-    this.bodyRect.y = this.bodyAreaRect.y;
-    this.bodyRect.width = Math.min(this.bodyAreaRect.width, this.actualBodyWidth);
-    this.bodyRect.height = Math.min(this.bodyAreaRect.height, this.actualBodyHeight + rowHeight);
+    this.bodyY = this.bodyAreaY;
+    this.bodyWidth = Math.min(this.bodyAreaWidth, this.actualBodyWidth);
+    this.bodyHeight = Math.min(this.bodyAreaHeight, this.actualBodyHeight + rowHeight);
 
-    this.hsbRect.x = 1;
-    this.hsbRect.y = tableHeight + 1;
-    this.hsbRect.width = tableWidth - 1;
-    this.hsbRect.height = scrollbarThickness;
+    this.hsbX = 1;
+    this.hsbY = tableHeight + 1;
+    this.hsbWidth = tableWidth - 1;
+    this.hsbHeight = scrollbarThickness;
 
-    this.hsbTrackRect.x = this.hsbRect.x + scrollbarTrackMargin;
-    this.hsbTrackRect.y = this.hsbRect.y + scrollbarTrackMargin;
-    this.hsbTrackRect.width = this.hsbRect.width - scrollbarTrackMargin * 2;
-    this.hsbTrackRect.height = this.hsbRect.height - scrollbarTrackMargin * 2;
+    this.hsbTrackX = this.hsbX + scrollbarTrackMargin;
+    this.hsbTrackY = this.hsbY + scrollbarTrackMargin;
+    this.hsbTrackWidth = this.hsbWidth - scrollbarTrackMargin * 2;
+    this.hsbTrackHeight = this.hsbHeight - scrollbarTrackMargin * 2;
 
-    this.hsbThumbRect.y = this.hsbTrackRect.y;
-    this.hsbThumbRect.height = this.hsbTrackRect.height;
-    this.hsbThumbRect.width = Math.max(
-      (bodyWidth / this.scrollWidth) * this.hsbTrackRect.width,
+    this.hsbThumbY = this.hsbTrackY;
+    this.hsbThumbHeight = this.hsbTrackHeight;
+    this.hsbThumbWidth = Math.max(
+      (bodyWidth / this.scrollWidth) * this.hsbTrackWidth,
       MIN_THUMB_LENGTH
     );
-    this.hsbThumbMinX = this.hsbTrackRect.x;
-    this.hsbThumbMaxX = this.hsbTrackRect.x + this.hsbTrackRect.width - this.hsbThumbRect.width;
+    this.hsbThumbMinX = this.hsbTrackX;
+    this.hsbThumbMaxX = this.hsbTrackX + this.hsbTrackWidth - this.hsbThumbWidth;
 
-    this.vsbRect.x = tableWidth + 1;
-    this.vsbRect.y = rowHeight + 1;
-    this.vsbRect.width = scrollbarThickness;
-    this.vsbRect.height = bodyHeight - 1;
+    this.vsbX = tableWidth + 1;
+    this.vsbY = rowHeight + 1;
+    this.vsbWidth = scrollbarThickness;
+    this.vsbHeight = bodyHeight - 1;
 
-    this.vsbTrackRect.x = this.vsbRect.x + scrollbarTrackMargin;
-    this.vsbTrackRect.y = this.vsbRect.y + scrollbarTrackMargin;
-    this.vsbTrackRect.width = this.vsbRect.width - scrollbarTrackMargin * 2;
-    this.vsbTrackRect.height = this.vsbRect.height - scrollbarTrackMargin * 2;
+    this.vsbTrackX = this.vsbX + scrollbarTrackMargin;
+    this.vsbTrackY = this.vsbY + scrollbarTrackMargin;
+    this.vsbTrackWidth = this.vsbWidth - scrollbarTrackMargin * 2;
+    this.vsbTrackHeight = this.vsbHeight - scrollbarTrackMargin * 2;
 
-    this.vsbThumbRect.x = this.vsbTrackRect.x;
-    this.vsbThumbRect.width = this.vsbTrackRect.width;
-    this.vsbThumbRect.height = Math.max(
-      (bodyHeight / this.scrollHeight) * this.vsbTrackRect.height,
+    this.vsbThumbX = this.vsbTrackX;
+    this.vsbThumbWidth = this.vsbTrackWidth;
+    this.vsbThumbHeight = Math.max(
+      (bodyHeight / this.scrollHeight) * this.vsbTrackHeight,
       MIN_THUMB_LENGTH
     );
-    this.vsbThumbMinY = this.vsbTrackRect.y;
-    this.vsbThumbMaxY = this.vsbTrackRect.y + this.vsbTrackRect.height - this.vsbThumbRect.height;
+    this.vsbThumbMinY = this.vsbTrackY;
+    this.vsbThumbMaxY = this.vsbTrackY + this.vsbTrackHeight - this.vsbThumbHeight;
   }
 
-  updateViewport() {
-    const { columnStates, dataRows, theme } = this.ct;
+  private updateViewport() {
+    const { dataRows } = this.tblctx.props;
+    const { columnWidths } = this.tblctx.state;
+    const { rowHeight } = this.tblctx.theme;
 
     let columnPos = 0;
     this.canonicalColumnPositions = [];
 
-    for (this.columnStart = 0; this.columnStart < columnStates.length; this.columnStart++) {
-      const columnState = columnStates[this.columnStart];
-      const nextColumnPos = columnPos + columnState.width;
-      if (nextColumnPos > this.scrollPos.x) {
+    for (this.columnStart = 0; this.columnStart < columnWidths.length; this.columnStart++) {
+      const columnWidth = columnWidths[this.columnStart];
+      const nextColumnPos = columnPos + columnWidth;
+      if (nextColumnPos > this.scrollX) {
         break;
       }
       this.canonicalColumnPositions.push(columnPos);
       columnPos = nextColumnPos;
     }
 
-    const scrollRight = this.scrollPos.x + this.bodyAreaRect.width;
+    const scrollRight = this.scrollX + this.bodyAreaWidth;
 
     for (
       this.columnEnd = this.columnStart;
-      this.columnEnd < columnStates.length;
+      this.columnEnd < columnWidths.length;
       this.columnEnd++
     ) {
       if (columnPos >= scrollRight) {
         break;
       }
       this.canonicalColumnPositions.push(columnPos);
-      columnPos += columnStates[this.columnEnd].width;
+      columnPos += columnWidths[this.columnEnd];
     }
 
-    this.rowStart = Math.floor(this.scrollPos.y / theme.rowHeight);
+    this.rowStart = Math.floor(this.scrollY / rowHeight);
 
-    const scrollBottom = this.scrollPos.y + this.bodyAreaRect.height;
-    this.rowEnd = Math.min(Math.ceil(scrollBottom / theme.rowHeight), dataRows.length);
+    const scrollBottom = this.scrollY + this.bodyAreaHeight;
+    this.rowEnd = Math.min(Math.ceil(scrollBottom / rowHeight), dataRows.length);
   }
 
-  updateScrollbarThumbPositions() {
-    this.hsbThumbRect.x = scale(
-      this.scrollPos.x,
-      0,
-      this.maxScrollX,
-      this.hsbThumbMinX,
-      this.hsbThumbMaxX
-    );
+  private updateScrollbarThumbPositions() {
+    this.hsbThumbX = scale(this.scrollX, 0, this.maxScrollX, this.hsbThumbMinX, this.hsbThumbMaxX);
 
-    this.vsbThumbRect.y = scale(
-      this.scrollPos.y,
-      0,
-      this.maxScrollY,
-      this.vsbThumbMinY,
-      this.vsbThumbMaxY
-    );
+    this.vsbThumbY = scale(this.scrollY, 0, this.maxScrollY, this.vsbThumbMinY, this.vsbThumbMaxY);
   }
 
-  scrollTo(scrollPos: Vector) {
-    this.scrollPos = scrollPos;
+  resizeColumn(columnIndex: number, columnWidth: number) {
+    const { columnWidths } = this.tblctx.state;
+    columnWidths[columnIndex] = columnWidth;
+
+    this.updateMain();
+
+    this.scrollX = Math.min(this.scrollX, this.maxScrollX);
+    this.scrollY = Math.min(this.scrollY, this.maxScrollY);
+    this.updateScrollbarThumbPositions();
+    this.updateViewport();
+
+    this.tblctx.emit("reflow", this);
+
+    const { columnDefs } = this.tblctx.props;
+    const columnDef = columnDefs[columnIndex];
+    this.tblctx.emit("resizecolumn", columnDef.key, columnWidth);
+  }
+
+  scrollTo(scrollX: number, scrollY: number) {
+    this.scrollX = scrollX;
+    this.scrollY = scrollY;
 
     this.updateScrollbarThumbPositions();
     this.updateViewport();
+
+    this.tblctx.emit("reflow", this);
   }
 
   scrollSuchThatCellIsVisible(rowIndex: number, columnIndex: number) {
-    const { columnStates, theme } = this.ct;
-    const { x: scrollX, y: scrollY } = this.scrollPos;
+    const { columnWidths } = this.tblctx.state;
+    const { rowHeight } = this.tblctx.theme;
 
-    const newScrollPos = createVector(this.scrollPos);
+    const columnWidth = columnWidths[columnIndex];
+    const scrollLeft = this.canonicalColumnPositions[columnIndex];
+    const scrollRight = scrollLeft + columnWidth - this.bodyAreaWidth;
 
-    const columnState = columnStates[columnIndex];
-    const leftScrollX = this.canonicalColumnPositions[columnIndex];
-    const rightScrollX = leftScrollX + columnState.width - this.bodyAreaRect.width;
-
-    if (scrollX > leftScrollX) {
-      newScrollPos.x = leftScrollX;
-    } else if (scrollX < rightScrollX) {
-      newScrollPos.x = Math.min(rightScrollX, leftScrollX);
+    let newScrollX = this.scrollX;
+    if (newScrollX > scrollLeft) {
+      newScrollX = scrollLeft;
+    } else if (newScrollX < scrollRight) {
+      newScrollX = Math.min(scrollRight, scrollLeft);
     }
 
-    const topScrollY = rowIndex * theme.rowHeight;
-    const bottomScrollY = topScrollY + theme.rowHeight - this.bodyAreaRect.height;
+    const scrollTop = rowIndex * rowHeight;
+    const scrollBottom = scrollTop + rowHeight - this.bodyAreaHeight;
 
-    if (scrollY > topScrollY) {
-      newScrollPos.y = topScrollY;
-    } else if (scrollY < bottomScrollY) {
-      newScrollPos.y = bottomScrollY;
+    let newScrollY = this.scrollY;
+    if (newScrollY > scrollTop) {
+      newScrollY = scrollTop;
+    } else if (newScrollY < scrollBottom) {
+      newScrollY = scrollBottom;
     }
 
-    this.scrollTo(newScrollPos);
+    this.scrollTo(newScrollX, newScrollY);
   }
 
   *colRange(start = 0) {
@@ -276,7 +315,8 @@ export class Layout {
   }
 
   getCanonicalRowPos(rowIndex: number) {
-    return rowIndex * this.ct.theme.rowHeight;
+    const { rowHeight } = this.tblctx.theme;
+    return rowIndex * rowHeight;
   }
 
   getScreenColPos(colIndex: number) {
@@ -286,30 +326,33 @@ export class Layout {
   }
 
   getScreenRowPos(rowIndex: number) {
+    const { rowHeight } = this.tblctx.theme;
     const canonicalRowPos = this.getCanonicalRowPos(rowIndex);
-    const screenRowY = this.canonicalToScreenY(canonicalRowPos) + this.ct.theme.rowHeight;
+    const screenRowY = this.canonicalToScreenY(canonicalRowPos) + rowHeight;
     return screenRowY;
   }
 
   canonicalToScreenX(canonicalX: number) {
-    return canonicalX - this.scrollPos.x;
+    return canonicalX - this.scrollX;
   }
 
   canonicalToScreenY(canonicalY: number) {
-    return canonicalY - this.scrollPos.y;
+    return canonicalY - this.scrollY;
   }
 
   screenToCanonicalX(screenX: number) {
-    return screenX + this.scrollPos.x;
+    return screenX + this.scrollX;
   }
 
   screenToCanonicalY(screenY: number) {
-    return screenY + this.scrollPos.y;
+    return screenY + this.scrollY;
   }
 
   sumColumnWidths() {
+    const { columnWidths } = this.tblctx.state;
+
     let total = 0;
-    for (const { width } of this.ct.columnStates) {
+    for (const width of columnWidths) {
       total += width;
     }
     return total;

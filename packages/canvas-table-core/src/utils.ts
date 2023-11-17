@@ -60,13 +60,15 @@ export function isNumber(val: any) {
   return typeof val === "number";
 }
 
-export function isPointInRect(point: Vector, rect: Rect) {
-  return (
-    point.x >= rect.x &&
-    point.x < rect.x + rect.width &&
-    point.y >= rect.y &&
-    point.y < rect.y + rect.height
-  );
+export function isPointInRect(
+  px: number,
+  py: number,
+  rx: number,
+  ry: number,
+  rw: number,
+  rh: number
+) {
+  return px >= rx && px < rx + rw && py >= ry && py < ry + rh;
 }
 
 export function createVector(): Vector;

@@ -1,87 +1,139 @@
-import { CanvasTable } from "../../CanvasTable";
+import { Theme } from "../..";
+import { BORDER_WIDTH, SELECTED_CELL_BORDER_WIDTH } from "../../constants";
+import { Layout } from "../Layout";
+import { TableContext } from "../TableContext";
 
 export class CellInput {
-  ct: CanvasTable;
-  input: HTMLInputElement;
+  tblctx: TableContext;
 
-  constructor(ct: CanvasTable) {
-    this.ct = ct;
+  containerEl: HTMLDivElement;
+  inputEl: HTMLInputElement;
 
-    this.input = document.createElement("input");
-    this.input.style.position = "absolute";
-    this.input.style.border = "none";
-    this.input.style.outline = "none";
-    this.input.style.pointerEvents = "auto";
+  constructor(tblctx: TableContext) {
+    this.tblctx = tblctx;
+    this.tblctx.on("reflow", this.onReflow.bind(this));
+    this.tblctx.on("dblclickcell", this.onDoubleClickCell.bind(this));
+    this.tblctx.on("selrowchange", this.onSelectedRowChange.bind(this));
+    this.tblctx.on("themechange", this.onThemeChange.bind(this));
 
-    this.input.addEventListener("keydown", this.onKeyDown.bind(this));
+    const { relativeEl } = this.tblctx.stage;
+    this.containerEl = document.createElement("div");
+    this.containerEl.style.position = "absolute";
+    this.containerEl.style.overflow = "hidden";
+    this.containerEl.style.pointerEvents = "none";
+    relativeEl.appendChild(this.containerEl);
+
+    this.inputEl = document.createElement("input");
+    this.inputEl.style.position = "absolute";
+    this.inputEl.style.border = "none";
+    this.inputEl.style.outline = "none";
+    this.inputEl.style.pointerEvents = "auto";
+    this.updateInputFromTheme(this.tblctx.theme);
+
+    this.inputEl.addEventListener("keydown", this.onKeyDown.bind(this));
   }
 
-  show(rowIndex: number, columnIndex: number) {
-    const {
-      stage: { bodyEl },
-      layout,
-      columnStates,
-      dataRows,
-      theme: { rowHeight }
-    } = this.ct;
+  onDoubleClickCell(rowIndex: number, colIndex: number) {
+    const { columnDefs, dataRows } = this.tblctx.props;
 
-    bodyEl.appendChild(this.input);
+    if (!this.inputEl.parentNode) {
+      this.containerEl.appendChild(this.inputEl);
+    }
 
-    const columnState = columnStates[columnIndex];
-    this.input.style.width = cssPixelValue(columnState.width - 1);
-
+    const columnDef = columnDefs[colIndex];
     const dataRow = dataRows[rowIndex];
-    const value = dataRow[columnState.key] as string;
-    this.input.value = value;
+    const value = dataRow[columnDef.key] as string;
+    this.inputEl.value = value;
 
-    const screenColPosition = layout.getScreenColPos(columnIndex);
-    const screenRowPosition = layout.getScreenRowPos(rowIndex);
-    this.input.style.left = cssPixelValue(screenColPosition);
-    this.input.style.top = cssPixelValue(screenRowPosition - rowHeight);
+    this.inputEl.focus();
+    this.inputEl.scrollLeft = this.inputEl.scrollWidth;
 
-    this.input.focus();
-    this.input.scrollLeft = this.input.scrollWidth;
+    this.updateFromLayout(this.tblctx.layout);
   }
 
-  onScroll() {
-    const { layout, theme, selectedColumnIndex, selectedRowIndex } = this.ct;
-    const screenColumnPosition = layout.getScreenColPos(selectedColumnIndex);
-    const screenRowPosition = layout.getScreenRowPos(selectedRowIndex);
-    const x = screenColumnPosition;
-    const y = screenRowPosition - theme.rowHeight;
-    this.input.style.left = cssPixelValue(x);
-    this.input.style.top = cssPixelValue(y);
+  onReflow(layout: Layout) {
+    this.updateFromLayout(layout);
   }
 
-  onResizeColumn(columnIndex: number) {
-    const { columnStates, selectedColumnIndex } = this.ct;
-    if (columnIndex === selectedColumnIndex) {
-      const columnState = columnStates[columnIndex];
-      this.input.style.width = cssPixelValue(columnState.width - 1);
+  onSelectedRowChange() {
+    if (this.inputEl.parentNode) {
+      this.inputEl.remove();
     }
   }
 
-  onThemeChanged() {
-    const { rowHeight, cellPadding, selectedRowColor, fontFamily, fontSize } = this.ct.theme;
-
-    this.input.style.height = cssPixelValue(rowHeight - 1);
-    this.input.style.paddingLeft = cssPixelValue(cellPadding - 1);
-    this.input.style.paddingRight = cssPixelValue(cellPadding);
-    this.input.style.backgroundColor = selectedRowColor;
-    this.input.style.fontFamily = fontFamily;
-    this.input.style.fontSize = fontSize;
+  onThemeChange(theme: Theme) {
+    this.updateInputFromTheme(theme);
   }
 
   onKeyDown(event: KeyboardEvent) {
-    const { columnStates, selectedColumnIndex, onEditCell } = this.ct;
+    const { columnDefs, onEditCell } = this.tblctx.props;
+    const { selectedColIndex } = this.tblctx.state;
 
     if (event.key === "Enter") {
-      const columnState = columnStates[selectedColumnIndex];
-      onEditCell?.(columnState.key, this.input.value);
-      this.input.remove();
+      const columnDef = columnDefs[selectedColIndex];
+      onEditCell?.(columnDef.key, this.inputEl.value);
+      this.remove();
     } else if (event.key === "Escape") {
-      this.input.remove();
+      this.remove();
     }
+  }
+
+  remove() {
+    this.tblctx.state.selectedColIndex = -1;
+    this.inputEl.remove();
+  }
+
+  updateFromLayout(layout: Layout) {
+    this.updateContainerFromLayout(layout);
+    this.updateInputFromLayout(layout);
+  }
+
+  updateContainerFromLayout(layout: Layout) {
+    const { rowHeight } = this.tblctx.theme;
+
+    const left = BORDER_WIDTH;
+    const top = rowHeight + BORDER_WIDTH;
+    const width = layout.bodyAreaWidth - BORDER_WIDTH;
+    const height = layout.bodyAreaHeight - BORDER_WIDTH;
+
+    this.containerEl.style.left = cssPixelValue(left);
+    this.containerEl.style.top = cssPixelValue(top);
+    this.containerEl.style.width = cssPixelValue(width);
+    this.containerEl.style.height = cssPixelValue(height);
+  }
+
+  updateInputFromLayout(layout: Layout) {
+    const { columnWidths, selectedColIndex, selectedRowIndex } = this.tblctx.state;
+    const { rowHeight } = this.tblctx.theme;
+
+    const screenColumnPosition = layout.getScreenColPos(selectedColIndex);
+    const screenRowPosition = layout.getScreenRowPos(selectedRowIndex);
+
+    const x = screenColumnPosition + SELECTED_CELL_BORDER_WIDTH - BORDER_WIDTH;
+    const y = screenRowPosition - rowHeight + SELECTED_CELL_BORDER_WIDTH - BORDER_WIDTH;
+    this.inputEl.style.left = cssPixelValue(x);
+    this.inputEl.style.top = cssPixelValue(y);
+
+    const columnWidth = columnWidths[selectedColIndex];
+    const width = columnWidth - SELECTED_CELL_BORDER_WIDTH * 2 + BORDER_WIDTH;
+
+    this.inputEl.style.width = cssPixelValue(width);
+  }
+
+  updateInputFromTheme(theme: Theme) {
+    const { rowHeight, selectedCellBackgroundColor } = this.tblctx.theme;
+
+    const height = rowHeight - SELECTED_CELL_BORDER_WIDTH * 2 + BORDER_WIDTH;
+    this.inputEl.style.height = cssPixelValue(height);
+
+    if (selectedCellBackgroundColor) {
+      this.inputEl.style.backgroundColor = selectedCellBackgroundColor;
+    }
+
+    this.inputEl.style.paddingLeft = cssPixelValue(theme.cellPadding);
+    this.inputEl.style.paddingRight = cssPixelValue(theme.cellPadding);
+    this.inputEl.style.fontFamily = theme.fontFamily;
+    this.inputEl.style.fontSize = theme.fontSize;
   }
 }
 

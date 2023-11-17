@@ -1,5 +1,5 @@
-import { createVector, isPointInRect } from "../../utils";
-import { Rect, Vector, Size } from "../../types";
+import { isPointInRect } from "../../utils";
+import { Size } from "../../types";
 
 const MOUSE_BUTTONS = {
   PRIMARY: 0,
@@ -18,23 +18,28 @@ export class Stage {
 
   containerEl: HTMLDivElement;
   relativeEl: HTMLDivElement;
-  bodyEl: HTMLDivElement;
   wrapperEl: HTMLDivElement;
   canvas: HTMLCanvasElement;
 
-  currentMousePosition: Vector;
-  currentMouseButtons: number;
+  currMouseX = 0;
+  currMouseY = 0;
+  currMouseButtons = 0;
 
-  previousMousePosition: Vector;
-  previousMouseButtons: number;
+  prevMouseX = 0;
+  prevMouseY = 0;
+  prevMouseButtons = 0;
 
   doubleClickButton: number;
 
-  dragAnchorPosition: Vector;
-  mouseDragStartPosition: Vector;
-  dragDistance: Vector;
+  dragAnchorX = 0;
+  dragAnchorY = 0;
+  dragStartX = 0;
+  dragStartY = 0;
+  dragDistanceX = 0;
+  dragDistanceY = 0;
 
-  scrollAmount: Vector;
+  scrollAmountX: number;
+  scrollAmountY: number;
 
   updateFunction?: () => void;
   rafId?: number;
@@ -54,12 +59,6 @@ export class Stage {
     this.relativeEl.style.height = "100%";
     this.containerEl.appendChild(this.relativeEl);
 
-    this.bodyEl = document.createElement("div");
-    this.bodyEl.style.position = "absolute";
-    this.bodyEl.style.overflow = "hidden";
-    this.bodyEl.style.pointerEvents = "none";
-    this.relativeEl.appendChild(this.bodyEl);
-
     this.wrapperEl = document.createElement("div");
     this.wrapperEl.classList.add("canvas-table-wrapper");
     this.relativeEl.appendChild(this.wrapperEl);
@@ -67,18 +66,10 @@ export class Stage {
     this.canvas = document.createElement("canvas");
     this.wrapperEl.appendChild(this.canvas);
 
-    this.currentMousePosition = createVector();
-    this.currentMouseButtons = 0;
-    this.previousMousePosition = createVector();
-    this.previousMouseButtons = 0;
-
     this.doubleClickButton = -1;
 
-    this.dragAnchorPosition = createVector();
-    this.mouseDragStartPosition = createVector();
-    this.dragDistance = createVector();
-
-    this.scrollAmount = createVector();
+    this.scrollAmountX = 0;
+    this.scrollAmountY = 0;
 
     if (size) {
       this.setSize(size);
@@ -138,22 +129,22 @@ export class Stage {
 
   isMouseDown(button: MouseButtonValue) {
     const value = this.normalizedToButtonsValue(button);
-    return this.currentMouseButtons & value;
+    return this.currMouseButtons & value;
   }
 
   isMouseUp(button: MouseButtonValue) {
     const value = this.normalizedToButtonsValue(button);
-    return !(this.currentMouseButtons & value);
+    return !(this.currMouseButtons & value);
   }
 
   isMousePressed(button: MouseButtonValue) {
     const value = this.normalizedToButtonsValue(button);
-    return (this.currentMouseButtons & value) === 1 && (this.previousMouseButtons & value) === 0;
+    return (this.currMouseButtons & value) === 1 && (this.prevMouseButtons & value) === 0;
   }
 
   isMouseReleased(button: MouseButtonValue) {
     const value = this.normalizedToButtonsValue(button);
-    return (this.currentMouseButtons & value) === 0 && (this.previousMouseButtons & value) === 1;
+    return (this.currMouseButtons & value) === 0 && (this.prevMouseButtons & value) === 1;
   }
 
   isMouseDoubleClicked(button: MouseButtonValue) {
@@ -161,33 +152,33 @@ export class Stage {
     return this.doubleClickButton !== -1 && this.doubleClickButton === value;
   }
 
-  isMouseInRect(rect: Rect) {
-    return isPointInRect(this.currentMousePosition, rect);
+  isMouseInRect(x: number, y: number, width: number, height: number) {
+    return isPointInRect(this.currMouseX, this.currMouseY, x, y, width, height);
   }
 
   loop() {
     if (this.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
-      this.mouseDragStartPosition.x = this.currentMousePosition.x;
-      this.mouseDragStartPosition.y = this.currentMousePosition.y;
+      this.dragStartX = this.currMouseX;
+      this.dragStartY = this.currMouseY;
     }
 
     if (this.isMouseDown(Stage.MOUSE_BUTTONS.PRIMARY)) {
-      this.dragDistance.x = this.currentMousePosition.x - this.mouseDragStartPosition.x;
-      this.dragDistance.y = this.currentMousePosition.y - this.mouseDragStartPosition.y;
+      this.dragDistanceX = this.currMouseX - this.dragStartX;
+      this.dragDistanceY = this.currMouseY - this.dragStartY;
     }
 
     if (this.updateFunction) {
       this.updateFunction();
     }
 
-    this.previousMousePosition.x = this.currentMousePosition.x;
-    this.previousMousePosition.y = this.currentMousePosition.y;
-    this.previousMouseButtons = this.currentMouseButtons;
+    this.prevMouseX = this.currMouseX;
+    this.prevMouseY = this.currMouseY;
+    this.prevMouseButtons = this.currMouseButtons;
 
     this.doubleClickButton = -1;
 
-    this.scrollAmount.x = 0;
-    this.scrollAmount.y = 0;
+    this.scrollAmountX = 0;
+    this.scrollAmountY = 0;
 
     this.rafId = requestAnimationFrame(this.loop);
   }
@@ -210,19 +201,15 @@ export class Stage {
   }
 
   onWheel(event: WheelEvent) {
-    this.scrollAmount.x = event.deltaX;
-    this.scrollAmount.y = event.deltaY;
+    this.scrollAmountX = event.deltaX;
+    this.scrollAmountY = event.deltaY;
   }
 
   updateMouseState(event: MouseEvent) {
     const bcr = this.wrapperEl.getBoundingClientRect();
-
-    const currentMousePosition = {
-      x: event.clientX - bcr.x,
-      y: event.clientY - bcr.y
-    };
-    this.currentMousePosition = currentMousePosition;
-    this.currentMouseButtons = event.buttons;
+    this.currMouseX = event.clientX - bcr.x;
+    this.currMouseY = event.clientY - bcr.y;
+    this.currMouseButtons = event.buttons;
   }
 
   normalizedToButtonValue(value: MouseButtonValue) {

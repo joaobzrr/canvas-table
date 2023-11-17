@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { debounce } from "lodash";
 import { CanvasTable } from "@bzrr/canvas-table-react";
 import {
@@ -28,7 +28,10 @@ function App() {
   const table = tables[tableIndex];
 
   const [themeSettings, setThemeSettings] = useState<Partial<Theme>>();
-  const theme = shallowMerge({}, defaultTheme, themeSettings);
+
+  const theme = useMemo(() => {
+    return shallowMerge({}, defaultTheme, themeSettings);
+  }, [themeSettings]);
 
   const [selectedTab, setSelectedTab] = useState<React.Key>("tables");
 
