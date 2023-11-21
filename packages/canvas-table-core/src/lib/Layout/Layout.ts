@@ -90,22 +90,21 @@ export class Layout {
   }
 
   private updateMain() {
-    const { dataRows } = this.tblctx.props;
-    const { rowHeight, scrollbarThickness, scrollbarTrackMargin } = this.tblctx.theme;
+    const { dataRows, theme } = this.tblctx.props;
 
     const canvasSize = this.tblctx.stage.getSize();
 
     this.actualBodyWidth = this.sumColumnWidths();
-    this.actualBodyHeight = dataRows.length * rowHeight;
+    this.actualBodyHeight = dataRows.length * theme.rowHeight;
 
     const outerTableWidth = canvasSize.width - 1;
     const outerTableHeight = canvasSize.height - 1;
 
-    const innerTableWidth = outerTableWidth - scrollbarThickness - 1;
-    const innerTableHeight = outerTableHeight - scrollbarThickness - 1;
+    const innerTableWidth = outerTableWidth - theme.scrollbarThickness - 1;
+    const innerTableHeight = outerTableHeight - theme.scrollbarThickness - 1;
 
-    const outerBodyHeight = outerTableHeight - rowHeight;
-    const innerBodyHeight = innerTableHeight - rowHeight;
+    const outerBodyHeight = outerTableHeight - theme.rowHeight;
+    const innerBodyHeight = innerTableHeight - theme.rowHeight;
 
     if (outerTableWidth >= this.actualBodyWidth && outerBodyHeight >= this.actualBodyHeight) {
       this.overflowX = this.overflowY = false;
@@ -140,14 +139,14 @@ export class Layout {
     this.tableAreaHeight = tableHeight;
 
     this.bodyAreaX = 0;
-    this.bodyAreaY = rowHeight;
+    this.bodyAreaY = theme.rowHeight;
     this.bodyAreaWidth = bodyWidth;
     this.bodyAreaHeight = bodyHeight;
 
     this.headerAreaX = 0;
     this.headerAreaY = 0;
     this.headerAreaWidth = tableWidth;
-    this.headerAreaHeight = rowHeight;
+    this.headerAreaHeight = theme.rowHeight;
 
     this.scrollWidth = Math.max(this.actualBodyWidth, bodyWidth);
     this.scrollHeight = Math.max(this.actualBodyHeight, bodyHeight);
@@ -162,12 +161,12 @@ export class Layout {
     this.hsbX = 1;
     this.hsbY = tableHeight + 1;
     this.hsbWidth = tableWidth - 1;
-    this.hsbHeight = scrollbarThickness;
+    this.hsbHeight = theme.scrollbarThickness;
 
-    this.hsbTrackX = this.hsbX + scrollbarTrackMargin;
-    this.hsbTrackY = this.hsbY + scrollbarTrackMargin;
-    this.hsbTrackWidth = this.hsbWidth - scrollbarTrackMargin * 2;
-    this.hsbTrackHeight = this.hsbHeight - scrollbarTrackMargin * 2;
+    this.hsbTrackX = this.hsbX + theme.scrollbarTrackMargin;
+    this.hsbTrackY = this.hsbY + theme.scrollbarTrackMargin;
+    this.hsbTrackWidth = this.hsbWidth - theme.scrollbarTrackMargin * 2;
+    this.hsbTrackHeight = this.hsbHeight - theme.scrollbarTrackMargin * 2;
 
     this.hsbThumbY = this.hsbTrackY;
     this.hsbThumbHeight = this.hsbTrackHeight;
@@ -179,14 +178,14 @@ export class Layout {
     this.hsbThumbMaxX = this.hsbTrackX + this.hsbTrackWidth - this.hsbThumbWidth;
 
     this.vsbX = tableWidth + 1;
-    this.vsbY = rowHeight + 1;
-    this.vsbWidth = scrollbarThickness;
+    this.vsbY = theme.rowHeight + 1;
+    this.vsbWidth = theme.scrollbarThickness;
     this.vsbHeight = bodyHeight - 1;
 
-    this.vsbTrackX = this.vsbX + scrollbarTrackMargin;
-    this.vsbTrackY = this.vsbY + scrollbarTrackMargin;
-    this.vsbTrackWidth = this.vsbWidth - scrollbarTrackMargin * 2;
-    this.vsbTrackHeight = this.vsbHeight - scrollbarTrackMargin * 2;
+    this.vsbTrackX = this.vsbX + theme.scrollbarTrackMargin;
+    this.vsbTrackY = this.vsbY + theme.scrollbarTrackMargin;
+    this.vsbTrackWidth = this.vsbWidth - theme.scrollbarTrackMargin * 2;
+    this.vsbTrackHeight = this.vsbHeight - theme.scrollbarTrackMargin * 2;
 
     this.vsbThumbX = this.vsbTrackX;
     this.vsbThumbWidth = this.vsbTrackWidth;
@@ -199,9 +198,8 @@ export class Layout {
   }
 
   private updateViewport() {
-    const { dataRows } = this.tblctx.props;
+    const { dataRows, theme } = this.tblctx.props;
     const { columnWidths } = this.tblctx.state;
-    const { rowHeight } = this.tblctx.theme;
 
     let columnPos = 0;
     this.canonicalColumnPositions = [];
@@ -230,10 +228,10 @@ export class Layout {
       columnPos += columnWidths[this.columnEnd];
     }
 
-    this.rowStart = Math.floor(this.scrollY / rowHeight);
+    this.rowStart = Math.floor(this.scrollY / theme.rowHeight);
 
     const scrollBottom = this.scrollY + this.bodyAreaHeight;
-    this.rowEnd = Math.min(Math.ceil(scrollBottom / rowHeight), dataRows.length);
+    this.rowEnd = Math.min(Math.ceil(scrollBottom / theme.rowHeight), dataRows.length);
   }
 
   private updateScrollbarThumbPositions() {
@@ -271,8 +269,8 @@ export class Layout {
   }
 
   scrollSuchThatCellIsVisible(rowIndex: number, columnIndex: number) {
+    const { theme } = this.tblctx.props;
     const { columnWidths } = this.tblctx.state;
-    const { rowHeight } = this.tblctx.theme;
 
     const columnWidth = columnWidths[columnIndex];
     const scrollLeft = this.canonicalColumnPositions[columnIndex];
@@ -285,8 +283,8 @@ export class Layout {
       newScrollX = Math.min(scrollRight, scrollLeft);
     }
 
-    const scrollTop = rowIndex * rowHeight;
-    const scrollBottom = scrollTop + rowHeight - this.bodyAreaHeight;
+    const scrollTop = rowIndex * theme.rowHeight;
+    const scrollBottom = scrollTop + theme.rowHeight - this.bodyAreaHeight;
 
     let newScrollY = this.scrollY;
     if (newScrollY > scrollTop) {
@@ -315,8 +313,8 @@ export class Layout {
   }
 
   getCanonicalRowPos(rowIndex: number) {
-    const { rowHeight } = this.tblctx.theme;
-    return rowIndex * rowHeight;
+    const { theme } = this.tblctx.props;
+    return rowIndex * theme.rowHeight;
   }
 
   getScreenColPos(colIndex: number) {
@@ -326,9 +324,9 @@ export class Layout {
   }
 
   getScreenRowPos(rowIndex: number) {
-    const { rowHeight } = this.tblctx.theme;
+    const { theme } = this.tblctx.props;
     const canonicalRowPos = this.getCanonicalRowPos(rowIndex);
-    const screenRowY = this.canonicalToScreenY(canonicalRowPos) + rowHeight;
+    const screenRowY = this.canonicalToScreenY(canonicalRowPos) + theme.rowHeight;
     return screenRowY;
   }
 

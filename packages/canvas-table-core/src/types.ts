@@ -1,6 +1,6 @@
 import { UiId } from "./lib/UiContext/types";
 
-export type CreateCanvasTableParams = Omit<TableProps, "selectId" | "selectProp"> & {
+export type CreateCanvasTableParams = Omit<TableProps, "theme" | "selectId" | "selectProp"> & {
   container: string;
   theme?: Theme;
   size?: Size;
@@ -13,6 +13,7 @@ export type ConfigCanvasTableParams = Omit<CreateCanvasTableParams, "container">
 export type TableProps = {
   columnDefs: ColumnDef[];
   dataRows: DataRow[];
+  theme: Theme;
   selectId: IdSelector;
   selectProp: PropSelector;
   onSelectRow?: SelectRowCallback;

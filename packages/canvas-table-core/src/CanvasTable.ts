@@ -35,11 +35,13 @@ export class CanvasTable {
       ...rest
     } = params;
 
+    const theme = themeParam ?? defaultTheme;
     const selectId = selectIdParam ?? ((row) => row.id as DataRowId);
     const selectProp = selectPropParam ?? ((row, key) => row[key] as PropValue);
-    const data = {
+    const props = {
       columnDefs,
       dataRows,
+      theme,
       selectId,
       selectProp,
       onResizeColumn,
@@ -50,9 +52,8 @@ export class CanvasTable {
     const columnWidths = CanvasTable.calculateColumnWidths(columnDefs);
     const state = new TableState(columnWidths);
 
-    const theme = themeParam ?? defaultTheme;
     const stage = new Stage(container, size);
-    this.tblctx = new TableContext(data, state, theme, stage);
+    this.tblctx = new TableContext(props, state, stage);
 
     if (onResizeColumn) this.tblctx.on("resizecolumn", onResizeColumn);
     if (onSelectRow) this.tblctx.on("selrowchange", onSelectRow);
@@ -94,8 +95,8 @@ export class CanvasTable {
       shouldReflow = true;
     }
 
-    if (theme && !Object.is(theme, this.tblctx.theme)) {
-      this.tblctx.theme = theme;
+    if (theme && !Object.is(theme, props.theme)) {
+      props.theme = theme;
       this.tblctx.emit("themechange", theme);
       shouldReflow = true;
     }

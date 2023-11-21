@@ -28,21 +28,21 @@ export class CellInput {
     this.inputEl.style.border = "none";
     this.inputEl.style.outline = "none";
     this.inputEl.style.pointerEvents = "auto";
-    this.updateInputFromTheme(this.tblctx.theme);
+    this.updateInputFromTheme(this.tblctx.props.theme);
 
     this.inputEl.addEventListener("keydown", this.onKeyDown.bind(this));
   }
 
   onDoubleClickCell(rowIndex: number, colIndex: number) {
-    const { columnDefs, dataRows } = this.tblctx.props;
+    const { props } = this.tblctx;
 
     if (!this.inputEl.parentNode) {
       this.containerEl.appendChild(this.inputEl);
     }
 
-    const columnDef = columnDefs[colIndex];
-    const dataRow = dataRows[rowIndex];
-    const value = dataRow[columnDef.key] as string;
+    const columnDef = props.columnDefs[colIndex];
+    const dataRow = props.dataRows[rowIndex];
+    const value = props.selectProp(dataRow, columnDef.key) as string;
     this.inputEl.value = value;
 
     this.inputEl.focus();
@@ -89,10 +89,10 @@ export class CellInput {
   }
 
   updateContainerFromLayout(layout: Layout) {
-    const { rowHeight } = this.tblctx.theme;
+    const { theme } = this.tblctx.props;
 
     const left = BORDER_WIDTH;
-    const top = rowHeight + BORDER_WIDTH;
+    const top = theme.rowHeight + BORDER_WIDTH;
     const width = layout.bodyAreaWidth - BORDER_WIDTH;
     const height = layout.bodyAreaHeight - BORDER_WIDTH;
 
@@ -104,13 +104,13 @@ export class CellInput {
 
   updateInputFromLayout(layout: Layout) {
     const { columnWidths, selectedColIndex, selectedRowIndex } = this.tblctx.state;
-    const { rowHeight } = this.tblctx.theme;
+    const { theme } = this.tblctx.props;
 
     const screenColumnPosition = layout.getScreenColPos(selectedColIndex);
     const screenRowPosition = layout.getScreenRowPos(selectedRowIndex);
 
     const x = screenColumnPosition + SELECTED_CELL_BORDER_WIDTH - BORDER_WIDTH;
-    const y = screenRowPosition - rowHeight + SELECTED_CELL_BORDER_WIDTH - BORDER_WIDTH;
+    const y = screenRowPosition - theme.rowHeight + SELECTED_CELL_BORDER_WIDTH - BORDER_WIDTH;
     this.inputEl.style.left = cssPixelValue(x);
     this.inputEl.style.top = cssPixelValue(y);
 
@@ -121,13 +121,11 @@ export class CellInput {
   }
 
   updateInputFromTheme(theme: Theme) {
-    const { rowHeight, selectedCellBackgroundColor } = this.tblctx.theme;
-
-    const height = rowHeight - SELECTED_CELL_BORDER_WIDTH * 2 + BORDER_WIDTH;
+    const height = theme.rowHeight - SELECTED_CELL_BORDER_WIDTH * 2 + BORDER_WIDTH;
     this.inputEl.style.height = cssPixelValue(height);
 
-    if (selectedCellBackgroundColor) {
-      this.inputEl.style.backgroundColor = selectedCellBackgroundColor;
+    if (theme.selectedCellBackgroundColor) {
+      this.inputEl.style.backgroundColor = theme.selectedCellBackgroundColor;
     }
 
     this.inputEl.style.paddingLeft = cssPixelValue(theme.cellPadding);

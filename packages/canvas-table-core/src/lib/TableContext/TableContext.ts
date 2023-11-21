@@ -1,5 +1,5 @@
 import { createNanoEvents, Emitter } from "nanoevents";
-import { TableProps, Theme } from "../../types";
+import { TableProps } from "../../types";
 import { TableState } from "../TableState";
 import { Layout } from "../Layout";
 import { Stage } from "../Stage";
@@ -10,15 +10,13 @@ export class TableContext {
 
   public props: TableProps;
   public state: TableState;
-  public theme: Theme;
   public stage: Stage;
   public layout: Layout;
 
-  constructor(data: TableProps, state: TableState, theme: Theme, stage: Stage) {
+  constructor(data: TableProps, state: TableState, stage: Stage) {
     this.emitter = createNanoEvents();
     this.props = data;
     this.state = state;
-    this.theme = theme;
     this.stage = stage;
     this.layout = new Layout(this);
   }

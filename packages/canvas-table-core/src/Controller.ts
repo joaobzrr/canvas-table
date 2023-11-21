@@ -26,7 +26,8 @@ export class Controller {
   }
 
   update() {
-    const { props, state, theme, stage, layout } = this.tblctx;
+    const { props, state, stage, layout } = this.tblctx;
+    const { theme } = props;
 
     {
       let newScrollX = layout.scrollX;
@@ -61,9 +62,7 @@ export class Controller {
         }
       }
 
-      mouseRow = Math.floor(
-        (layout.screenToCanonicalY(stage.currMouseY) - rowHeight) / rowHeight
-      );
+      mouseRow = Math.floor((layout.screenToCanonicalY(stage.currMouseY) - rowHeight) / rowHeight);
     }
 
     const ctx = stage.getContext();
@@ -102,7 +101,7 @@ export class Controller {
       });
     }
 
-    this.doColumnResizer(); 
+    this.doColumnResizer();
 
     if (layout.overflowX) {
       if (theme.scrollbarTrackColor) {
@@ -274,7 +273,7 @@ export class Controller {
       sortOrder: RENDER_LAYER_1
     });
 
-    const gridWidth  = layout.bodyWidth;
+    const gridWidth = layout.bodyWidth;
     const gridHeight = layout.bodyHeight + theme.rowHeight;
 
     // Draw header bottom border
@@ -491,7 +490,7 @@ export class Controller {
   }
 
   doOneColumnResizer(id: UiId, clipRegion: Path2D) {
-    const { columnResizerColor } = this.tblctx.theme;
+    const { theme } = this.tblctx.props;
 
     const columnIndex = id.index!;
     const rect = this.calculateColumnResizerRect(columnIndex);
@@ -503,8 +502,8 @@ export class Controller {
       width: rect.width,
       height: rect.height,
       onDrag: (id, pos) => this.onDragColumnResizer(id, pos),
-      activeColor: columnResizerColor,
-      hotColor: columnResizerColor,
+      activeColor: theme.columnResizerColor,
+      hotColor: theme.columnResizerColor,
       sortOrder: RENDER_LAYER_3,
       clipRegion
     });
@@ -615,7 +614,11 @@ export class Controller {
   }
 
   calculateColumnResizerRect(columnIndex: number) {
-    const { state, theme, layout } = this.tblctx;
+    const {
+      props: { theme },
+      state,
+      layout
+    } = this.tblctx;
 
     const columnWidth = state.columnWidths[columnIndex];
 
@@ -640,7 +643,10 @@ export class Controller {
   }
 
   calculateRowRect(rowIndex: number) {
-    const { theme, layout } = this.tblctx;
+    const {
+      props: { theme },
+      layout
+    } = this.tblctx;
 
     const screenRowPos = layout.getScreenRowPos(rowIndex);
 
