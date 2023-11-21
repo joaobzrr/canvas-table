@@ -157,7 +157,7 @@ export class Layout {
 
     this.bodyY = this.bodyAreaY;
     this.bodyWidth = Math.min(this.bodyAreaWidth, this.actualBodyWidth);
-    this.bodyHeight = Math.min(this.bodyAreaHeight, this.actualBodyHeight + rowHeight);
+    this.bodyHeight = Math.min(this.bodyAreaHeight, this.actualBodyHeight);
 
     this.hsbX = 1;
     this.hsbY = tableHeight + 1;

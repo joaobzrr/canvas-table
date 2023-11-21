@@ -274,7 +274,7 @@ export class Controller {
       sortOrder: RENDER_LAYER_1
     });
 
-    const gridWidth = layout.bodyWidth;
+    const gridWidth  = layout.bodyWidth;
     const gridHeight = layout.bodyHeight + theme.rowHeight;
 
     // Draw header bottom border
