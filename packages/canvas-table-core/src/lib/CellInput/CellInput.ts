@@ -6,7 +6,8 @@ import { TableContext } from "../TableContext";
 export class CellInput {
   tblctx: TableContext;
 
-  containerEl: HTMLDivElement;
+  viewportEl: HTMLDivElement;
+  contentEl: HTMLDivElement;
   inputEl: HTMLInputElement;
 
   constructor(tblctx: TableContext) {
@@ -17,11 +18,16 @@ export class CellInput {
     this.tblctx.on("themechange", this.onThemeChange.bind(this));
 
     const { relativeEl } = this.tblctx.stage;
-    this.containerEl = document.createElement("div");
-    this.containerEl.style.position = "absolute";
-    this.containerEl.style.overflow = "hidden";
-    this.containerEl.style.pointerEvents = "none";
-    relativeEl.appendChild(this.containerEl);
+    this.viewportEl = document.createElement("div");
+    this.viewportEl.style.position = "absolute";
+    this.viewportEl.style.overflow = "hidden";
+    this.viewportEl.style.pointerEvents = "none";
+    this.viewportEl.addEventListener("scroll", this.onViewportScroll.bind(this));
+    relativeEl.appendChild(this.viewportEl);
+
+    this.contentEl = document.createElement("div");
+    this.contentEl.style.position = "absolute";
+    this.viewportEl.appendChild(this.contentEl);
 
     this.inputEl = document.createElement("input");
     this.inputEl.style.position = "absolute";
@@ -30,14 +36,14 @@ export class CellInput {
     this.inputEl.style.pointerEvents = "auto";
     this.updateInputFromTheme(this.tblctx.props.theme);
 
-    this.inputEl.addEventListener("keydown", this.onKeyDown.bind(this));
+    this.inputEl.addEventListener("keydown", this.onInputKeyDown.bind(this));
   }
 
   onDoubleClickCell(rowIndex: number, colIndex: number) {
     const { props } = this.tblctx;
 
     if (!this.inputEl.parentNode) {
-      this.containerEl.appendChild(this.inputEl);
+      this.contentEl.appendChild(this.inputEl);
     }
 
     const columnDef = props.columnDefs[colIndex];
@@ -65,7 +71,7 @@ export class CellInput {
     this.updateInputFromTheme(theme);
   }
 
-  onKeyDown(event: KeyboardEvent) {
+  onInputKeyDown(event: KeyboardEvent) {
     const { columnDefs, onEditCell } = this.tblctx.props;
     const { selectedColIndex } = this.tblctx.state;
 
@@ -78,17 +84,25 @@ export class CellInput {
     }
   }
 
+  onViewportScroll() {
+    const { layout } = this.tblctx;
+    const { scrollLeft, scrollTop } = this.viewportEl;
+
+    layout.scrollTo(scrollLeft, scrollTop);
+  }
+
   remove() {
     this.tblctx.state.selectedColIndex = -1;
     this.inputEl.remove();
   }
 
   updateFromLayout(layout: Layout) {
-    this.updateContainerFromLayout(layout);
+    this.updateViewportFromLayout(layout);
+    this.updateContentFromLayout(layout);
     this.updateInputFromLayout(layout);
   }
 
-  updateContainerFromLayout(layout: Layout) {
+  updateViewportFromLayout(layout: Layout) {
     const { theme } = this.tblctx.props;
 
     const left = BORDER_WIDTH;
@@ -96,21 +110,29 @@ export class CellInput {
     const width = layout.bodyAreaWidth - BORDER_WIDTH;
     const height = layout.bodyAreaHeight - BORDER_WIDTH;
 
-    this.containerEl.style.left = cssPixelValue(left);
-    this.containerEl.style.top = cssPixelValue(top);
-    this.containerEl.style.width = cssPixelValue(width);
-    this.containerEl.style.height = cssPixelValue(height);
+    this.viewportEl.style.left = cssPixelValue(left);
+    this.viewportEl.style.top = cssPixelValue(top);
+    this.viewportEl.style.width = cssPixelValue(width);
+    this.viewportEl.style.height = cssPixelValue(height);
+
+    this.viewportEl.scrollLeft = layout.scrollX;
+    this.viewportEl.scrollTop = layout.scrollY;
+  }
+
+  updateContentFromLayout(layout: Layout) {
+    this.contentEl.style.width = cssPixelValue(layout.actualBodyWidth);
+    this.contentEl.style.height = cssPixelValue(layout.actualBodyHeight);
   }
 
   updateInputFromLayout(layout: Layout) {
     const { columnWidths, selectedColIndex, selectedRowIndex } = this.tblctx.state;
     const { theme } = this.tblctx.props;
 
-    const screenColumnPosition = layout.getScreenColPos(selectedColIndex);
-    const screenRowPosition = layout.getScreenRowPos(selectedRowIndex);
+    const canonicalColumnPosition = layout.getCanonicalColPos(selectedColIndex);
+    const canonicalRowPosition = layout.getCanonicalRowPos(selectedRowIndex) + theme.rowHeight;
 
-    const x = screenColumnPosition + SELECTED_CELL_BORDER_WIDTH - BORDER_WIDTH;
-    const y = screenRowPosition - theme.rowHeight + SELECTED_CELL_BORDER_WIDTH - BORDER_WIDTH;
+    const x = canonicalColumnPosition + SELECTED_CELL_BORDER_WIDTH - BORDER_WIDTH;
+    const y = canonicalRowPosition - theme.rowHeight + SELECTED_CELL_BORDER_WIDTH - BORDER_WIDTH;
     this.inputEl.style.left = cssPixelValue(x);
     this.inputEl.style.top = cssPixelValue(y);
 
