@@ -8,7 +8,6 @@ import {
   COLUMN_RESIZER_WIDTH,
   MIN_COLUMN_WIDTH,
   RENDER_LAYER_1,
-  RENDER_LAYER_2,
   RENDER_LAYER_3,
   SELECTED_CELL_BORDER_WIDTH
 } from "./constants";
@@ -45,8 +44,8 @@ export class Controller {
       }
     }
 
-    let mouseCol = -1;
     let mouseRow = -1;
+    let _mouseCol = -1;
 
     if (this.isMouseInBody()) {
       const { rowHeight } = theme;
@@ -57,7 +56,7 @@ export class Controller {
         const screenColumnLeft = layout.getScreenColPos(columnIndex);
         const screenColumnRight = screenColumnLeft + columnWidth;
         if (stage.currMouseX >= screenColumnLeft && stage.currMouseX < screenColumnRight) {
-          mouseCol = columnIndex;
+          _mouseCol = columnIndex;
           break;
         }
       }
@@ -161,8 +160,6 @@ export class Controller {
         const dataRowId = props.selectId(dataRow);
         if (dataRowId !== state.selectedRowId) {
           state.selectedRowId = dataRowId;
-          state.selectedColIndex = -1;
-
           this.tblctx.emit("selrowchange", dataRowId, dataRow);
         }
       }
@@ -177,37 +174,6 @@ export class Controller {
           ...rowRect
         });
       }
-
-      if (mouseCol !== -1) {
-        if (stage.isMouseDoubleClicked(Stage.MOUSE_BUTTONS.PRIMARY)) {
-          state.selectedRowIndex = mouseRow;
-          state.selectedColIndex = mouseCol;
-
-          layout.scrollSuchThatCellIsVisible(mouseRow, mouseCol);
-          this.tblctx.emit("dblclickcell", mouseRow, mouseCol);
-        }
-      }
-    }
-
-    if (state.selectedRowIndex !== -1 && state.selectedColIndex !== -1) {
-      const screenColPosition = layout.getScreenColPos(state.selectedColIndex);
-      const screenRowPosition = layout.getScreenRowPos(state.selectedRowIndex);
-
-      const columnWidth = state.columnWidths[state.selectedColIndex];
-
-      const clipRegion = this.bodyAreaPath();
-
-      this.renderer.submit({
-        type: "rect",
-        x: screenColPosition,
-        y: screenRowPosition,
-        width: columnWidth,
-        height: theme.rowHeight,
-        strokeColor: theme.selectedCellBorderColor,
-        strokeWidth: SELECTED_CELL_BORDER_WIDTH,
-        clipRegion,
-        sortOrder: RENDER_LAYER_2
-      });
     }
 
     if (state.selectedRowId !== null) {

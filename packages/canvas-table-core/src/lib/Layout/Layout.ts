@@ -268,34 +268,6 @@ export class Layout {
     this.tblctx.emit("reflow", this);
   }
 
-  scrollSuchThatCellIsVisible(rowIndex: number, columnIndex: number) {
-    const { theme } = this.tblctx.props;
-    const { columnWidths } = this.tblctx.state;
-
-    const columnWidth = columnWidths[columnIndex];
-    const scrollLeft = this.canonicalColumnPositions[columnIndex];
-    const scrollRight = scrollLeft + columnWidth - this.bodyAreaWidth;
-
-    let newScrollX = this.scrollX;
-    if (newScrollX > scrollLeft) {
-      newScrollX = scrollLeft;
-    } else if (newScrollX < scrollRight) {
-      newScrollX = Math.min(scrollRight, scrollLeft);
-    }
-
-    const scrollTop = rowIndex * theme.rowHeight;
-    const scrollBottom = scrollTop + theme.rowHeight - this.bodyAreaHeight;
-
-    let newScrollY = this.scrollY;
-    if (newScrollY > scrollTop) {
-      newScrollY = scrollTop;
-    } else if (newScrollY < scrollBottom) {
-      newScrollY = scrollBottom;
-    }
-
-    this.scrollTo(newScrollX, newScrollY);
-  }
-
   *colRange(start = 0) {
     for (let j = this.columnStart + start; j < this.columnEnd; j++) {
       yield j;

@@ -17,7 +17,6 @@ export type TableProps = {
   selectId: IdSelector;
   selectProp: PropSelector;
   onSelectRow?: SelectRowCallback;
-  onEditCell?: EditCellCallback;
   onResizeColumn?: ColumnResizeCallback;
 };
 

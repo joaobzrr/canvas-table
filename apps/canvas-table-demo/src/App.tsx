@@ -110,7 +110,6 @@ function App() {
           containerClassName={styles.canvasTable}
           selectId={(row) => row.id as DataRowId}
           onSelectRow={(_, row) => setSelectedRow(row)}
-          onEditCell={onEdit}
         />
       </main>
       <div className={styles.rightSidebar}>

@@ -3,7 +3,6 @@ import { defaultTheme } from "./defaultTheme";
 import { TableState } from "./lib/TableState";
 import { Stage } from "./lib/Stage";
 import { TableContext } from "./lib/TableContext";
-import { CellInput } from "./lib/CellInput";
 import { shallowMerge } from "./utils";
 import { DEFAULT_COLUMN_WIDTH } from "./constants";
 import {
@@ -16,10 +15,6 @@ import {
 
 export class CanvasTable {
   private tblctx: TableContext;
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  private cellInput: CellInput;
 
   constructor(params: CreateCanvasTableParams) {
     const {
@@ -57,8 +52,6 @@ export class CanvasTable {
 
     if (onResizeColumn) this.tblctx.on("resizecolumn", onResizeColumn);
     if (onSelectRow) this.tblctx.on("selrowchange", onSelectRow);
-
-    this.cellInput = new CellInput(this.tblctx);
 
     const ct = new Controller(this.tblctx);
     const updateFn = ct.update.bind(ct);
