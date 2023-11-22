@@ -18,6 +18,5 @@ export const defaultTheme: Theme = {
   fontColor: "black",
   fontFamily: "Arial",
   fontStyle: "normal",
-  headerFontStyle: "bold",
-  selectedCellBorderColor: "blue"
+  headerFontStyle: "bold"
 };

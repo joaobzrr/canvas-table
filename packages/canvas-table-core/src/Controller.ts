@@ -8,8 +8,7 @@ import {
   COLUMN_RESIZER_WIDTH,
   MIN_COLUMN_WIDTH,
   RENDER_LAYER_1,
-  RENDER_LAYER_3,
-  SELECTED_CELL_BORDER_WIDTH
+  RENDER_LAYER_3
 } from "./constants";
 import { DraggableProps, Vector } from "./types";
 
@@ -45,23 +44,10 @@ export class Controller {
     }
 
     let mouseRow = -1;
-    let _mouseCol = -1;
-
     if (this.isMouseInBody()) {
-      const { rowHeight } = theme;
-
-      for (const columnIndex of layout.colRange()) {
-        const columnWidth = state.columnWidths[columnIndex];
-
-        const screenColumnLeft = layout.getScreenColPos(columnIndex);
-        const screenColumnRight = screenColumnLeft + columnWidth;
-        if (stage.currMouseX >= screenColumnLeft && stage.currMouseX < screenColumnRight) {
-          _mouseCol = columnIndex;
-          break;
-        }
-      }
-
-      mouseRow = Math.floor((layout.screenToCanonicalY(stage.currMouseY) - rowHeight) / rowHeight);
+      mouseRow = Math.floor(
+        (layout.screenToCanonicalY(stage.currMouseY) - theme.rowHeight) / theme.rowHeight
+      );
     }
 
     const ctx = stage.getContext();
@@ -358,10 +344,9 @@ export class Controller {
 
         const screenColumnPos = layout.getScreenColPos(columnIndex);
 
-        const xOffset = cellPadding + SELECTED_CELL_BORDER_WIDTH;
-        const x = screenColumnPos + xOffset;
+        const x = screenColumnPos + cellPadding;
         const y = rowHeight / 2 + halfFontBounginxBoxAscent;
-        const maxWidth = columnWidth - xOffset * 2;
+        const maxWidth = columnWidth - cellPadding * 2;
         const text = columnDef.title;
 
         this.renderer.submit({
@@ -408,9 +393,8 @@ export class Controller {
 
         const screenColumnPos = layout.getScreenColPos(columnIndex);
 
-        const xOffset = cellPadding + SELECTED_CELL_BORDER_WIDTH;
-        const x = screenColumnPos + xOffset;
-        const maxWidth = columnWidth - xOffset;
+        const x = screenColumnPos + cellPadding;
+        const maxWidth = columnWidth - cellPadding;
 
         for (const rowIndex of layout.rowRange()) {
           const dataRow = dataRows[rowIndex];

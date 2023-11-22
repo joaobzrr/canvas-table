@@ -67,8 +67,6 @@ export type Theme = {
   scrollbarThumbHoverColor?: string;
   scrollbarThumbPressedColor?: string;
   columnResizerColor: string;
-  selectedCellBorderColor: string;
-  selectedCellBackgroundColor?: string;
 };
 
 export type DraggableProps = {
