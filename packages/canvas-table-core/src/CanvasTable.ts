@@ -1,8 +1,9 @@
+import { Unsubscribe } from "nanoevents";
 import { Controller } from "./Controller";
 import { defaultTheme } from "./defaultTheme";
 import { TableState } from "./lib/TableState";
 import { Stage } from "./lib/Stage";
-import { TableContext } from "./lib/TableContext";
+import { TableContext, TableEvents } from "./lib/TableContext";
 import { shallowMerge } from "./utils";
 import { DEFAULT_COLUMN_WIDTH } from "./constants";
 import {
@@ -15,6 +16,8 @@ import {
 
 export class CanvasTable {
   private tblctx: TableContext;
+
+  private eventUnsubs = new Map<keyof TableEvents, Unsubscribe>();
 
   constructor(params: CreateCanvasTableParams) {
     const {
@@ -50,8 +53,15 @@ export class CanvasTable {
     const stage = new Stage(container, size);
     this.tblctx = new TableContext(props, state, stage);
 
-    if (onResizeColumn) this.tblctx.on("resizecolumn", onResizeColumn);
-    if (onSelectRow) this.tblctx.on("selrowchange", onSelectRow);
+    if (onResizeColumn) {
+      const unsub = this.tblctx.on("resizecolumn", onResizeColumn);
+      this.eventUnsubs.set("resizecolumn", unsub);
+    }
+
+    if (onSelectRow) {
+      const unsub = this.tblctx.on("selrowchange", onSelectRow);
+      this.eventUnsubs.set("selrowchange", unsub);
+    }
 
     const ct = new Controller(this.tblctx);
     const updateFn = ct.update.bind(ct);
@@ -68,7 +78,7 @@ export class CanvasTable {
   }
 
   public config(params: Partial<ConfigCanvasTableParams>) {
-    const { columnDefs, dataRows, theme, size, ...rest } = params;
+    const { columnDefs, dataRows, theme, size, onSelectRow, onResizeColumn, ...rest } = params;
 
     const { props, state, stage, layout } = this.tblctx;
 
@@ -85,12 +95,15 @@ export class CanvasTable {
 
     if (dataRows && !Object.is(dataRows, props.dataRows)) {
       props.dataRows = dataRows;
+
       shouldReflow = true;
     }
 
     if (theme && !Object.is(theme, props.theme)) {
       props.theme = theme;
+
       this.tblctx.emit("themechange", theme);
+
       shouldReflow = true;
     }
 
@@ -102,6 +115,28 @@ export class CanvasTable {
 
     if (shouldReflow) {
       layout.reflow();
+    }
+
+    if (onSelectRow) {
+      props.onSelectRow = onSelectRow;
+
+      const oldUnsub = this.eventUnsubs.get("selrowchange");
+      if (oldUnsub) oldUnsub();
+
+      const newUnsub = this.tblctx.on("selrowchange", onSelectRow);
+      this.eventUnsubs.set("selrowchange", newUnsub);
+    }
+
+    if (onResizeColumn) {
+      props.onResizeColumn = onResizeColumn;
+
+      const oldUnsub = this.eventUnsubs.get("resizecolumn");
+      if (oldUnsub) oldUnsub();
+
+      const newUnsub = this.tblctx.on("resizecolumn", onResizeColumn);
+      this.eventUnsubs.set("resizecolumn", newUnsub);
+
+      this.tblctx.on("resizecolumn", onResizeColumn);
     }
 
     shallowMerge(this.tblctx.props, rest);

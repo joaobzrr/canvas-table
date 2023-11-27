@@ -34,6 +34,7 @@ export type ColumnDef = {
   key: string;
   title: string;
   width?: number;
+  [key: string]: any;
 };
 
 export type PropValue = string | number;

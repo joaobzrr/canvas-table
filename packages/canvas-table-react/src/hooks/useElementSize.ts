@@ -1,12 +1,4 @@
-import {
-  useState,
-  useRef,
-  useEffect,
-  useLayoutEffect,
-  MutableRefObject,
-  DependencyList,
-  EffectCallback,
-} from "react";
+import { useState, useRef, useLayoutEffect, MutableRefObject } from "react";
 import useResizeObserver from "@react-hook/resize-observer";
 
 export function useElementSize<T extends HTMLElement = HTMLDivElement>(): [
@@ -28,23 +20,4 @@ export function useElementSize<T extends HTMLElement = HTMLDivElement>(): [
   });
 
   return [size, target];
-}
-
-export function useIsFirstRender() {
-  const isFirst = useRef(true);
-  if (isFirst.current) {
-    isFirst.current = false;
-    return true;
-  }
-  return isFirst.current;
-}
-
-export function useUpdateEffect(effect: EffectCallback, deps?: DependencyList) {
-  const isFirst = useIsFirstRender();
-
-  useEffect(() => {
-    if (!isFirst) {
-      return effect();
-    }
-  }, deps);
 }

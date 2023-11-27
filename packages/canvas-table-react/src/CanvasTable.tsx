@@ -1,6 +1,7 @@
 import { useRef, useLayoutEffect } from "react";
 import { CanvasTable } from "@bzrr/canvas-table-core";
-import { useElementSize, useUpdateEffect } from "./hooks";
+import { useElementSize, usePrevious } from "./hooks";
+import { shallowMatch } from "./utils";
 import { CanvasTableProps } from "./types";
 
 let count = 0;
@@ -18,16 +19,19 @@ export function CanvasTableComponent(props: CanvasTableProps) {
     ...rest
   } = props;
 
+
   const canvasTableRef = useRef<CanvasTable | null>(null);
   const containerIdRef = useRef(getContainerId());
 
   const [elementSize, elementRef] = useElementSize();
 
+  const tableProps = { size: elementSize, ...rest }
+  const prevTableProps = usePrevious(tableProps);
+
   useLayoutEffect(() => {
     canvasTableRef.current = new CanvasTable({
       container: containerIdRef.current,
-      size: elementSize,
-      ...rest,
+      ...tableProps,
     });
 
     return () => {
@@ -36,12 +40,9 @@ export function CanvasTableComponent(props: CanvasTableProps) {
     };
   }, []);
 
-  useUpdateEffect(() => {
-    canvasTableRef.current!.config({
-      size: elementSize,
-      ...rest
-    });
-  }, [elementSize, rest]);
+  if (prevTableProps && !shallowMatch(tableProps, prevTableProps)) {
+    canvasTableRef.current!.config(tableProps);
+  }
 
   return (
     <div
