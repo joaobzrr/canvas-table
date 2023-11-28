@@ -28,7 +28,7 @@ export type ColumnResizeCallback = (key: string, width: number) => void;
 
 export type IdSelector = (dataRow: DataRow) => DataRowId;
 
-export type PropSelector = (dataRow: DataRow, key: string) => PropValue;
+export type PropSelector = (dataRow: DataRow, columnDef: ColumnDef) => PropValue;
 
 export type ColumnDef = {
   key: string;

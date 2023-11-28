@@ -35,7 +35,7 @@ export class CanvasTable {
 
     const theme = themeParam ?? defaultTheme;
     const selectId = selectIdParam ?? ((row) => row.id as DataRowId);
-    const selectProp = selectPropParam ?? ((row, key) => row[key] as PropValue);
+    const selectProp = selectPropParam ?? ((row, columnDef) => row[columnDef.key] as PropValue);
     const props = {
       columnDefs,
       dataRows,

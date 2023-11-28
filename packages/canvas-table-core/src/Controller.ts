@@ -403,7 +403,7 @@ export class Controller {
 
           const y = screenRowPos + rowHeight / 2 + halfFontBoundingBoxAscent;
 
-          const value = props.selectProp(dataRow, columnDef.key);
+          const value = props.selectProp(dataRow, columnDef);
           const text = isNumber(value) ? value.toString() : (value as string);
 
           this.renderer.submit({
