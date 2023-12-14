@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "graphemer": "^1.4.0",
+    "lodash": "^4.17.21",
     "nanoevents": "^8.0.0"
   }
 }

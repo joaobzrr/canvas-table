@@ -1,16 +1,16 @@
 :root {
   --colors-foreground0: #656461;
-  --colors-background0: #FFFFFF;
-  --colors-background1: #FBFBFA;
-  --colors-background2: #D5D5D4;
-  --colors-border: #9E9D9A;
+  --colors-background0: #ffffff;
+  --colors-background1: #fbfbfa;
+  --colors-background2: #d5d5d4;
+  --colors-border: #9e9d9a;
   --font-size: 12px;
 }
 
 .app {
   display: flex;
   height: 100%;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: var(--font-size);
   background-color: var(--colors-background1);
   color: var(--colors-foreground0);

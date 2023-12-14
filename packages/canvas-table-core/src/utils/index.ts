@@ -1,0 +1,14 @@
+export { clamp } from "./clamp";
+export { compareSize } from "./compareSize";
+export { createFontSpecifier } from "./createFontSpecifier";
+export { createVector } from "./createVector";
+export { createRect } from "./createRect";
+export { getFontMetrics } from "./getFontMetrics";
+export { isNumber } from "./isNumber";
+export { isObject } from "./isObject";
+export { isPointInRect } from "./isPointInRect";
+export { lerp } from "./lerp";
+export { pathFromRect } from "./pathFromRect";
+export { shallowMatch } from "./shallowMatch";
+export { shallowMerge } from "./shallowMerge";
+export { throttle } from "./throttle";

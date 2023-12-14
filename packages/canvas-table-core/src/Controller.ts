@@ -2,7 +2,7 @@ import { TableContext } from "./lib/TableContext";
 import { Stage } from "./lib/Stage";
 import { Renderer } from "./lib/Renderer";
 import { UiContext, UiId } from "./lib/UiContext";
-import { scale, clamp, isNumber, createVector, createFontSpecifier, getFontMetrics } from "./utils";
+import { lerp, clamp, isNumber, createVector, createFontSpecifier, getFontMetrics } from "./utils";
 import {
   COLUMN_RESIZER_LEFT_WIDTH,
   COLUMN_RESIZER_WIDTH,
@@ -26,6 +26,10 @@ export class Controller {
   update() {
     const { props, state, stage, layout } = this.tblctx;
     const { theme } = props;
+
+    if (stage.isResize()) {
+      layout.reflow();
+    }
 
     {
       let newScrollX = layout.scrollX;
@@ -51,7 +55,7 @@ export class Controller {
     }
 
     const ctx = stage.getContext();
-    const stageSize = stage.getSize();
+    const stageSize = stage.getCurrentCanvasSize();
 
     if (theme.tableBackgroundColor) {
       this.renderer.submit({
@@ -529,7 +533,7 @@ export class Controller {
     pos.y = layout.hsbTrackY;
 
     const newScrollX = Math.round(
-      scale(hsbThumbX, layout.hsbThumbMinX, layout.hsbThumbMaxX, 0, layout.maxScrollX)
+      lerp(hsbThumbX, layout.hsbThumbMinX, layout.hsbThumbMaxX, 0, layout.maxScrollX)
     );
     layout.scrollTo(newScrollX, layout.scrollY);
   }
@@ -542,7 +546,7 @@ export class Controller {
     pos.x = layout.vsbTrackX;
 
     const newScrollY = Math.round(
-      scale(vsbThumbY, layout.vsbThumbMinY, layout.vsbThumbMaxY, 0, layout.maxScrollY)
+      lerp(vsbThumbY, layout.vsbThumbMinY, layout.vsbThumbMaxY, 0, layout.maxScrollY)
     );
     layout.scrollTo(layout.scrollX, newScrollY);
   }

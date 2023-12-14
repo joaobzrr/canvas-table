@@ -16,9 +16,6 @@ importers:
       '@bzrr/canvas-table-react':
         specifier: workspace:^
         version: link:../../packages/canvas-table-react
-      '@react-hook/resize-observer':
-        specifier: ^1.2.6
-        version: 1.2.6(react@18.2.0)
       clsx:
         specifier: ^2.0.0
         version: 2.0.0
@@ -80,6 +77,9 @@ importers:
       graphemer:
         specifier: ^1.4.0
         version: 1.4.0
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       nanoevents:
         specifier: ^8.0.0
         version: 8.0.0
@@ -117,9 +117,6 @@ importers:
       '@bzrr/canvas-table-core':
         specifier: workspace:^
         version: link:../canvas-table-core
-      '@react-hook/resize-observer':
-        specifier: ^1.2.6
-        version: 1.2.6(react@18.2.0)
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -453,10 +450,6 @@ packages:
       wrap-ansi-cjs: /wrap-ansi@7.0.0
     dev: true
 
-  /@juggle/resize-observer@3.4.0:
-    resolution: {integrity: sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA==}
-    dev: false
-
   /@microsoft/api-extractor-model@7.27.6(@types/node@20.8.7):
     resolution: {integrity: sha512-eiCnlayyum1f7fS2nA9pfIod5VCNR1G+Tq84V/ijDrKrOFVa598BLw145nCsGDMoFenV6ajNi2PR5WCwpAxW6Q==}
     dependencies:
@@ -527,33 +520,6 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
-
-  /@react-hook/latest@1.0.3(react@18.2.0):
-    resolution: {integrity: sha512-dy6duzl+JnAZcDbNTfmaP3xHiKtbXYOaz3G51MGVljh548Y8MWzTr+PHLOfvpypEVW9zwvl+VyKjbWKEVbV1Rg==}
-    peerDependencies:
-      react: '>=16.8'
-    dependencies:
-      react: 18.2.0
-    dev: false
-
-  /@react-hook/passive-layout-effect@1.2.1(react@18.2.0):
-    resolution: {integrity: sha512-IwEphTD75liO8g+6taS+4oqz+nnroocNfWVHWz7j+N+ZO2vYrc6PV1q7GQhuahL0IOR7JccFTsFKQ/mb6iZWAg==}
-    peerDependencies:
-      react: '>=16.8'
-    dependencies:
-      react: 18.2.0
-    dev: false
-
-  /@react-hook/resize-observer@1.2.6(react@18.2.0):
-    resolution: {integrity: sha512-DlBXtLSW0DqYYTW3Ft1/GQFZlTdKY5VAFIC4+km6IK5NiPPDFchGbEJm1j6pSgMqPRHbUQgHJX7RaR76ic1LWA==}
-    peerDependencies:
-      react: '>=16.8'
-    dependencies:
-      '@juggle/resize-observer': 3.4.0
-      '@react-hook/latest': 1.0.3(react@18.2.0)
-      '@react-hook/passive-layout-effect': 1.2.1(react@18.2.0)
-      react: 18.2.0
-    dev: false
 
   /@rollup/pluginutils@4.2.1:
     resolution: {integrity: sha512-iKnFXr7NkdZAIHiIWE+BX5ULi/ucVFYWD6TbAV+rZctiRTY2PL6tsIKhoIOaoskiWAkgu+VsbXgUVDNLHf+InQ==}

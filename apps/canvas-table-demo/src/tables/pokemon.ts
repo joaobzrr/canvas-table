@@ -5,52 +5,52 @@ export const columnDefs = [
   },
   {
     title: "Name",
-    key: "name"
+    key: "name",
   },
   {
     title: "Type 1",
-    key: "type_1"
+    key: "type_1",
   },
   {
     title: "Type 2",
-    key: "type_2"
+    key: "type_2",
   },
   {
     title: "Total",
-    key: "total"
+    key: "total",
   },
   {
     title: "HP",
-    key: "hp"
+    key: "hp",
   },
   {
     title: "Attack",
-    key: "attack"
+    key: "attack",
   },
   {
     title: "Defense",
-    key: "defense"
+    key: "defense",
   },
   {
     title: "Sp. Atk",
-    key: "sp_atk"
+    key: "sp_atk",
   },
   {
     title: "Sp. Def",
-    key: "sp_def"
+    key: "sp_def",
   },
   {
     title: "Speed",
-    key: "speed"
+    key: "speed",
   },
   {
     title: "Generation",
-    key: "generation"
+    key: "generation",
   },
   {
     title: "Legendary",
-    key: "legendary"
-  }
+    key: "legendary",
+  },
 ];
 
 export const dataRows = [
@@ -67,7 +67,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 45,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 2,
@@ -82,7 +82,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 60,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 3,
@@ -97,7 +97,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 80,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 4,
@@ -112,7 +112,7 @@ export const dataRows = [
     sp_def: 120,
     speed: 80,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 5,
@@ -127,7 +127,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 65,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 6,
@@ -142,7 +142,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 80,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 7,
@@ -157,7 +157,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 100,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 8,
@@ -172,7 +172,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 100,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 9,
@@ -187,7 +187,7 @@ export const dataRows = [
     sp_def: 115,
     speed: 100,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 10,
@@ -202,7 +202,7 @@ export const dataRows = [
     sp_def: 64,
     speed: 43,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 11,
@@ -217,7 +217,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 58,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 12,
@@ -232,7 +232,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 78,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 13,
@@ -247,7 +247,7 @@ export const dataRows = [
     sp_def: 115,
     speed: 78,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 14,
@@ -262,7 +262,7 @@ export const dataRows = [
     sp_def: 20,
     speed: 45,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 15,
@@ -277,7 +277,7 @@ export const dataRows = [
     sp_def: 25,
     speed: 30,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 16,
@@ -292,7 +292,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 70,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 17,
@@ -307,7 +307,7 @@ export const dataRows = [
     sp_def: 20,
     speed: 50,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 18,
@@ -322,7 +322,7 @@ export const dataRows = [
     sp_def: 25,
     speed: 35,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 19,
@@ -337,7 +337,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 75,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 20,
@@ -352,7 +352,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 145,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 21,
@@ -367,7 +367,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 56,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 22,
@@ -382,7 +382,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 71,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 23,
@@ -397,7 +397,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 101,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 24,
@@ -412,7 +412,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 121,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 25,
@@ -427,7 +427,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 72,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 26,
@@ -442,7 +442,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 97,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 27,
@@ -457,7 +457,7 @@ export const dataRows = [
     sp_def: 31,
     speed: 70,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 28,
@@ -472,7 +472,7 @@ export const dataRows = [
     sp_def: 61,
     speed: 100,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 29,
@@ -487,7 +487,7 @@ export const dataRows = [
     sp_def: 54,
     speed: 55,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 30,
@@ -502,7 +502,7 @@ export const dataRows = [
     sp_def: 79,
     speed: 80,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 31,
@@ -517,7 +517,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 90,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 32,
@@ -532,7 +532,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 110,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 33,
@@ -547,7 +547,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 40,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 34,
@@ -562,7 +562,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 65,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 35,
@@ -577,7 +577,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 41,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 36,
@@ -592,7 +592,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 56,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 37,
@@ -607,7 +607,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 76,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 38,
@@ -622,7 +622,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 50,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 39,
@@ -637,7 +637,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 65,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 40,
@@ -652,7 +652,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 85,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 41,
@@ -667,7 +667,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 35,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 42,
@@ -682,7 +682,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 60,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 43,
@@ -697,7 +697,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 65,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 44,
@@ -712,7 +712,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 100,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 45,
@@ -727,7 +727,7 @@ export const dataRows = [
     sp_def: 25,
     speed: 20,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 46,
@@ -742,7 +742,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 45,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 47,
@@ -757,7 +757,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 55,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 48,
@@ -772,7 +772,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 90,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 49,
@@ -787,7 +787,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 30,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 50,
@@ -802,7 +802,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 40,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 51,
@@ -817,7 +817,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 50,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 52,
@@ -832,7 +832,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 25,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 53,
@@ -847,7 +847,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 30,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 54,
@@ -862,7 +862,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 45,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 55,
@@ -877,7 +877,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 90,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 56,
@@ -892,7 +892,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 95,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 57,
@@ -907,7 +907,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 120,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 58,
@@ -922,7 +922,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 90,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 59,
@@ -937,7 +937,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 115,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 60,
@@ -952,7 +952,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 55,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 61,
@@ -967,7 +967,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 85,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 62,
@@ -982,7 +982,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 70,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 63,
@@ -997,7 +997,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 95,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 64,
@@ -1012,7 +1012,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 60,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 65,
@@ -1027,7 +1027,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 95,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 66,
@@ -1042,7 +1042,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 90,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 67,
@@ -1057,7 +1057,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 90,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 68,
@@ -1072,7 +1072,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 70,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 69,
@@ -1087,7 +1087,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 90,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 70,
@@ -1102,7 +1102,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 105,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 71,
@@ -1117,7 +1117,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 120,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 72,
@@ -1132,7 +1132,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 150,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 73,
@@ -1147,7 +1147,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 35,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 74,
@@ -1162,7 +1162,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 45,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 75,
@@ -1177,7 +1177,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 55,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 76,
@@ -1192,7 +1192,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 40,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 77,
@@ -1207,7 +1207,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 55,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 78,
@@ -1222,7 +1222,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 70,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 79,
@@ -1237,7 +1237,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 70,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 80,
@@ -1252,7 +1252,7 @@ export const dataRows = [
     sp_def: 120,
     speed: 100,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 81,
@@ -1267,7 +1267,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 20,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 82,
@@ -1282,7 +1282,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 35,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 83,
@@ -1297,7 +1297,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 45,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 84,
@@ -1312,7 +1312,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 90,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 85,
@@ -1327,7 +1327,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 105,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 86,
@@ -1342,7 +1342,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 15,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 87,
@@ -1357,7 +1357,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 30,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 88,
@@ -1372,7 +1372,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 30,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 89,
@@ -1387,7 +1387,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 45,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 90,
@@ -1402,7 +1402,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 70,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 91,
@@ -1417,7 +1417,7 @@ export const dataRows = [
     sp_def: 62,
     speed: 60,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 92,
@@ -1432,7 +1432,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 75,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 93,
@@ -1447,7 +1447,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 100,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 94,
@@ -1462,7 +1462,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 45,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 95,
@@ -1477,7 +1477,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 70,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 96,
@@ -1492,7 +1492,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 25,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 97,
@@ -1507,7 +1507,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 50,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 98,
@@ -1522,7 +1522,7 @@ export const dataRows = [
     sp_def: 25,
     speed: 40,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 99,
@@ -1537,7 +1537,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 70,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 100,
@@ -1552,7 +1552,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 80,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 101,
@@ -1567,7 +1567,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 95,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 102,
@@ -1582,7 +1582,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 110,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 103,
@@ -1597,7 +1597,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 130,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 104,
@@ -1612,7 +1612,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 70,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 105,
@@ -1627,7 +1627,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 42,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 106,
@@ -1642,7 +1642,7 @@ export const dataRows = [
     sp_def: 115,
     speed: 67,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 107,
@@ -1657,7 +1657,7 @@ export const dataRows = [
     sp_def: 25,
     speed: 50,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 108,
@@ -1672,7 +1672,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 75,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 109,
@@ -1687,7 +1687,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 100,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 110,
@@ -1702,7 +1702,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 140,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 111,
@@ -1717,7 +1717,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 40,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 112,
@@ -1732,7 +1732,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 55,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 113,
@@ -1747,7 +1747,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 35,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 114,
@@ -1762,7 +1762,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 45,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 115,
@@ -1777,7 +1777,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 87,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 116,
@@ -1792,7 +1792,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 76,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 117,
@@ -1807,7 +1807,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 30,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 118,
@@ -1822,7 +1822,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 35,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 119,
@@ -1837,7 +1837,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 60,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 120,
@@ -1852,7 +1852,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 25,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 121,
@@ -1867,7 +1867,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 40,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 122,
@@ -1882,7 +1882,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 50,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 123,
@@ -1897,7 +1897,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 60,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 124,
@@ -1912,7 +1912,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 90,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 125,
@@ -1927,7 +1927,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 100,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 126,
@@ -1942,7 +1942,7 @@ export const dataRows = [
     sp_def: 25,
     speed: 60,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 127,
@@ -1957,7 +1957,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 85,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 128,
@@ -1972,7 +1972,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 63,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 129,
@@ -1987,7 +1987,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 68,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 130,
@@ -2002,7 +2002,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 85,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 131,
@@ -2017,7 +2017,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 115,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 132,
@@ -2032,7 +2032,7 @@ export const dataRows = [
     sp_def: 120,
     speed: 90,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 133,
@@ -2047,7 +2047,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 105,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 134,
@@ -2062,7 +2062,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 95,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 135,
@@ -2077,7 +2077,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 105,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 136,
@@ -2092,7 +2092,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 93,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 137,
@@ -2107,7 +2107,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 85,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 138,
@@ -2122,7 +2122,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 105,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 139,
@@ -2137,7 +2137,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 110,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 140,
@@ -2152,7 +2152,7 @@ export const dataRows = [
     sp_def: 20,
     speed: 80,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 141,
@@ -2167,7 +2167,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 81,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 142,
@@ -2182,7 +2182,7 @@ export const dataRows = [
     sp_def: 130,
     speed: 81,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 143,
@@ -2197,7 +2197,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 60,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 144,
@@ -2212,7 +2212,7 @@ export const dataRows = [
     sp_def: 48,
     speed: 48,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 145,
@@ -2227,7 +2227,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 55,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 146,
@@ -2242,7 +2242,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 65,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 147,
@@ -2257,7 +2257,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 130,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 148,
@@ -2272,7 +2272,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 65,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 149,
@@ -2287,7 +2287,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 40,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 150,
@@ -2302,7 +2302,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 35,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 151,
@@ -2317,7 +2317,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 55,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 152,
@@ -2332,7 +2332,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 55,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 153,
@@ -2347,7 +2347,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 80,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 154,
@@ -2362,7 +2362,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 130,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 155,
@@ -2377,7 +2377,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 150,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 156,
@@ -2392,7 +2392,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 30,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 157,
@@ -2407,7 +2407,7 @@ export const dataRows = [
     sp_def: 125,
     speed: 85,
     generation: 1,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 158,
@@ -2422,7 +2422,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 100,
     generation: 1,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 159,
@@ -2437,7 +2437,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 90,
     generation: 1,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 160,
@@ -2452,7 +2452,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 50,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 161,
@@ -2467,7 +2467,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 70,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 162,
@@ -2482,7 +2482,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 80,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 163,
@@ -2497,7 +2497,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 130,
     generation: 1,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 164,
@@ -2512,7 +2512,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 130,
     generation: 1,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 165,
@@ -2527,7 +2527,7 @@ export const dataRows = [
     sp_def: 120,
     speed: 140,
     generation: 1,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 166,
@@ -2542,7 +2542,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 100,
     generation: 1,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 167,
@@ -2557,7 +2557,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 45,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 168,
@@ -2572,7 +2572,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 60,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 169,
@@ -2587,7 +2587,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 80,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 170,
@@ -2602,7 +2602,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 65,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 171,
@@ -2617,7 +2617,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 80,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 172,
@@ -2632,7 +2632,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 100,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 173,
@@ -2647,7 +2647,7 @@ export const dataRows = [
     sp_def: 48,
     speed: 43,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 174,
@@ -2662,7 +2662,7 @@ export const dataRows = [
     sp_def: 63,
     speed: 58,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 175,
@@ -2677,7 +2677,7 @@ export const dataRows = [
     sp_def: 83,
     speed: 78,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 176,
@@ -2692,7 +2692,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 20,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 177,
@@ -2707,7 +2707,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 90,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 178,
@@ -2722,7 +2722,7 @@ export const dataRows = [
     sp_def: 56,
     speed: 50,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 179,
@@ -2737,7 +2737,7 @@ export const dataRows = [
     sp_def: 96,
     speed: 70,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 180,
@@ -2752,7 +2752,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 55,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 181,
@@ -2767,7 +2767,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 85,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 182,
@@ -2782,7 +2782,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 30,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 183,
@@ -2797,7 +2797,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 40,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 184,
@@ -2812,7 +2812,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 130,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 185,
@@ -2827,7 +2827,7 @@ export const dataRows = [
     sp_def: 56,
     speed: 67,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 186,
@@ -2842,7 +2842,7 @@ export const dataRows = [
     sp_def: 76,
     speed: 67,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 187,
@@ -2857,7 +2857,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 60,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 188,
@@ -2872,7 +2872,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 15,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 189,
@@ -2887,7 +2887,7 @@ export const dataRows = [
     sp_def: 20,
     speed: 15,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 190,
@@ -2902,7 +2902,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 20,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 191,
@@ -2917,7 +2917,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 40,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 192,
@@ -2932,7 +2932,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 70,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 193,
@@ -2947,7 +2947,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 95,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 194,
@@ -2962,7 +2962,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 35,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 195,
@@ -2977,7 +2977,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 45,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 196,
@@ -2992,7 +2992,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 55,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 197,
@@ -3007,7 +3007,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 45,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 198,
@@ -3022,7 +3022,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 50,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 199,
@@ -3037,7 +3037,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 40,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 200,
@@ -3052,7 +3052,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 50,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 201,
@@ -3067,7 +3067,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 30,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 202,
@@ -3082,7 +3082,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 70,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 203,
@@ -3097,7 +3097,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 50,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 204,
@@ -3112,7 +3112,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 80,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 205,
@@ -3127,7 +3127,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 110,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 206,
@@ -3142,7 +3142,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 85,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 207,
@@ -3157,7 +3157,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 30,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 208,
@@ -3172,7 +3172,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 30,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 209,
@@ -3187,7 +3187,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 95,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 210,
@@ -3202,7 +3202,7 @@ export const dataRows = [
     sp_def: 25,
     speed: 15,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 211,
@@ -3217,7 +3217,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 35,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 212,
@@ -3232,7 +3232,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 110,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 213,
@@ -3247,7 +3247,7 @@ export const dataRows = [
     sp_def: 130,
     speed: 65,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 214,
@@ -3262,7 +3262,7 @@ export const dataRows = [
     sp_def: 42,
     speed: 91,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 215,
@@ -3277,7 +3277,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 30,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 216,
@@ -3292,7 +3292,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 85,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 217,
@@ -3307,7 +3307,7 @@ export const dataRows = [
     sp_def: 48,
     speed: 48,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 218,
@@ -3322,7 +3322,7 @@ export const dataRows = [
     sp_def: 58,
     speed: 33,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 219,
@@ -3337,7 +3337,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 85,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 220,
@@ -3352,7 +3352,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 15,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 221,
@@ -3367,7 +3367,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 40,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 222,
@@ -3382,7 +3382,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 45,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 223,
@@ -3397,7 +3397,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 85,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 224,
@@ -3412,7 +3412,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 30,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 225,
@@ -3427,7 +3427,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 30,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 226,
@@ -3442,7 +3442,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 30,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 227,
@@ -3457,7 +3457,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 45,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 228,
@@ -3472,7 +3472,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 85,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 229,
@@ -3487,7 +3487,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 65,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 230,
@@ -3502,7 +3502,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 75,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 231,
@@ -3517,7 +3517,7 @@ export const dataRows = [
     sp_def: 230,
     speed: 5,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 232,
@@ -3532,7 +3532,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 85,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 233,
@@ -3547,7 +3547,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 75,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 234,
@@ -3562,7 +3562,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 115,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 235,
@@ -3577,7 +3577,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 40,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 236,
@@ -3592,7 +3592,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 55,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 237,
@@ -3607,7 +3607,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 20,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 238,
@@ -3622,7 +3622,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 30,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 239,
@@ -3637,7 +3637,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 50,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 240,
@@ -3652,7 +3652,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 50,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 241,
@@ -3667,7 +3667,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 35,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 242,
@@ -3682,7 +3682,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 65,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 243,
@@ -3697,7 +3697,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 45,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 244,
@@ -3712,7 +3712,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 75,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 245,
@@ -3727,7 +3727,7 @@ export const dataRows = [
     sp_def: 140,
     speed: 70,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 246,
@@ -3742,7 +3742,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 70,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 247,
@@ -3757,7 +3757,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 65,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 248,
@@ -3772,7 +3772,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 95,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 249,
@@ -3787,7 +3787,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 115,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 250,
@@ -3802,7 +3802,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 85,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 251,
@@ -3817,7 +3817,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 40,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 252,
@@ -3832,7 +3832,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 50,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 253,
@@ -3847,7 +3847,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 60,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 254,
@@ -3862,7 +3862,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 85,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 255,
@@ -3877,7 +3877,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 75,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 256,
@@ -3892,7 +3892,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 35,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 257,
@@ -3907,7 +3907,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 70,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 258,
@@ -3922,7 +3922,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 65,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 259,
@@ -3937,7 +3937,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 95,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 260,
@@ -3952,7 +3952,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 83,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 261,
@@ -3967,7 +3967,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 100,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 262,
@@ -3982,7 +3982,7 @@ export const dataRows = [
     sp_def: 135,
     speed: 55,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 263,
@@ -3997,7 +3997,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 115,
     generation: 2,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 264,
@@ -4012,7 +4012,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 100,
     generation: 2,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 265,
@@ -4027,7 +4027,7 @@ export const dataRows = [
     sp_def: 115,
     speed: 85,
     generation: 2,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 266,
@@ -4042,7 +4042,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 41,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 267,
@@ -4057,7 +4057,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 51,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 268,
@@ -4072,7 +4072,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 61,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 269,
@@ -4087,7 +4087,7 @@ export const dataRows = [
     sp_def: 120,
     speed: 71,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 270,
@@ -4102,7 +4102,7 @@ export const dataRows = [
     sp_def: 154,
     speed: 110,
     generation: 2,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 271,
@@ -4117,7 +4117,7 @@ export const dataRows = [
     sp_def: 154,
     speed: 90,
     generation: 2,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 272,
@@ -4132,7 +4132,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 100,
     generation: 2,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 273,
@@ -4147,7 +4147,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 70,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 274,
@@ -4162,7 +4162,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 95,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 275,
@@ -4177,7 +4177,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 120,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 276,
@@ -4192,7 +4192,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 145,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 277,
@@ -4207,7 +4207,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 45,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 278,
@@ -4222,7 +4222,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 55,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 279,
@@ -4237,7 +4237,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 80,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 280,
@@ -4252,7 +4252,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 100,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 281,
@@ -4267,7 +4267,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 40,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 282,
@@ -4282,7 +4282,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 283,
@@ -4297,7 +4297,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 60,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 284,
@@ -4312,7 +4312,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 70,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 285,
@@ -4327,7 +4327,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 35,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 286,
@@ -4342,7 +4342,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 70,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 287,
@@ -4357,7 +4357,7 @@ export const dataRows = [
     sp_def: 41,
     speed: 60,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 288,
@@ -4372,7 +4372,7 @@ export const dataRows = [
     sp_def: 61,
     speed: 100,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 289,
@@ -4387,7 +4387,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 20,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 290,
@@ -4402,7 +4402,7 @@ export const dataRows = [
     sp_def: 25,
     speed: 15,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 291,
@@ -4417,7 +4417,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 65,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 292,
@@ -4432,7 +4432,7 @@ export const dataRows = [
     sp_def: 25,
     speed: 15,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 293,
@@ -4447,7 +4447,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 65,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 294,
@@ -4462,7 +4462,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 30,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 295,
@@ -4477,7 +4477,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 296,
@@ -4492,7 +4492,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 70,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 297,
@@ -4507,7 +4507,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 30,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 298,
@@ -4522,7 +4522,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 60,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 299,
@@ -4537,7 +4537,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 80,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 300,
@@ -4552,7 +4552,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 85,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 301,
@@ -4567,7 +4567,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 125,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 302,
@@ -4582,7 +4582,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 85,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 303,
@@ -4597,7 +4597,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 65,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 304,
@@ -4612,7 +4612,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 40,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 305,
@@ -4627,7 +4627,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 306,
@@ -4642,7 +4642,7 @@ export const dataRows = [
     sp_def: 115,
     speed: 80,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 307,
@@ -4657,7 +4657,7 @@ export const dataRows = [
     sp_def: 135,
     speed: 100,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 308,
@@ -4672,7 +4672,7 @@ export const dataRows = [
     sp_def: 52,
     speed: 65,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 309,
@@ -4687,7 +4687,7 @@ export const dataRows = [
     sp_def: 82,
     speed: 60,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 310,
@@ -4702,7 +4702,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 35,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 311,
@@ -4717,7 +4717,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 70,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 312,
@@ -4732,7 +4732,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 30,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 313,
@@ -4747,7 +4747,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 90,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 314,
@@ -4762,7 +4762,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 100,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 315,
@@ -4777,7 +4777,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 40,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 316,
@@ -4792,7 +4792,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 160,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 317,
@@ -4807,7 +4807,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 40,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 318,
@@ -4822,7 +4822,7 @@ export const dataRows = [
     sp_def: 23,
     speed: 28,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 319,
@@ -4837,7 +4837,7 @@ export const dataRows = [
     sp_def: 43,
     speed: 48,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 320,
@@ -4852,7 +4852,7 @@ export const dataRows = [
     sp_def: 73,
     speed: 68,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 321,
@@ -4867,7 +4867,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 25,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 322,
@@ -4882,7 +4882,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 323,
@@ -4897,7 +4897,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 20,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 324,
@@ -4912,7 +4912,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 30,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 325,
@@ -4927,7 +4927,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 326,
@@ -4942,7 +4942,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 70,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 327,
@@ -4957,7 +4957,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 328,
@@ -4972,7 +4972,7 @@ export const dataRows = [
     sp_def: 115,
     speed: 20,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 329,
@@ -4987,7 +4987,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 330,
@@ -5002,7 +5002,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 331,
@@ -5017,7 +5017,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 30,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 332,
@@ -5032,7 +5032,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 40,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 333,
@@ -5047,7 +5047,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 334,
@@ -5062,7 +5062,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 335,
@@ -5077,7 +5077,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 60,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 336,
@@ -5092,7 +5092,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 80,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 337,
@@ -5107,7 +5107,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 100,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 338,
@@ -5122,7 +5122,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 65,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 339,
@@ -5137,7 +5137,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 105,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 340,
@@ -5152,7 +5152,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 135,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 341,
@@ -5167,7 +5167,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 95,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 342,
@@ -5182,7 +5182,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 95,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 343,
@@ -5197,7 +5197,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 85,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 344,
@@ -5212,7 +5212,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 85,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 345,
@@ -5227,7 +5227,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 65,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 346,
@@ -5242,7 +5242,7 @@ export const dataRows = [
     sp_def: 53,
     speed: 40,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 347,
@@ -5257,7 +5257,7 @@ export const dataRows = [
     sp_def: 83,
     speed: 55,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 348,
@@ -5272,7 +5272,7 @@ export const dataRows = [
     sp_def: 20,
     speed: 65,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 349,
@@ -5287,7 +5287,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 95,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 350,
@@ -5302,7 +5302,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 105,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 351,
@@ -5317,7 +5317,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 60,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 352,
@@ -5332,7 +5332,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 60,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 353,
@@ -5347,7 +5347,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 35,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 354,
@@ -5362,7 +5362,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 40,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 355,
@@ -5377,7 +5377,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 20,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 356,
@@ -5392,7 +5392,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 20,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 357,
@@ -5407,7 +5407,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 60,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 358,
@@ -5422,7 +5422,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 80,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 359,
@@ -5437,7 +5437,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 60,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 360,
@@ -5452,7 +5452,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 10,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 361,
@@ -5467,7 +5467,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 70,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 362,
@@ -5482,7 +5482,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 100,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 363,
@@ -5497,7 +5497,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 35,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 364,
@@ -5512,7 +5512,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 55,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 365,
@@ -5527,7 +5527,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 366,
@@ -5542,7 +5542,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 80,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 367,
@@ -5557,7 +5557,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 80,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 368,
@@ -5572,7 +5572,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 90,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 369,
@@ -5587,7 +5587,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 65,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 370,
@@ -5602,7 +5602,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 70,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 371,
@@ -5617,7 +5617,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 70,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 372,
@@ -5632,7 +5632,7 @@ export const dataRows = [
     sp_def: 41,
     speed: 60,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 373,
@@ -5647,7 +5647,7 @@ export const dataRows = [
     sp_def: 71,
     speed: 60,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 374,
@@ -5662,7 +5662,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 35,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 375,
@@ -5677,7 +5677,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 55,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 376,
@@ -5692,7 +5692,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 55,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 377,
@@ -5707,7 +5707,7 @@ export const dataRows = [
     sp_def: 120,
     speed: 75,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 378,
@@ -5722,7 +5722,7 @@ export const dataRows = [
     sp_def: 87,
     speed: 23,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 379,
@@ -5737,7 +5737,7 @@ export const dataRows = [
     sp_def: 107,
     speed: 43,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 380,
@@ -5752,7 +5752,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 75,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 381,
@@ -5767,7 +5767,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 45,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 382,
@@ -5782,7 +5782,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 80,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 383,
@@ -5797,7 +5797,7 @@ export const dataRows = [
     sp_def: 125,
     speed: 81,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 384,
@@ -5812,7 +5812,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 70,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 385,
@@ -5827,7 +5827,7 @@ export const dataRows = [
     sp_def: 120,
     speed: 40,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 386,
@@ -5842,7 +5842,7 @@ export const dataRows = [
     sp_def: 33,
     speed: 45,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 387,
@@ -5857,7 +5857,7 @@ export const dataRows = [
     sp_def: 63,
     speed: 65,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 388,
@@ -5872,7 +5872,7 @@ export const dataRows = [
     sp_def: 83,
     speed: 75,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 389,
@@ -5887,7 +5887,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 25,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 390,
@@ -5902,7 +5902,7 @@ export const dataRows = [
     sp_def: 130,
     speed: 25,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 391,
@@ -5917,7 +5917,7 @@ export const dataRows = [
     sp_def: 87,
     speed: 51,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 392,
@@ -5932,7 +5932,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 65,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 393,
@@ -5947,7 +5947,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 75,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 394,
@@ -5962,7 +5962,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 115,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 395,
@@ -5977,7 +5977,7 @@ export const dataRows = [
     sp_def: 48,
     speed: 23,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 396,
@@ -5992,7 +5992,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 397,
@@ -6007,7 +6007,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 80,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 398,
@@ -6022,7 +6022,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 100,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 399,
@@ -6037,7 +6037,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 25,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 400,
@@ -6052,7 +6052,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 45,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 401,
@@ -6067,7 +6067,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 65,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 402,
@@ -6082,7 +6082,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 32,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 403,
@@ -6097,7 +6097,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 52,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 404,
@@ -6112,7 +6112,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 52,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 405,
@@ -6127,7 +6127,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 55,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 406,
@@ -6142,7 +6142,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 97,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 407,
@@ -6157,7 +6157,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 408,
@@ -6172,7 +6172,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 409,
@@ -6187,7 +6187,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 100,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 410,
@@ -6202,7 +6202,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 120,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 411,
@@ -6217,7 +6217,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 30,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 412,
@@ -6232,7 +6232,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 50,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 413,
@@ -6247,7 +6247,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 70,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 414,
@@ -6262,7 +6262,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 110,
     generation: 3,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 415,
@@ -6277,7 +6277,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 50,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 416,
@@ -6292,7 +6292,7 @@ export const dataRows = [
     sp_def: 200,
     speed: 50,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 417,
@@ -6307,7 +6307,7 @@ export const dataRows = [
     sp_def: 150,
     speed: 50,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 418,
@@ -6322,7 +6322,7 @@ export const dataRows = [
     sp_def: 130,
     speed: 110,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 419,
@@ -6337,7 +6337,7 @@ export const dataRows = [
     sp_def: 150,
     speed: 110,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 420,
@@ -6352,7 +6352,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 110,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 421,
@@ -6367,7 +6367,7 @@ export const dataRows = [
     sp_def: 120,
     speed: 110,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 422,
@@ -6382,7 +6382,7 @@ export const dataRows = [
     sp_def: 140,
     speed: 90,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 423,
@@ -6397,7 +6397,7 @@ export const dataRows = [
     sp_def: 160,
     speed: 90,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 424,
@@ -6412,7 +6412,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 90,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 425,
@@ -6427,7 +6427,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 90,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 426,
@@ -6442,7 +6442,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 95,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 427,
@@ -6457,7 +6457,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 115,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 428,
@@ -6472,7 +6472,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 100,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 429,
@@ -6487,7 +6487,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 150,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 430,
@@ -6502,7 +6502,7 @@ export const dataRows = [
     sp_def: 20,
     speed: 150,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 431,
@@ -6517,7 +6517,7 @@ export const dataRows = [
     sp_def: 160,
     speed: 90,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 432,
@@ -6532,7 +6532,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 180,
     generation: 3,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 433,
@@ -6547,7 +6547,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 31,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 434,
@@ -6562,7 +6562,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 36,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 435,
@@ -6577,7 +6577,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 56,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 436,
@@ -6592,7 +6592,7 @@ export const dataRows = [
     sp_def: 44,
     speed: 61,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 437,
@@ -6607,7 +6607,7 @@ export const dataRows = [
     sp_def: 52,
     speed: 81,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 438,
@@ -6622,7 +6622,7 @@ export const dataRows = [
     sp_def: 71,
     speed: 108,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 439,
@@ -6637,7 +6637,7 @@ export const dataRows = [
     sp_def: 56,
     speed: 40,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 440,
@@ -6652,7 +6652,7 @@ export const dataRows = [
     sp_def: 76,
     speed: 50,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 441,
@@ -6667,7 +6667,7 @@ export const dataRows = [
     sp_def: 101,
     speed: 60,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 442,
@@ -6682,7 +6682,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 60,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 443,
@@ -6697,7 +6697,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 80,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 444,
@@ -6712,7 +6712,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 100,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 445,
@@ -6727,7 +6727,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 31,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 446,
@@ -6742,7 +6742,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 71,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 447,
@@ -6757,7 +6757,7 @@ export const dataRows = [
     sp_def: 41,
     speed: 25,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 448,
@@ -6772,7 +6772,7 @@ export const dataRows = [
     sp_def: 51,
     speed: 65,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 449,
@@ -6787,7 +6787,7 @@ export const dataRows = [
     sp_def: 34,
     speed: 45,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 450,
@@ -6802,7 +6802,7 @@ export const dataRows = [
     sp_def: 49,
     speed: 60,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 451,
@@ -6817,7 +6817,7 @@ export const dataRows = [
     sp_def: 79,
     speed: 70,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 452,
@@ -6832,7 +6832,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 55,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 453,
@@ -6847,7 +6847,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 90,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 454,
@@ -6862,7 +6862,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 58,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 455,
@@ -6877,7 +6877,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 58,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 456,
@@ -6892,7 +6892,7 @@ export const dataRows = [
     sp_def: 88,
     speed: 30,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 457,
@@ -6907,7 +6907,7 @@ export const dataRows = [
     sp_def: 138,
     speed: 30,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 458,
@@ -6922,7 +6922,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 36,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 459,
@@ -6937,7 +6937,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 36,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 460,
@@ -6952,7 +6952,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 36,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 461,
@@ -6967,7 +6967,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 36,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 462,
@@ -6982,7 +6982,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 66,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 463,
@@ -6997,7 +6997,7 @@ export const dataRows = [
     sp_def: 42,
     speed: 70,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 464,
@@ -7012,7 +7012,7 @@ export const dataRows = [
     sp_def: 102,
     speed: 40,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 465,
@@ -7027,7 +7027,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 95,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 466,
@@ -7042,7 +7042,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 85,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 467,
@@ -7057,7 +7057,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 115,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 468,
@@ -7072,7 +7072,7 @@ export const dataRows = [
     sp_def: 53,
     speed: 35,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 469,
@@ -7087,7 +7087,7 @@ export const dataRows = [
     sp_def: 78,
     speed: 85,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 470,
@@ -7102,7 +7102,7 @@ export const dataRows = [
     sp_def: 62,
     speed: 34,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 471,
@@ -7117,7 +7117,7 @@ export const dataRows = [
     sp_def: 82,
     speed: 39,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 472,
@@ -7132,7 +7132,7 @@ export const dataRows = [
     sp_def: 66,
     speed: 115,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 473,
@@ -7147,7 +7147,7 @@ export const dataRows = [
     sp_def: 44,
     speed: 70,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 474,
@@ -7162,7 +7162,7 @@ export const dataRows = [
     sp_def: 54,
     speed: 80,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 475,
@@ -7177,7 +7177,7 @@ export const dataRows = [
     sp_def: 56,
     speed: 85,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 476,
@@ -7192,7 +7192,7 @@ export const dataRows = [
     sp_def: 96,
     speed: 105,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 477,
@@ -7207,7 +7207,7 @@ export const dataRows = [
     sp_def: 96,
     speed: 135,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 478,
@@ -7222,7 +7222,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 105,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 479,
@@ -7237,7 +7237,7 @@ export const dataRows = [
     sp_def: 52,
     speed: 71,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 480,
@@ -7252,7 +7252,7 @@ export const dataRows = [
     sp_def: 37,
     speed: 85,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 481,
@@ -7267,7 +7267,7 @@ export const dataRows = [
     sp_def: 59,
     speed: 112,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 482,
@@ -7282,7 +7282,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 45,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 483,
@@ -7297,7 +7297,7 @@ export const dataRows = [
     sp_def: 41,
     speed: 74,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 484,
@@ -7312,7 +7312,7 @@ export const dataRows = [
     sp_def: 61,
     speed: 84,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 485,
@@ -7327,7 +7327,7 @@ export const dataRows = [
     sp_def: 86,
     speed: 23,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 486,
@@ -7342,7 +7342,7 @@ export const dataRows = [
     sp_def: 116,
     speed: 33,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 487,
@@ -7357,7 +7357,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 10,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 488,
@@ -7372,7 +7372,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 60,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 489,
@@ -7387,7 +7387,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 30,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 490,
@@ -7402,7 +7402,7 @@ export const dataRows = [
     sp_def: 42,
     speed: 91,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 491,
@@ -7417,7 +7417,7 @@ export const dataRows = [
     sp_def: 108,
     speed: 35,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 492,
@@ -7432,7 +7432,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 42,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 493,
@@ -7447,7 +7447,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 82,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 494,
@@ -7462,7 +7462,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 102,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 495,
@@ -7477,7 +7477,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 92,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 496,
@@ -7492,7 +7492,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 5,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 497,
@@ -7507,7 +7507,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 60,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 498,
@@ -7522,7 +7522,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 90,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 499,
@@ -7537,7 +7537,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 112,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 500,
@@ -7552,7 +7552,7 @@ export const dataRows = [
     sp_def: 42,
     speed: 32,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 501,
@@ -7567,7 +7567,7 @@ export const dataRows = [
     sp_def: 72,
     speed: 47,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 502,
@@ -7582,7 +7582,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 65,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 503,
@@ -7597,7 +7597,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 95,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 504,
@@ -7612,7 +7612,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 50,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 505,
@@ -7627,7 +7627,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 85,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 506,
@@ -7642,7 +7642,7 @@ export const dataRows = [
     sp_def: 72,
     speed: 46,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 507,
@@ -7657,7 +7657,7 @@ export const dataRows = [
     sp_def: 61,
     speed: 66,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 508,
@@ -7672,7 +7672,7 @@ export const dataRows = [
     sp_def: 86,
     speed: 91,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 509,
@@ -7687,7 +7687,7 @@ export const dataRows = [
     sp_def: 120,
     speed: 50,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 510,
@@ -7702,7 +7702,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 40,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 511,
@@ -7717,7 +7717,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 60,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 512,
@@ -7732,7 +7732,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 30,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 513,
@@ -7747,7 +7747,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 125,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 514,
@@ -7762,7 +7762,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 60,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 515,
@@ -7777,7 +7777,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 50,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 516,
@@ -7792,7 +7792,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 40,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 517,
@@ -7807,7 +7807,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 50,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 518,
@@ -7822,7 +7822,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 95,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 519,
@@ -7837,7 +7837,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 83,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 520,
@@ -7852,7 +7852,7 @@ export const dataRows = [
     sp_def: 115,
     speed: 80,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 521,
@@ -7867,7 +7867,7 @@ export const dataRows = [
     sp_def: 56,
     speed: 95,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 522,
@@ -7882,7 +7882,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 95,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 523,
@@ -7897,7 +7897,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 65,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 524,
@@ -7912,7 +7912,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 95,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 525,
@@ -7927,7 +7927,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 80,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 526,
@@ -7942,7 +7942,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 90,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 527,
@@ -7957,7 +7957,7 @@ export const dataRows = [
     sp_def: 115,
     speed: 80,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 528,
@@ -7972,7 +7972,7 @@ export const dataRows = [
     sp_def: 115,
     speed: 110,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 529,
@@ -7987,7 +7987,7 @@ export const dataRows = [
     sp_def: 150,
     speed: 40,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 530,
@@ -8002,7 +8002,7 @@ export const dataRows = [
     sp_def: 135,
     speed: 45,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 531,
@@ -8017,7 +8017,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 110,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 532,
@@ -8032,7 +8032,7 @@ export const dataRows = [
     sp_def: 77,
     speed: 91,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 533,
@@ -8047,7 +8047,7 @@ export const dataRows = [
     sp_def: 107,
     speed: 86,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 534,
@@ -8062,7 +8062,7 @@ export const dataRows = [
     sp_def: 107,
     speed: 86,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 535,
@@ -8077,7 +8077,7 @@ export const dataRows = [
     sp_def: 107,
     speed: 86,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 536,
@@ -8092,7 +8092,7 @@ export const dataRows = [
     sp_def: 107,
     speed: 86,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 537,
@@ -8107,7 +8107,7 @@ export const dataRows = [
     sp_def: 107,
     speed: 86,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 538,
@@ -8122,7 +8122,7 @@ export const dataRows = [
     sp_def: 130,
     speed: 95,
     generation: 4,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 539,
@@ -8137,7 +8137,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 80,
     generation: 4,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 540,
@@ -8152,7 +8152,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 115,
     generation: 4,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 541,
@@ -8167,7 +8167,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 90,
     generation: 4,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 542,
@@ -8182,7 +8182,7 @@ export const dataRows = [
     sp_def: 120,
     speed: 100,
     generation: 4,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 543,
@@ -8197,7 +8197,7 @@ export const dataRows = [
     sp_def: 106,
     speed: 77,
     generation: 4,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 544,
@@ -8212,7 +8212,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 100,
     generation: 4,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 545,
@@ -8227,7 +8227,7 @@ export const dataRows = [
     sp_def: 120,
     speed: 90,
     generation: 4,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 546,
@@ -8242,7 +8242,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 90,
     generation: 4,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 547,
@@ -8257,7 +8257,7 @@ export const dataRows = [
     sp_def: 130,
     speed: 85,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 548,
@@ -8272,7 +8272,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 80,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 549,
@@ -8287,7 +8287,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 100,
     generation: 4,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 550,
@@ -8302,7 +8302,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 125,
     generation: 4,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 551,
@@ -8317,7 +8317,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 100,
     generation: 4,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 552,
@@ -8332,7 +8332,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 127,
     generation: 4,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 553,
@@ -8347,7 +8347,7 @@ export const dataRows = [
     sp_def: 120,
     speed: 120,
     generation: 4,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 554,
@@ -8362,7 +8362,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 100,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 555,
@@ -8377,7 +8377,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 63,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 556,
@@ -8392,7 +8392,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 83,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 557,
@@ -8407,7 +8407,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 113,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 558,
@@ -8422,7 +8422,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 45,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 559,
@@ -8437,7 +8437,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 55,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 560,
@@ -8452,7 +8452,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 65,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 561,
@@ -8467,7 +8467,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 45,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 562,
@@ -8482,7 +8482,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 60,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 563,
@@ -8497,7 +8497,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 70,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 564,
@@ -8512,7 +8512,7 @@ export const dataRows = [
     sp_def: 39,
     speed: 42,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 565,
@@ -8527,7 +8527,7 @@ export const dataRows = [
     sp_def: 69,
     speed: 77,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 566,
@@ -8542,7 +8542,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 55,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 567,
@@ -8557,7 +8557,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 60,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 568,
@@ -8572,7 +8572,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 80,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 569,
@@ -8587,7 +8587,7 @@ export const dataRows = [
     sp_def: 37,
     speed: 66,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 570,
@@ -8602,7 +8602,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 106,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 571,
@@ -8617,7 +8617,7 @@ export const dataRows = [
     sp_def: 48,
     speed: 64,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 572,
@@ -8632,7 +8632,7 @@ export const dataRows = [
     sp_def: 63,
     speed: 101,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 573,
@@ -8647,7 +8647,7 @@ export const dataRows = [
     sp_def: 48,
     speed: 64,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 574,
@@ -8662,7 +8662,7 @@ export const dataRows = [
     sp_def: 63,
     speed: 101,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 575,
@@ -8677,7 +8677,7 @@ export const dataRows = [
     sp_def: 48,
     speed: 64,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 576,
@@ -8692,7 +8692,7 @@ export const dataRows = [
     sp_def: 63,
     speed: 101,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 577,
@@ -8707,7 +8707,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 24,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 578,
@@ -8722,7 +8722,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 29,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 579,
@@ -8737,7 +8737,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 43,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 580,
@@ -8752,7 +8752,7 @@ export const dataRows = [
     sp_def: 42,
     speed: 65,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 581,
@@ -8767,7 +8767,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 93,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 582,
@@ -8782,7 +8782,7 @@ export const dataRows = [
     sp_def: 32,
     speed: 76,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 583,
@@ -8797,7 +8797,7 @@ export const dataRows = [
     sp_def: 63,
     speed: 116,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 584,
@@ -8812,7 +8812,7 @@ export const dataRows = [
     sp_def: 25,
     speed: 15,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 585,
@@ -8827,7 +8827,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 20,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 586,
@@ -8842,7 +8842,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 25,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 587,
@@ -8857,7 +8857,7 @@ export const dataRows = [
     sp_def: 43,
     speed: 72,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 588,
@@ -8872,7 +8872,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 114,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 589,
@@ -8887,7 +8887,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 68,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 590,
@@ -8902,7 +8902,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 88,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 591,
@@ -8917,7 +8917,7 @@ export const dataRows = [
     sp_def: 86,
     speed: 50,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 592,
@@ -8932,7 +8932,7 @@ export const dataRows = [
     sp_def: 126,
     speed: 50,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 593,
@@ -8947,7 +8947,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 35,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 594,
@@ -8962,7 +8962,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 40,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 595,
@@ -8977,7 +8977,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 45,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 596,
@@ -8992,7 +8992,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 64,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 597,
@@ -9007,7 +9007,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 69,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 598,
@@ -9022,7 +9022,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 74,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 599,
@@ -9037,7 +9037,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 45,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 600,
@@ -9052,7 +9052,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 85,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 601,
@@ -9067,7 +9067,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 42,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 602,
@@ -9082,7 +9082,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 42,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 603,
@@ -9097,7 +9097,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 92,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 604,
@@ -9112,7 +9112,7 @@ export const dataRows = [
     sp_def: 39,
     speed: 57,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 605,
@@ -9127,7 +9127,7 @@ export const dataRows = [
     sp_def: 79,
     speed: 47,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 606,
@@ -9142,7 +9142,7 @@ export const dataRows = [
     sp_def: 69,
     speed: 112,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 607,
@@ -9157,7 +9157,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 66,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 608,
@@ -9172,7 +9172,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 116,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 609,
@@ -9187,7 +9187,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 30,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 610,
@@ -9202,7 +9202,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 90,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 611,
@@ -9217,7 +9217,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 98,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 612,
@@ -9232,7 +9232,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 65,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 613,
@@ -9247,7 +9247,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 74,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 614,
@@ -9262,7 +9262,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 92,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 615,
@@ -9277,7 +9277,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 50,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 616,
@@ -9292,7 +9292,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 95,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 617,
@@ -9307,7 +9307,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 55,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 618,
@@ -9322,7 +9322,7 @@ export const dataRows = [
     sp_def: 67,
     speed: 60,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 619,
@@ -9337,7 +9337,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 55,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 620,
@@ -9352,7 +9352,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 45,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 621,
@@ -9367,7 +9367,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 48,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 622,
@@ -9382,7 +9382,7 @@ export const dataRows = [
     sp_def: 115,
     speed: 58,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 623,
@@ -9397,7 +9397,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 97,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 624,
@@ -9412,7 +9412,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 30,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 625,
@@ -9427,7 +9427,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 30,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 626,
@@ -9442,7 +9442,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 22,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 627,
@@ -9457,7 +9457,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 32,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 628,
@@ -9472,7 +9472,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 70,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 629,
@@ -9487,7 +9487,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 110,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 630,
@@ -9502,7 +9502,7 @@ export const dataRows = [
     sp_def: 62,
     speed: 65,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 631,
@@ -9517,7 +9517,7 @@ export const dataRows = [
     sp_def: 82,
     speed: 75,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 632,
@@ -9532,7 +9532,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 65,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 633,
@@ -9547,7 +9547,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 105,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 634,
@@ -9562,7 +9562,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 75,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 635,
@@ -9577,7 +9577,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 115,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 636,
@@ -9592,7 +9592,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 45,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 637,
@@ -9607,7 +9607,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 55,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 638,
@@ -9622,7 +9622,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 65,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 639,
@@ -9637,7 +9637,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 20,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 640,
@@ -9652,7 +9652,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 30,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 641,
@@ -9667,7 +9667,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 30,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 642,
@@ -9682,7 +9682,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 55,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 643,
@@ -9697,7 +9697,7 @@ export const dataRows = [
     sp_def: 63,
     speed: 98,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 644,
@@ -9712,7 +9712,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 44,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 645,
@@ -9727,7 +9727,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 59,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 646,
@@ -9742,7 +9742,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 79,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 647,
@@ -9757,7 +9757,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 75,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 648,
@@ -9772,7 +9772,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 95,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 649,
@@ -9787,7 +9787,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 103,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 650,
@@ -9802,7 +9802,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 60,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 651,
@@ -9817,7 +9817,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 20,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 652,
@@ -9832,7 +9832,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 15,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 653,
@@ -9847,7 +9847,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 30,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 654,
@@ -9862,7 +9862,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 40,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 655,
@@ -9877,7 +9877,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 60,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 656,
@@ -9892,7 +9892,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 65,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 657,
@@ -9907,7 +9907,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 65,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 658,
@@ -9922,7 +9922,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 108,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 659,
@@ -9937,7 +9937,7 @@ export const dataRows = [
     sp_def: 86,
     speed: 10,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 660,
@@ -9952,7 +9952,7 @@ export const dataRows = [
     sp_def: 116,
     speed: 20,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 661,
@@ -9967,7 +9967,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 30,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 662,
@@ -9982,7 +9982,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 50,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 663,
@@ -9997,7 +9997,7 @@ export const dataRows = [
     sp_def: 85,
     speed: 90,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 664,
@@ -10012,7 +10012,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 60,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 665,
@@ -10027,7 +10027,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 40,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 666,
@@ -10042,7 +10042,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 50,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 667,
@@ -10057,7 +10057,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 30,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 668,
@@ -10072,7 +10072,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 40,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 669,
@@ -10087,7 +10087,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 20,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 670,
@@ -10102,7 +10102,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 55,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 671,
@@ -10117,7 +10117,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 80,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 672,
@@ -10132,7 +10132,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 57,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 673,
@@ -10147,7 +10147,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 67,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 674,
@@ -10162,7 +10162,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 97,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 675,
@@ -10177,7 +10177,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 40,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 676,
@@ -10192,7 +10192,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 50,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 677,
@@ -10207,7 +10207,7 @@ export const dataRows = [
     sp_def: 135,
     speed: 105,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 678,
@@ -10222,7 +10222,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 25,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 679,
@@ -10237,7 +10237,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 145,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 680,
@@ -10252,7 +10252,7 @@ export const dataRows = [
     sp_def: 99,
     speed: 32,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 681,
@@ -10267,7 +10267,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 65,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 682,
@@ -10282,7 +10282,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 105,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 683,
@@ -10297,7 +10297,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 48,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 684,
@@ -10312,7 +10312,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 35,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 685,
@@ -10327,7 +10327,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 55,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 686,
@@ -10342,7 +10342,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 60,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 687,
@@ -10357,7 +10357,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 70,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 688,
@@ -10372,7 +10372,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 55,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 689,
@@ -10387,7 +10387,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 60,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 690,
@@ -10402,7 +10402,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 80,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 691,
@@ -10417,7 +10417,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 60,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 692,
@@ -10432,7 +10432,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 80,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 693,
@@ -10447,7 +10447,7 @@ export const dataRows = [
     sp_def: 66,
     speed: 65,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 694,
@@ -10462,7 +10462,7 @@ export const dataRows = [
     sp_def: 48,
     speed: 109,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 695,
@@ -10477,7 +10477,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 38,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 696,
@@ -10492,7 +10492,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 58,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 697,
@@ -10507,7 +10507,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 98,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 698,
@@ -10522,7 +10522,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 60,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 699,
@@ -10537,7 +10537,7 @@ export const dataRows = [
     sp_def: 105,
     speed: 100,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 700,
@@ -10552,7 +10552,7 @@ export const dataRows = [
     sp_def: 72,
     speed: 108,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 701,
@@ -10567,7 +10567,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 108,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 702,
@@ -10582,7 +10582,7 @@ export const dataRows = [
     sp_def: 129,
     speed: 108,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 703,
@@ -10597,7 +10597,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 111,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 704,
@@ -10612,7 +10612,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 121,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 705,
@@ -10627,7 +10627,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 111,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 706,
@@ -10642,7 +10642,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 101,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 707,
@@ -10657,7 +10657,7 @@ export const dataRows = [
     sp_def: 120,
     speed: 90,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 708,
@@ -10672,7 +10672,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 90,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 709,
@@ -10687,7 +10687,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 101,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 710,
@@ -10702,7 +10702,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 91,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 711,
@@ -10717,7 +10717,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 95,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 712,
@@ -10732,7 +10732,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 95,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 713,
@@ -10747,7 +10747,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 95,
     generation: 5,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 714,
@@ -10762,7 +10762,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 108,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 715,
@@ -10777,7 +10777,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 108,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 716,
@@ -10792,7 +10792,7 @@ export const dataRows = [
     sp_def: 128,
     speed: 90,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 717,
@@ -10807,7 +10807,7 @@ export const dataRows = [
     sp_def: 77,
     speed: 128,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 718,
@@ -10822,7 +10822,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 99,
     generation: 5,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 719,
@@ -10837,7 +10837,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 38,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 720,
@@ -10852,7 +10852,7 @@ export const dataRows = [
     sp_def: 58,
     speed: 57,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 721,
@@ -10867,7 +10867,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 64,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 722,
@@ -10882,7 +10882,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 60,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 723,
@@ -10897,7 +10897,7 @@ export const dataRows = [
     sp_def: 70,
     speed: 73,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 724,
@@ -10912,7 +10912,7 @@ export const dataRows = [
     sp_def: 100,
     speed: 104,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 725,
@@ -10927,7 +10927,7 @@ export const dataRows = [
     sp_def: 44,
     speed: 71,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 726,
@@ -10942,7 +10942,7 @@ export const dataRows = [
     sp_def: 56,
     speed: 97,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 727,
@@ -10957,7 +10957,7 @@ export const dataRows = [
     sp_def: 71,
     speed: 122,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 728,
@@ -10972,7 +10972,7 @@ export const dataRows = [
     sp_def: 36,
     speed: 57,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 729,
@@ -10987,7 +10987,7 @@ export const dataRows = [
     sp_def: 77,
     speed: 78,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 730,
@@ -11002,7 +11002,7 @@ export const dataRows = [
     sp_def: 38,
     speed: 62,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 731,
@@ -11017,7 +11017,7 @@ export const dataRows = [
     sp_def: 52,
     speed: 84,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 732,
@@ -11032,7 +11032,7 @@ export const dataRows = [
     sp_def: 69,
     speed: 126,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 733,
@@ -11047,7 +11047,7 @@ export const dataRows = [
     sp_def: 25,
     speed: 35,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 734,
@@ -11062,7 +11062,7 @@ export const dataRows = [
     sp_def: 30,
     speed: 29,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 735,
@@ -11077,7 +11077,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 89,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 736,
@@ -11092,7 +11092,7 @@ export const dataRows = [
     sp_def: 54,
     speed: 72,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 737,
@@ -11107,7 +11107,7 @@ export const dataRows = [
     sp_def: 66,
     speed: 106,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 738,
@@ -11122,7 +11122,7 @@ export const dataRows = [
     sp_def: 79,
     speed: 42,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 739,
@@ -11137,7 +11137,7 @@ export const dataRows = [
     sp_def: 98,
     speed: 52,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 740,
@@ -11152,7 +11152,7 @@ export const dataRows = [
     sp_def: 154,
     speed: 75,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 741,
@@ -11167,7 +11167,7 @@ export const dataRows = [
     sp_def: 57,
     speed: 52,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 742,
@@ -11182,7 +11182,7 @@ export const dataRows = [
     sp_def: 81,
     speed: 68,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 743,
@@ -11197,7 +11197,7 @@ export const dataRows = [
     sp_def: 48,
     speed: 43,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 744,
@@ -11212,7 +11212,7 @@ export const dataRows = [
     sp_def: 71,
     speed: 58,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 745,
@@ -11227,7 +11227,7 @@ export const dataRows = [
     sp_def: 90,
     speed: 102,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 746,
@@ -11242,7 +11242,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 68,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 747,
@@ -11257,7 +11257,7 @@ export const dataRows = [
     sp_def: 81,
     speed: 104,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 748,
@@ -11272,7 +11272,7 @@ export const dataRows = [
     sp_def: 81,
     speed: 104,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 749,
@@ -11287,7 +11287,7 @@ export const dataRows = [
     sp_def: 37,
     speed: 28,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 750,
@@ -11302,7 +11302,7 @@ export const dataRows = [
     sp_def: 49,
     speed: 35,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 751,
@@ -11317,7 +11317,7 @@ export const dataRows = [
     sp_def: 50,
     speed: 60,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 752,
@@ -11332,7 +11332,7 @@ export const dataRows = [
     sp_def: 150,
     speed: 60,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 753,
@@ -11347,7 +11347,7 @@ export const dataRows = [
     sp_def: 65,
     speed: 23,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 754,
@@ -11362,7 +11362,7 @@ export const dataRows = [
     sp_def: 89,
     speed: 29,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 755,
@@ -11377,7 +11377,7 @@ export const dataRows = [
     sp_def: 57,
     speed: 49,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 756,
@@ -11392,7 +11392,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 72,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 757,
@@ -11407,7 +11407,7 @@ export const dataRows = [
     sp_def: 46,
     speed: 45,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 758,
@@ -11422,7 +11422,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 73,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 759,
@@ -11437,7 +11437,7 @@ export const dataRows = [
     sp_def: 56,
     speed: 50,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 760,
@@ -11452,7 +11452,7 @@ export const dataRows = [
     sp_def: 86,
     speed: 68,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 761,
@@ -11467,7 +11467,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 30,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 762,
@@ -11482,7 +11482,7 @@ export const dataRows = [
     sp_def: 123,
     speed: 44,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 763,
@@ -11497,7 +11497,7 @@ export const dataRows = [
     sp_def: 63,
     speed: 44,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 764,
@@ -11512,7 +11512,7 @@ export const dataRows = [
     sp_def: 89,
     speed: 59,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 765,
@@ -11527,7 +11527,7 @@ export const dataRows = [
     sp_def: 43,
     speed: 70,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 766,
@@ -11542,7 +11542,7 @@ export const dataRows = [
     sp_def: 94,
     speed: 109,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 767,
@@ -11557,7 +11557,7 @@ export const dataRows = [
     sp_def: 45,
     speed: 48,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 768,
@@ -11572,7 +11572,7 @@ export const dataRows = [
     sp_def: 59,
     speed: 71,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 769,
@@ -11587,7 +11587,7 @@ export const dataRows = [
     sp_def: 63,
     speed: 46,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 770,
@@ -11602,7 +11602,7 @@ export const dataRows = [
     sp_def: 92,
     speed: 58,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 771,
@@ -11617,7 +11617,7 @@ export const dataRows = [
     sp_def: 130,
     speed: 60,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 772,
@@ -11632,7 +11632,7 @@ export const dataRows = [
     sp_def: 63,
     speed: 118,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 773,
@@ -11647,7 +11647,7 @@ export const dataRows = [
     sp_def: 67,
     speed: 101,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 774,
@@ -11662,7 +11662,7 @@ export const dataRows = [
     sp_def: 150,
     speed: 50,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 775,
@@ -11677,7 +11677,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 40,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 776,
@@ -11692,7 +11692,7 @@ export const dataRows = [
     sp_def: 113,
     speed: 60,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 777,
@@ -11707,7 +11707,7 @@ export const dataRows = [
     sp_def: 150,
     speed: 80,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 778,
@@ -11722,7 +11722,7 @@ export const dataRows = [
     sp_def: 87,
     speed: 75,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 779,
@@ -11737,7 +11737,7 @@ export const dataRows = [
     sp_def: 60,
     speed: 38,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 780,
@@ -11752,7 +11752,7 @@ export const dataRows = [
     sp_def: 82,
     speed: 56,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 781,
@@ -11767,7 +11767,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 51,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 782,
@@ -11782,7 +11782,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 56,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 783,
@@ -11797,7 +11797,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 46,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 784,
@@ -11812,7 +11812,7 @@ export const dataRows = [
     sp_def: 55,
     speed: 41,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 785,
@@ -11827,7 +11827,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 84,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 786,
@@ -11842,7 +11842,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 99,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 787,
@@ -11857,7 +11857,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 69,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 788,
@@ -11872,7 +11872,7 @@ export const dataRows = [
     sp_def: 75,
     speed: 54,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 789,
@@ -11887,7 +11887,7 @@ export const dataRows = [
     sp_def: 35,
     speed: 28,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 790,
@@ -11902,7 +11902,7 @@ export const dataRows = [
     sp_def: 46,
     speed: 28,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 791,
@@ -11917,7 +11917,7 @@ export const dataRows = [
     sp_def: 40,
     speed: 55,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 792,
@@ -11932,7 +11932,7 @@ export const dataRows = [
     sp_def: 80,
     speed: 123,
     generation: 6,
-    legendary: "FALSE"
+    legendary: "FALSE",
   },
   {
     id: 793,
@@ -11947,7 +11947,7 @@ export const dataRows = [
     sp_def: 98,
     speed: 99,
     generation: 6,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 794,
@@ -11962,7 +11962,7 @@ export const dataRows = [
     sp_def: 98,
     speed: 99,
     generation: 6,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 795,
@@ -11977,7 +11977,7 @@ export const dataRows = [
     sp_def: 95,
     speed: 95,
     generation: 6,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 796,
@@ -11992,7 +11992,7 @@ export const dataRows = [
     sp_def: 150,
     speed: 50,
     generation: 6,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 797,
@@ -12007,7 +12007,7 @@ export const dataRows = [
     sp_def: 110,
     speed: 110,
     generation: 6,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 798,
@@ -12022,7 +12022,7 @@ export const dataRows = [
     sp_def: 130,
     speed: 70,
     generation: 6,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 799,
@@ -12037,7 +12037,7 @@ export const dataRows = [
     sp_def: 130,
     speed: 80,
     generation: 6,
-    legendary: "TRUE"
+    legendary: "TRUE",
   },
   {
     id: 800,
@@ -12052,6 +12052,6 @@ export const dataRows = [
     sp_def: 90,
     speed: 70,
     generation: 6,
-    legendary: "TRUE"
-  }
-]
+    legendary: "TRUE",
+  },
+];

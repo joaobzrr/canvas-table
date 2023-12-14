@@ -6,9 +6,9 @@ export type Table = {
   name: string;
   columnDefs: ColumnDef[];
   dataRows: DataRow[];
-}
+};
 
 export type TabItem = {
   label: string;
   key: React.Key;
-}
+};

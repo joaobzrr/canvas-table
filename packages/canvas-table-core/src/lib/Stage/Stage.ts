@@ -1,5 +1,4 @@
-import { isPointInRect } from "../../utils";
-import { Size } from "../../types";
+import { compareSize, isPointInRect } from "../../utils";
 
 const MOUSE_BUTTONS = {
   PRIMARY: 0,
@@ -21,6 +20,8 @@ export class Stage {
   wrapperEl: HTMLDivElement;
   canvas: HTMLCanvasElement;
 
+  resizeObserver: ResizeObserver;
+
   currMouseX = 0;
   currMouseY = 0;
   currMouseButtons = 0;
@@ -41,10 +42,14 @@ export class Stage {
   scrollAmountX: number;
   scrollAmountY: number;
 
-  updateFunction?: () => void;
+  updateCallback?: () => void;
   rafId?: number;
 
-  constructor(containerId: string, size?: Size) {
+  lastPolledContainerSize = { width: 0, height: 0 };
+
+  canvasWasResized = false;
+
+  constructor(containerId: string) {
     const containerEl = document.getElementById(containerId);
     if (!containerEl) {
       throw new Error(`Element with id "${containerId}" could not be found`);
@@ -66,14 +71,17 @@ export class Stage {
     this.canvas = document.createElement("canvas");
     this.wrapperEl.appendChild(this.canvas);
 
+    this.resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      this.lastPolledContainerSize.width = entry.contentRect.width;
+      this.lastPolledContainerSize.height = entry.contentRect.height;
+    });
+    this.resizeObserver.observe(this.containerEl);
+
     this.doubleClickButton = -1;
 
     this.scrollAmountX = 0;
     this.scrollAmountY = 0;
-
-    if (size) {
-      this.setSize(size);
-    }
 
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
@@ -102,16 +110,11 @@ export class Stage {
     return ctx;
   }
 
-  setUpdateFunction(updateFunction: () => void) {
-    this.updateFunction = updateFunction;
+  setUpdateCallback(updateCallback: () => void) {
+    this.updateCallback = updateCallback;
   }
 
-  setSize(size: Size) {
-    this.canvas.width = size && Math.max(size.width, 1);
-    this.canvas.height = size && Math.max(size.height, 1);
-  }
-
-  getSize() {
+  getCurrentCanvasSize() {
     return {
       width: this.canvas.width,
       height: this.canvas.height
@@ -119,12 +122,16 @@ export class Stage {
   }
 
   cleanup() {
-    if (this.rafId) {
-      cancelAnimationFrame(this.rafId!);
-    }
+    if (this.rafId) cancelAnimationFrame(this.rafId!);
+
+    this.resizeObserver.unobserve(this.containerEl);
 
     window.removeEventListener("mousemove", this.onMouseMove);
     window.removeEventListener("mouseup", this.onMouseUp);
+  }
+
+  isResize() {
+    return this.canvasWasResized;
   }
 
   isMouseDown(button: MouseButtonValue) {
@@ -157,6 +164,13 @@ export class Stage {
   }
 
   loop() {
+    const currentCanvasSize = this.getCurrentCanvasSize();
+    this.canvasWasResized = !compareSize(currentCanvasSize, this.lastPolledContainerSize);
+    if (this.canvasWasResized) {
+      this.canvas.width = this.lastPolledContainerSize.width;
+      this.canvas.height = this.lastPolledContainerSize.height;
+    }
+
     if (this.isMousePressed(Stage.MOUSE_BUTTONS.PRIMARY)) {
       this.dragStartX = this.currMouseX;
       this.dragStartY = this.currMouseY;
@@ -167,9 +181,7 @@ export class Stage {
       this.dragDistanceY = this.currMouseY - this.dragStartY;
     }
 
-    if (this.updateFunction) {
-      this.updateFunction();
-    }
+    this.updateCallback?.();
 
     this.prevMouseX = this.currMouseX;
     this.prevMouseY = this.currMouseY;

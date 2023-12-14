@@ -3,7 +3,6 @@ import { UiId } from "./lib/UiContext/types";
 export type CreateCanvasTableParams = Omit<TableProps, "theme" | "selectId" | "selectProp"> & {
   container: string;
   theme?: Theme;
-  size?: Size;
   selectId?: IdSelector;
   selectProp?: PropSelector;
 };

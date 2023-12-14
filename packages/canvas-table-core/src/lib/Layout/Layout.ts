@@ -1,4 +1,4 @@
-import { scale } from "../../utils";
+import { lerp } from "../../utils";
 import { MIN_THUMB_LENGTH } from "../../constants";
 import { TableContext } from "../TableContext";
 
@@ -92,7 +92,7 @@ export class Layout {
   private updateMain() {
     const { dataRows, theme } = this.tblctx.props;
 
-    const canvasSize = this.tblctx.stage.getSize();
+    const canvasSize = this.tblctx.stage.getCurrentCanvasSize();
 
     this.actualBodyWidth = this.sumColumnWidths();
     this.actualBodyHeight = dataRows.length * theme.rowHeight;
@@ -235,9 +235,8 @@ export class Layout {
   }
 
   private updateScrollbarThumbPositions() {
-    this.hsbThumbX = scale(this.scrollX, 0, this.maxScrollX, this.hsbThumbMinX, this.hsbThumbMaxX);
-
-    this.vsbThumbY = scale(this.scrollY, 0, this.maxScrollY, this.vsbThumbMinY, this.vsbThumbMaxY);
+    this.hsbThumbX = lerp(this.scrollX, 0, this.maxScrollX, this.hsbThumbMinX, this.hsbThumbMaxX);
+    this.vsbThumbY = lerp(this.scrollY, 0, this.maxScrollY, this.vsbThumbMinY, this.vsbThumbMaxY);
   }
 
   resizeColumn(columnIndex: number, columnWidth: number) {

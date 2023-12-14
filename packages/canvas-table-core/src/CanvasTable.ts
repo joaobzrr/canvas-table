@@ -25,7 +25,6 @@ export class CanvasTable {
       columnDefs,
       dataRows,
       theme: themeParam,
-      size,
       selectId: selectIdParam,
       selectProp: selectPropParam,
       onResizeColumn,
@@ -50,7 +49,7 @@ export class CanvasTable {
     const columnWidths = CanvasTable.calculateColumnWidths(columnDefs);
     const state = new TableState(columnWidths);
 
-    const stage = new Stage(container, size);
+    const stage = new Stage(container);
     this.tblctx = new TableContext(props, state, stage);
 
     if (onResizeColumn) {
@@ -64,8 +63,10 @@ export class CanvasTable {
     }
 
     const ct = new Controller(this.tblctx);
+
     const updateFn = ct.update.bind(ct);
-    stage.setUpdateFunction(updateFn);
+    stage.setUpdateCallback(updateFn);
+
     stage.run();
   }
 
@@ -78,9 +79,9 @@ export class CanvasTable {
   }
 
   public config(params: Partial<ConfigCanvasTableParams>) {
-    const { columnDefs, dataRows, theme, size, onSelectRow, onResizeColumn, ...rest } = params;
+    const { columnDefs, dataRows, theme, onSelectRow, onResizeColumn, ...rest } = params;
 
-    const { props, state, stage, layout } = this.tblctx;
+    const { props, state, layout } = this.tblctx;
 
     let shouldReflow = false;
 
@@ -104,12 +105,6 @@ export class CanvasTable {
 
       this.tblctx.emit("themechange", theme);
 
-      shouldReflow = true;
-    }
-
-    const stageSize = stage.getSize();
-    if (size && (size.width !== stageSize.width || size.height !== stageSize.height)) {
-      stage.setSize(size);
       shouldReflow = true;
     }
 
