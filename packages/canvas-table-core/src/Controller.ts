@@ -398,7 +398,7 @@ export class Controller {
         const screenColumnPos = layout.getScreenColPos(columnIndex);
 
         const x = screenColumnPos + cellPadding;
-        const maxWidth = columnWidth - cellPadding;
+        const maxWidth = columnWidth - cellPadding * 2;
 
         for (const rowIndex of layout.rowRange()) {
           const dataRow = dataRows[rowIndex];
