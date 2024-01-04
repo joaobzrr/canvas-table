@@ -3,8 +3,6 @@ import { GlyphAtlasParams, GlyphMetrics, Node } from "./types";
 
 const DEFAULT_ATLAS_WIDTH = 1024;
 const DEFAULT_ATLAS_HEIGHT = 1024;
-const DEFAULT_FONT = "Arial";
-const DEFAULT_COLOR = "black";
 
 const GLYPH_OUTER_PADDING = 1;
 const GLYPH_INNER_PADDING = 1;
@@ -14,12 +12,8 @@ export class GlyphAtlas {
   canvas: HTMLCanvasElement;
   cache: Map<string, Node>;
   root: Node;
-  font!: string;
-  fontBoundingBoxAscent!: number;
-  fontBoundingBoxDescent!: number;
-  color: string;
 
-  constructor(params?: Partial<GlyphAtlasParams>) {
+  constructor(params?: GlyphAtlasParams) {
     this.canvas = document.createElement("canvas");
 
     const atlasWidth = params?.atlasWidth ?? DEFAULT_ATLAS_WIDTH;
@@ -30,15 +24,10 @@ export class GlyphAtlas {
     this.cache = new Map<string, Node>();
 
     this.root = GlyphAtlas.createRootNode(this.canvas);
-
-    const font = params?.font ?? DEFAULT_FONT;
-    this.setFont(font);
-
-    this.color = params?.color ?? DEFAULT_COLOR;
   }
 
-  getGlyphMetrics(str: string): GlyphMetrics {
-    const key = [this.font, this.color, str].join(SEPARATOR);
+  public getGlyphMetrics(str: string, font: string, color: string): GlyphMetrics {
+    const key = [font, color, str].join(SEPARATOR);
 
     const cached = this.cache.get(key);
     if (cached) {
@@ -46,6 +35,8 @@ export class GlyphAtlas {
     }
 
     const ctx = this.getContext();
+    ctx.font = font;
+    ctx.fillStyle = color;
 
     const {
       actualBoundingBoxLeft,
@@ -95,7 +86,7 @@ export class GlyphAtlas {
     return metrics;
   }
 
-  clear() {
+  public clear() {
     const ctx = this.getContext();
     GlyphAtlas.clearCanvas(this.canvas, ctx);
 
@@ -104,25 +95,7 @@ export class GlyphAtlas {
     this.root = GlyphAtlas.createRootNode(this.canvas);
   }
 
-  setFont(font: string) {
-    if (font === this.font) {
-      return;
-    }
-
-    this.font = font;
-
-    const ctx = this.getContext();
-    const { fontBoundingBoxAscent, fontBoundingBoxDescent } = ctx.measureText("M");
-
-    this.fontBoundingBoxAscent = fontBoundingBoxAscent;
-    this.fontBoundingBoxDescent = fontBoundingBoxDescent;
-  }
-
-  setColor(color: string) {
-    this.color = color;
-  }
-
-  pack(node: Node, size: Size): Node | null {
+  private pack(node: Node, size: Size): Node | null {
     if (node.left && node.right) {
       const newNode = this.pack(node.left, size);
       if (newNode !== null) {
@@ -181,23 +154,19 @@ export class GlyphAtlas {
     }
   }
 
-  getContext() {
+  private getContext() {
     const ctx = this.canvas.getContext("2d");
     if (!ctx) {
       throw new Error("Could not instantiate canvas context");
     }
-
-    ctx.font = this.font;
-    ctx.fillStyle = this.color;
-
     return ctx;
   }
 
-  static clearCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+  private static clearCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
 
-  static createRootNode(canvas: HTMLCanvasElement) {
+  private static createRootNode(canvas: HTMLCanvasElement) {
     return GlyphAtlas.createNode(
       GLYPH_OUTER_PADDING,
       GLYPH_OUTER_PADDING,
@@ -206,7 +175,7 @@ export class GlyphAtlas {
     );
   }
 
-  static createNode(sx: number, sy: number, binWidth: number, binHeight: number): Node {
+  private static createNode(sx: number, sy: number, binWidth: number, binHeight: number): Node {
     return {
       left: null,
       right: null,

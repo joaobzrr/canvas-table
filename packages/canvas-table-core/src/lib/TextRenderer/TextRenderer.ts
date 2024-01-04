@@ -2,25 +2,48 @@ import Graphemer from "graphemer";
 import { GlyphAtlas, GlyphAtlasParams, GlyphMetrics } from "../GlyphAtlas";
 import { isWhitespace } from "../../utils";
 
+const DEFAULT_FONT = "Arial";
+const DEFAULT_COLOR = "black";
+
+export type TextRendererParams = {
+  glyphAtlasParams?: GlyphAtlasParams;
+  font?: string;
+  color?: string;
+};
+
 export class TextRenderer {
   glyphAtlas: GlyphAtlas;
   ellipsis = false;
 
-  fullStopMetrics: GlyphMetrics | undefined;
-  spaceAdvance = -1;
+  fullStopGlyphMetrics: GlyphMetrics;
+  spaceGlyphAdvance: number;
 
-  constructor(params?: Partial<GlyphAtlasParams>) {
-    this.glyphAtlas = new GlyphAtlas(params);
+  font: string;
+  color: string;
+
+  constructor(params?: TextRendererParams) {
+    this.glyphAtlas = new GlyphAtlas(params?.glyphAtlasParams);
+    this.font = params?.font ?? DEFAULT_FONT;
+    this.color = params?.color ?? DEFAULT_COLOR;
+
+    this.fullStopGlyphMetrics = this.getGlyphMetrics(".");
+    this.spaceGlyphAdvance = this.getGlyphMetrics(" ").advance;
   }
 
-  render(ctx: CanvasRenderingContext2D, str: string, x: number, y: number, maxWidth = Infinity) {
+  public render(
+    ctx: CanvasRenderingContext2D,
+    str: string,
+    x: number,
+    y: number,
+    maxWidth = Infinity
+  ) {
     const ellipsisEnabled = this.ellipsis && maxWidth !== Infinity;
     const availableContentWidth = ellipsisEnabled
-      ? Math.max(maxWidth - this.fullStopMetrics!.advance * 3, 0)
+      ? Math.max(maxWidth - this.fullStopGlyphMetrics!.advance * 3, 0)
       : maxWidth;
 
     let totalContentWidth = 0;
-    let totalContentWidthUpToLastCharBeforeWhitespaceChar = 0;
+    let totalContentWidthUpToLastCharBeforeWhitespace = 0;
 
     let stringIndex = 0;
     let doEllipsis = false;
@@ -33,10 +56,10 @@ export class TextRenderer {
       const grapheme = str.slice(stringIndex, nextStringIndex);
       stringIndex = nextStringIndex;
 
-      const { sx, sy, sw, sh, hshift, vshift, advance } = this.glyphAtlas.getGlyphMetrics(grapheme);
+      const { sx, sy, sw, sh, hshift, vshift, advance } = this.getGlyphMetrics(grapheme);
 
       const gotWhitespace = isWhitespace(grapheme);
-      const actualAdvance = gotWhitespace ? this.spaceAdvance : advance;
+      const actualAdvance = gotWhitespace ? this.spaceGlyphAdvance : advance;
 
       if (totalContentWidth + actualAdvance > availableContentWidth) {
         doEllipsis = true;
@@ -51,14 +74,14 @@ export class TextRenderer {
 
       totalContentWidth += advance;
       if (!gotWhitespace) {
-        totalContentWidthUpToLastCharBeforeWhitespaceChar = totalContentWidth;
+        totalContentWidthUpToLastCharBeforeWhitespace = totalContentWidth;
       }
     }
 
     if (ellipsisEnabled && doEllipsis) {
-      let totalWidth = totalContentWidthUpToLastCharBeforeWhitespaceChar;
+      let totalWidth = totalContentWidthUpToLastCharBeforeWhitespace;
 
-      const { sx, sy, sw, sh, hshift, vshift, advance } = this.fullStopMetrics!;
+      const { sx, sy, sw, sh, hshift, vshift, advance } = this.fullStopGlyphMetrics!;
       const dy = y - vshift;
 
       for (let i = 0; i < 3; i++) {
@@ -74,24 +97,25 @@ export class TextRenderer {
     }
   }
 
-  setFont(font: string) {
-    this.glyphAtlas.setFont(font);
-
-    this.fullStopMetrics = this.glyphAtlas.getGlyphMetrics(".");
-
-    const { advance: spaceAdvance } = this.glyphAtlas.getGlyphMetrics(" ");
-    this.spaceAdvance = spaceAdvance;
+  public setFont(font: string) {
+    this.font = font;
+    this.fullStopGlyphMetrics = this.getGlyphMetrics(".");
+    this.spaceGlyphAdvance = this.getGlyphMetrics(" ").advance;
   }
 
-  setColor(color: string) {
-    this.glyphAtlas.setColor(color);
+  public setColor(color: string) {
+    this.color = color;
   }
 
-  setEllipsis(ellipsis: boolean) {
+  public setEllipsis(ellipsis: boolean) {
     this.ellipsis = ellipsis;
   }
 
-  clearAtlas() {
+  public clearAtlas() {
     this.glyphAtlas.clear();
+  }
+
+  private getGlyphMetrics(grapheme: string) {
+    return this.glyphAtlas.getGlyphMetrics(grapheme, this.font, this.color);
   }
 }

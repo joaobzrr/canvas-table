@@ -1,8 +1,6 @@
 export type GlyphAtlasParams = {
-  atlasWidth: number;
-  atlasHeight: number;
-  font: string;
-  color: string;
+  atlasWidth?: number;
+  atlasHeight?: number;
 };
 
 export type Node = {
