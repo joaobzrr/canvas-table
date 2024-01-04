@@ -7,6 +7,7 @@ export { getFontMetrics } from "./getFontMetrics";
 export { isNumber } from "./isNumber";
 export { isObject } from "./isObject";
 export { isPointInRect } from "./isPointInRect";
+export { isWhitespace } from "./isWhitespace";
 export { lerp } from "./lerp";
 export { pathFromRect } from "./pathFromRect";
 export { shallowMatch } from "./shallowMatch";

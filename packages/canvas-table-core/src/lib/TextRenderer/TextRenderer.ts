@@ -1,25 +1,27 @@
 import Graphemer from "graphemer";
-import { GlyphAtlas, GlyphAtlasParams } from "../GlyphAtlas";
+import { GlyphAtlas, GlyphAtlasParams, GlyphMetrics } from "../GlyphAtlas";
+import { isWhitespace } from "../../utils";
 
 export class TextRenderer {
   glyphAtlas: GlyphAtlas;
   ellipsis = false;
+
+  fullStopMetrics: GlyphMetrics | undefined;
+  spaceAdvance = -1;
 
   constructor(params?: Partial<GlyphAtlasParams>) {
     this.glyphAtlas = new GlyphAtlas(params);
   }
 
   render(ctx: CanvasRenderingContext2D, str: string, x: number, y: number, maxWidth = Infinity) {
-    let availableContentWidth: number;
-    if (this.ellipsis && maxWidth !== Infinity) {
-      const { advance } = this.glyphAtlas.getGlyphMetrics(".");
-      const ellipsisAdvance = advance * 3;
-      availableContentWidth = Math.max(maxWidth - ellipsisAdvance, 0);
-    } else {
-      availableContentWidth = maxWidth;
-    }
+    const ellipsisEnabled = this.ellipsis && maxWidth !== Infinity;
+    const availableContentWidth = ellipsisEnabled
+      ? Math.max(maxWidth - this.fullStopMetrics!.advance * 3, 0)
+      : maxWidth;
 
-    let usedWidth = 0;
+    let totalContentWidth = 0;
+    let totalContentWidthUpToLastCharBeforeWhitespaceChar = 0;
+
     let stringIndex = 0;
     let doEllipsis = false;
 
@@ -33,40 +35,52 @@ export class TextRenderer {
 
       const { sx, sy, sw, sh, hshift, vshift, advance } = this.glyphAtlas.getGlyphMetrics(grapheme);
 
-      if (usedWidth + advance > availableContentWidth) {
+      const gotWhitespace = isWhitespace(grapheme);
+      const actualAdvance = gotWhitespace ? this.spaceAdvance : advance;
+
+      if (totalContentWidth + actualAdvance > availableContentWidth) {
         doEllipsis = true;
         break;
       }
 
-      const dx = x + usedWidth - hshift;
-      const dy = y - vshift;
+      if (!gotWhitespace) {
+        const dx = x + totalContentWidth - hshift;
+        const dy = y - vshift;
+        ctx.drawImage(this.glyphAtlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
+      }
 
-      ctx.drawImage(this.glyphAtlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
-
-      usedWidth += advance;
+      totalContentWidth += advance;
+      if (!gotWhitespace) {
+        totalContentWidthUpToLastCharBeforeWhitespaceChar = totalContentWidth;
+      }
     }
 
-    if (doEllipsis) {
-      const { sx, sy, sw, sh, hshift, vshift, advance } = this.glyphAtlas.getGlyphMetrics(".");
+    if (ellipsisEnabled && doEllipsis) {
+      let totalWidth = totalContentWidthUpToLastCharBeforeWhitespaceChar;
 
+      const { sx, sy, sw, sh, hshift, vshift, advance } = this.fullStopMetrics!;
       const dy = y - vshift;
 
       for (let i = 0; i < 3; i++) {
-        if (usedWidth + advance > maxWidth) {
+        if (totalWidth + advance > maxWidth) {
           break;
         }
 
-        const dx = x + usedWidth - hshift;
-
+        const dx = x + totalWidth - hshift;
         ctx.drawImage(this.glyphAtlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
 
-        usedWidth += advance;
+        totalWidth += advance;
       }
     }
   }
 
   setFont(font: string) {
     this.glyphAtlas.setFont(font);
+
+    this.fullStopMetrics = this.glyphAtlas.getGlyphMetrics(".");
+
+    const { advance: spaceAdvance } = this.glyphAtlas.getGlyphMetrics(" ");
+    this.spaceAdvance = spaceAdvance;
   }
 
   setColor(color: string) {
