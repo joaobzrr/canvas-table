@@ -6,14 +6,15 @@ const DEFAULT_FONT = "Arial";
 const DEFAULT_COLOR = "black";
 
 export type TextRendererParams = {
-  glyphAtlasParams?: GlyphAtlasParams;
+  atlas?: GlyphAtlasParams;
   font?: string;
   color?: string;
+  ellipsis?: boolean;
 };
 
 export class TextRenderer {
   glyphAtlas: GlyphAtlas;
-  ellipsis = false;
+  ellipsis: boolean;
 
   fullStopGlyphMetrics: GlyphMetrics;
   spaceGlyphAdvance: number;
@@ -22,7 +23,8 @@ export class TextRenderer {
   color: string;
 
   constructor(params?: TextRendererParams) {
-    this.glyphAtlas = new GlyphAtlas(params?.glyphAtlasParams);
+    this.glyphAtlas = new GlyphAtlas(params?.atlas);
+    this.ellipsis = params?.ellipsis ?? false;
     this.font = params?.font ?? DEFAULT_FONT;
     this.color = params?.color ?? DEFAULT_COLOR;
 
