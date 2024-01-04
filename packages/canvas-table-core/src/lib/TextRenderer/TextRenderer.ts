@@ -13,14 +13,11 @@ export type TextRendererParams = {
 };
 
 export class TextRenderer {
-  glyphAtlas: GlyphAtlas;
-  ellipsis: boolean;
-
-  fullStopGlyphMetrics: GlyphMetrics;
-  spaceGlyphAdvance: number;
-
-  font: string;
-  color: string;
+  private glyphAtlas: GlyphAtlas;
+  private ellipsis: boolean;
+  private font: string;
+  private color: string;
+  private fullStopGlyphMetrics: GlyphMetrics;
 
   constructor(params?: TextRendererParams) {
     this.glyphAtlas = new GlyphAtlas(params?.atlas);
@@ -29,7 +26,6 @@ export class TextRenderer {
     this.color = params?.color ?? DEFAULT_COLOR;
 
     this.fullStopGlyphMetrics = this.getGlyphMetrics(".");
-    this.spaceGlyphAdvance = this.getGlyphMetrics(" ").advance;
   }
 
   public render(
@@ -60,14 +56,12 @@ export class TextRenderer {
 
       const { sx, sy, sw, sh, hshift, vshift, advance } = this.getGlyphMetrics(grapheme);
 
-      const gotWhitespace = isWhitespace(grapheme);
-      const actualAdvance = gotWhitespace ? this.spaceGlyphAdvance : advance;
-
-      if (totalContentWidth + actualAdvance > availableContentWidth) {
+      if (totalContentWidth + advance > availableContentWidth) {
         doEllipsis = true;
         break;
       }
 
+      const gotWhitespace = isWhitespace(grapheme);
       if (!gotWhitespace) {
         const dx = x + totalContentWidth - hshift;
         const dy = y - vshift;
@@ -102,7 +96,6 @@ export class TextRenderer {
   public setFont(font: string) {
     this.font = font;
     this.fullStopGlyphMetrics = this.getGlyphMetrics(".");
-    this.spaceGlyphAdvance = this.getGlyphMetrics(" ").advance;
   }
 
   public setColor(color: string) {
