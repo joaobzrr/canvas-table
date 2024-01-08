@@ -17,13 +17,39 @@ export class AnimationLoop {
   renderer: Renderer;
   ui: UiContext;
 
+  rafId?: number; 
+
   constructor(tblctx: TableContext) {
     this.tblctx = tblctx;
     this.renderer = new Renderer();
     this.ui = new UiContext();
+
+    this.loop = this.loop.bind(this);
   }
 
-  update() {
+  public run() {
+    this.rafId = requestAnimationFrame(this.loop);
+  }
+
+  public cleanup() {
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+    }
+  }
+
+  private loop() {
+    const { stage } = this.tblctx;
+
+    stage.startFrame();
+
+    this.update();
+
+    stage.endFrame();
+
+    this.rafId = requestAnimationFrame(this.loop);
+  }
+
+  private update() {
     const { props, state, stage, layout } = this.tblctx;
     const { theme } = props;
 
@@ -427,7 +453,7 @@ export class AnimationLoop {
     this.renderer.render(ctx, stageSize);
   }
 
-  doColumnResizer() {
+  private doColumnResizer() {
     const { layout } = this.tblctx;
 
     const clipRegion = this.headerAreaPath();
@@ -443,7 +469,7 @@ export class AnimationLoop {
     }
   }
 
-  doOneColumnResizer(id: UiId, clipRegion: Path2D) {
+  private doOneColumnResizer(id: UiId, clipRegion: Path2D) {
     const { theme } = this.tblctx.props;
 
     const columnIndex = id.index!;
@@ -463,7 +489,7 @@ export class AnimationLoop {
     });
   }
 
-  doDraggable(props: DraggableProps) {
+  private doDraggable(props: DraggableProps) {
     const { stage } = this.tblctx;
 
     if (this.ui.isActive(props.id)) {
@@ -525,7 +551,7 @@ export class AnimationLoop {
     });
   }
 
-  onDragHorizontalScrollbar(pos: Vector) {
+  private onDragHorizontalScrollbar(pos: Vector) {
     const { layout } = this.tblctx;
 
     const hsbThumbX = clamp(pos.x, layout.hsbThumbMinX, layout.hsbThumbMaxX);
@@ -538,7 +564,7 @@ export class AnimationLoop {
     layout.scrollTo(newScrollX, layout.scrollY);
   }
 
-  onDragVerticalScrollbar(pos: Vector) {
+  private onDragVerticalScrollbar(pos: Vector) {
     const { layout } = this.tblctx;
 
     const vsbThumbY = clamp(pos.y, layout.vsbThumbMinY, layout.vsbThumbMaxY);
@@ -551,7 +577,7 @@ export class AnimationLoop {
     layout.scrollTo(layout.scrollX, newScrollY);
   }
 
-  onDragColumnResizer(id: UiId, pos: Vector) {
+  private onDragColumnResizer(id: UiId, pos: Vector) {
     const { layout } = this.tblctx;
 
     pos.y = 1;
@@ -567,7 +593,7 @@ export class AnimationLoop {
     pos.x = rect.x;
   }
 
-  calculateColumnResizerRect(columnIndex: number) {
+  private calculateColumnResizerRect(columnIndex: number) {
     const {
       props: { theme },
       state,
@@ -596,7 +622,7 @@ export class AnimationLoop {
     return rect;
   }
 
-  calculateRowRect(rowIndex: number) {
+  private calculateRowRect(rowIndex: number) {
     const {
       props: { theme },
       layout
@@ -612,13 +638,13 @@ export class AnimationLoop {
     };
   }
 
-  isMouseInBody() {
+  private isMouseInBody() {
     const { stage, layout } = this.tblctx;
 
     return stage.isMouseInRect(layout.bodyX, layout.bodyY, layout.bodyWidth, layout.bodyHeight);
   }
 
-  bodyAreaPath() {
+  private bodyAreaPath() {
     const { layout } = this.tblctx;
     return this.pathFromRect(
       layout.bodyAreaX,
@@ -628,7 +654,7 @@ export class AnimationLoop {
     );
   }
 
-  headerAreaPath() {
+  private headerAreaPath() {
     const { layout } = this.tblctx;
     return this.pathFromRect(
       layout.headerAreaX,
@@ -638,7 +664,7 @@ export class AnimationLoop {
     );
   }
 
-  pathFromRect(x: number, y: number, width: number, height: number) {
+  private pathFromRect(x: number, y: number, width: number, height: number) {
     const path = new Path2D();
     path.rect(x, y, width, height);
     return path;

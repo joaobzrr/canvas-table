@@ -42,9 +42,6 @@ export class Stage {
   scrollAmountX: number;
   scrollAmountY: number;
 
-  updateCallback?: () => void;
-  rafId?: number;
-
   lastPolledContainerSize = { width: 0, height: 0 };
 
   canvasWasResized = false;
@@ -94,12 +91,6 @@ export class Stage {
     this.canvas.addEventListener("wheel", this.onWheel);
     window.addEventListener("mousemove", this.onMouseMove);
     window.addEventListener("mouseup", this.onMouseUp);
-
-    this.loop = this.loop.bind(this);
-  }
-
-  run() {
-    this.rafId = requestAnimationFrame(this.loop);
   }
 
   getContext() {
@@ -110,10 +101,6 @@ export class Stage {
     return ctx;
   }
 
-  setUpdateCallback(updateCallback: () => void) {
-    this.updateCallback = updateCallback;
-  }
-
   getCurrentCanvasSize() {
     return {
       width: this.canvas.width,
@@ -122,8 +109,6 @@ export class Stage {
   }
 
   cleanup() {
-    if (this.rafId) cancelAnimationFrame(this.rafId!);
-
     this.resizeObserver.unobserve(this.containerEl);
 
     window.removeEventListener("mousemove", this.onMouseMove);
@@ -163,7 +148,7 @@ export class Stage {
     return isPointInRect(this.currMouseX, this.currMouseY, x, y, width, height);
   }
 
-  loop() {
+  startFrame() {
     const currentCanvasSize = this.getCurrentCanvasSize();
     this.canvasWasResized = !compareSize(currentCanvasSize, this.lastPolledContainerSize);
     if (this.canvasWasResized) {
@@ -180,9 +165,9 @@ export class Stage {
       this.dragDistanceX = this.currMouseX - this.dragStartX;
       this.dragDistanceY = this.currMouseY - this.dragStartY;
     }
+  }
 
-    this.updateCallback?.();
-
+  endFrame() {
     this.prevMouseX = this.currMouseX;
     this.prevMouseY = this.currMouseY;
     this.prevMouseButtons = this.currMouseButtons;
@@ -191,8 +176,6 @@ export class Stage {
 
     this.scrollAmountX = 0;
     this.scrollAmountY = 0;
-
-    this.rafId = requestAnimationFrame(this.loop);
   }
 
   onMouseDown(event: MouseEvent) {

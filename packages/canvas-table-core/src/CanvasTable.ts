@@ -16,6 +16,7 @@ import {
 
 export class CanvasTable {
   private tblctx: TableContext;
+  private animationLoop: AnimationLoop;
 
   private eventUnsubs = new Map<keyof TableEvents, Unsubscribe>();
 
@@ -62,10 +63,8 @@ export class CanvasTable {
       this.eventUnsubs.set("selrowchange", unsub);
     }
 
-    const animationLoop = new AnimationLoop(this.tblctx);
-    stage.setUpdateCallback(animationLoop.update.bind(animationLoop));
-
-    stage.run();
+    this.animationLoop = new AnimationLoop(this.tblctx);
+    this.animationLoop.run();
   }
 
   private static calculateColumnWidths(columnDefs: ColumnDef[]) {
@@ -136,6 +135,7 @@ export class CanvasTable {
   }
 
   public cleanup() {
+    this.animationLoop.cleanup();
     this.tblctx.stage.cleanup();
   }
 }
