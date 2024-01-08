@@ -1,5 +1,5 @@
 import { Unsubscribe } from "nanoevents";
-import { Controller } from "./Controller";
+import { AnimationLoop } from "./AnimationLoop";
 import { defaultTheme } from "./defaultTheme";
 import { TableState } from "./lib/TableState";
 import { Stage } from "./lib/Stage";
@@ -62,10 +62,8 @@ export class CanvasTable {
       this.eventUnsubs.set("selrowchange", unsub);
     }
 
-    const ct = new Controller(this.tblctx);
-
-    const updateFn = ct.update.bind(ct);
-    stage.setUpdateCallback(updateFn);
+    const animationLoop = new AnimationLoop(this.tblctx);
+    stage.setUpdateCallback(animationLoop.update.bind(animationLoop));
 
     stage.run();
   }

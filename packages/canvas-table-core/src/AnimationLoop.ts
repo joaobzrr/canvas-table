@@ -12,7 +12,7 @@ import {
 } from "./constants";
 import { DraggableProps, Vector } from "./types";
 
-export class Controller {
+export class AnimationLoop {
   tblctx: TableContext;
   renderer: Renderer;
   ui: UiContext;
