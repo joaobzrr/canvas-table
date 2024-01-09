@@ -1,11 +1,11 @@
 import React from "react";
-import { ColumnDef, DataRow } from "@bzrr/canvas-table-core";
+import { Column_Def, Data_Row } from "@bzrr/canvas-table-core";
 
 export type Table = {
   id: string;
   name: string;
-  columnDefs: ColumnDef[];
-  dataRows: DataRow[];
+  columnDefs: Column_Def[];
+  dataRows: Data_Row[];
 };
 
 export type TabItem = {

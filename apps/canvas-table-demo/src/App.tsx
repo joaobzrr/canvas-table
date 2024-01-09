@@ -3,10 +3,10 @@ import { debounce } from "lodash";
 import { CanvasTable } from "@bzrr/canvas-table-react";
 import {
   defaultTheme,
-  DataRow,
+  Data_Row,
   Theme,
-  DataRowId,
-  PropValue,
+  Data_Row_ID,
+  Prop_Value,
 } from "@bzrr/canvas-table-core";
 import ThemeForm from "./components/ThemeForm";
 import TableList from "./components/TableList";
@@ -35,7 +35,7 @@ function App() {
 
   const [selectedTab, setSelectedTab] = useState<React.Key>("tables");
 
-  const [selectedRow, setSelectedRow] = useState<DataRow>();
+  const [selectedRow, setSelectedRow] = useState<Data_Row>();
 
   const onEdit = (key: string, value: string) => {
     if (!selectedRow) {
@@ -108,7 +108,7 @@ function App() {
           dataRows={table.dataRows}
           theme={theme}
           containerClassName={styles.canvasTable}
-          selectId={(row) => row.id as DataRowId}
+          selectId={(row) => row.id as Data_Row_ID}
           onSelectRow={(_, row) => setSelectedRow(row)}
         />
       </main>
@@ -119,7 +119,7 @@ function App() {
               <div className={styles.row} key={key}>
                 <label className={styles.label}>{title}</label>
                 <input
-                  value={selectedRow[key] as PropValue}
+                  value={selectedRow[key] as Prop_Value}
                   onChange={(e) => onEdit(key, e.target.value)}
                   className={styles.input}
                   disabled={!selectedRow}

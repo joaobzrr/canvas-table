@@ -1,5 +1,10 @@
 import { useRef, useLayoutEffect } from "react";
-import { CanvasTable } from "@bzrr/canvas-table-core";
+import {
+  make_canvas_table,
+  config_canvas_table,
+  destroy_canvas_table,
+  Canvas_Table
+} from "@bzrr/canvas-table-core";
 import { usePrevious } from "./hooks";
 import { shallowMatch } from "./utils";
 import { CanvasTableProps } from "./types";
@@ -15,25 +20,27 @@ function getContainerId() {
 export function CanvasTableComponent(props: CanvasTableProps) {
   const { containerClassName, containerStyle, ...tableProps } = props;
 
-  const canvasTableRef = useRef<CanvasTable | null>(null);
+  const canvasTableRef = useRef<Canvas_Table | null>(null);
   const containerIdRef = useRef(getContainerId());
 
   const prevTableProps = usePrevious(tableProps);
 
   useLayoutEffect(() => {
-    canvasTableRef.current = new CanvasTable({
+    canvasTableRef.current = make_canvas_table({
       container: containerIdRef.current,
       ...tableProps
     });
 
     return () => {
-      canvasTableRef.current!.cleanup();
-      canvasTableRef.current = null;
+      if (canvasTableRef.current) {
+        destroy_canvas_table(canvasTableRef.current);
+        canvasTableRef.current = null;
+      }
     };
   }, []);
 
   if (prevTableProps && !shallowMatch(tableProps, prevTableProps)) {
-    canvasTableRef.current!.config(tableProps);
+    config_canvas_table(canvasTableRef.current!, tableProps);
   }
 
   return <div id={containerIdRef.current} className={containerClassName} style={containerStyle} />;

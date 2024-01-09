@@ -35,8 +35,6 @@
     "vite-plugin-eslint": "^1.8.1"
   },
   "dependencies": {
-    "graphemer": "^1.4.0",
-    "lodash": "^4.17.21",
-    "nanoevents": "^8.0.0"
+    "graphemer": "^1.4.0"
   }
 }

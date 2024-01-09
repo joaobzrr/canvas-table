@@ -1,6 +1,6 @@
 import { Theme } from "./types";
 
-export const defaultTheme: Theme = {
+export const default_theme: Theme = {
   rowHeight: 30,
   cellPadding: 8,
   tableBorderColor: "#665C54",

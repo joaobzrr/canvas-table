@@ -13,3 +13,11 @@ export const RENDER_LAYER_2 = 2;
 export const RENDER_LAYER_3 = 3;
 export const RENDER_LAYER_4 = 4;
 export const RENDER_LAYER_5 = 5;
+
+export const MOUSE_BUTTONS = {
+  PRIMARY: 0,
+  SECONDARY: 1,
+  AUXILIARY: 2,
+  FOURTH: 3,
+  FIFTH: 4
+} as const;
