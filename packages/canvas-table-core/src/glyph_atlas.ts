@@ -106,66 +106,46 @@ export function clear_glyph_atlas(atlas: Glyph_Atlas) {
 }
 
 function pack_glyph(
-  bin_width: number,
-  bin_height: number,
+  width: number,
+  height: number,
   node: Glyph_Atlas_Node
 ): Glyph_Atlas_Node | null {
   if (node.left && node.right) {
-    const new_node = pack_glyph(bin_width, bin_height, node.left);
+    const new_node = pack_glyph(width, height, node.left);
     if (new_node !== null) {
       return new_node;
     }
-    return pack_glyph(bin_width, bin_height, node.right);
-  } else {
-    if (node.filled) {
-      return null;
-    }
+    return pack_glyph(width, height, node.right);
+  }
 
-    if (node.bin_width < bin_width || node.bin_height < bin_height) {
-      return null;
-    }
+  if (node.filled) {
+    return null;
+  }
 
-    if (node.bin_width === bin_width && node.bin_height === bin_height) {
-      node.filled = true;
-      return node;
-    }
+  if (node.width < width || node.height < height) {
+    return null;
+  }
 
-    const dw = node.bin_width - bin_width;
-    const dh = node.bin_height - bin_height;
-    if (dw > dh) {
-      node.left = make_glyph_atlas_node(
-        node.metrics.sx,
-        node.metrics.sy + bin_height,
-        bin_width,
-        dh
-      );
-      node.right = make_glyph_atlas_node(
-        node.metrics.sx + bin_width,
-        node.metrics.sy,
-        dw,
-        node.bin_height
-      );
-    } else {
-      node.left = make_glyph_atlas_node(
-        node.metrics.sx,
-        node.metrics.sy + bin_height,
-        node.bin_width,
-        dh
-      );
-      node.right = make_glyph_atlas_node(
-        node.metrics.sx + bin_width,
-        node.metrics.sy,
-        dw,
-        bin_height
-      );
-    }
-
-    node.bin_width = bin_width;
-    node.bin_height = bin_height;
+  if (node.width === width && node.height === height) {
     node.filled = true;
-
     return node;
   }
+
+  const dw = node.width - width;
+  const dh = node.height - height;
+  if (dw > dh) {
+    node.left = make_glyph_atlas_node(node.metrics.sx, node.metrics.sy + height, width, dh);
+    node.right = make_glyph_atlas_node(node.metrics.sx + width, node.metrics.sy, dw, node.height);
+  } else {
+    node.left = make_glyph_atlas_node(node.metrics.sx, node.metrics.sy + height, node.width, dh);
+    node.right = make_glyph_atlas_node(node.metrics.sx + width, node.metrics.sy, dw, height);
+  }
+
+  node.width = width;
+  node.height = height;
+  node.filled = true;
+
+  return node;
 }
 
 function make_glyph_atlas_root_node(canvas: HTMLCanvasElement) {
@@ -180,8 +160,8 @@ function make_glyph_atlas_root_node(canvas: HTMLCanvasElement) {
 function make_glyph_atlas_node(
   sx: number,
   sy: number,
-  bin_width: number,
-  bin_height: number
+  width: number,
+  height: number
 ): Glyph_Atlas_Node {
   const metrics = { sx, sy } as Glyph_Metrics;
 
@@ -189,8 +169,8 @@ function make_glyph_atlas_node(
     left: null,
     right: null,
     filled: false,
-    bin_width,
-    bin_height,
+    width,
+    height,
     metrics
   };
 }

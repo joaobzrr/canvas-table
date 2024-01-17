@@ -199,8 +199,8 @@ export type Glyph_Atlas_Node = {
   left: Glyph_Atlas_Node | null;
   right: Glyph_Atlas_Node | null;
   filled: boolean;
-  bin_width: number;
-  bin_height: number;
+  width: number;
+  height: number;
   metrics: Glyph_Metrics;
 };
 
