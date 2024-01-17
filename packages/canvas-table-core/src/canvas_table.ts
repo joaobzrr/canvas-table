@@ -114,13 +114,15 @@ export function make_canvas_table(params: Create_Canvas_Table_Params): Canvas_Ta
   ct.mouse_up_handler = (e) => on_mouse_up(ct, e);
   ct.mouse_move_handler = (e) => on_mouse_move(ct, e);
   ct.wheel_handler = (e) => on_wheel(ct, e);
+  ct.visibility_change_handler = () => on_visibility_change(ct);
 
   canvas.addEventListener("mousedown", ct.mouse_down_handler);
   canvas.addEventListener("wheel", ct.wheel_handler);
-  window.addEventListener("mousemove", ct.mouse_move_handler);
-  window.addEventListener("mouseup", ct.mouse_up_handler);
+  document.addEventListener("mousemove", ct.mouse_move_handler);
+  document.addEventListener("mouseup", ct.mouse_up_handler);
+  document.addEventListener("visibilitychange", ct.visibility_change_handler);
 
-  ct.raf_id = requestAnimationFrame(() => update(ct));
+  start_animation(ct);
 
   return ct;
 }
@@ -130,12 +132,24 @@ export function config_canvas_table(ct: Canvas_Table, props: Partial<Table_Props
 }
 
 export function destroy_canvas_table(ct: Canvas_Table) {
+  stop_animation(ct);
+
+  document.removeEventListener("mousemove", ct.mouse_move_handler);
+  document.removeEventListener("mouseup", ct.mouse_up_handler);
+  document.removeEventListener("visibilitychange", ct.visibility_change_handler);
+}
+
+function start_animation(ct: Canvas_Table) {
+  if (ct.raf_id === undefined) {
+    ct.raf_id = requestAnimationFrame(() => update(ct));
+  }
+}
+
+function stop_animation(ct: Canvas_Table) {
   if (ct.raf_id !== undefined) {
     cancelAnimationFrame(ct.raf_id);
     ct.raf_id = undefined;
   }
-  window.removeEventListener("mousemove", ct.mouse_move_handler);
-  window.removeEventListener("mouseup", ct.mouse_up_handler);
 }
 
 function update(ct: Canvas_Table) {
@@ -817,4 +831,12 @@ function on_mouse_move(ct: Canvas_Table, event: MouseEvent) {
 function on_wheel(ct: Canvas_Table, event: WheelEvent) {
   ct.scroll_amount_x = event.deltaX;
   ct.scroll_amount_y = event.deltaY;
+}
+
+function on_visibility_change(ct: Canvas_Table) {
+  if (document.hidden) {
+    stop_animation(ct);
+  } else {
+    start_animation(ct);
+  }
 }

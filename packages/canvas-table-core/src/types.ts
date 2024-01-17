@@ -26,6 +26,7 @@ export type Canvas_Table = {
   mouse_up_handler: (event: MouseEvent) => void;
   mouse_move_handler: (event: MouseEvent) => void;
   wheel_handler: (event: WheelEvent) => void;
+  visibility_change_handler: () => void;
 };
 
 export type Table_State = {
