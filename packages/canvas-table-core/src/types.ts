@@ -166,23 +166,28 @@ export type Theme = {
 };
 
 export type Renderer = {
-  glyph_atlas_canvas: HTMLCanvasElement;
-  glyph_atlas_cache: Map<string, Glyph_Atlas_Node>;
-  glyph_atlas_root_node: Glyph_Atlas_Node;
-  font: string;
-  text_color: string;
+  glyph_atlas: Glyph_Atlas;
   hline_canvas: HTMLCanvasElement;
   vline_canvas: HTMLCanvasElement;
-  line_color: string;
+  hline_canvas_ctx: CanvasRenderingContext2D;
+  vline_canvas_ctx: CanvasRenderingContext2D;
+  hline_color: string;
+  vline_color: string;
   render_queue: Shape[];
 };
 
 export type Make_Renderer_Params = {
-  glyph_atlas_width?: number;
-  glyph_atlas_height?: number;
-  font?: string;
-  text_color?: string;
-  line_color?: string;
+  glyph_atlas_params?: {
+    atlas_width?: number;
+    atlas_height?: number;
+  };
+};
+
+export type Glyph_Atlas = {
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+  cache: Map<string, Glyph_Atlas_Node>;
+  root_node: Glyph_Atlas_Node;
 };
 
 export type Glyph_Atlas_Params = {
