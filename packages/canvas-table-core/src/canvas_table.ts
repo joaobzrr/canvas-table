@@ -1,20 +1,3 @@
-import {
-  make_table_state,
-  column_scroll_x,
-  scroll_to_screen_x,
-  make_body_area_clip_region,
-  make_header_area_clip_region,
-  reflow,
-  resize_table_column,
-  column_screen_x,
-  row_screen_y,
-  screen_to_scroll_y,
-  scroll_table_to,
-  set_table_size,
-  table_column_range,
-  table_row_range,
-  update_props
-} from "./table_state";
 import { make_renderer, push_draw_command, render } from "./renderer";
 import {
   create_id,
@@ -39,9 +22,12 @@ import {
   shallow_merge
 } from "./utils";
 import {
+  BORDER_WIDTH,
   COLUMN_RESIZER_LEFT_WIDTH,
   COLUMN_RESIZER_WIDTH,
+  DEFAULT_COLUMN_WIDTH,
   MIN_COLUMN_WIDTH,
+  MIN_THUMB_LENGTH,
   MOUSE_BUTTONS,
   RENDER_LAYER_1,
   RENDER_LAYER_3
@@ -87,19 +73,19 @@ export function make_canvas_table(params: Create_Canvas_Table_Params): Canvas_Ta
     selectProp
   };
 
-  const state = make_table_state(props);
   const renderer = make_renderer({ canvas });
   const ui = make_ui_context();
 
   const batched_props = [] as Partial<Table_Props>[];
 
   const ct = {
-    state,
-    renderer,
-    ui,
     container_el,
     wrapper_el,
     canvas,
+
+    renderer,
+    ui,
+
     curr_mouse_x: 0,
     curr_mouse_y: 0,
     curr_mouse_buttons: 0,
@@ -112,7 +98,72 @@ export function make_canvas_table(params: Create_Canvas_Table_Params): Canvas_Ta
     drag_distance_y: 0,
     scroll_amount_x: 0,
     scroll_amount_y: 0,
-    batched_props
+
+    props,
+    batched_props,
+
+    should_reflow: false,
+    table_width: 1,
+    table_height: 1,
+    table_area_x: 0,
+    table_area_y: 0,
+    table_area_width: 1,
+    table_area_height: 1,
+    body_area_x: 0,
+    body_area_y: 0,
+    body_area_width: 1,
+    body_area_height: 1,
+    header_area_x: 0,
+    header_area_y: 0,
+    header_area_width: 1,
+    header_area_height: 1,
+    body_visible_width: 0,
+    body_visible_height: 0,
+    scroll_x: 0,
+    scroll_y: 0,
+    scroll_width: 1,
+    scroll_height: 1,
+    scroll_width_min_capped: 1,
+    scroll_height_min_capped: 1,
+    max_scroll_x: 0,
+    max_scroll_y: 0,
+    hsb_x: 0,
+    hsb_y: 0,
+    hsb_width: 1,
+    hsb_height: 1,
+    hsb_track_x: 0,
+    hsb_track_y: 0,
+    hsb_track_width: 1,
+    hsb_track_height: 1,
+    hsb_thumb_x: 0,
+    hsb_thumb_y: 0,
+    hsb_thumb_width: 1,
+    hsb_thumb_height: 1,
+    hsb_thumb_min_x: 0,
+    hsb_thumb_max_x: 0,
+    vsb_x: 0,
+    vsb_y: 0,
+    vsb_width: 1,
+    vsb_height: 1,
+    vsb_track_x: 0,
+    vsb_track_y: 0,
+    vsb_track_width: 1,
+    vsb_track_height: 1,
+    vsb_thumb_x: 0,
+    vsb_thumb_y: 0,
+    vsb_thumb_width: 1,
+    vsb_thumb_height: 1,
+    vsb_thumb_min_y: 0,
+    vsb_thumb_max_y: 0,
+    overflow_x: false,
+    overflow_y: false,
+    column_start: 0,
+    column_end: 0,
+    row_start: 0,
+    row_end: 0,
+    column_widths: calculate_column_widths(props.columnDefs),
+    canonical_column_positions: [] as number[],
+    selected_row_id: null
   } as Canvas_Table;
 
   ct.mouse_down_handler = (e) => on_mouse_down(ct, e);
@@ -158,8 +209,7 @@ function stop_animation(ct: Canvas_Table) {
 }
 
 function update(ct: Canvas_Table) {
-  const { state, renderer, canvas } = ct;
-  const { props } = state;
+  const { canvas, renderer, props } = ct;
   const { theme } = props;
 
   const ctx = canvas.getContext("2d");
@@ -175,16 +225,16 @@ function update(ct: Canvas_Table) {
     canvas.height = ct.container_el.offsetHeight;
   }
 
-  set_table_size(state, canvas.width, canvas.height);
+  set_table_size(ct, canvas.width, canvas.height);
 
   const new_props = {};
   while (ct.batched_props.length > 0) {
     shallow_merge(new_props, ct.batched_props.shift());
   }
-  update_props(state, new_props);
+  update_props(ct, new_props);
 
-  if (state.should_reflow) {
-    reflow(state);
+  if (ct.should_reflow) {
+    reflow(ct);
   }
 
   if (is_mouse_pressed(ct, MOUSE_BUTTONS.PRIMARY)) {
@@ -198,18 +248,18 @@ function update(ct: Canvas_Table) {
   }
 
   {
-    let new_scroll_x = state.scroll_x;
-    let new_scroll_y = state.scroll_y;
+    let new_scroll_x = ct.scroll_x;
+    let new_scroll_y = ct.scroll_y;
 
     if (is_none_active(ct.ui)) {
       new_scroll_x += ct.scroll_amount_x;
       new_scroll_y += ct.scroll_amount_y;
     }
 
-    new_scroll_x = clamp(new_scroll_x, 0, state.max_scroll_x);
-    new_scroll_y = clamp(new_scroll_y, 0, state.max_scroll_y);
-    if (new_scroll_x !== state.scroll_x || new_scroll_y !== state.scroll_y) {
-      scroll_table_to(state, new_scroll_x, new_scroll_y);
+    new_scroll_x = clamp(new_scroll_x, 0, ct.max_scroll_x);
+    new_scroll_y = clamp(new_scroll_y, 0, ct.max_scroll_y);
+    if (new_scroll_x !== ct.scroll_x || new_scroll_y !== ct.scroll_y) {
+      scroll_table_to(ct, new_scroll_x, new_scroll_y);
     }
   }
 
@@ -218,14 +268,14 @@ function update(ct: Canvas_Table) {
     const mouse_is_in_body = is_point_in_rect(
       ct.curr_mouse_x,
       ct.curr_mouse_y,
-      state.body_area_x,
-      state.body_area_y,
-      state.body_visible_width,
-      state.body_visible_height
+      ct.body_area_x,
+      ct.body_area_y,
+      ct.body_visible_width,
+      ct.body_visible_height
     );
     if (mouse_is_in_body) {
       mouse_row = Math.floor(
-        (screen_to_scroll_y(state, ct.curr_mouse_y) - theme.rowHeight) / theme.rowHeight
+        (screen_to_scroll_y(ct, ct.curr_mouse_y) - theme.rowHeight) / theme.rowHeight
       );
     }
   }
@@ -245,10 +295,10 @@ function update(ct: Canvas_Table) {
     push_draw_command(renderer, {
       type: "rect",
       fill_color: theme.bodyBackgroundColor,
-      x: state.body_area_x,
-      y: state.body_area_y,
-      width: state.body_area_width,
-      height: state.body_area_height
+      x: ct.body_area_x,
+      y: ct.body_area_y,
+      width: ct.body_area_width,
+      height: ct.body_area_height
     });
   }
 
@@ -256,33 +306,33 @@ function update(ct: Canvas_Table) {
     push_draw_command(renderer, {
       type: "rect",
       fill_color: theme.headerBackgroundColor,
-      x: state.header_area_x,
-      y: state.header_area_y,
-      width: state.header_area_width,
-      height: state.header_area_height
+      x: ct.header_area_x,
+      y: ct.header_area_y,
+      width: ct.header_area_width,
+      height: ct.header_area_height
     });
   }
 
   do_column_resizer(ct);
 
-  if (state.overflow_x) {
+  if (ct.overflow_x) {
     if (theme.scrollbarTrackColor) {
       push_draw_command(renderer, {
         type: "rect",
-        x: state.hsb_x,
-        y: state.hsb_y,
-        width: state.hsb_width,
-        height: state.hsb_height,
+        x: ct.hsb_x,
+        y: ct.hsb_y,
+        width: ct.hsb_width,
+        height: ct.hsb_height,
         fill_color: theme.scrollbarTrackColor
       });
     }
 
     do_draggable(ct, {
       id: create_id("horizontal-scrollbar-thumb"),
-      x: state.hsb_thumb_x,
-      y: state.hsb_thumb_y,
-      width: state.hsb_thumb_width,
-      height: state.hsb_thumb_height,
+      x: ct.hsb_thumb_x,
+      y: ct.hsb_thumb_y,
+      width: ct.hsb_thumb_width,
+      height: ct.hsb_thumb_height,
       onDrag: (_id, pos) => on_drag_horizontal_scrollbar(ct, pos),
       activeColor: theme.scrollbarThumbPressedColor,
       hotColor: theme.scrollbarThumbHoverColor,
@@ -291,24 +341,24 @@ function update(ct: Canvas_Table) {
     });
   }
 
-  if (state.overflow_y) {
+  if (ct.overflow_y) {
     if (theme.scrollbarTrackColor) {
       push_draw_command(renderer, {
         type: "rect",
-        x: state.vsb_x,
-        y: state.vsb_y,
-        width: state.vsb_width,
-        height: state.vsb_height,
+        x: ct.vsb_x,
+        y: ct.vsb_y,
+        width: ct.vsb_width,
+        height: ct.vsb_height,
         fill_color: theme.scrollbarTrackColor
       });
     }
 
     do_draggable(ct, {
       id: create_id("vertical-scrollbar-thumb"),
-      x: state.vsb_thumb_x,
-      y: state.vsb_thumb_y,
-      width: state.vsb_thumb_width,
-      height: state.vsb_thumb_height,
+      x: ct.vsb_thumb_x,
+      y: ct.vsb_thumb_y,
+      width: ct.vsb_thumb_width,
+      height: ct.vsb_thumb_height,
       onDrag: (_id, pos) => on_drag_vertical_scrollbar(ct, pos),
       activeColor: theme.scrollbarThumbPressedColor,
       hotColor: theme.scrollbarThumbHoverColor,
@@ -321,8 +371,8 @@ function update(ct: Canvas_Table) {
     const data_row = props.dataRows[mouse_row];
     if (is_mouse_pressed(ct, MOUSE_BUTTONS.PRIMARY)) {
       const data_row_id = props.selectId(data_row);
-      if (data_row_id !== state.selected_row_id) {
-        state.selected_row_id = data_row_id;
+      if (data_row_id !== ct.selected_row_id) {
+        ct.selected_row_id = data_row_id;
         props.onSelectRow?.(data_row_id, data_row);
       }
     }
@@ -330,7 +380,7 @@ function update(ct: Canvas_Table) {
     if (!is_any_active(ct.ui) && theme.hoveredRowColor) {
       const row_rect = calculate_row_rect(ct, mouse_row);
 
-      const clip_region = make_body_area_clip_region(state);
+      const clip_region = make_body_area_clip_region(ct);
 
       push_draw_command(renderer, {
         type: "rect",
@@ -341,14 +391,14 @@ function update(ct: Canvas_Table) {
     }
   }
 
-  if (state.selected_row_id !== null) {
-    const clip_region = make_body_area_clip_region(state);
+  if (ct.selected_row_id !== null) {
+    const clip_region = make_body_area_clip_region(ct);
 
-    for (const rowIndex of table_row_range(state)) {
+    for (const rowIndex of table_row_range(ct)) {
       const data_row = props.dataRows[rowIndex];
       const data_row_id = props.selectId(data_row);
 
-      if (state.selected_row_id === data_row_id) {
+      if (ct.selected_row_id === data_row_id) {
         const rect = calculate_row_rect(ct, rowIndex);
 
         push_draw_command(renderer, {
@@ -404,8 +454,8 @@ function update(ct: Canvas_Table) {
     sort_order: RENDER_LAYER_1
   });
 
-  const grid_width = state.body_visible_width;
-  const grid_height = state.body_visible_height + theme.rowHeight;
+  const grid_width = ct.body_visible_width;
+  const grid_height = ct.body_visible_height + theme.rowHeight;
 
   // Draw header bottom border
   push_draw_command(renderer, {
@@ -420,12 +470,12 @@ function update(ct: Canvas_Table) {
 
   // If horizontal scrollbar is visible, draw its border, otherwise,
   // draw table content right border
-  if (state.overflow_x) {
+  if (ct.overflow_x) {
     push_draw_command(renderer, {
       type: "line",
       orientation: "horizontal",
       x: 0,
-      y: state.hsb_y - 1,
+      y: ct.hsb_y - 1,
       length: canvas.width,
       color: theme.tableBorderColor,
       sort_order: RENDER_LAYER_1
@@ -444,11 +494,11 @@ function update(ct: Canvas_Table) {
 
   // If vertical scrollbar is visible, draw its border, otherwise,
   // draw table content bottom border
-  if (state.overflow_y) {
+  if (ct.overflow_y) {
     push_draw_command(renderer, {
       type: "line",
       orientation: "vertical",
-      x: state.vsb_x - 1,
+      x: ct.vsb_x - 1,
       y: 0,
       length: canvas.height,
       color: theme.tableBorderColor,
@@ -467,12 +517,12 @@ function update(ct: Canvas_Table) {
   }
 
   // Draw grid horizontal lines
-  for (const rowIndex of table_row_range(state, 1)) {
+  for (const rowIndex of table_row_range(ct, 1)) {
     push_draw_command(renderer, {
       type: "line",
       orientation: "horizontal",
       x: 0,
-      y: row_screen_y(state, rowIndex),
+      y: row_screen_y(ct, rowIndex),
       length: grid_width,
       color: theme.tableBorderColor,
       sort_order: RENDER_LAYER_1
@@ -480,11 +530,11 @@ function update(ct: Canvas_Table) {
   }
 
   // Draw grid vertical lines
-  for (const columnIndex of table_column_range(state, 1)) {
+  for (const columnIndex of table_column_range(ct, 1)) {
     push_draw_command(renderer, {
       type: "line",
       orientation: "vertical",
-      x: column_screen_x(state, columnIndex),
+      x: column_screen_x(ct, columnIndex),
       y: 0,
       length: grid_height,
       color: theme.tableBorderColor,
@@ -501,13 +551,13 @@ function update(ct: Canvas_Table) {
 
     const actual_font_color = theme.headerFontColor ?? theme.fontColor;
 
-    const clip_region = make_header_area_clip_region(state);
+    const clip_region = make_header_area_clip_region(ct);
 
-    for (const column_index of table_column_range(state)) {
+    for (const column_index of table_column_range(ct)) {
       const column_def = props.columnDefs[column_index];
-      const column_width = state.column_widths[column_index];
+      const column_width = ct.column_widths[column_index];
 
-      const column_pos = column_screen_x(state, column_index);
+      const column_pos = column_screen_x(ct, column_index);
 
       const x = column_pos + theme.cellPadding;
       const y = theme.rowHeight / 2 + half_font_bounding_box_ascent;
@@ -536,21 +586,21 @@ function update(ct: Canvas_Table) {
 
     const actual_font_color = theme.bodyFontColor ?? theme.fontColor;
 
-    const clip_region = make_body_area_clip_region(state);
+    const clip_region = make_body_area_clip_region(ct);
 
-    for (const column_index of table_column_range(state)) {
+    for (const column_index of table_column_range(ct)) {
       const column_def = props.columnDefs[column_index];
-      const column_width = state.column_widths[column_index];
+      const column_width = ct.column_widths[column_index];
 
-      const column_pos = column_screen_x(state, column_index);
+      const column_pos = column_screen_x(ct, column_index);
 
       const x = column_pos + theme.cellPadding;
       const max_width = column_width - theme.cellPadding * 2;
 
-      for (const row_index of table_row_range(state)) {
+      for (const row_index of table_row_range(ct)) {
         const data_row = props.dataRows[row_index];
 
-        const row_pos = row_screen_y(state, row_index);
+        const row_pos = row_screen_y(ct, row_index);
 
         const y = row_pos + theme.rowHeight / 2 + half_font_bounding_box_ascent;
 
@@ -580,38 +630,318 @@ function update(ct: Canvas_Table) {
   ct.raf_id = requestAnimationFrame(() => update(ct));
 }
 
-function calculate_row_rect(ct: Canvas_Table, rowIndex: number) {
-  const { state } = ct;
-  const { theme } = state.props;
+function update_props(ct: Canvas_Table, props: Partial<Table_Props>) {
+  const { columnDefs, dataRows, theme, ...rest } = props;
 
-  const row_pos = row_screen_y(state, rowIndex);
+  let should_reflow = false;
+
+  if (columnDefs && !Object.is(columnDefs, ct.props.columnDefs)) {
+    ct.props.columnDefs = columnDefs;
+    ct.column_widths = calculate_column_widths(columnDefs);
+    should_reflow = true;
+  }
+
+  if (dataRows && !Object.is(dataRows, ct.props.dataRows)) {
+    ct.props.dataRows = dataRows;
+    should_reflow = true;
+  }
+
+  if (theme && !Object.is(theme, ct.props.theme)) {
+    ct.props.theme = theme;
+    should_reflow = true;
+  }
+
+  ct.should_reflow ||= should_reflow;
+
+  shallow_merge(ct.props, rest);
+}
+
+export function set_table_size(ct: Canvas_Table, width: number, height: number) {
+  const should_reflow = ct.table_width !== width || ct.table_height !== height;
+  ct.table_width = width;
+  ct.table_height = height;
+  ct.should_reflow ||= should_reflow;
+}
+
+export function reflow(ct: Canvas_Table) {
+  recalculate_layout_state(ct);
+  recalculate_scrollbar_thumb_positions(ct);
+  recalculate_viewport_state(ct);
+
+  ct.should_reflow = false;
+}
+
+export function resize_table_column(ct: Canvas_Table, column_index: number, column_width: number) {
+  const { column_widths } = ct;
+  column_widths[column_index] = column_width;
+
+  recalculate_layout_state(ct);
+
+  ct.scroll_x = Math.min(ct.scroll_x, ct.max_scroll_x);
+  ct.scroll_y = Math.min(ct.scroll_y, ct.max_scroll_y);
+  recalculate_scrollbar_thumb_positions(ct);
+  recalculate_viewport_state(ct);
+
+  const column_def = ct.props.columnDefs[column_index];
+  ct.props.onResizeColumn?.(column_def.key, column_width);
+}
+
+export function scroll_table_to(ct: Canvas_Table, scroll_x: number, scroll_y: number) {
+  ct.scroll_x = scroll_x;
+  ct.scroll_y = scroll_y;
+  recalculate_scrollbar_thumb_positions(ct);
+  recalculate_viewport_state(ct);
+}
+
+export function* table_column_range(ct: Canvas_Table, start = 0) {
+  for (let j = ct.column_start + start; j < ct.column_end; j++) {
+    yield j;
+  }
+}
+
+export function* table_row_range(ct: Canvas_Table, start = 0) {
+  for (let i = ct.row_start + start; i < ct.row_end; i++) {
+    yield i;
+  }
+}
+
+export function column_scroll_x(ct: Canvas_Table, column_index: number) {
+  return ct.canonical_column_positions[column_index];
+}
+
+export function row_scroll_y(ct: Canvas_Table, row_index: number) {
+  return row_index * ct.props.theme.rowHeight;
+}
+
+export function column_screen_x(ct: Canvas_Table, column_index: number) {
+  const canonical_pos = column_scroll_x(ct, column_index);
+  const screen_column_x = scroll_to_screen_x(ct, canonical_pos);
+  return screen_column_x;
+}
+
+export function row_screen_y(ct: Canvas_Table, row_index: number) {
+  const canonical_pos = row_scroll_y(ct, row_index);
+  const screen_row_y = scroll_to_screen_y(ct, canonical_pos) + ct.props.theme.rowHeight;
+  return screen_row_y;
+}
+
+export function scroll_to_screen_x(ct: Canvas_Table, canonical_x: number) {
+  return canonical_x - ct.scroll_x;
+}
+
+export function scroll_to_screen_y(ct: Canvas_Table, canonical_y: number) {
+  return canonical_y - ct.scroll_y;
+}
+
+export function screen_to_scroll_x(ct: Canvas_Table, screen_x: number) {
+  return screen_x + ct.scroll_x;
+}
+
+export function screen_to_scroll_y(ct: Canvas_Table, screen_y: number) {
+  return screen_y + ct.scroll_y;
+}
+
+export function make_body_area_clip_region(ct: Canvas_Table) {
+  const body_clip_region = new Path2D();
+  body_clip_region.rect(ct.body_area_x, ct.body_area_y, ct.body_area_width, ct.body_area_height);
+  return body_clip_region;
+}
+
+export function make_header_area_clip_region(ct: Canvas_Table) {
+  const header_area_region = new Path2D();
+  header_area_region.rect(
+    ct.header_area_x,
+    ct.header_area_y,
+    ct.header_area_width,
+    ct.header_area_height
+  );
+  return header_area_region;
+}
+
+function recalculate_layout_state(ct: Canvas_Table) {
+  let scroll_width = 0;
+  for (const width of ct.column_widths) {
+    scroll_width += width;
+  }
+
+  ct.scroll_width = scroll_width;
+  ct.scroll_height = ct.props.dataRows.length * ct.props.theme.rowHeight;
+
+  const table_area_outer_width = ct.table_width - BORDER_WIDTH;
+  const table_area_outer_height = ct.table_height - BORDER_WIDTH;
+
+  const table_area_inner_width =
+    table_area_outer_width - ct.props.theme.scrollbarThickness - BORDER_WIDTH;
+  const table_area_inner_height =
+    table_area_outer_height - ct.props.theme.scrollbarThickness - BORDER_WIDTH;
+
+  const body_area_outer_height = table_area_outer_height - ct.props.theme.rowHeight;
+  const body_area_inner_height = table_area_inner_height - ct.props.theme.rowHeight;
+
+  if (table_area_outer_width >= ct.scroll_width && body_area_outer_height >= ct.scroll_height) {
+    ct.overflow_x = ct.overflow_y = false;
+  } else {
+    ct.overflow_x = table_area_inner_width < ct.scroll_width;
+    ct.overflow_y = body_area_inner_height < ct.scroll_height;
+  }
+
+  let table_area_width: number;
+  let body_area_width: number;
+
+  if (ct.overflow_y) {
+    table_area_width = body_area_width = table_area_inner_width;
+  } else {
+    table_area_width = body_area_width = table_area_outer_width;
+  }
+
+  let table_area_height: number;
+  let body_area_height: number;
+  if (ct.overflow_x) {
+    table_area_height = table_area_inner_height;
+    body_area_height = body_area_inner_height;
+  } else {
+    table_area_height = table_area_outer_height;
+    body_area_height = body_area_outer_height;
+  }
+
+  ct.table_area_x = 0;
+  ct.table_area_y = 0;
+  ct.table_area_width = table_area_width;
+  ct.table_area_height = table_area_height;
+
+  ct.body_area_x = 0;
+  ct.body_area_y = ct.props.theme.rowHeight;
+  ct.body_area_width = body_area_width;
+  ct.body_area_height = body_area_height;
+
+  ct.header_area_x = 0;
+  ct.header_area_y = 0;
+  ct.header_area_width = table_area_width;
+  ct.header_area_height = ct.props.theme.rowHeight;
+
+  ct.scroll_width_min_capped = Math.max(ct.scroll_width, body_area_width);
+  ct.scroll_height_min_capped = Math.max(ct.scroll_height, body_area_height);
+
+  ct.max_scroll_x = ct.scroll_width_min_capped - body_area_width;
+  ct.max_scroll_y = ct.scroll_height_min_capped - body_area_height;
+
+  ct.body_visible_width = Math.min(ct.body_area_width, ct.scroll_width);
+  ct.body_visible_height = Math.min(ct.body_area_height, ct.scroll_height);
+
+  ct.hsb_x = BORDER_WIDTH;
+  ct.hsb_y = table_area_height + BORDER_WIDTH;
+  ct.hsb_width = table_area_width - BORDER_WIDTH;
+  ct.hsb_height = ct.props.theme.scrollbarThickness;
+
+  ct.hsb_track_x = ct.hsb_x + ct.props.theme.scrollbarTrackMargin;
+  ct.hsb_track_y = ct.hsb_y + ct.props.theme.scrollbarTrackMargin;
+  ct.hsb_track_width = ct.hsb_width - ct.props.theme.scrollbarTrackMargin * 2;
+  ct.hsb_track_height = ct.hsb_height - ct.props.theme.scrollbarTrackMargin * 2;
+
+  ct.hsb_thumb_y = ct.hsb_track_y;
+  ct.hsb_thumb_height = ct.hsb_track_height;
+  ct.hsb_thumb_width = Math.max(
+    (body_area_width / ct.scroll_width_min_capped) * ct.hsb_track_width,
+    MIN_THUMB_LENGTH
+  );
+  ct.hsb_thumb_min_x = ct.hsb_track_x;
+  ct.hsb_thumb_max_x = ct.hsb_track_x + ct.hsb_track_width - ct.hsb_thumb_width;
+
+  ct.vsb_x = table_area_width + BORDER_WIDTH;
+  ct.vsb_y = ct.props.theme.rowHeight + BORDER_WIDTH;
+  ct.vsb_width = ct.props.theme.scrollbarThickness;
+  ct.vsb_height = body_area_height - BORDER_WIDTH;
+
+  ct.vsb_track_x = ct.vsb_x + ct.props.theme.scrollbarTrackMargin;
+  ct.vsb_track_y = ct.vsb_y + ct.props.theme.scrollbarTrackMargin;
+  ct.vsb_track_width = ct.vsb_width - ct.props.theme.scrollbarTrackMargin * 2;
+  ct.vsb_track_height = ct.vsb_height - ct.props.theme.scrollbarTrackMargin * 2;
+
+  ct.vsb_thumb_x = ct.vsb_track_x;
+  ct.vsb_thumb_width = ct.vsb_track_width;
+  ct.vsb_thumb_height = Math.max(
+    (body_area_height / ct.scroll_height_min_capped) * ct.vsb_track_height,
+    MIN_THUMB_LENGTH
+  );
+  ct.vsb_thumb_min_y = ct.vsb_track_y;
+  ct.vsb_thumb_max_y = ct.vsb_track_y + ct.vsb_track_height - ct.vsb_thumb_height;
+}
+
+function recalculate_viewport_state(ct: Canvas_Table) {
+  let column_pos = 0;
+  ct.canonical_column_positions = [];
+
+  for (ct.column_start = 0; ct.column_start < ct.column_widths.length; ct.column_start++) {
+    const column_width = ct.column_widths[ct.column_start];
+    const next_column_pos = column_pos + column_width;
+    if (next_column_pos > ct.scroll_x) {
+      break;
+    }
+    ct.canonical_column_positions.push(column_pos);
+    column_pos = next_column_pos;
+  }
+
+  const scroll_right = ct.scroll_x + ct.body_area_width;
+
+  for (ct.column_end = ct.column_start; ct.column_end < ct.column_widths.length; ct.column_end++) {
+    if (column_pos >= scroll_right) {
+      break;
+    }
+    ct.canonical_column_positions.push(column_pos);
+    column_pos += ct.column_widths[ct.column_end];
+  }
+
+  ct.row_start = Math.floor(ct.scroll_y / ct.props.theme.rowHeight);
+
+  const scroll_bottom = ct.scroll_y + ct.body_area_height;
+  ct.row_end = Math.min(
+    Math.ceil(scroll_bottom / ct.props.theme.rowHeight),
+    ct.props.dataRows.length
+  );
+}
+
+function recalculate_scrollbar_thumb_positions(ct: Canvas_Table) {
+  ct.hsb_thumb_x = lerp(ct.scroll_x, 0, ct.max_scroll_x, ct.hsb_thumb_min_x, ct.hsb_thumb_max_x);
+  ct.vsb_thumb_y = lerp(ct.scroll_y, 0, ct.max_scroll_y, ct.vsb_thumb_min_y, ct.vsb_thumb_max_y);
+}
+
+function calculate_column_widths(column_defs: Column_Def[]) {
+  const column_widths = [];
+  for (const { width } of column_defs) {
+    column_widths.push(width ?? DEFAULT_COLUMN_WIDTH);
+  }
+  return column_widths;
+}
+
+function calculate_row_rect(ct: Canvas_Table, rowIndex: number) {
+  const { theme } = ct.props;
+
+  const row_pos = row_screen_y(ct, rowIndex);
 
   return {
     x: 0,
     y: row_pos,
-    width: state.body_visible_width,
+    width: ct.body_visible_width,
     height: theme.rowHeight
   };
 }
 
 function do_column_resizer(ct: Canvas_Table) {
-  const { state } = ct;
-
-  const clip_region = make_header_area_clip_region(state);
+  const clip_region = make_header_area_clip_region(ct);
 
   if (is_active(ct.ui, "column-resizer")) {
     do_one_column_resizer(ct, ct.ui.active!, clip_region);
     return;
   }
 
-  for (const column_index of table_column_range(state)) {
+  for (const column_index of table_column_range(ct)) {
     const id = create_id("column-resizer", column_index);
     do_one_column_resizer(ct, id, clip_region);
   }
 }
 
 function do_one_column_resizer(ct: Canvas_Table, id: UI_ID, clip_region: Path2D) {
-  const { theme } = ct.state.props;
+  const { theme } = ct.props;
 
   const column_index = id.index!;
   const rect = calculate_column_resizer_rect(ct, column_index);
@@ -631,32 +961,29 @@ function do_one_column_resizer(ct: Canvas_Table, id: UI_ID, clip_region: Path2D)
 }
 
 function on_drag_column_resizer(ct: Canvas_Table, id: UI_ID, pos: Vector) {
-  const { state } = ct;
-
   pos.y = 1;
 
   const column_index = id.index!;
-  const column_pos = column_screen_x(state, column_index);
+  const column_pos = column_screen_x(ct, column_index);
   const calculated_column_width = pos.x - column_pos + COLUMN_RESIZER_LEFT_WIDTH;
   const column_width = Math.max(calculated_column_width, MIN_COLUMN_WIDTH);
 
-  resize_table_column(state, column_index, column_width);
+  resize_table_column(ct, column_index, column_width);
 
   const rect = calculate_column_resizer_rect(ct, column_index);
   pos.x = rect.x;
 }
 
 function calculate_column_resizer_rect(ct: Canvas_Table, column_index: number) {
-  const { state } = ct;
-  const { theme } = state.props;
+  const { theme } = ct.props;
 
-  const column_width = state.column_widths[column_index];
+  const column_width = ct.column_widths[column_index];
 
-  const canonical_column_left = column_scroll_x(state, column_index);
-  const screen_column_left = canonical_column_left - state.scroll_x;
+  const canonical_column_left = column_scroll_x(ct, column_index);
+  const screen_column_left = canonical_column_left - ct.scroll_x;
   const screen_column_right = screen_column_left + column_width;
 
-  const screen_scroll_end = scroll_to_screen_x(state, state.scroll_width_min_capped);
+  const screen_scroll_end = scroll_to_screen_x(ct, ct.scroll_width_min_capped);
 
   const calculated_resizer_right = screen_column_right + COLUMN_RESIZER_LEFT_WIDTH + 1;
   const resizer_right = Math.min(calculated_resizer_right, screen_scroll_end);
@@ -673,29 +1000,25 @@ function calculate_column_resizer_rect(ct: Canvas_Table, column_index: number) {
 }
 
 function on_drag_horizontal_scrollbar(ct: Canvas_Table, pos: Vector) {
-  const { state } = ct;
-
-  const hsb_thumb_x = clamp(pos.x, state.hsb_thumb_min_x, state.hsb_thumb_max_x);
+  const hsb_thumb_x = clamp(pos.x, ct.hsb_thumb_min_x, ct.hsb_thumb_max_x);
   pos.x = hsb_thumb_x;
-  pos.y = state.hsb_track_y;
+  pos.y = ct.hsb_track_y;
 
   const new_scroll_x = Math.round(
-    lerp(hsb_thumb_x, state.hsb_thumb_min_x, state.hsb_thumb_max_x, 0, state.max_scroll_x)
+    lerp(hsb_thumb_x, ct.hsb_thumb_min_x, ct.hsb_thumb_max_x, 0, ct.max_scroll_x)
   );
-  scroll_table_to(state, new_scroll_x, state.scroll_y);
+  scroll_table_to(ct, new_scroll_x, ct.scroll_y);
 }
 
 function on_drag_vertical_scrollbar(ct: Canvas_Table, pos: Vector) {
-  const { state } = ct;
-
-  const vsb_thumb_y = clamp(pos.y, state.vsb_thumb_min_y, state.vsb_thumb_max_y);
+  const vsb_thumb_y = clamp(pos.y, ct.vsb_thumb_min_y, ct.vsb_thumb_max_y);
   pos.y = vsb_thumb_y;
-  pos.x = state.vsb_track_x;
+  pos.x = ct.vsb_track_x;
 
   const new_scroll_y = Math.round(
-    lerp(vsb_thumb_y, state.vsb_thumb_min_y, state.vsb_thumb_max_y, 0, state.max_scroll_y)
+    lerp(vsb_thumb_y, ct.vsb_thumb_min_y, ct.vsb_thumb_max_y, 0, ct.max_scroll_y)
   );
-  scroll_table_to(state, state.scroll_x, new_scroll_y);
+  scroll_table_to(ct, ct.scroll_x, new_scroll_y);
 }
 
 function do_draggable(ct: Canvas_Table, props: Draggable_Props) {
@@ -773,6 +1096,8 @@ function default_id_selector(row: Data_Row) {
 function default_prop_selector(row: Data_Row, column_def: Column_Def) {
   return row[column_def.key] as Prop_Value;
 }
+
+// ---------- GUI STUFF ----------
 
 function is_mouse_down(ct: Canvas_Table, button: Mouse_Button_Value) {
   const value = normalized_to_buttons_value(button);

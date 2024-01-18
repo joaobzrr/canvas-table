@@ -2,12 +2,14 @@ import { UI_Context, UI_ID } from "./ui_context";
 import { MOUSE_BUTTONS } from "./constants";
 
 export type Canvas_Table = {
-  state: Table_State;
-  renderer: Renderer;
-  ui: UI_Context;
+  // GUI stuff
   container_el: HTMLDivElement;
   wrapper_el: HTMLDivElement;
   canvas: HTMLCanvasElement;
+
+  renderer: Renderer;
+  ui: UI_Context;
+
   curr_mouse_x: number;
   curr_mouse_y: number;
   curr_mouse_buttons: number;
@@ -21,16 +23,19 @@ export type Canvas_Table = {
   scroll_amount_x: number;
   scroll_amount_y: number;
   raf_id?: number;
-  batched_props: Partial<Table_Props>[];
+
   mouse_down_handler: (event: MouseEvent) => void;
   mouse_up_handler: (event: MouseEvent) => void;
   mouse_move_handler: (event: MouseEvent) => void;
   wheel_handler: (event: WheelEvent) => void;
   visibility_change_handler: () => void;
-};
 
-export type Table_State = {
+  // State stuff
   props: Table_Props;
+  batched_props: Partial<Table_Props>[];
+
+  should_reflow: boolean;
+
   table_width: number;
   table_height: number;
   table_area_x: number;
@@ -92,7 +97,6 @@ export type Table_State = {
   column_widths: number[];
   canonical_column_positions: number[];
   selected_row_id: Data_Row_ID | null;
-  should_reflow: boolean;
 };
 
 export type Create_Canvas_Table_Params = Omit<Table_Props, "theme" | "selectId" | "selectProp"> & {
