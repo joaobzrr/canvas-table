@@ -161,6 +161,8 @@ export type Theme = {
 };
 
 export type Renderer = {
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
   glyph_atlas: Glyph_Atlas;
   hline_canvas: HTMLCanvasElement;
   vline_canvas: HTMLCanvasElement;
@@ -168,10 +170,11 @@ export type Renderer = {
   vline_canvas_ctx: CanvasRenderingContext2D;
   hline_color: string;
   vline_color: string;
-  render_queue: Shape[];
+  command_buffer: Draw_Command[];
 };
 
 export type Make_Renderer_Params = {
+  canvas: HTMLCanvasElement;
   glyph_atlas_params?: {
     atlas_width?: number;
     atlas_height?: number;
@@ -209,7 +212,7 @@ export type Glyph_Metrics = {
   advance: number;
 };
 
-export type Base_Shape = {
+export type Base_Draw_Command = {
   type: string;
   x: number;
   y: number;
@@ -220,14 +223,14 @@ export type Base_Shape = {
 
 export type Line_Orientation = "horizontal" | "vertical";
 
-export type Line_Shape = Base_Shape & {
+export type Draw_Line_Command = Base_Draw_Command & {
   type: "line";
   orientation: Line_Orientation;
   length: number;
   color: string;
 };
 
-export type Rect_Shape = Base_Shape & {
+export type Draw_Rect_Command = Base_Draw_Command & {
   type: "rect";
   width: number;
   height: number;
@@ -236,7 +239,7 @@ export type Rect_Shape = Base_Shape & {
   fill_color?: string;
 };
 
-export type Text_Shape = Base_Shape & {
+export type Draw_Text_Command = Base_Draw_Command & {
   type: "text";
   font: string;
   text: string;
@@ -244,7 +247,7 @@ export type Text_Shape = Base_Shape & {
   color: string;
 };
 
-export type Shape = Line_Shape | Rect_Shape | Text_Shape;
+export type Draw_Command = Draw_Line_Command | Draw_Rect_Command | Draw_Text_Command;
 
 export type Mouse_Buttons = typeof MOUSE_BUTTONS;
 

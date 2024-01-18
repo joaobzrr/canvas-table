@@ -13,9 +13,9 @@ import {
   set_table_size,
   table_column_range,
   table_row_range,
-  update_props,
+  update_props
 } from "./table_state";
-import { make_renderer, renderer_submit, renderer_render } from "./renderer";
+import { make_renderer, push_draw_command, render } from "./renderer";
 import {
   create_id,
   is_active,
@@ -88,7 +88,7 @@ export function make_canvas_table(params: Create_Canvas_Table_Params): Canvas_Ta
   };
 
   const state = make_table_state(props);
-  const renderer = make_renderer();
+  const renderer = make_renderer({ canvas });
   const ui = make_ui_context();
 
   const batched_props = [] as Partial<Table_Props>[];
@@ -158,7 +158,7 @@ function stop_animation(ct: Canvas_Table) {
 }
 
 function update(ct: Canvas_Table) {
-  const { state, canvas } = ct;
+  const { state, renderer, canvas } = ct;
   const { props } = state;
   const { theme } = props;
 
@@ -231,7 +231,7 @@ function update(ct: Canvas_Table) {
   }
 
   if (theme.tableBackgroundColor) {
-    renderer_submit(ct.renderer, {
+    push_draw_command(renderer, {
       type: "rect",
       x: 0,
       y: 0,
@@ -242,7 +242,7 @@ function update(ct: Canvas_Table) {
   }
 
   if (theme.bodyBackgroundColor) {
-    renderer_submit(ct.renderer, {
+    push_draw_command(renderer, {
       type: "rect",
       fill_color: theme.bodyBackgroundColor,
       x: state.body_area_x,
@@ -253,7 +253,7 @@ function update(ct: Canvas_Table) {
   }
 
   if (theme.headerBackgroundColor) {
-    renderer_submit(ct.renderer, {
+    push_draw_command(renderer, {
       type: "rect",
       fill_color: theme.headerBackgroundColor,
       x: state.header_area_x,
@@ -267,7 +267,7 @@ function update(ct: Canvas_Table) {
 
   if (state.overflow_x) {
     if (theme.scrollbarTrackColor) {
-      renderer_submit(ct.renderer, {
+      push_draw_command(renderer, {
         type: "rect",
         x: state.hsb_x,
         y: state.hsb_y,
@@ -293,7 +293,7 @@ function update(ct: Canvas_Table) {
 
   if (state.overflow_y) {
     if (theme.scrollbarTrackColor) {
-      renderer_submit(ct.renderer, {
+      push_draw_command(renderer, {
         type: "rect",
         x: state.vsb_x,
         y: state.vsb_y,
@@ -332,7 +332,7 @@ function update(ct: Canvas_Table) {
 
       const clip_region = make_body_area_clip_region(state);
 
-      renderer_submit(ct.renderer, {
+      push_draw_command(renderer, {
         type: "rect",
         fill_color: theme.hoveredRowColor,
         clip_region,
@@ -351,7 +351,7 @@ function update(ct: Canvas_Table) {
       if (state.selected_row_id === data_row_id) {
         const rect = calculate_row_rect(ct, rowIndex);
 
-        renderer_submit(ct.renderer, {
+        push_draw_command(renderer, {
           type: "rect",
           fill_color: theme.selectedRowColor,
           clip_region,
@@ -364,7 +364,7 @@ function update(ct: Canvas_Table) {
   }
 
   // Draw outer canvas border
-  renderer_submit(ct.renderer, {
+  push_draw_command(renderer, {
     type: "line",
     orientation: "horizontal",
     x: 0,
@@ -374,7 +374,7 @@ function update(ct: Canvas_Table) {
     sort_order: RENDER_LAYER_1
   });
 
-  renderer_submit(ct.renderer, {
+  push_draw_command(renderer, {
     type: "line",
     orientation: "horizontal",
     x: 0,
@@ -384,7 +384,7 @@ function update(ct: Canvas_Table) {
     sort_order: RENDER_LAYER_1
   });
 
-  renderer_submit(ct.renderer, {
+  push_draw_command(renderer, {
     type: "line",
     orientation: "vertical",
     x: 0,
@@ -394,7 +394,7 @@ function update(ct: Canvas_Table) {
     sort_order: RENDER_LAYER_1
   });
 
-  renderer_submit(ct.renderer, {
+  push_draw_command(renderer, {
     type: "line",
     orientation: "vertical",
     x: canvas.width - 1,
@@ -408,7 +408,7 @@ function update(ct: Canvas_Table) {
   const grid_height = state.body_visible_height + theme.rowHeight;
 
   // Draw header bottom border
-  renderer_submit(ct.renderer, {
+  push_draw_command(renderer, {
     type: "line",
     orientation: "horizontal",
     x: 0,
@@ -421,7 +421,7 @@ function update(ct: Canvas_Table) {
   // If horizontal scrollbar is visible, draw its border, otherwise,
   // draw table content right border
   if (state.overflow_x) {
-    renderer_submit(ct.renderer, {
+    push_draw_command(renderer, {
       type: "line",
       orientation: "horizontal",
       x: 0,
@@ -431,7 +431,7 @@ function update(ct: Canvas_Table) {
       sort_order: RENDER_LAYER_1
     });
   } else {
-    renderer_submit(ct.renderer, {
+    push_draw_command(renderer, {
       type: "line",
       orientation: "vertical",
       x: grid_width,
@@ -445,7 +445,7 @@ function update(ct: Canvas_Table) {
   // If vertical scrollbar is visible, draw its border, otherwise,
   // draw table content bottom border
   if (state.overflow_y) {
-    renderer_submit(ct.renderer, {
+    push_draw_command(renderer, {
       type: "line",
       orientation: "vertical",
       x: state.vsb_x - 1,
@@ -455,7 +455,7 @@ function update(ct: Canvas_Table) {
       sort_order: RENDER_LAYER_1
     });
   } else {
-    renderer_submit(ct.renderer, {
+    push_draw_command(renderer, {
       type: "line",
       orientation: "horizontal",
       x: 0,
@@ -468,7 +468,7 @@ function update(ct: Canvas_Table) {
 
   // Draw grid horizontal lines
   for (const rowIndex of table_row_range(state, 1)) {
-    renderer_submit(ct.renderer, {
+    push_draw_command(renderer, {
       type: "line",
       orientation: "horizontal",
       x: 0,
@@ -481,7 +481,7 @@ function update(ct: Canvas_Table) {
 
   // Draw grid vertical lines
   for (const columnIndex of table_column_range(state, 1)) {
-    renderer_submit(ct.renderer, {
+    push_draw_command(renderer, {
       type: "line",
       orientation: "vertical",
       x: column_screen_x(state, columnIndex),
@@ -514,7 +514,7 @@ function update(ct: Canvas_Table) {
       const max_width = column_width - theme.cellPadding * 2;
       const text = column_def.title;
 
-      renderer_submit(ct.renderer, {
+      push_draw_command(renderer, {
         type: "text",
         x,
         y,
@@ -557,7 +557,7 @@ function update(ct: Canvas_Table) {
         const value = props.selectProp(data_row, column_def);
         const text = is_number(value) ? value.toString() : (value as string);
 
-        renderer_submit(ct.renderer, {
+        push_draw_command(renderer, {
           type: "text",
           x,
           y,
@@ -571,7 +571,7 @@ function update(ct: Canvas_Table) {
     }
   }
 
-  renderer_render(ct.renderer, ctx, canvas.width, canvas.height);
+  render(renderer);
 
   ct.prev_mouse_buttons = ct.curr_mouse_buttons;
   ct.scroll_amount_x = 0;
@@ -754,7 +754,7 @@ function do_draggable(ct: Canvas_Table, props: Draggable_Props) {
     return;
   }
 
-  renderer_submit(ct.renderer, {
+  push_draw_command(ct.renderer, {
     type: "rect",
     fill_color,
     sort_order: props.sortOrder,

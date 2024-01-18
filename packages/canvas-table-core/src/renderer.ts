@@ -1,9 +1,11 @@
 import Graphemer from "graphemer";
 import { make_glyph_atlas, cache_glyph, blit_glyph } from "./glyph_atlas";
 import { is_whitespace } from "./utils";
-import { Renderer, Make_Renderer_Params, Shape } from "./types";
+import { Renderer, Make_Renderer_Params, Draw_Command } from "./types";
 
-export function make_renderer(params?: Make_Renderer_Params): Renderer {
+export function make_renderer(params: Make_Renderer_Params): Renderer {
+  const ctx = get_context(params.canvas);
+
   const glyph_atlas = make_glyph_atlas(params?.glyph_atlas_params);
 
   const hline_canvas = document.createElement("canvas");
@@ -20,9 +22,11 @@ export function make_renderer(params?: Make_Renderer_Params): Renderer {
   const hline_color = "black";
   const vline_color = "black";
 
-  const render_queue: Shape[] = [];
+  const command_buffer: Draw_Command[] = [];
 
   return {
+    canvas: params.canvas,
+    ctx,
     glyph_atlas,
     hline_canvas,
     vline_canvas,
@@ -30,21 +34,18 @@ export function make_renderer(params?: Make_Renderer_Params): Renderer {
     vline_canvas_ctx,
     hline_color,
     vline_color,
-    render_queue
+    command_buffer
   };
 }
 
-export function renderer_submit(renderer: Renderer, shape: Shape) {
-  renderer.render_queue.unshift(shape);
+export function push_draw_command(renderer: Renderer, shape: Draw_Command) {
+  renderer.command_buffer.unshift(shape);
 }
 
-export function renderer_render(
-  renderer: Renderer,
-  ctx: CanvasRenderingContext2D,
-  canvas_width: number,
-  canvas_height: number
-) {
-  renderer.render_queue.sort((a, b) => {
+export function render(renderer: Renderer) {
+  const { canvas, ctx } = renderer;
+
+  renderer.command_buffer.sort((a, b) => {
     const { sort_order: a_sort_order = 0 } = a;
     const { sort_order: b_sort_order = 0 } = b;
     return b_sort_order - a_sort_order;
@@ -53,27 +54,27 @@ export function renderer_render(
   ctx.save();
   ctx.imageSmoothingEnabled = false;
 
-  ctx.clearRect(0, 0, canvas_width, canvas_height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  while (renderer.render_queue.length > 0) {
-    const shape = renderer.render_queue.pop()!;
+  while (renderer.command_buffer.length > 0) {
+    const command = renderer.command_buffer.pop()!;
 
-    if (shape.clip_region) {
+    if (command.clip_region) {
       ctx.save();
-      ctx.clip(shape.clip_region);
+      ctx.clip(command.clip_region);
     }
 
-    switch (shape.type) {
+    switch (command.type) {
       case "text": {
-        const { text, x, y, font, color, max_width } = shape;
+        const { text, x, y, font, color, max_width } = command;
 
         draw_text(renderer, ctx, text, x, y, font, color, max_width, true);
         break;
       }
       case "line": {
-        const { x, y, length, color } = shape;
+        const { x, y, length, color } = command;
 
-        if (shape.orientation === "horizontal") {
+        if (command.orientation === "horizontal") {
           draw_horizontal_line(renderer, ctx, x, y, length, color);
         } else {
           draw_vertical_line(renderer, ctx, x, y, length, color);
@@ -82,7 +83,7 @@ export function renderer_render(
         break;
       }
       case "rect": {
-        const { x, y, width, height, fill_color, stroke_color, stroke_width } = shape;
+        const { x, y, width, height, fill_color, stroke_color, stroke_width } = command;
 
         if (fill_color) {
           fill_rect(renderer, ctx, x, y, width, height, fill_color);
@@ -96,7 +97,7 @@ export function renderer_render(
       }
     }
 
-    if (shape.clip_region) {
+    if (command.clip_region) {
       ctx.restore();
     }
   }
