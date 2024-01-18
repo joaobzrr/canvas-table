@@ -46,6 +46,15 @@ export function shallow_match<T1 extends object, T2 extends object>(obj1: T1, ob
   return true;
 }
 
+export function is_empty(obj: Record<string, unknown>) {
+  for (const prop in obj) {
+    if (Object.hasOwn(obj, prop)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export function clamp(value: number, min: number, max: number) {
   if (value < min) return min;
   if (value > max) return max;

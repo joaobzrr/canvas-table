@@ -1,34 +1,8 @@
-import { UI_Context, UI_ID } from "./ui_context";
 import { MOUSE_BUTTONS } from "./constants";
 
 export type Canvas_Table = {
-  // GUI stuff
-  container_el: HTMLDivElement;
-  wrapper_el: HTMLDivElement;
-  canvas: HTMLCanvasElement;
-
   renderer: Renderer;
-  ui: UI_Context;
-
-  curr_mouse_x: number;
-  curr_mouse_y: number;
-  curr_mouse_buttons: number;
-  prev_mouse_buttons: number;
-  drag_anchor_x: number;
-  drag_anchor_y: number;
-  drag_start_x: number;
-  drag_start_y: number;
-  drag_distance_x: number;
-  drag_distance_y: number;
-  scroll_amount_x: number;
-  scroll_amount_y: number;
-  raf_id?: number;
-
-  mouse_down_handler: (event: MouseEvent) => void;
-  mouse_up_handler: (event: MouseEvent) => void;
-  mouse_move_handler: (event: MouseEvent) => void;
-  wheel_handler: (event: WheelEvent) => void;
-  visibility_change_handler: () => void;
+  gui: GUI_Context;
 
   // State stuff
   props: Table_Props;
@@ -94,6 +68,7 @@ export type Canvas_Table = {
   column_end: number;
   row_start: number;
   row_end: number;
+  mouse_row: number;
   column_widths: number[];
   canonical_column_positions: number[];
   selected_row_id: Data_Row_ID | null;
@@ -162,6 +137,42 @@ export type Theme = {
   scrollbarThumbHoverColor?: string;
   scrollbarThumbPressedColor?: string;
   columnResizerColor: string;
+};
+
+export type GUI_Context = {
+  container_el: HTMLDivElement;
+  wrapper_el: HTMLDivElement;
+  canvas: HTMLCanvasElement;
+
+  update_function?: () => void;
+
+  curr_mouse_x: number;
+  curr_mouse_y: number;
+  curr_mouse_buttons: number;
+  prev_mouse_buttons: number;
+  drag_anchor_x: number;
+  drag_anchor_y: number;
+  drag_start_x: number;
+  drag_start_y: number;
+  drag_distance_x: number;
+  drag_distance_y: number;
+  scroll_amount_x: number;
+  scroll_amount_y: number;
+  raf_id?: number;
+
+  hot: Widget_ID | null;
+  active: Widget_ID | null;
+
+  mouse_down_handler: (event: MouseEvent) => void;
+  mouse_up_handler: (event: MouseEvent) => void;
+  mouse_move_handler: (event: MouseEvent) => void;
+  wheel_handler: (event: WheelEvent) => void;
+  visibility_change_handler: () => void;
+};
+
+export type Widget_ID = {
+  name: string;
+  index?: number;
 };
 
 export type Renderer = {
@@ -258,7 +269,7 @@ export type Mouse_Buttons = typeof MOUSE_BUTTONS;
 export type Mouse_Button_Value = Mouse_Buttons[keyof Mouse_Buttons];
 
 export type Draggable_Props = {
-  id: UI_ID;
+  id: Widget_ID;
   x: number;
   y: number;
   width: number;
@@ -268,7 +279,7 @@ export type Draggable_Props = {
   activeColor?: string;
   clipRegion?: Path2D;
   sortOrder?: number;
-  onDrag?: (id: UI_ID, pos: Vector) => void;
+  onDrag?: (id: Widget_ID, pos: Vector) => void;
 };
 
 export type Rect = {
