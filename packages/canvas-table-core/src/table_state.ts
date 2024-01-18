@@ -1,11 +1,13 @@
 import { lerp, shallow_merge } from "./utils";
-import { DEFAULT_COLUMN_WIDTH, MIN_THUMB_LENGTH } from "./constants";
+import { DEFAULT_COLUMN_WIDTH, MIN_THUMB_LENGTH, BORDER_WIDTH } from "./constants";
 import { Table_Props, Table_State, Table_Context, Column_Def } from "./types";
 
 export function make_table_state(tblctx: Table_Context, props: Table_Props): Table_State {
   return {
     tblctx,
     props,
+    table_width: 1,
+    table_height: 1,
     table_area_x: 0,
     table_area_y: 0,
     table_area_width: 1,
@@ -18,16 +20,14 @@ export function make_table_state(tblctx: Table_Context, props: Table_Props): Tab
     header_area_y: 0,
     header_area_width: 1,
     header_area_height: 1,
-    actual_body_width: 1,
-    actual_body_height: 1,
-    body_x: 0,
-    body_y: 0,
-    body_width: 0,
-    body_height: 0,
+    body_visible_width: 0,
+    body_visible_height: 0,
     scroll_x: 0,
     scroll_y: 0,
     scroll_width: 1,
     scroll_height: 1,
+    scroll_width_min_capped: 1,
+    scroll_height_min_capped: 1,
     max_scroll_x: 0,
     max_scroll_y: 0,
     hsb_x: 0,
@@ -51,7 +51,7 @@ export function make_table_state(tblctx: Table_Context, props: Table_Props): Tab
     vsb_track_x: 0,
     vsb_track_y: 0,
     vsb_track_width: 1,
-    vsb_traack_height: 1,
+    vsb_track_height: 1,
     vsb_thumb_x: 0,
     vsb_thumb_y: 0,
     vsb_thumb_width: 1,
@@ -67,27 +67,59 @@ export function make_table_state(tblctx: Table_Context, props: Table_Props): Tab
     column_widths: calculate_column_widths(props.columnDefs),
     canonical_column_positions: [] as number[],
     selected_row_id: null,
+    should_reflow: false,
     ...props
   } as Table_State;
 }
 
 export function update_props(state: Table_State, props: Partial<Table_Props>) {
-  if (props.columnDefs && !Object.is(props.columnDefs, state.props.columnDefs)) {
-    state.column_widths = calculate_column_widths(props.columnDefs);
+  const { columnDefs, dataRows, theme, ...rest } = props;
+
+  let should_reflow = false;
+
+  if (columnDefs && !Object.is(columnDefs, state.props.columnDefs)) {
+    state.props.columnDefs = columnDefs;
+    state.column_widths = calculate_column_widths(columnDefs);
+    should_reflow = true;
   }
 
-  shallow_merge(state.props, props);
+  if (dataRows && !Object.is(dataRows, state.props.dataRows)) {
+    state.props.dataRows = dataRows;
+    should_reflow = true;
+  }
+
+  if (theme && !Object.is(theme, state.props.theme)) {
+    state.props.theme = theme;
+    should_reflow = true;
+  }
+
+  state.should_reflow ||= should_reflow;
+
+  shallow_merge(state.props, rest);
 }
 
-export function recalculate_state(state: Table_State) {
+export function set_table_size(state: Table_State, width: number, height: number) {
+  const should_reflow = state.table_width !== width || state.table_height !== height;
+  state.table_width = width;
+  state.table_height = height;
+  state.should_reflow ||= should_reflow;
+}
+
+export function reflow(state: Table_State) {
   recalculate_layout_state(state);
   recalculate_scrollbar_thumb_positions(state);
   recalculate_viewport_state(state);
+
+  state.should_reflow = false;
 }
 
-export function resize_table_column(state: Table_State, columnIndex: number, columnWidth: number) {
+export function resize_table_column(
+  state: Table_State,
+  column_index: number,
+  column_width: number
+) {
   const { column_widths } = state.tblctx.state;
-  column_widths[columnIndex] = columnWidth;
+  column_widths[column_index] = column_width;
 
   recalculate_layout_state(state);
 
@@ -96,13 +128,13 @@ export function resize_table_column(state: Table_State, columnIndex: number, col
   recalculate_scrollbar_thumb_positions(state);
   recalculate_viewport_state(state);
 
-  const columnDef = state.props.columnDefs[columnIndex];
-  state.props.onResizeColumn?.(columnDef.key, columnWidth);
+  const column_def = state.props.columnDefs[column_index];
+  state.props.onResizeColumn?.(column_def.key, column_width);
 }
 
-export function scroll_table_to(state: Table_State, scrollX: number, scrollY: number) {
-  state.scroll_x = scrollX;
-  state.scroll_y = scrollY;
+export function scroll_table_to(state: Table_State, scroll_x: number, scroll_y: number) {
+  state.scroll_x = scroll_x;
+  state.scroll_y = scroll_y;
   recalculate_scrollbar_thumb_positions(state);
   recalculate_viewport_state(state);
 }
@@ -119,40 +151,40 @@ export function* table_row_range(state: Table_State, start = 0) {
   }
 }
 
-export function canonical_column_pos(state: Table_State, columnIndex: number) {
-  return state.canonical_column_positions[columnIndex];
+export function column_scroll_x(state: Table_State, column_index: number) {
+  return state.canonical_column_positions[column_index];
 }
 
-export function canonical_row_pos(state: Table_State, rowIndex: number) {
-  return rowIndex * state.props.theme.rowHeight;
+export function row_scroll_y(state: Table_State, row_index: number) {
+  return row_index * state.props.theme.rowHeight;
 }
 
-export function screen_column_pos(state: Table_State, colIndex: number) {
-  const canonicalColumnPos = canonical_column_pos(state, colIndex);
-  const screenColumnX = canonical_to_screen_x(state, canonicalColumnPos);
-  return screenColumnX;
+export function column_screen_x(state: Table_State, column_index: number) {
+  const canonical_pos = column_scroll_x(state, column_index);
+  const screen_column_x = scroll_to_screen_x(state, canonical_pos);
+  return screen_column_x;
 }
 
-export function screen_row_pos(state: Table_State, rowIndex: number) {
-  const canonicalRowPos = canonical_row_pos(state, rowIndex);
-  const screenRowY = canonical_to_screen_y(state, canonicalRowPos) + state.props.theme.rowHeight;
-  return screenRowY;
+export function row_screen_y(state: Table_State, row_index: number) {
+  const canonical_pos = row_scroll_y(state, row_index);
+  const screen_row_y = scroll_to_screen_y(state, canonical_pos) + state.props.theme.rowHeight;
+  return screen_row_y;
 }
 
-export function canonical_to_screen_x(state: Table_State, canonicalX: number) {
-  return canonicalX - state.scroll_x;
+export function scroll_to_screen_x(state: Table_State, canonical_x: number) {
+  return canonical_x - state.scroll_x;
 }
 
-export function canonical_to_screen_y(state: Table_State, canonicalY: number) {
-  return canonicalY - state.scroll_y;
+export function scroll_to_screen_y(state: Table_State, canonical_y: number) {
+  return canonical_y - state.scroll_y;
 }
 
-export function screen_to_canonical_x(state: Table_State, screenX: number) {
-  return screenX + state.scroll_x;
+export function screen_to_scroll_x(state: Table_State, screen_x: number) {
+  return screen_x + state.scroll_x;
 }
 
-export function screen_to_canonical_y(state: Table_State, screenY: number) {
-  return screenY + state.scroll_y;
+export function screen_to_scroll_y(state: Table_State, screen_y: number) {
+  return screen_y + state.scroll_y;
 }
 
 export function make_body_area_clip_region(state: Table_State) {
@@ -178,78 +210,81 @@ export function make_header_area_clip_region(state: Table_State) {
 }
 
 function recalculate_layout_state(state: Table_State) {
-  let actualBodyWidth = 0;
+  let scroll_width = 0;
   for (const width of state.column_widths) {
-    actualBodyWidth += width;
+    scroll_width += width;
   }
-  state.actual_body_width = actualBodyWidth;
 
-  state.actual_body_height = state.props.dataRows.length * state.props.theme.rowHeight;
+  state.scroll_width = scroll_width;
+  state.scroll_height = state.props.dataRows.length * state.props.theme.rowHeight;
 
-  const outerTableWidth = state.tblctx.canvas.width - 1;
-  const outerTableHeight = state.tblctx.canvas.height - 1;
+  const table_area_outer_width = state.table_width - BORDER_WIDTH;
+  const table_area_outer_height = state.table_height - BORDER_WIDTH;
 
-  const innerTableWidth = outerTableWidth - state.props.theme.scrollbarThickness - 1;
-  const innerTableHeight = outerTableHeight - state.props.theme.scrollbarThickness - 1;
+  const table_area_inner_width =
+    table_area_outer_width - state.props.theme.scrollbarThickness - BORDER_WIDTH;
+  const table_area_inner_height =
+    table_area_outer_height - state.props.theme.scrollbarThickness - BORDER_WIDTH;
 
-  const outerBodyHeight = outerTableHeight - state.props.theme.rowHeight;
-  const innerBodyHeight = innerTableHeight - state.props.theme.rowHeight;
+  const body_area_outer_height = table_area_outer_height - state.props.theme.rowHeight;
+  const body_area_inner_height = table_area_inner_height - state.props.theme.rowHeight;
 
-  if (outerTableWidth >= state.actual_body_width && outerBodyHeight >= state.actual_body_height) {
+  if (
+    table_area_outer_width >= state.scroll_width &&
+    body_area_outer_height >= state.scroll_height
+  ) {
     state.overflow_x = state.overflow_y = false;
   } else {
-    state.overflow_x = innerTableWidth < state.actual_body_width;
-    state.overflow_y = innerBodyHeight < state.actual_body_height;
+    state.overflow_x = table_area_inner_width < state.scroll_width;
+    state.overflow_y = body_area_inner_height < state.scroll_height;
   }
 
-  let tableWidth: number;
-  let bodyWidth: number;
+  let table_area_width: number;
+  let body_area_width: number;
 
   if (state.overflow_y) {
-    tableWidth = bodyWidth = innerTableWidth;
+    table_area_width = body_area_width = table_area_inner_width;
   } else {
-    tableWidth = bodyWidth = outerTableWidth;
+    table_area_width = body_area_width = table_area_outer_width;
   }
 
-  let tableHeight: number;
-  let bodyHeight: number;
-
+  let table_area_height: number;
+  let body_area_height: number;
   if (state.overflow_x) {
-    tableHeight = innerTableHeight;
-    bodyHeight = innerBodyHeight;
+    table_area_height = table_area_inner_height;
+    body_area_height = body_area_inner_height;
   } else {
-    tableHeight = outerTableHeight;
-    bodyHeight = outerBodyHeight;
+    table_area_height = table_area_outer_height;
+    body_area_height = body_area_outer_height;
   }
 
   state.table_area_x = 0;
   state.table_area_y = 0;
-  state.table_area_width = tableWidth;
-  state.table_area_height = tableHeight;
+  state.table_area_width = table_area_width;
+  state.table_area_height = table_area_height;
 
   state.body_area_x = 0;
   state.body_area_y = state.props.theme.rowHeight;
-  state.body_area_width = bodyWidth;
-  state.body_area_height = bodyHeight;
+  state.body_area_width = body_area_width;
+  state.body_area_height = body_area_height;
 
   state.header_area_x = 0;
   state.header_area_y = 0;
-  state.header_area_width = tableWidth;
+  state.header_area_width = table_area_width;
   state.header_area_height = state.props.theme.rowHeight;
 
-  state.scroll_width = Math.max(state.actual_body_width, bodyWidth);
-  state.scroll_height = Math.max(state.actual_body_height, bodyHeight);
+  state.scroll_width_min_capped = Math.max(state.scroll_width, body_area_width);
+  state.scroll_height_min_capped = Math.max(state.scroll_height, body_area_height);
 
-  state.max_scroll_x = state.scroll_width - bodyWidth;
-  state.max_scroll_y = state.scroll_height - bodyHeight;
+  state.max_scroll_x = state.scroll_width_min_capped - body_area_width;
+  state.max_scroll_y = state.scroll_height_min_capped - body_area_height;
 
-  state.body_y = state.body_area_y;
-  state.body_width = Math.min(state.body_area_width, state.actual_body_width);
-  state.body_height = Math.min(state.body_area_height, state.actual_body_height);
+  state.body_visible_width = Math.min(state.body_area_width, state.scroll_width);
+  state.body_visible_height = Math.min(state.body_area_height, state.scroll_height);
 
-  state.hsb_x = 1;
-  state.hsb_y = tableHeight + 1;
-  state.hsb_width = tableWidth - 1;
+  state.hsb_x = BORDER_WIDTH;
+  state.hsb_y = table_area_height + BORDER_WIDTH;
+  state.hsb_width = table_area_width - BORDER_WIDTH;
   state.hsb_height = state.props.theme.scrollbarThickness;
 
   state.hsb_track_x = state.hsb_x + state.props.theme.scrollbarTrackMargin;
@@ -260,34 +295,34 @@ function recalculate_layout_state(state: Table_State) {
   state.hsb_thumb_y = state.hsb_track_y;
   state.hsb_thumb_height = state.hsb_track_height;
   state.hsb_thumb_width = Math.max(
-    (bodyWidth / state.scroll_width) * state.hsb_track_width,
+    (body_area_width / state.scroll_width_min_capped) * state.hsb_track_width,
     MIN_THUMB_LENGTH
   );
   state.hsb_thumb_min_x = state.hsb_track_x;
   state.hsb_thumb_max_x = state.hsb_track_x + state.hsb_track_width - state.hsb_thumb_width;
 
-  state.vsb_x = tableWidth + 1;
-  state.vsb_y = state.props.theme.rowHeight + 1;
+  state.vsb_x = table_area_width + BORDER_WIDTH;
+  state.vsb_y = state.props.theme.rowHeight + BORDER_WIDTH;
   state.vsb_width = state.props.theme.scrollbarThickness;
-  state.vsb_height = bodyHeight - 1;
+  state.vsb_height = body_area_height - BORDER_WIDTH;
 
   state.vsb_track_x = state.vsb_x + state.props.theme.scrollbarTrackMargin;
   state.vsb_track_y = state.vsb_y + state.props.theme.scrollbarTrackMargin;
   state.vsb_track_width = state.vsb_width - state.props.theme.scrollbarTrackMargin * 2;
-  state.vsb_traack_height = state.vsb_height - state.props.theme.scrollbarTrackMargin * 2;
+  state.vsb_track_height = state.vsb_height - state.props.theme.scrollbarTrackMargin * 2;
 
   state.vsb_thumb_x = state.vsb_track_x;
   state.vsb_thumb_width = state.vsb_track_width;
   state.vsb_thumb_height = Math.max(
-    (bodyHeight / state.scroll_height) * state.vsb_traack_height,
+    (body_area_height / state.scroll_height_min_capped) * state.vsb_track_height,
     MIN_THUMB_LENGTH
   );
   state.vsb_thumb_min_y = state.vsb_track_y;
-  state.vsb_thumb_max_y = state.vsb_track_y + state.vsb_traack_height - state.vsb_thumb_height;
+  state.vsb_thumb_max_y = state.vsb_track_y + state.vsb_track_height - state.vsb_thumb_height;
 }
 
 function recalculate_viewport_state(state: Table_State) {
-  let columnPos = 0;
+  let column_pos = 0;
   state.canonical_column_positions = [];
 
   for (
@@ -295,34 +330,34 @@ function recalculate_viewport_state(state: Table_State) {
     state.column_start < state.column_widths.length;
     state.column_start++
   ) {
-    const columnWidth = state.column_widths[state.column_start];
-    const nextColumnPos = columnPos + columnWidth;
-    if (nextColumnPos > state.scroll_x) {
+    const column_width = state.column_widths[state.column_start];
+    const next_column_pos = column_pos + column_width;
+    if (next_column_pos > state.scroll_x) {
       break;
     }
-    state.canonical_column_positions.push(columnPos);
-    columnPos = nextColumnPos;
+    state.canonical_column_positions.push(column_pos);
+    column_pos = next_column_pos;
   }
 
-  const scrollRight = state.scroll_x + state.body_area_width;
+  const scroll_right = state.scroll_x + state.body_area_width;
 
   for (
     state.column_end = state.column_start;
     state.column_end < state.column_widths.length;
     state.column_end++
   ) {
-    if (columnPos >= scrollRight) {
+    if (column_pos >= scroll_right) {
       break;
     }
-    state.canonical_column_positions.push(columnPos);
-    columnPos += state.column_widths[state.column_end];
+    state.canonical_column_positions.push(column_pos);
+    column_pos += state.column_widths[state.column_end];
   }
 
   state.row_start = Math.floor(state.scroll_y / state.props.theme.rowHeight);
 
-  const scrollBottom = state.scroll_y + state.body_area_height;
+  const scroll_bottom = state.scroll_y + state.body_area_height;
   state.row_end = Math.min(
-    Math.ceil(scrollBottom / state.props.theme.rowHeight),
+    Math.ceil(scroll_bottom / state.props.theme.rowHeight),
     state.props.dataRows.length
   );
 }

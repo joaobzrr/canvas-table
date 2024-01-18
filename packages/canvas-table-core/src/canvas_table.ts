@@ -1,14 +1,15 @@
 import {
-  canonical_column_pos,
-  canonical_to_screen_x,
+  column_scroll_x,
+  scroll_to_screen_x,
   make_body_area_clip_region,
   make_header_area_clip_region,
-  recalculate_state,
+  reflow,
   resize_table_column,
-  screen_column_pos,
-  screen_row_pos,
-  screen_to_canonical_y,
+  column_screen_x,
+  row_screen_y,
+  screen_to_scroll_y,
   scroll_table_to,
+  set_table_size,
   table_column_range,
   table_row_range,
   update_props
@@ -34,7 +35,8 @@ import {
   is_point_in_rect,
   create_font_specifier,
   get_font_metrics,
-  is_number
+  is_number,
+  shallow_merge
 } from "./utils";
 import {
   COLUMN_RESIZER_LEFT_WIDTH,
@@ -89,6 +91,8 @@ export function make_canvas_table(params: Create_Canvas_Table_Params): Canvas_Ta
   const renderer = make_renderer();
   const ui = make_ui_context();
 
+  const batched_props = [] as Partial<Table_Props>[];
+
   const ct = {
     tblctx,
     renderer,
@@ -107,7 +111,8 @@ export function make_canvas_table(params: Create_Canvas_Table_Params): Canvas_Ta
     drag_distance_x: 0,
     drag_distance_y: 0,
     scroll_amount_x: 0,
-    scroll_amount_y: 0
+    scroll_amount_y: 0,
+    batched_props
   } as Canvas_Table;
 
   ct.mouse_down_handler = (e) => on_mouse_down(ct, e);
@@ -128,7 +133,7 @@ export function make_canvas_table(params: Create_Canvas_Table_Params): Canvas_Ta
 }
 
 export function config_canvas_table(ct: Canvas_Table, props: Partial<Table_Props>) {
-  ct.unmerged_props = props;
+  ct.batched_props.push(props);
 }
 
 export function destroy_canvas_table(ct: Canvas_Table) {
@@ -162,27 +167,24 @@ function update(ct: Canvas_Table) {
     throw new Error("Could not instantiate canvas context");
   }
 
-  const container_was_resized =
+  if (
     ct.container_el.offsetWidth !== ct.canvas.width ||
-    ct.container_el.offsetHeight !== ct.canvas.height;
-  if (container_was_resized) {
+    ct.container_el.offsetHeight !== ct.canvas.height
+  ) {
     ct.canvas.width = ct.container_el.offsetWidth;
     ct.canvas.height = ct.container_el.offsetHeight;
   }
 
-  let layout_props_changed = false;
-  if (ct.unmerged_props) {
-    layout_props_changed =
-      !Object.is(ct.unmerged_props.columnDefs, props.columnDefs) ||
-      !Object.is(ct.unmerged_props.dataRows, props.dataRows) ||
-      !Object.is(ct.unmerged_props.theme, theme);
+  set_table_size(state, ct.canvas.width, ct.canvas.height);
 
-    update_props(state, ct.unmerged_props);
-    ct.unmerged_props = undefined;
+  const new_props = {};
+  for (const props of ct.batched_props) {
+    shallow_merge(new_props, props);
   }
+  update_props(state, new_props);
 
-  if (container_was_resized || layout_props_changed) {
-    recalculate_state(state);
+  if (state.should_reflow) {
+    reflow(state);
   }
 
   if (is_mouse_pressed(ct, MOUSE_BUTTONS.PRIMARY)) {
@@ -216,14 +218,14 @@ function update(ct: Canvas_Table) {
     const mouse_is_in_body = is_point_in_rect(
       ct.curr_mouse_x,
       ct.curr_mouse_y,
-      state.body_x,
-      state.body_y,
-      state.body_width,
-      state.body_height
+      state.body_area_x,
+      state.body_area_y,
+      state.body_visible_width,
+      state.body_visible_height
     );
     if (mouse_is_in_body) {
       mouse_row = Math.floor(
-        (screen_to_canonical_y(state, ct.curr_mouse_y) - theme.rowHeight) / theme.rowHeight
+        (screen_to_scroll_y(state, ct.curr_mouse_y) - theme.rowHeight) / theme.rowHeight
       );
     }
   }
@@ -256,7 +258,7 @@ function update(ct: Canvas_Table) {
       fill_color: theme.headerBackgroundColor,
       x: state.header_area_x,
       y: state.header_area_y,
-      width: state.header_area_width,
+      width: state.header_area_height,
       height: state.header_area_height
     });
   }
@@ -402,8 +404,8 @@ function update(ct: Canvas_Table) {
     sort_order: RENDER_LAYER_1
   });
 
-  const grid_width = state.body_width;
-  const grid_height = state.body_height + theme.rowHeight;
+  const grid_width = state.body_visible_width;
+  const grid_height = state.body_visible_height + theme.rowHeight;
 
   // Draw header bottom border
   renderer_submit(ct.renderer, {
@@ -470,7 +472,7 @@ function update(ct: Canvas_Table) {
       type: "line",
       orientation: "horizontal",
       x: 0,
-      y: screen_row_pos(state, rowIndex),
+      y: row_screen_y(state, rowIndex),
       length: grid_width,
       color: theme.tableBorderColor,
       sort_order: RENDER_LAYER_1
@@ -482,7 +484,7 @@ function update(ct: Canvas_Table) {
     renderer_submit(ct.renderer, {
       type: "line",
       orientation: "vertical",
-      x: screen_column_pos(state, columnIndex),
+      x: column_screen_x(state, columnIndex),
       y: 0,
       length: grid_height,
       color: theme.tableBorderColor,
@@ -505,7 +507,7 @@ function update(ct: Canvas_Table) {
       const column_def = props.columnDefs[column_index];
       const column_width = state.column_widths[column_index];
 
-      const column_pos = screen_column_pos(state, column_index);
+      const column_pos = column_screen_x(state, column_index);
 
       const x = column_pos + theme.cellPadding;
       const y = theme.rowHeight / 2 + half_font_bounding_box_ascent;
@@ -540,7 +542,7 @@ function update(ct: Canvas_Table) {
       const column_def = props.columnDefs[column_index];
       const column_width = state.column_widths[column_index];
 
-      const column_pos = screen_column_pos(state, column_index);
+      const column_pos = column_screen_x(state, column_index);
 
       const x = column_pos + theme.cellPadding;
       const max_width = column_width - theme.cellPadding * 2;
@@ -548,7 +550,7 @@ function update(ct: Canvas_Table) {
       for (const row_index of table_row_range(state)) {
         const data_row = props.dataRows[row_index];
 
-        const row_pos = screen_row_pos(state, row_index);
+        const row_pos = row_screen_y(state, row_index);
 
         const y = row_pos + theme.rowHeight / 2 + half_font_bounding_box_ascent;
 
@@ -582,12 +584,12 @@ function calculate_row_rect(ct: Canvas_Table, rowIndex: number) {
   const { state } = ct.tblctx;
   const { theme } = state.props;
 
-  const row_pos = screen_row_pos(state, rowIndex);
+  const row_pos = row_screen_y(state, rowIndex);
 
   return {
     x: 0,
     y: row_pos,
-    width: state.body_width,
+    width: state.body_visible_width,
     height: theme.rowHeight
   };
 }
@@ -599,7 +601,7 @@ function do_column_resizer(ct: Canvas_Table) {
   clip_region.rect(
     state.header_area_x,
     state.header_area_y,
-    state.header_area_width,
+    state.header_area_height,
     state.header_area_height
   );
 
@@ -640,7 +642,7 @@ function on_drag_column_resizer(ct: Canvas_Table, id: UI_ID, pos: Vector) {
   pos.y = 1;
 
   const column_index = id.index!;
-  const column_pos = screen_column_pos(state, column_index);
+  const column_pos = column_screen_x(state, column_index);
   const calculated_column_width = pos.x - column_pos + COLUMN_RESIZER_LEFT_WIDTH;
   const column_width = Math.max(calculated_column_width, MIN_COLUMN_WIDTH);
 
@@ -656,11 +658,11 @@ function calculate_column_resizer_rect(ct: Canvas_Table, column_index: number) {
 
   const column_width = state.column_widths[column_index];
 
-  const canonical_column_left = canonical_column_pos(state, column_index);
+  const canonical_column_left = column_scroll_x(state, column_index);
   const screen_column_left = canonical_column_left - state.scroll_x;
   const screen_column_right = screen_column_left + column_width;
 
-  const screen_scroll_end = canonical_to_screen_x(state, state.scroll_width);
+  const screen_scroll_end = scroll_to_screen_x(state, state.scroll_width_min_capped);
 
   const calculated_resizer_right = screen_column_right + COLUMN_RESIZER_LEFT_WIDTH + 1;
   const resizer_right = Math.min(calculated_resizer_right, screen_scroll_end);

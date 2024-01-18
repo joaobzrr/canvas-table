@@ -21,7 +21,7 @@ export type Canvas_Table = {
   scroll_amount_x: number;
   scroll_amount_y: number;
   raf_id?: number;
-  unmerged_props?: Partial<Table_Props>;
+  batched_props: Partial<Table_Props>[];
   mouse_down_handler: (event: MouseEvent) => void;
   mouse_up_handler: (event: MouseEvent) => void;
   mouse_move_handler: (event: MouseEvent) => void;
@@ -32,6 +32,8 @@ export type Canvas_Table = {
 export type Table_State = {
   tblctx: Table_Context;
   props: Table_Props;
+  table_width: number;
+  table_height: number;
   table_area_x: number;
   table_area_y: number;
   table_area_width: number;
@@ -44,16 +46,14 @@ export type Table_State = {
   header_area_y: number;
   header_area_width: number;
   header_area_height: number;
-  actual_body_width: number;
-  actual_body_height: number;
-  body_x: number;
-  body_y: number;
-  body_width: number;
-  body_height: number;
+  body_visible_width: number;
+  body_visible_height: number;
   scroll_x: number;
   scroll_y: number;
   scroll_width: number;
   scroll_height: number;
+  scroll_width_min_capped: number;
+  scroll_height_min_capped: number;
   max_scroll_x: number;
   max_scroll_y: number;
   hsb_x: number;
@@ -77,7 +77,7 @@ export type Table_State = {
   vsb_track_x: number;
   vsb_track_y: number;
   vsb_track_width: number;
-  vsb_traack_height: number;
+  vsb_track_height: number;
   vsb_thumb_x: number;
   vsb_thumb_y: number;
   vsb_thumb_width: number;
@@ -93,6 +93,7 @@ export type Table_State = {
   column_widths: number[];
   canonical_column_positions: number[];
   selected_row_id: Data_Row_ID | null;
+  should_reflow: boolean;
 };
 
 export type Table_Context = {
