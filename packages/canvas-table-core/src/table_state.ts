@@ -1,10 +1,9 @@
 import { lerp, shallow_merge } from "./utils";
 import { DEFAULT_COLUMN_WIDTH, MIN_THUMB_LENGTH, BORDER_WIDTH } from "./constants";
-import { Table_Props, Table_State, Table_Context, Column_Def } from "./types";
+import { Table_Props, Table_State, Column_Def } from "./types";
 
-export function make_table_state(tblctx: Table_Context, props: Table_Props): Table_State {
+export function make_table_state(props: Table_Props): Table_State {
   return {
-    tblctx,
     props,
     table_width: 1,
     table_height: 1,
@@ -118,7 +117,7 @@ export function resize_table_column(
   column_index: number,
   column_width: number
 ) {
-  const { column_widths } = state.tblctx.state;
+  const { column_widths } = state;
   column_widths[column_index] = column_width;
 
   recalculate_layout_state(state);

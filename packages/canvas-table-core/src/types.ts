@@ -2,7 +2,7 @@ import { UI_Context, UI_ID } from "./ui_context";
 import { MOUSE_BUTTONS } from "./constants";
 
 export type Canvas_Table = {
-  tblctx: Table_Context;
+  state: Table_State;
   renderer: Renderer;
   ui: UI_Context;
   container_el: HTMLDivElement;
@@ -30,7 +30,6 @@ export type Canvas_Table = {
 };
 
 export type Table_State = {
-  tblctx: Table_Context;
   props: Table_Props;
   table_width: number;
   table_height: number;
@@ -94,11 +93,6 @@ export type Table_State = {
   canonical_column_positions: number[];
   selected_row_id: Data_Row_ID | null;
   should_reflow: boolean;
-};
-
-export type Table_Context = {
-  canvas: HTMLCanvasElement;
-  state: Table_State;
 };
 
 export type Create_Canvas_Table_Params = Omit<Table_Props, "theme" | "selectId" | "selectProp"> & {

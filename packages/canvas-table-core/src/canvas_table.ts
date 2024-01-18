@@ -1,4 +1,5 @@
 import {
+  make_table_state,
   column_scroll_x,
   scroll_to_screen_x,
   make_body_area_clip_region,
@@ -12,10 +13,9 @@ import {
   set_table_size,
   table_column_range,
   table_row_range,
-  update_props
+  update_props,
 } from "./table_state";
 import { make_renderer, renderer_submit, renderer_render } from "./renderer";
-import { make_table_context } from "./table_context";
 import {
   create_id,
   is_active,
@@ -87,14 +87,14 @@ export function make_canvas_table(params: Create_Canvas_Table_Params): Canvas_Ta
     selectProp
   };
 
-  const tblctx = make_table_context(canvas, props);
+  const state = make_table_state(props);
   const renderer = make_renderer();
   const ui = make_ui_context();
 
   const batched_props = [] as Partial<Table_Props>[];
 
   const ct = {
-    tblctx,
+    state,
     renderer,
     ui,
     container_el,
@@ -158,28 +158,28 @@ function stop_animation(ct: Canvas_Table) {
 }
 
 function update(ct: Canvas_Table) {
-  const { state } = ct.tblctx;
+  const { state, canvas } = ct;
   const { props } = state;
   const { theme } = props;
 
-  const ctx = ct.canvas.getContext("2d");
+  const ctx = canvas.getContext("2d");
   if (!ctx) {
     throw new Error("Could not instantiate canvas context");
   }
 
   if (
-    ct.container_el.offsetWidth !== ct.canvas.width ||
-    ct.container_el.offsetHeight !== ct.canvas.height
+    ct.container_el.offsetWidth !== canvas.width ||
+    ct.container_el.offsetHeight !== canvas.height
   ) {
-    ct.canvas.width = ct.container_el.offsetWidth;
-    ct.canvas.height = ct.container_el.offsetHeight;
+    canvas.width = ct.container_el.offsetWidth;
+    canvas.height = ct.container_el.offsetHeight;
   }
 
-  set_table_size(state, ct.canvas.width, ct.canvas.height);
+  set_table_size(state, canvas.width, canvas.height);
 
   const new_props = {};
-  for (const props of ct.batched_props) {
-    shallow_merge(new_props, props);
+  while (ct.batched_props.length > 0) {
+    shallow_merge(new_props, ct.batched_props.shift());
   }
   update_props(state, new_props);
 
@@ -235,8 +235,8 @@ function update(ct: Canvas_Table) {
       type: "rect",
       x: 0,
       y: 0,
-      width: ct.canvas.width,
-      height: ct.canvas.height,
+      width: canvas.width,
+      height: canvas.height,
       fill_color: theme.tableBackgroundColor
     });
   }
@@ -258,7 +258,7 @@ function update(ct: Canvas_Table) {
       fill_color: theme.headerBackgroundColor,
       x: state.header_area_x,
       y: state.header_area_y,
-      width: state.header_area_height,
+      width: state.header_area_width,
       height: state.header_area_height
     });
   }
@@ -369,7 +369,7 @@ function update(ct: Canvas_Table) {
     orientation: "horizontal",
     x: 0,
     y: 0,
-    length: ct.canvas.width,
+    length: canvas.width,
     color: theme.tableBorderColor,
     sort_order: RENDER_LAYER_1
   });
@@ -378,8 +378,8 @@ function update(ct: Canvas_Table) {
     type: "line",
     orientation: "horizontal",
     x: 0,
-    y: ct.canvas.height - 1,
-    length: ct.canvas.width,
+    y: canvas.height - 1,
+    length: canvas.width,
     color: theme.tableBorderColor,
     sort_order: RENDER_LAYER_1
   });
@@ -389,7 +389,7 @@ function update(ct: Canvas_Table) {
     orientation: "vertical",
     x: 0,
     y: 0,
-    length: ct.canvas.height,
+    length: canvas.height,
     color: theme.tableBorderColor,
     sort_order: RENDER_LAYER_1
   });
@@ -397,9 +397,9 @@ function update(ct: Canvas_Table) {
   renderer_submit(ct.renderer, {
     type: "line",
     orientation: "vertical",
-    x: ct.canvas.width - 1,
+    x: canvas.width - 1,
     y: 0,
-    length: ct.canvas.height,
+    length: canvas.height,
     color: theme.tableBorderColor,
     sort_order: RENDER_LAYER_1
   });
@@ -413,7 +413,7 @@ function update(ct: Canvas_Table) {
     orientation: "horizontal",
     x: 0,
     y: theme.rowHeight,
-    length: ct.canvas.width,
+    length: canvas.width,
     color: theme.tableBorderColor,
     sort_order: RENDER_LAYER_1
   });
@@ -426,7 +426,7 @@ function update(ct: Canvas_Table) {
       orientation: "horizontal",
       x: 0,
       y: state.hsb_y - 1,
-      length: ct.canvas.width,
+      length: canvas.width,
       color: theme.tableBorderColor,
       sort_order: RENDER_LAYER_1
     });
@@ -450,7 +450,7 @@ function update(ct: Canvas_Table) {
       orientation: "vertical",
       x: state.vsb_x - 1,
       y: 0,
-      length: ct.canvas.height,
+      length: canvas.height,
       color: theme.tableBorderColor,
       sort_order: RENDER_LAYER_1
     });
@@ -571,7 +571,7 @@ function update(ct: Canvas_Table) {
     }
   }
 
-  renderer_render(ct.renderer, ctx, ct.canvas.width, ct.canvas.height);
+  renderer_render(ct.renderer, ctx, canvas.width, canvas.height);
 
   ct.prev_mouse_buttons = ct.curr_mouse_buttons;
   ct.scroll_amount_x = 0;
@@ -581,7 +581,7 @@ function update(ct: Canvas_Table) {
 }
 
 function calculate_row_rect(ct: Canvas_Table, rowIndex: number) {
-  const { state } = ct.tblctx;
+  const { state } = ct;
   const { theme } = state.props;
 
   const row_pos = row_screen_y(state, rowIndex);
@@ -595,15 +595,9 @@ function calculate_row_rect(ct: Canvas_Table, rowIndex: number) {
 }
 
 function do_column_resizer(ct: Canvas_Table) {
-  const { state } = ct.tblctx;
+  const { state } = ct;
 
-  const clip_region = new Path2D();
-  clip_region.rect(
-    state.header_area_x,
-    state.header_area_y,
-    state.header_area_height,
-    state.header_area_height
-  );
+  const clip_region = make_header_area_clip_region(state);
 
   if (is_active(ct.ui, "column-resizer")) {
     do_one_column_resizer(ct, ct.ui.active!, clip_region);
@@ -617,7 +611,7 @@ function do_column_resizer(ct: Canvas_Table) {
 }
 
 function do_one_column_resizer(ct: Canvas_Table, id: UI_ID, clip_region: Path2D) {
-  const { theme } = ct.tblctx.state.props;
+  const { theme } = ct.state.props;
 
   const column_index = id.index!;
   const rect = calculate_column_resizer_rect(ct, column_index);
@@ -637,7 +631,7 @@ function do_one_column_resizer(ct: Canvas_Table, id: UI_ID, clip_region: Path2D)
 }
 
 function on_drag_column_resizer(ct: Canvas_Table, id: UI_ID, pos: Vector) {
-  const { state } = ct.tblctx;
+  const { state } = ct;
 
   pos.y = 1;
 
@@ -653,7 +647,7 @@ function on_drag_column_resizer(ct: Canvas_Table, id: UI_ID, pos: Vector) {
 }
 
 function calculate_column_resizer_rect(ct: Canvas_Table, column_index: number) {
-  const { state } = ct.tblctx;
+  const { state } = ct;
   const { theme } = state.props;
 
   const column_width = state.column_widths[column_index];
@@ -679,7 +673,7 @@ function calculate_column_resizer_rect(ct: Canvas_Table, column_index: number) {
 }
 
 function on_drag_horizontal_scrollbar(ct: Canvas_Table, pos: Vector) {
-  const { state } = ct.tblctx;
+  const { state } = ct;
 
   const hsb_thumb_x = clamp(pos.x, state.hsb_thumb_min_x, state.hsb_thumb_max_x);
   pos.x = hsb_thumb_x;
@@ -692,7 +686,7 @@ function on_drag_horizontal_scrollbar(ct: Canvas_Table, pos: Vector) {
 }
 
 function on_drag_vertical_scrollbar(ct: Canvas_Table, pos: Vector) {
-  const { state } = ct.tblctx;
+  const { state } = ct;
 
   const vsb_thumb_y = clamp(pos.y, state.vsb_thumb_min_y, state.vsb_thumb_max_y);
   pos.y = vsb_thumb_y;
