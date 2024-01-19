@@ -8,8 +8,6 @@ export type Canvas_Table = {
   props: Table_Props;
   batched_props: Partial<Table_Props>[];
 
-  should_reflow: boolean;
-
   table_width: number;
   table_height: number;
   table_area_x: number;
