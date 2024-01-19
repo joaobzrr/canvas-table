@@ -181,7 +181,7 @@ function update(ct: Canvas_Table) {
     if (!is_empty(new_props)) {
       const { columnDefs, dataRows, theme, ...restOfProps } = new_props;
 
-      if (columnDefs && !Object.is(columnDefs, props.dataRows)) {
+      if (columnDefs && !Object.is(columnDefs, props.columnDefs)) {
         props.columnDefs = columnDefs;
         ct.column_widths = calculate_column_widths(columnDefs);
 
