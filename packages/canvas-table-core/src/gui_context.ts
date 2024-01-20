@@ -1,4 +1,4 @@
-import { shallow_match, is_object } from "./utils";
+import { shallow_match, is_object, is_point_in_rect } from "./utils";
 import { GUI_Context, Widget_ID, Mouse_Button_Value } from "./types";
 import { MOUSE_BUTTONS } from "./constants";
 
@@ -148,6 +148,11 @@ export function create_id(...args: any[]) {
     id = { name: args[0], index: args[1] };
   }
   return id;
+}
+
+export function is_mouse_in_rect(guictx: GUI_Context, rx: number, ry: number, rw: number, rh: number) {
+  const { curr_mouse_x, curr_mouse_y } = guictx;
+  return is_point_in_rect(curr_mouse_x, curr_mouse_y, rx, ry, rw, rh);
 }
 
 export function is_mouse_down(guictx: GUI_Context, button: Mouse_Button_Value) {
