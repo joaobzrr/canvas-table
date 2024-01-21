@@ -150,7 +150,13 @@ export function create_id(...args: any[]) {
   return id;
 }
 
-export function is_mouse_in_rect(guictx: GUI_Context, rx: number, ry: number, rw: number, rh: number) {
+export function is_mouse_in_rect(
+  guictx: GUI_Context,
+  rx: number,
+  ry: number,
+  rw: number,
+  rh: number
+) {
   const { curr_mouse_x, curr_mouse_y } = guictx;
   return is_point_in_rect(curr_mouse_x, curr_mouse_y, rx, ry, rw, rh);
 }
