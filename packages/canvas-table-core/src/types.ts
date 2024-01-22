@@ -141,6 +141,8 @@ export type GUI_Context = {
   container_el: HTMLDivElement;
   wrapper_el: HTMLDivElement;
   canvas: HTMLCanvasElement;
+  font_metrics_canvas: HTMLCanvasElement;
+  font_metrics_canvas_ctx: CanvasRenderingContext2D;
 
   update_function?: () => void;
 
@@ -158,19 +160,14 @@ export type GUI_Context = {
   scroll_amount_y: number;
   raf_id?: number;
 
-  hot: Widget_ID | null;
-  active: Widget_ID | null;
+  hot_widget: string | null;
+  active_widget: string | null;
 
   mouse_down_handler: (event: MouseEvent) => void;
   mouse_up_handler: (event: MouseEvent) => void;
   mouse_move_handler: (event: MouseEvent) => void;
   wheel_handler: (event: WheelEvent) => void;
   visibility_change_handler: () => void;
-};
-
-export type Widget_ID = {
-  name: string;
-  index?: number;
 };
 
 export type Renderer = {

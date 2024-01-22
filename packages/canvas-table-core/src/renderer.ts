@@ -1,6 +1,6 @@
 import Graphemer from "graphemer";
 import { make_glyph_atlas, cache_glyph, blit_glyph } from "./glyph_atlas";
-import { is_whitespace } from "./utils";
+import { get_context, is_whitespace } from "./utils";
 import { Renderer, Make_Renderer_Params, Draw_Command } from "./types";
 
 export function make_renderer(params: Make_Renderer_Params): Renderer {
@@ -273,12 +273,4 @@ function draw_vertical_line(
   }
 
   ctx.drawImage(renderer.vline_canvas, 0, 0, 1, length, x, y, 1, length);
-}
-
-function get_context(canvas: HTMLCanvasElement) {
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    throw new Error("Could not instantiate canvas context");
-  }
-  return ctx;
 }

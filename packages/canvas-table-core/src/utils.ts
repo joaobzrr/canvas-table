@@ -1,15 +1,9 @@
-export function get_font_metrics(ctx: CanvasRenderingContext2D, font: string) {
-  ctx.save();
-
-  ctx.font = font;
-  const { fontBoundingBoxAscent, fontBoundingBoxDescent } = ctx.measureText("M");
-
-  ctx.restore();
-
-  return {
-    fontBoundingBoxAscent,
-    fontBoundingBoxDescent
-  };
+export function get_context(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Could not instantiate canvas context");
+  }
+  return ctx;
 }
 
 export function create_font_specifier(font_family: string, font_Size: string, font_style: string) {

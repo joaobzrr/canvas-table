@@ -1,29 +1,20 @@
 import { make_renderer, push_draw_command, render } from "./renderer";
 import {
-  create_id,
-  is_active,
-  is_hot,
-  is_none_active,
   make_gui_context,
-  set_as_active,
-  set_as_hot,
-  unset_as_hot,
   destroy_gui_context,
   start_animation,
+  get_font_metrics,
+  set_active_widget,
+  set_hot_widget,
+  is_widget_hot,
+  is_widget_active,
+  is_no_widget_active,
+  is_mouse_in_rect,
   is_mouse_pressed,
-  is_mouse_released,
-  is_mouse_in_rect
+  is_mouse_released
 } from "./gui_context";
 import { default_theme } from "./default_theme";
-import {
-  clamp,
-  lerp,
-  create_font_specifier,
-  get_font_metrics,
-  is_number,
-  shallow_merge,
-  is_empty
-} from "./utils";
+import { clamp, lerp, create_font_specifier, is_number, shallow_merge, is_empty } from "./utils";
 import {
   BORDER_WIDTH,
   COLUMN_RESIZER_LEFT_WIDTH,
@@ -130,7 +121,7 @@ export function make_canvas_table(params: Create_Canvas_Table_Params): Canvas_Ta
     row_start: 0,
     row_end: 0,
     mouse_row: -1,
-    column_widths: calculate_column_widths(props.columnDefs),
+    column_widths: calc_column_widths(props.columnDefs),
     canonical_column_positions: [] as number[],
     selected_row_id: null
   } as Canvas_Table;
@@ -151,18 +142,12 @@ export function destroy_canvas_table(ct: Canvas_Table) {
 
 function update(ct: Canvas_Table) {
   const { gui, renderer, props } = ct;
-  const { canvas } = gui;
   const { theme } = props;
 
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    throw new Error("Could not instantiate canvas context");
-  }
-
   let table_resized = false;
-  if (ct.table_width !== canvas.width || ct.table_height !== canvas.height) {
-    ct.table_width = canvas.width;
-    ct.table_height = canvas.height;
+  if (ct.table_width !== gui.canvas.width || ct.table_height !== gui.canvas.height) {
+    ct.table_width = gui.canvas.width;
+    ct.table_height = gui.canvas.height;
 
     table_resized = true;
   }
@@ -175,40 +160,32 @@ function update(ct: Canvas_Table) {
     }
 
     if (!is_empty(new_props)) {
-      const { columnDefs, dataRows, theme, ...restOfProps } = new_props;
-
-      if (columnDefs && !Object.is(columnDefs, props.columnDefs)) {
-        props.columnDefs = columnDefs;
-        ct.column_widths = calculate_column_widths(columnDefs);
-
+      if (new_props.columnDefs && !Object.is(new_props.columnDefs, props.columnDefs)) {
+        ct.column_widths = calc_column_widths(new_props.columnDefs);
         data_changed = true;
       }
 
-      if (dataRows && !Object.is(dataRows, props.dataRows)) {
-        props.dataRows = dataRows;
-
+      if (new_props.dataRows && !Object.is(new_props.dataRows, props.dataRows)) {
         data_changed = true;
       }
 
-      if (theme && !Object.is(theme, props.theme)) {
-        props.theme = theme;
-
+      if (new_props.theme && !Object.is(new_props.theme, props.theme)) {
         data_changed = true;
       }
 
-      shallow_merge(props, restOfProps);
+      shallow_merge(props, new_props);
     }
   }
 
   if (table_resized || data_changed) {
-    recalculate_layout(ct);
+    refresh_layout(ct);
   }
 
   let scroll_pos_changed = false;
   {
     let new_scroll_x = ct.scroll_x;
     let new_scroll_y = ct.scroll_y;
-    if (is_none_active(ct.gui)) {
+    if (is_no_widget_active(ct.gui)) {
       new_scroll_x += gui.scroll_amount_x;
       new_scroll_y += gui.scroll_amount_y;
     }
@@ -224,10 +201,10 @@ function update(ct: Canvas_Table) {
   }
 
   if (table_resized || data_changed || scroll_pos_changed) {
-    recalculate_viewport(ct);
+    refresh_viewport(ct);
 
-    ct.hsb_thumb_x = calculate_hsb_thumb_x(ct, ct.scroll_x);
-    ct.vsb_thumb_y = calculate_vsb_thumb_y(ct, ct.scroll_y);
+    ct.hsb_thumb_x = calc_hsb_thumb_x(ct, ct.scroll_x);
+    ct.vsb_thumb_y = calc_vsb_thumb_y(ct, ct.scroll_y);
   }
 
   {
@@ -245,24 +222,24 @@ function update(ct: Canvas_Table) {
 
   // Do column resizers
   for (const column_index of table_column_range(ct)) {
-    const id = create_id("column-resizer", column_index);
+    const id = `column-resizer-${column_index}`;
 
-    let resizer_scroll_x = calculate_resizer_scroll_pos(ct, column_index);
+    let resizer_scroll_x = calc_resizer_scroll_pos(ct, column_index);
 
-    if (is_active(gui, id)) {
+    if (is_widget_active(gui, id)) {
       if (is_mouse_released(gui, MOUSE_BUTTONS.PRIMARY)) {
-        set_as_active(gui, null);
+        set_active_widget(gui, null);
       } else {
-        const column_scroll_left = get_column_scroll_x(ct, column_index);
+        const column_scroll_left = calc_column_scroll_x(ct, column_index);
         const column_scroll_right = gui.drag_anchor_x + gui.drag_distance_x;
         const column_width = Math.max(column_scroll_right - column_scroll_left, MIN_COLUMN_WIDTH);
         resize_table_column(ct, column_index, column_width);
 
-        resizer_scroll_x = calculate_resizer_scroll_pos(ct, column_index);
+        resizer_scroll_x = calc_resizer_scroll_pos(ct, column_index);
       }
-    } else if (is_hot(gui, id)) {
+    } else if (is_widget_hot(gui, id)) {
       if (is_mouse_pressed(gui, MOUSE_BUTTONS.PRIMARY)) {
-        set_as_active(gui, id);
+        set_active_widget(gui, id);
 
         gui.drag_anchor_x = resizer_scroll_x + COLUMN_RESIZER_LEFT_WIDTH;
       }
@@ -275,12 +252,12 @@ function update(ct: Canvas_Table) {
 
     const inside = is_mouse_in_rect(gui, resizer_x, resizer_y, resizer_width, resizer_height);
     if (inside) {
-      set_as_hot(gui, id);
-    } else {
-      unset_as_hot(gui, id);
+      set_hot_widget(gui, id);
+    } else if (is_widget_hot(gui, id)) {
+      set_hot_widget(gui, null);
     }
 
-    if (is_active(gui, id) || is_hot(gui, id)) {
+    if (is_widget_active(gui, id) || is_widget_hot(gui, id)) {
       push_draw_command(ct.renderer, {
         type: "rect",
         fill_color: theme.columnResizerColor,
@@ -311,10 +288,10 @@ function update(ct: Canvas_Table) {
     {
       let { hsb_thumb_x } = ct;
 
-      const id = create_id("horizontal-scrollbar-thumb");
-      if (is_active(gui, id)) {
+      const id = "horizontal-scrollbar-thumb";
+      if (is_widget_active(gui, id)) {
         if (is_mouse_released(gui, MOUSE_BUTTONS.PRIMARY)) {
-          set_as_active(gui, null);
+          set_active_widget(gui, null);
         } else {
           hsb_thumb_x = clamp(
             gui.drag_anchor_x + gui.drag_distance_x,
@@ -323,12 +300,12 @@ function update(ct: Canvas_Table) {
           );
           ct.hsb_thumb_x = hsb_thumb_x;
 
-          ct.scroll_x = calculate_scroll_x(ct, hsb_thumb_x);
-          recalculate_viewport(ct);
+          ct.scroll_x = calc_scroll_x(ct, hsb_thumb_x);
+          refresh_viewport(ct);
         }
-      } else if (is_hot(gui, id)) {
+      } else if (is_widget_hot(gui, id)) {
         if (is_mouse_pressed(gui, MOUSE_BUTTONS.PRIMARY)) {
-          set_as_active(gui, id);
+          set_active_widget(gui, id);
 
           gui.drag_anchor_x = hsb_thumb_x;
         }
@@ -343,15 +320,15 @@ function update(ct: Canvas_Table) {
         hsb_thumb_height
       );
       if (inside) {
-        set_as_hot(gui, id);
-      } else {
-        unset_as_hot(gui, id);
+        set_hot_widget(gui, id);
+      } else if (is_widget_hot(gui, id)) {
+        set_hot_widget(gui, null);
       }
 
       let fill_color: string | undefined;
-      if (is_active(gui, id)) {
+      if (is_widget_active(gui, id)) {
         fill_color = theme.scrollbarThumbPressedColor;
-      } else if (is_hot(gui, id)) {
+      } else if (is_widget_hot(gui, id)) {
         fill_color = theme.scrollbarThumbHoverColor;
       } else {
         fill_color = theme.scrollbarThumbColor;
@@ -387,10 +364,10 @@ function update(ct: Canvas_Table) {
     {
       let { vsb_thumb_y } = ct;
 
-      const id = create_id("vertical-scrollbar-thumb");
-      if (is_active(gui, id)) {
+      const id = "vertical-scrollbar-thumb";
+      if (is_widget_active(gui, id)) {
         if (is_mouse_released(gui, MOUSE_BUTTONS.PRIMARY)) {
-          set_as_active(gui, null);
+          set_active_widget(gui, null);
         } else {
           vsb_thumb_y = clamp(
             gui.drag_anchor_y + gui.drag_distance_y,
@@ -399,12 +376,12 @@ function update(ct: Canvas_Table) {
           );
           ct.vsb_thumb_y = vsb_thumb_y;
 
-          ct.scroll_y = calculate_scroll_y(ct, vsb_thumb_y);
-          recalculate_viewport(ct);
+          ct.scroll_y = calc_scroll_y(ct, vsb_thumb_y);
+          refresh_viewport(ct);
         }
-      } else if (is_hot(gui, id)) {
+      } else if (is_widget_hot(gui, id)) {
         if (is_mouse_pressed(gui, MOUSE_BUTTONS.PRIMARY)) {
-          set_as_active(gui, id);
+          set_active_widget(gui, id);
 
           gui.drag_anchor_y = ct.vsb_thumb_y;
         }
@@ -419,15 +396,15 @@ function update(ct: Canvas_Table) {
         vsb_thumb_height
       );
       if (inside) {
-        set_as_hot(gui, id);
-      } else {
-        unset_as_hot(gui, id);
+        set_hot_widget(gui, id);
+      } else if (is_widget_hot(gui, id)) {
+        set_hot_widget(gui, null);
       }
 
       let fill_color: string | undefined;
-      if (is_active(gui, id)) {
+      if (is_widget_active(gui, id)) {
         fill_color = theme.scrollbarThumbPressedColor;
-      } else if (is_hot(gui, id)) {
+      } else if (is_widget_hot(gui, id)) {
         fill_color = theme.scrollbarThumbHoverColor;
       } else {
         fill_color = theme.scrollbarThumbColor;
@@ -447,7 +424,7 @@ function update(ct: Canvas_Table) {
     }
   }
 
-  // Do hovered and selected row
+  // Draw hovered and selected rows
   if (ct.mouse_row !== -1) {
     const data_row = props.dataRows[ct.mouse_row];
     if (is_mouse_pressed(gui, MOUSE_BUTTONS.PRIMARY)) {
@@ -458,11 +435,11 @@ function update(ct: Canvas_Table) {
       }
     }
 
-    if (theme.hoveredRowColor && is_none_active(ct.gui)) {
+    if (theme.hoveredRowColor && is_no_widget_active(ct.gui)) {
       push_draw_command(renderer, {
         type: "rect",
         x: 0,
-        y: get_row_screen_y(ct, ct.mouse_row),
+        y: calc_row_screen_y(ct, ct.mouse_row),
         width: ct.body_visible_width,
         height: theme.rowHeight,
         fill_color: theme.hoveredRowColor,
@@ -479,7 +456,7 @@ function update(ct: Canvas_Table) {
         push_draw_command(renderer, {
           type: "rect",
           x: 0,
-          y: get_row_screen_y(ct, row_index),
+          y: calc_row_screen_y(ct, row_index),
           width: ct.body_visible_width,
           height: theme.rowHeight,
           fill_color: theme.selectedRowColor,
@@ -495,8 +472,8 @@ function update(ct: Canvas_Table) {
       type: "rect",
       x: 0,
       y: 0,
-      width: canvas.width,
-      height: canvas.height,
+      width: ct.table_width,
+      height: ct.table_height,
       fill_color: theme.tableBackgroundColor
     });
   }
@@ -523,46 +500,46 @@ function update(ct: Canvas_Table) {
     });
   }
 
-  // Draw top outer canvas border
+  // Draw top outer table border
   push_draw_command(renderer, {
     type: "line",
     orientation: "horizontal",
     x: 0,
     y: 0,
-    length: canvas.width,
+    length: ct.table_width,
     color: theme.tableBorderColor,
     sort_order: RENDER_LAYER_1
   });
 
-  // Draw bottom outer canvas border
+  // Draw bottom outer table border
   push_draw_command(renderer, {
     type: "line",
     orientation: "horizontal",
     x: 0,
-    y: canvas.height - 1,
-    length: canvas.width,
+    y: ct.table_height - 1,
+    length: ct.table_width,
     color: theme.tableBorderColor,
     sort_order: RENDER_LAYER_1
   });
 
-  // Draw left outer canvas border
+  // Draw left outer table border
   push_draw_command(renderer, {
     type: "line",
     orientation: "vertical",
     x: 0,
     y: 0,
-    length: canvas.height,
+    length: ct.table_height,
     color: theme.tableBorderColor,
     sort_order: RENDER_LAYER_1
   });
 
-  // Draw right outer canvas border
+  // Draw right outer table border
   push_draw_command(renderer, {
     type: "line",
     orientation: "vertical",
-    x: canvas.width - 1,
+    x: ct.table_width - 1,
     y: 0,
-    length: canvas.height,
+    length: ct.table_height,
     color: theme.tableBorderColor,
     sort_order: RENDER_LAYER_1
   });
@@ -576,7 +553,7 @@ function update(ct: Canvas_Table) {
     orientation: "horizontal",
     x: 0,
     y: theme.rowHeight,
-    length: canvas.width,
+    length: ct.table_width,
     color: theme.tableBorderColor,
     sort_order: RENDER_LAYER_1
   });
@@ -589,7 +566,7 @@ function update(ct: Canvas_Table) {
       orientation: "horizontal",
       x: 0,
       y: ct.hsb_y - 1,
-      length: canvas.width,
+      length: ct.table_width,
       color: theme.tableBorderColor,
       sort_order: RENDER_LAYER_1
     });
@@ -613,7 +590,7 @@ function update(ct: Canvas_Table) {
       orientation: "vertical",
       x: ct.vsb_x - 1,
       y: 0,
-      length: canvas.height,
+      length: ct.table_height,
       color: theme.tableBorderColor,
       sort_order: RENDER_LAYER_1
     });
@@ -630,12 +607,12 @@ function update(ct: Canvas_Table) {
   }
 
   // Draw grid horizontal lines
-  for (const rowIndex of table_row_range(ct, 1)) {
+  for (const row_index of table_row_range(ct, 1)) {
     push_draw_command(renderer, {
       type: "line",
       orientation: "horizontal",
       x: 0,
-      y: get_row_screen_y(ct, rowIndex),
+      y: calc_row_screen_y(ct, row_index),
       length: grid_width,
       color: theme.tableBorderColor,
       sort_order: RENDER_LAYER_1
@@ -643,11 +620,11 @@ function update(ct: Canvas_Table) {
   }
 
   // Draw grid vertical lines
-  for (const columnIndex of table_column_range(ct, 1)) {
+  for (const column_index of table_column_range(ct, 1)) {
     push_draw_command(renderer, {
       type: "line",
       orientation: "vertical",
-      x: get_column_screen_x(ct, columnIndex),
+      x: calc_column_screen_x(ct, column_index),
       y: 0,
       length: grid_height,
       color: theme.tableBorderColor,
@@ -655,11 +632,12 @@ function update(ct: Canvas_Table) {
     });
   }
 
+  // Draw header text
   {
     const actual_font_stye = theme.headerFontStyle ?? theme.fontStyle;
     const font = create_font_specifier(theme.fontFamily, theme.fontSize, actual_font_stye);
 
-    const { fontBoundingBoxAscent } = get_font_metrics(ctx, font);
+    const { fontBoundingBoxAscent } = get_font_metrics(gui, font);
     const half_font_bounding_box_ascent = Math.floor(fontBoundingBoxAscent / 2);
 
     const actual_font_color = theme.headerFontColor ?? theme.fontColor;
@@ -670,7 +648,7 @@ function update(ct: Canvas_Table) {
       const column_def = props.columnDefs[column_index];
       const column_width = ct.column_widths[column_index];
 
-      const column_pos = get_column_screen_x(ct, column_index);
+      const column_pos = calc_column_screen_x(ct, column_index);
 
       const x = column_pos + theme.cellPadding;
       const y = theme.rowHeight / 2 + half_font_bounding_box_ascent;
@@ -690,11 +668,12 @@ function update(ct: Canvas_Table) {
     }
   }
 
+  // Draw body text
   {
     const actual_font_style = theme.bodyFontStyle ?? theme.fontStyle;
     const font = create_font_specifier(theme.fontFamily, theme.fontSize, actual_font_style);
 
-    const { fontBoundingBoxAscent } = get_font_metrics(ctx, font);
+    const { fontBoundingBoxAscent } = get_font_metrics(gui, font);
     const half_font_bounding_box_ascent = Math.floor(fontBoundingBoxAscent / 2);
 
     const actual_font_color = theme.bodyFontColor ?? theme.fontColor;
@@ -705,7 +684,7 @@ function update(ct: Canvas_Table) {
       const column_def = props.columnDefs[column_index];
       const column_width = ct.column_widths[column_index];
 
-      const column_pos = get_column_screen_x(ct, column_index);
+      const column_pos = calc_column_screen_x(ct, column_index);
 
       const x = column_pos + theme.cellPadding;
       const max_width = column_width - theme.cellPadding * 2;
@@ -713,7 +692,7 @@ function update(ct: Canvas_Table) {
       for (const row_index of table_row_range(ct)) {
         const data_row = props.dataRows[row_index];
 
-        const row_pos = get_row_screen_y(ct, row_index);
+        const row_pos = calc_row_screen_y(ct, row_index);
 
         const y = row_pos + theme.rowHeight / 2 + half_font_bounding_box_ascent;
 
@@ -737,98 +716,7 @@ function update(ct: Canvas_Table) {
   render(renderer);
 }
 
-function calculate_resizer_scroll_pos(ct: Canvas_Table, column_index: number) {
-  const { scroll_width_min_capped, column_widths } = ct;
-
-  const column_width = column_widths[column_index];
-  const column_scroll_left = get_column_scroll_x(ct, column_index);
-  const column_scroll_right = column_scroll_left + column_width;
-  const resizer_scroll_left = Math.min(
-    column_scroll_right - COLUMN_RESIZER_LEFT_WIDTH,
-    scroll_width_min_capped - COLUMN_RESIZER_WIDTH
-  );
-  return resizer_scroll_left;
-}
-
-function resize_table_column(ct: Canvas_Table, column_index: number, column_width: number) {
-  ct.column_widths[column_index] = column_width;
-
-  recalculate_layout(ct);
-
-  ct.scroll_x = Math.min(ct.scroll_x, ct.max_scroll_x);
-  ct.scroll_y = Math.min(ct.scroll_y, ct.max_scroll_y);
-
-  recalculate_viewport(ct);
-
-  ct.hsb_thumb_x = calculate_hsb_thumb_x(ct, ct.scroll_x);
-  ct.vsb_thumb_y = calculate_vsb_thumb_y(ct, ct.scroll_y);
-
-  const column_def = ct.props.columnDefs[column_index];
-  ct.props.onResizeColumn?.(column_def.key, column_width);
-}
-
-function* table_column_range(ct: Canvas_Table, start = 0) {
-  for (let j = ct.column_start + start; j < ct.column_end; j++) {
-    yield j;
-  }
-}
-
-function* table_row_range(ct: Canvas_Table, start = 0) {
-  for (let i = ct.row_start + start; i < ct.row_end; i++) {
-    yield i;
-  }
-}
-
-function get_column_scroll_x(ct: Canvas_Table, column_index: number) {
-  return ct.canonical_column_positions[column_index];
-}
-
-function get_row_scroll_y(ct: Canvas_Table, row_index: number) {
-  return row_index * ct.props.theme.rowHeight;
-}
-
-function get_column_screen_x(ct: Canvas_Table, column_index: number) {
-  const canonical_pos = get_column_scroll_x(ct, column_index);
-  const screen_column_x = scroll_to_screen_x(ct, canonical_pos);
-  return screen_column_x;
-}
-
-function get_row_screen_y(ct: Canvas_Table, row_index: number) {
-  const canonical_pos = get_row_scroll_y(ct, row_index);
-  const screen_row_y = scroll_to_screen_y(ct, canonical_pos) + ct.props.theme.rowHeight;
-  return screen_row_y;
-}
-
-function scroll_to_screen_x(ct: Canvas_Table, canonical_x: number) {
-  return canonical_x - ct.scroll_x;
-}
-
-function scroll_to_screen_y(ct: Canvas_Table, canonical_y: number) {
-  return canonical_y - ct.scroll_y;
-}
-
-function screen_to_scroll_y(ct: Canvas_Table, screen_y: number) {
-  return screen_y + ct.scroll_y;
-}
-
-function make_body_area_clip_region(ct: Canvas_Table) {
-  const body_clip_region = new Path2D();
-  body_clip_region.rect(ct.body_area_x, ct.body_area_y, ct.body_area_width, ct.body_area_height);
-  return body_clip_region;
-}
-
-function make_header_area_clip_region(ct: Canvas_Table) {
-  const header_area_region = new Path2D();
-  header_area_region.rect(
-    ct.header_area_x,
-    ct.header_area_y,
-    ct.header_area_width,
-    ct.header_area_height
-  );
-  return header_area_region;
-}
-
-function recalculate_layout(ct: Canvas_Table) {
+function refresh_layout(ct: Canvas_Table) {
   let scroll_width = 0;
   for (const width of ct.column_widths) {
     scroll_width += width;
@@ -937,7 +825,7 @@ function recalculate_layout(ct: Canvas_Table) {
   ct.vsb_thumb_max_y = ct.vsb_track_y + ct.vsb_track_height - ct.vsb_thumb_height;
 }
 
-function recalculate_viewport(ct: Canvas_Table) {
+function refresh_viewport(ct: Canvas_Table) {
   let column_pos = 0;
   ct.canonical_column_positions = [];
 
@@ -971,28 +859,119 @@ function recalculate_viewport(ct: Canvas_Table) {
   );
 }
 
-function calculate_scroll_x(ct: Canvas_Table, hsb_thumb_x: number) {
-  return Math.round(lerp(hsb_thumb_x, ct.hsb_thumb_min_x, ct.hsb_thumb_max_x, 0, ct.max_scroll_x));
+function resize_table_column(ct: Canvas_Table, column_index: number, column_width: number) {
+  ct.column_widths[column_index] = column_width;
+
+  refresh_layout(ct);
+
+  ct.scroll_x = Math.min(ct.scroll_x, ct.max_scroll_x);
+  ct.scroll_y = Math.min(ct.scroll_y, ct.max_scroll_y);
+
+  refresh_viewport(ct);
+
+  ct.hsb_thumb_x = calc_hsb_thumb_x(ct, ct.scroll_x);
+  ct.vsb_thumb_y = calc_vsb_thumb_y(ct, ct.scroll_y);
+
+  const column_def = ct.props.columnDefs[column_index];
+  ct.props.onResizeColumn?.(column_def.key, column_width);
 }
 
-function calculate_scroll_y(ct: Canvas_Table, vsb_thumb_y: number) {
-  return Math.round(lerp(vsb_thumb_y, ct.vsb_thumb_min_y, ct.vsb_thumb_max_y, 0, ct.max_scroll_y));
+function* table_column_range(ct: Canvas_Table, start = 0) {
+  for (let j = ct.column_start + start; j < ct.column_end; j++) {
+    yield j;
+  }
 }
 
-function calculate_hsb_thumb_x(ct: Canvas_Table, scroll_x: number) {
-  return Math.round(lerp(scroll_x, 0, ct.max_scroll_x, ct.hsb_thumb_min_x, ct.hsb_thumb_max_x));
+function* table_row_range(ct: Canvas_Table, start = 0) {
+  for (let i = ct.row_start + start; i < ct.row_end; i++) {
+    yield i;
+  }
 }
 
-function calculate_vsb_thumb_y(ct: Canvas_Table, scroll_y: number) {
-  return Math.round(lerp(scroll_y, 0, ct.max_scroll_y, ct.vsb_thumb_min_y, ct.vsb_thumb_max_y));
+function calc_resizer_scroll_pos(ct: Canvas_Table, column_index: number) {
+  const { scroll_width_min_capped, column_widths } = ct;
+
+  const column_width = column_widths[column_index];
+  const column_scroll_left = calc_column_scroll_x(ct, column_index);
+  const column_scroll_right = column_scroll_left + column_width;
+  const resizer_scroll_left = Math.min(
+    column_scroll_right - COLUMN_RESIZER_LEFT_WIDTH,
+    scroll_width_min_capped - COLUMN_RESIZER_WIDTH
+  );
+  return resizer_scroll_left;
 }
 
-function calculate_column_widths(column_defs: Column_Def[]) {
+function calc_column_widths(column_defs: Column_Def[]) {
   const column_widths = [] as number[];
   for (const { width } of column_defs) {
     column_widths.push(width ?? DEFAULT_COLUMN_WIDTH);
   }
   return column_widths;
+}
+
+function calc_column_scroll_x(ct: Canvas_Table, column_index: number) {
+  return ct.canonical_column_positions[column_index];
+}
+
+function calc_row_scroll_y(ct: Canvas_Table, row_index: number) {
+  return row_index * ct.props.theme.rowHeight;
+}
+
+function calc_column_screen_x(ct: Canvas_Table, column_index: number) {
+  const canonical_pos = calc_column_scroll_x(ct, column_index);
+  const screen_column_x = scroll_to_screen_x(ct, canonical_pos);
+  return screen_column_x;
+}
+
+function calc_row_screen_y(ct: Canvas_Table, row_index: number) {
+  const canonical_pos = calc_row_scroll_y(ct, row_index);
+  const screen_row_y = scroll_to_screen_y(ct, canonical_pos) + ct.props.theme.rowHeight;
+  return screen_row_y;
+}
+
+function scroll_to_screen_x(ct: Canvas_Table, canonical_x: number) {
+  return canonical_x - ct.scroll_x;
+}
+
+function scroll_to_screen_y(ct: Canvas_Table, canonical_y: number) {
+  return canonical_y - ct.scroll_y;
+}
+
+function screen_to_scroll_y(ct: Canvas_Table, screen_y: number) {
+  return screen_y + ct.scroll_y;
+}
+
+function calc_scroll_x(ct: Canvas_Table, hsb_thumb_x: number) {
+  return Math.round(lerp(hsb_thumb_x, ct.hsb_thumb_min_x, ct.hsb_thumb_max_x, 0, ct.max_scroll_x));
+}
+
+function calc_scroll_y(ct: Canvas_Table, vsb_thumb_y: number) {
+  return Math.round(lerp(vsb_thumb_y, ct.vsb_thumb_min_y, ct.vsb_thumb_max_y, 0, ct.max_scroll_y));
+}
+
+function calc_hsb_thumb_x(ct: Canvas_Table, scroll_x: number) {
+  return Math.round(lerp(scroll_x, 0, ct.max_scroll_x, ct.hsb_thumb_min_x, ct.hsb_thumb_max_x));
+}
+
+function calc_vsb_thumb_y(ct: Canvas_Table, scroll_y: number) {
+  return Math.round(lerp(scroll_y, 0, ct.max_scroll_y, ct.vsb_thumb_min_y, ct.vsb_thumb_max_y));
+}
+
+function make_body_area_clip_region(ct: Canvas_Table) {
+  const body_clip_region = new Path2D();
+  body_clip_region.rect(ct.body_area_x, ct.body_area_y, ct.body_area_width, ct.body_area_height);
+  return body_clip_region;
+}
+
+function make_header_area_clip_region(ct: Canvas_Table) {
+  const header_area_region = new Path2D();
+  header_area_region.rect(
+    ct.header_area_x,
+    ct.header_area_y,
+    ct.header_area_width,
+    ct.header_area_height
+  );
+  return header_area_region;
 }
 
 function default_id_selector(row: Data_Row) {

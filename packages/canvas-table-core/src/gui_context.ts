@@ -1,5 +1,5 @@
-import { shallow_match, is_object, is_point_in_rect } from "./utils";
-import { GUI_Context, Widget_ID, Mouse_Button_Value } from "./types";
+import { get_context, is_point_in_rect } from "./utils";
+import { GUI_Context, Mouse_Button_Value } from "./types";
 import { MOUSE_BUTTONS } from "./constants";
 
 export function make_gui_context(container_id: string): GUI_Context {
@@ -18,10 +18,15 @@ export function make_gui_context(container_id: string): GUI_Context {
   const canvas = document.createElement("canvas");
   wrapper_el.appendChild(canvas);
 
+  const font_metrics_canvas = document.createElement("canvas");
+  const font_metrics_canvas_ctx = get_context(font_metrics_canvas);
+
   const guictx = {
     container_el: container_el as HTMLDivElement,
     wrapper_el,
     canvas,
+    font_metrics_canvas,
+    font_metrics_canvas_ctx,
 
     curr_mouse_x: 0,
     curr_mouse_y: 0,
@@ -36,8 +41,8 @@ export function make_gui_context(container_id: string): GUI_Context {
     scroll_amount_x: 0,
     scroll_amount_y: 0,
 
-    hot: null,
-    active: null
+    hot_widget: null,
+    active_widget: null
   } as GUI_Context;
 
   guictx.mouse_down_handler = (e) => on_mouse_down(guictx, e);
@@ -76,78 +81,52 @@ export function stop_animation(guictx: GUI_Context) {
   }
 }
 
-export function set_as_active(guictx: GUI_Context, id: null): void;
-export function set_as_active(guictx: GUI_Context, name: string, index?: number): void;
-export function set_as_active(guictx: GUI_Context, id: Partial<Widget_ID>): void;
-export function set_as_active(guictx: GUI_Context, ...args: any[]) {
-  if (args[0] === null) {
-    guictx.active = null;
-  } else {
-    guictx.active = create_id(...args);
+export function get_font_metrics(guictx: GUI_Context, font: string) {
+  const { font_metrics_canvas_ctx: ctx } = guictx;
+
+  ctx.font = font;
+  const { fontBoundingBoxAscent, fontBoundingBoxDescent } = ctx.measureText("M");
+
+  return {
+    fontBoundingBoxAscent,
+    fontBoundingBoxDescent
+  };
+}
+
+export function set_active_widget(guictx: GUI_Context, id: string | null) {
+  guictx.active_widget = id;
+}
+
+export function set_hot_widget(guictx: GUI_Context, id: string | null) {
+  if (id === null) {
+    guictx.hot_widget = null;
+  } else if (!guictx.active_widget) {
+    guictx.hot_widget = id;
   }
 }
 
-export function set_as_hot(guictx: GUI_Context, name: string, index?: number): void;
-export function set_as_hot(guictx: GUI_Context, id: Partial<Widget_ID>): void;
-export function set_as_hot(guictx: GUI_Context, ...args: any[]) {
-  if (!guictx.active) {
-    guictx.hot = create_id(...args);
-  }
+export function is_widget_active(guictx: GUI_Context, id: string | null) {
+  return guictx.active_widget === id;
 }
 
-export function unset_as_hot(guictx: GUI_Context, name: string, index?: number): void;
-export function unset_as_hot(guictx: GUI_Context, id: Partial<Widget_ID>): void;
-export function unset_as_hot(guictx: GUI_Context, ...args: any[]) {
-  const id = create_id(...args);
-  if (is_hot(guictx, id)) {
-    guictx.hot = null;
-  }
+export function is_widget_hot(guictx: GUI_Context, id: string | null) {
+  return guictx.hot_widget === id;
 }
 
-export function is_active(guictx: GUI_Context, name: string, index?: number): boolean;
-export function is_active(guictx: GUI_Context, id: Partial<Widget_ID>): boolean;
-export function is_active(guictx: GUI_Context, ...args: any[]) {
-  if (guictx.active === null) {
-    return false;
-  }
-
-  return shallow_match(create_id(...args), guictx.active);
+export function is_any_widget_hot(guictx: GUI_Context) {
+  return guictx.hot_widget !== null;
 }
 
-export function is_hot(guictx: GUI_Context, name: string, index?: number): boolean;
-export function is_hot(guictx: GUI_Context, id: Partial<Widget_ID>): boolean;
-export function is_hot(guictx: GUI_Context, ...args: any[]) {
-  if (guictx.hot === null) {
-    return false;
-  }
-
-  return shallow_match(create_id(...args), guictx.hot);
+export function is_any_widget_active(guictx: GUI_Context) {
+  return guictx.active_widget !== null;
 }
 
-export function is_any_hot(guictx: GUI_Context) {
-  return guictx.hot !== null;
+export function is_no_widget_hot(guictx: GUI_Context) {
+  return guictx.hot_widget === null;
 }
 
-export function is_any_active(guictx: GUI_Context) {
-  return guictx.active !== null;
-}
-
-export function is_none_hot(guictx: GUI_Context) {
-  return guictx.hot === null;
-}
-
-export function is_none_active(guictx: GUI_Context) {
-  return guictx.active === null;
-}
-
-export function create_id(...args: any[]) {
-  let id: Widget_ID;
-  if (is_object(args[0])) {
-    id = args[0];
-  } else {
-    id = { name: args[0], index: args[1] };
-  }
-  return id;
+export function is_no_widget_active(guictx: GUI_Context) {
+  return guictx.active_widget === null;
 }
 
 export function is_mouse_in_rect(
