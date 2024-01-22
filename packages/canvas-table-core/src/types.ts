@@ -266,32 +266,6 @@ export type Mouse_Buttons = typeof MOUSE_BUTTONS;
 
 export type Mouse_Button_Value = Mouse_Buttons[keyof Mouse_Buttons];
 
-export type Draggable_Props = {
-  id: Widget_ID;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  color?: string;
-  hotColor?: string;
-  activeColor?: string;
-  clipRegion?: Path2D;
-  sortOrder?: number;
-  onDrag?: (id: Widget_ID, pos: Vector) => void;
-};
-
-export type Rect = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
-
-export type Vector = {
-  x: number;
-  y: number;
-};
-
 export type Size = {
   width: number;
   height: number;

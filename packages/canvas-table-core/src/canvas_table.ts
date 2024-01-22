@@ -8,7 +8,6 @@ import {
   set_as_active,
   set_as_hot,
   unset_as_hot,
-  is_any_active,
   destroy_gui_context,
   start_animation,
   is_mouse_pressed,
@@ -19,7 +18,6 @@ import { default_theme } from "./default_theme";
 import {
   clamp,
   lerp,
-  is_point_in_rect,
   create_font_specifier,
   get_font_metrics,
   is_number,
@@ -44,9 +42,7 @@ import {
   Column_Def,
   Data_Row,
   Data_Row_ID,
-  Draggable_Props,
-  Prop_Value,
-  Vector
+  Prop_Value
 } from "./types";
 
 export function make_canvas_table(params: Create_Canvas_Table_Params): Canvas_Table {
@@ -229,17 +225,17 @@ function update(ct: Canvas_Table) {
 
   if (table_resized || data_changed || scroll_pos_changed) {
     recalculate_viewport(ct);
-    recalculate_scrollbar_thumb_positions(ct);
+
+    ct.hsb_thumb_x = calculate_hsb_thumb_x(ct, ct.scroll_x);
+    ct.vsb_thumb_y = calculate_vsb_thumb_y(ct, ct.scroll_y);
   }
 
   {
-    const px = gui.curr_mouse_x;
-    const py = gui.curr_mouse_y;
     const rx = ct.body_area_x;
     const ry = ct.body_area_y;
     const rw = ct.body_visible_width;
     const rh = ct.body_visible_height;
-    if (is_point_in_rect(px, py, rx, ry, rw, rh)) {
+    if (is_mouse_in_rect(gui, rx, ry, rw, rh)) {
       const scroll_mouse_y = screen_to_scroll_y(ct, gui.curr_mouse_y);
       ct.mouse_row = Math.floor((scroll_mouse_y - theme.rowHeight) / theme.rowHeight);
     } else {
@@ -247,39 +243,7 @@ function update(ct: Canvas_Table) {
     }
   }
 
-  if (theme.tableBackgroundColor) {
-    push_draw_command(renderer, {
-      type: "rect",
-      x: 0,
-      y: 0,
-      width: canvas.width,
-      height: canvas.height,
-      fill_color: theme.tableBackgroundColor
-    });
-  }
-
-  if (theme.bodyBackgroundColor) {
-    push_draw_command(renderer, {
-      type: "rect",
-      fill_color: theme.bodyBackgroundColor,
-      x: ct.body_area_x,
-      y: ct.body_area_y,
-      width: ct.body_area_width,
-      height: ct.body_area_height
-    });
-  }
-
-  if (theme.headerBackgroundColor) {
-    push_draw_command(renderer, {
-      type: "rect",
-      fill_color: theme.headerBackgroundColor,
-      x: ct.header_area_x,
-      y: ct.header_area_y,
-      width: ct.header_area_width,
-      height: ct.header_area_height
-    });
-  }
-
+  // Do column resizers
   for (const column_index of table_column_range(ct)) {
     const id = create_id("column-resizer", column_index);
 
@@ -327,11 +291,11 @@ function update(ct: Canvas_Table) {
         width: resizer_width,
         height: resizer_height
       });
-
       break;
     }
   }
 
+  // Do horizontal scrollbar
   if (ct.overflow_x) {
     if (theme.scrollbarTrackColor) {
       push_draw_command(renderer, {
@@ -344,20 +308,70 @@ function update(ct: Canvas_Table) {
       });
     }
 
-    do_draggable(ct, {
-      id: create_id("horizontal-scrollbar-thumb"),
-      x: ct.hsb_thumb_x,
-      y: ct.hsb_thumb_y,
-      width: ct.hsb_thumb_width,
-      height: ct.hsb_thumb_height,
-      onDrag: (_id, pos) => on_drag_horizontal_scrollbar(ct, pos),
-      activeColor: theme.scrollbarThumbPressedColor,
-      hotColor: theme.scrollbarThumbHoverColor,
-      color: theme.scrollbarThumbColor,
-      sortOrder: RENDER_LAYER_3
-    });
+    {
+      let { hsb_thumb_x } = ct;
+
+      const id = create_id("horizontal-scrollbar-thumb");
+      if (is_active(gui, id)) {
+        if (is_mouse_released(gui, MOUSE_BUTTONS.PRIMARY)) {
+          set_as_active(gui, null);
+        } else {
+          hsb_thumb_x = clamp(
+            gui.drag_anchor_x + gui.drag_distance_x,
+            ct.hsb_thumb_min_x,
+            ct.hsb_thumb_max_x
+          );
+          ct.hsb_thumb_x = hsb_thumb_x;
+
+          ct.scroll_x = calculate_scroll_x(ct, hsb_thumb_x);
+          recalculate_viewport(ct);
+        }
+      } else if (is_hot(gui, id)) {
+        if (is_mouse_pressed(gui, MOUSE_BUTTONS.PRIMARY)) {
+          set_as_active(gui, id);
+
+          gui.drag_anchor_x = hsb_thumb_x;
+        }
+      }
+
+      const { hsb_thumb_y, hsb_thumb_width, hsb_thumb_height } = ct;
+      const inside = is_mouse_in_rect(
+        gui,
+        hsb_thumb_x,
+        hsb_thumb_y,
+        hsb_thumb_width,
+        hsb_thumb_height
+      );
+      if (inside) {
+        set_as_hot(gui, id);
+      } else {
+        unset_as_hot(gui, id);
+      }
+
+      let fill_color: string | undefined;
+      if (is_active(gui, id)) {
+        fill_color = theme.scrollbarThumbPressedColor;
+      } else if (is_hot(gui, id)) {
+        fill_color = theme.scrollbarThumbHoverColor;
+      } else {
+        fill_color = theme.scrollbarThumbColor;
+      }
+
+      if (fill_color) {
+        push_draw_command(ct.renderer, {
+          type: "rect",
+          fill_color,
+          x: hsb_thumb_x,
+          y: hsb_thumb_y,
+          width: hsb_thumb_width,
+          height: hsb_thumb_height,
+          sort_order: RENDER_LAYER_3
+        });
+      }
+    }
   }
 
+  // Do vertical scrollbar
   if (ct.overflow_y) {
     if (theme.scrollbarTrackColor) {
       push_draw_command(renderer, {
@@ -370,20 +384,70 @@ function update(ct: Canvas_Table) {
       });
     }
 
-    do_draggable(ct, {
-      id: create_id("vertical-scrollbar-thumb"),
-      x: ct.vsb_thumb_x,
-      y: ct.vsb_thumb_y,
-      width: ct.vsb_thumb_width,
-      height: ct.vsb_thumb_height,
-      onDrag: (_id, pos) => on_drag_vertical_scrollbar(ct, pos),
-      activeColor: theme.scrollbarThumbPressedColor,
-      hotColor: theme.scrollbarThumbHoverColor,
-      color: theme.scrollbarThumbColor,
-      sortOrder: RENDER_LAYER_3
-    });
+    {
+      let { vsb_thumb_y } = ct;
+
+      const id = create_id("vertical-scrollbar-thumb");
+      if (is_active(gui, id)) {
+        if (is_mouse_released(gui, MOUSE_BUTTONS.PRIMARY)) {
+          set_as_active(gui, null);
+        } else {
+          vsb_thumb_y = clamp(
+            gui.drag_anchor_y + gui.drag_distance_y,
+            ct.vsb_thumb_min_y,
+            ct.vsb_thumb_max_y
+          );
+          ct.vsb_thumb_y = vsb_thumb_y;
+
+          ct.scroll_y = calculate_scroll_y(ct, vsb_thumb_y);
+          recalculate_viewport(ct);
+        }
+      } else if (is_hot(gui, id)) {
+        if (is_mouse_pressed(gui, MOUSE_BUTTONS.PRIMARY)) {
+          set_as_active(gui, id);
+
+          gui.drag_anchor_y = ct.vsb_thumb_y;
+        }
+      }
+
+      const { vsb_thumb_x, vsb_thumb_width, vsb_thumb_height } = ct;
+      const inside = is_mouse_in_rect(
+        gui,
+        vsb_thumb_x,
+        vsb_thumb_y,
+        vsb_thumb_width,
+        vsb_thumb_height
+      );
+      if (inside) {
+        set_as_hot(gui, id);
+      } else {
+        unset_as_hot(gui, id);
+      }
+
+      let fill_color: string | undefined;
+      if (is_active(gui, id)) {
+        fill_color = theme.scrollbarThumbPressedColor;
+      } else if (is_hot(gui, id)) {
+        fill_color = theme.scrollbarThumbHoverColor;
+      } else {
+        fill_color = theme.scrollbarThumbColor;
+      }
+
+      if (fill_color) {
+        push_draw_command(ct.renderer, {
+          type: "rect",
+          fill_color,
+          x: vsb_thumb_x,
+          y: vsb_thumb_y,
+          width: vsb_thumb_width,
+          height: vsb_thumb_height,
+          sort_order: RENDER_LAYER_3
+        });
+      }
+    }
   }
 
+  // Do hovered and selected row
   if (ct.mouse_row !== -1) {
     const data_row = props.dataRows[ct.mouse_row];
     if (is_mouse_pressed(gui, MOUSE_BUTTONS.PRIMARY)) {
@@ -394,43 +458,72 @@ function update(ct: Canvas_Table) {
       }
     }
 
-    if (!is_any_active(ct.gui) && theme.hoveredRowColor) {
-      const row_rect = calculate_row_rect(ct, ct.mouse_row);
-
-      const clip_region = make_body_area_clip_region(ct);
-
+    if (theme.hoveredRowColor && is_none_active(ct.gui)) {
       push_draw_command(renderer, {
         type: "rect",
+        x: 0,
+        y: get_row_screen_y(ct, ct.mouse_row),
+        width: ct.body_visible_width,
+        height: theme.rowHeight,
         fill_color: theme.hoveredRowColor,
-        clip_region,
-        ...row_rect
+        clip_region: make_body_area_clip_region(ct)
       });
     }
   }
 
   if (ct.selected_row_id !== null) {
-    const clip_region = make_body_area_clip_region(ct);
-
-    for (const rowIndex of table_row_range(ct)) {
-      const data_row = props.dataRows[rowIndex];
+    for (const row_index of table_row_range(ct)) {
+      const data_row = props.dataRows[row_index];
       const data_row_id = props.selectId(data_row);
-
       if (ct.selected_row_id === data_row_id) {
-        const rect = calculate_row_rect(ct, rowIndex);
-
         push_draw_command(renderer, {
           type: "rect",
+          x: 0,
+          y: get_row_screen_y(ct, row_index),
+          width: ct.body_visible_width,
+          height: theme.rowHeight,
           fill_color: theme.selectedRowColor,
-          clip_region,
-          ...rect
+          clip_region: make_body_area_clip_region(ct)
         });
-
         break;
       }
     }
   }
 
-  // Draw outer canvas border
+  if (theme.tableBackgroundColor) {
+    push_draw_command(renderer, {
+      type: "rect",
+      x: 0,
+      y: 0,
+      width: canvas.width,
+      height: canvas.height,
+      fill_color: theme.tableBackgroundColor
+    });
+  }
+
+  if (theme.bodyBackgroundColor) {
+    push_draw_command(renderer, {
+      type: "rect",
+      fill_color: theme.bodyBackgroundColor,
+      x: ct.body_area_x,
+      y: ct.body_area_y,
+      width: ct.body_area_width,
+      height: ct.body_area_height
+    });
+  }
+
+  if (theme.headerBackgroundColor) {
+    push_draw_command(renderer, {
+      type: "rect",
+      fill_color: theme.headerBackgroundColor,
+      x: ct.header_area_x,
+      y: ct.header_area_y,
+      width: ct.header_area_width,
+      height: ct.header_area_height
+    });
+  }
+
+  // Draw top outer canvas border
   push_draw_command(renderer, {
     type: "line",
     orientation: "horizontal",
@@ -441,6 +534,7 @@ function update(ct: Canvas_Table) {
     sort_order: RENDER_LAYER_1
   });
 
+  // Draw bottom outer canvas border
   push_draw_command(renderer, {
     type: "line",
     orientation: "horizontal",
@@ -451,6 +545,7 @@ function update(ct: Canvas_Table) {
     sort_order: RENDER_LAYER_1
   });
 
+  // Draw left outer canvas border
   push_draw_command(renderer, {
     type: "line",
     orientation: "vertical",
@@ -461,6 +556,7 @@ function update(ct: Canvas_Table) {
     sort_order: RENDER_LAYER_1
   });
 
+  // Draw right outer canvas border
   push_draw_command(renderer, {
     type: "line",
     orientation: "vertical",
@@ -655,25 +751,20 @@ function calculate_resizer_scroll_pos(ct: Canvas_Table, column_index: number) {
 }
 
 function resize_table_column(ct: Canvas_Table, column_index: number, column_width: number) {
-  const { column_widths } = ct;
-  column_widths[column_index] = column_width;
+  ct.column_widths[column_index] = column_width;
 
   recalculate_layout(ct);
 
   ct.scroll_x = Math.min(ct.scroll_x, ct.max_scroll_x);
   ct.scroll_y = Math.min(ct.scroll_y, ct.max_scroll_y);
-  recalculate_scrollbar_thumb_positions(ct);
+
   recalculate_viewport(ct);
+
+  ct.hsb_thumb_x = calculate_hsb_thumb_x(ct, ct.scroll_x);
+  ct.vsb_thumb_y = calculate_vsb_thumb_y(ct, ct.scroll_y);
 
   const column_def = ct.props.columnDefs[column_index];
   ct.props.onResizeColumn?.(column_def.key, column_width);
-}
-
-function scroll_table_to(ct: Canvas_Table, scroll_x: number, scroll_y: number) {
-  ct.scroll_x = scroll_x;
-  ct.scroll_y = scroll_y;
-  recalculate_scrollbar_thumb_positions(ct);
-  recalculate_viewport(ct);
 }
 
 function* table_column_range(ct: Canvas_Table, start = 0) {
@@ -692,7 +783,7 @@ function get_column_scroll_x(ct: Canvas_Table, column_index: number) {
   return ct.canonical_column_positions[column_index];
 }
 
-function get_ow_scroll_y(ct: Canvas_Table, row_index: number) {
+function get_row_scroll_y(ct: Canvas_Table, row_index: number) {
   return row_index * ct.props.theme.rowHeight;
 }
 
@@ -703,7 +794,7 @@ function get_column_screen_x(ct: Canvas_Table, column_index: number) {
 }
 
 function get_row_screen_y(ct: Canvas_Table, row_index: number) {
-  const canonical_pos = get_ow_scroll_y(ct, row_index);
+  const canonical_pos = get_row_scroll_y(ct, row_index);
   const screen_row_y = scroll_to_screen_y(ct, canonical_pos) + ct.props.theme.rowHeight;
   return screen_row_y;
 }
@@ -880,9 +971,20 @@ function recalculate_viewport(ct: Canvas_Table) {
   );
 }
 
-function recalculate_scrollbar_thumb_positions(ct: Canvas_Table) {
-  ct.hsb_thumb_x = lerp(ct.scroll_x, 0, ct.max_scroll_x, ct.hsb_thumb_min_x, ct.hsb_thumb_max_x);
-  ct.vsb_thumb_y = lerp(ct.scroll_y, 0, ct.max_scroll_y, ct.vsb_thumb_min_y, ct.vsb_thumb_max_y);
+function calculate_scroll_x(ct: Canvas_Table, hsb_thumb_x: number) {
+  return Math.round(lerp(hsb_thumb_x, ct.hsb_thumb_min_x, ct.hsb_thumb_max_x, 0, ct.max_scroll_x));
+}
+
+function calculate_scroll_y(ct: Canvas_Table, vsb_thumb_y: number) {
+  return Math.round(lerp(vsb_thumb_y, ct.vsb_thumb_min_y, ct.vsb_thumb_max_y, 0, ct.max_scroll_y));
+}
+
+function calculate_hsb_thumb_x(ct: Canvas_Table, scroll_x: number) {
+  return Math.round(lerp(scroll_x, 0, ct.max_scroll_x, ct.hsb_thumb_min_x, ct.hsb_thumb_max_x));
+}
+
+function calculate_vsb_thumb_y(ct: Canvas_Table, scroll_y: number) {
+  return Math.round(lerp(scroll_y, 0, ct.max_scroll_y, ct.vsb_thumb_min_y, ct.vsb_thumb_max_y));
 }
 
 function calculate_column_widths(column_defs: Column_Def[]) {
@@ -891,111 +993,6 @@ function calculate_column_widths(column_defs: Column_Def[]) {
     column_widths.push(width ?? DEFAULT_COLUMN_WIDTH);
   }
   return column_widths;
-}
-
-function calculate_row_rect(ct: Canvas_Table, rowIndex: number) {
-  const { theme } = ct.props;
-
-  const row_pos = get_row_screen_y(ct, rowIndex);
-
-  return {
-    x: 0,
-    y: row_pos,
-    width: ct.body_visible_width,
-    height: theme.rowHeight
-  };
-}
-
-function on_drag_horizontal_scrollbar(ct: Canvas_Table, pos: Vector) {
-  const hsb_thumb_x = clamp(pos.x, ct.hsb_thumb_min_x, ct.hsb_thumb_max_x);
-  pos.x = hsb_thumb_x;
-  pos.y = ct.hsb_track_y;
-
-  const new_scroll_x = Math.round(
-    lerp(hsb_thumb_x, ct.hsb_thumb_min_x, ct.hsb_thumb_max_x, 0, ct.max_scroll_x)
-  );
-  scroll_table_to(ct, new_scroll_x, ct.scroll_y);
-}
-
-function on_drag_vertical_scrollbar(ct: Canvas_Table, pos: Vector) {
-  const vsb_thumb_y = clamp(pos.y, ct.vsb_thumb_min_y, ct.vsb_thumb_max_y);
-  pos.y = vsb_thumb_y;
-  pos.x = ct.vsb_track_x;
-
-  const new_scroll_y = Math.round(
-    lerp(vsb_thumb_y, ct.vsb_thumb_min_y, ct.vsb_thumb_max_y, 0, ct.max_scroll_y)
-  );
-  scroll_table_to(ct, ct.scroll_x, new_scroll_y);
-}
-
-function do_draggable(ct: Canvas_Table, props: Draggable_Props) {
-  const { gui } = ct;
-
-  if (is_active(gui, props.id)) {
-    if (is_mouse_released(gui, MOUSE_BUTTONS.PRIMARY)) {
-      // @Todo Move this to a separate function
-      // @Note What is the purpose of this?
-      if (gui.active && gui.active.name === props.id.name) {
-        ct.gui.active = null;
-      }
-    } else {
-      const pos = {
-        x: gui.drag_anchor_x + gui.drag_distance_x,
-        y: gui.drag_anchor_y + gui.drag_distance_y
-      };
-
-      if (props.onDrag) {
-        props.onDrag(props.id, pos);
-      }
-
-      props.x = pos.x;
-      props.y = pos.y;
-    }
-  } else if (is_hot(gui, props.id)) {
-    if (is_mouse_pressed(gui, MOUSE_BUTTONS.PRIMARY)) {
-      set_as_active(gui, props.id);
-
-      gui.drag_anchor_x = props.x;
-      gui.drag_anchor_y = props.y;
-    }
-  }
-  const inside = is_point_in_rect(
-    gui.curr_mouse_x,
-    gui.curr_mouse_y,
-    props.x,
-    props.y,
-    props.width,
-    props.height
-  );
-  if (inside) {
-    set_as_hot(ct.gui, props.id);
-  } else {
-    unset_as_hot(ct.gui, props.id);
-  }
-
-  let fill_color: string | undefined;
-  if (is_active(ct.gui, props.id)) {
-    fill_color = props.activeColor;
-  } else if (is_hot(ct.gui, props.id)) {
-    fill_color = props.hotColor;
-  } else {
-    fill_color = props.color;
-  }
-
-  if (!fill_color) {
-    return;
-  }
-
-  push_draw_command(ct.renderer, {
-    type: "rect",
-    fill_color,
-    sort_order: props.sortOrder,
-    clip_region: props.clipRegion,
-    x: props.x,
-    y: props.y,
-    width: props.width,
-    height: props.height
-  });
 }
 
 function default_id_selector(row: Data_Row) {
