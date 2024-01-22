@@ -8,24 +8,24 @@ export const tables = [
     id: "1",
     name: "Random",
     columnDefs: random.columnDefs,
-    dataRows: random.dataRows,
+    dataRows: random.dataRows
   },
   {
     id: "2",
     name: "Pokemon",
     columnDefs: pokemon.columnDefs,
-    dataRows: pokemon.dataRows,
+    dataRows: pokemon.dataRows
   },
   {
     id: "3",
     name: "Empty",
     columnDefs: empty.columnDefs,
-    dataRows: empty.dataRows,
+    dataRows: empty.dataRows
   },
   {
     id: "4",
     name: "Beatles",
     columnDefs: beatles.columnDefs,
-    dataRows: beatles.dataRows,
-  },
+    dataRows: beatles.dataRows
+  }
 ];

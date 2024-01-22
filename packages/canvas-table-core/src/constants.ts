@@ -7,13 +7,6 @@ export const COLUMN_RESIZER_WIDTH = COLUMN_RESIZER_LEFT_WIDTH * 2 + 1;
 
 export const BORDER_WIDTH = 1;
 
-export const RENDER_LAYER_0 = 0;
-export const RENDER_LAYER_1 = 1;
-export const RENDER_LAYER_2 = 2;
-export const RENDER_LAYER_3 = 3;
-export const RENDER_LAYER_4 = 4;
-export const RENDER_LAYER_5 = 5;
-
 export const MOUSE_BUTTONS = {
   PRIMARY: 0,
   SECONDARY: 1,

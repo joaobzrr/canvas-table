@@ -18,7 +18,7 @@ export default function Tabs(props: PropsType) {
           <button
             onClick={() => onTabClick?.(key)}
             className={clsx(styles.button, {
-              [styles.selected]: key === selected,
+              [styles.selected]: key === selected
             })}
             key={key}
           >

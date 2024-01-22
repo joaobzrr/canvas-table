@@ -22,9 +22,7 @@ import {
   DEFAULT_COLUMN_WIDTH,
   MIN_COLUMN_WIDTH,
   MIN_THUMB_LENGTH,
-  MOUSE_BUTTONS,
-  RENDER_LAYER_1,
-  RENDER_LAYER_3
+  MOUSE_BUTTONS
 } from "./constants";
 import {
   Canvas_Table,
@@ -207,17 +205,10 @@ function update(ct: Canvas_Table) {
     ct.vsb_thumb_y = calc_vsb_thumb_y(ct, ct.scroll_y);
   }
 
-  {
-    const rx = ct.body_area_x;
-    const ry = ct.body_area_y;
-    const rw = ct.body_visible_width;
-    const rh = ct.body_visible_height;
-    if (is_mouse_in_rect(gui, rx, ry, rw, rh)) {
-      const scroll_mouse_y = screen_to_scroll_y(ct, gui.curr_mouse_y);
-      ct.mouse_row = Math.floor((scroll_mouse_y - theme.rowHeight) / theme.rowHeight);
-    } else {
-      ct.mouse_row = -1;
-    }
+  if (is_mouse_in_rect(gui, ct.body_area_x, ct.body_area_y, ct.body_visible_width, ct.body_visible_height)) {
+    ct.mouse_row = Math.floor((screen_to_scroll_y(ct, gui.curr_mouse_y) - theme.rowHeight) / theme.rowHeight);
+  } else {
+    ct.mouse_row = -1;
   }
 
   // Do column resizers
@@ -260,13 +251,13 @@ function update(ct: Canvas_Table) {
     if (is_widget_active(gui, id) || is_widget_hot(gui, id)) {
       push_draw_command(ct.renderer, {
         type: "rect",
-        fill_color: theme.columnResizerColor,
-        sort_order: RENDER_LAYER_3,
-        clip_region: make_header_area_clip_region(ct),
         x: resizer_x,
         y: resizer_y,
         width: resizer_width,
-        height: resizer_height
+        height: resizer_height,
+        fill_color: theme.columnResizerColor,
+        clip_region: make_header_area_clip_region(ct),
+        sort_order: 3
       });
       break;
     }
@@ -281,7 +272,8 @@ function update(ct: Canvas_Table) {
         y: ct.hsb_y,
         width: ct.hsb_width,
         height: ct.hsb_height,
-        fill_color: theme.scrollbarTrackColor
+        fill_color: theme.scrollbarTrackColor,
+        sort_order: 1
       });
     }
 
@@ -293,11 +285,7 @@ function update(ct: Canvas_Table) {
         if (is_mouse_released(gui, MOUSE_BUTTONS.PRIMARY)) {
           set_active_widget(gui, null);
         } else {
-          hsb_thumb_x = clamp(
-            gui.drag_anchor_x + gui.drag_distance_x,
-            ct.hsb_thumb_min_x,
-            ct.hsb_thumb_max_x
-          );
+          hsb_thumb_x = clamp(gui.drag_anchor_x + gui.drag_distance_x, ct.hsb_thumb_min_x, ct.hsb_thumb_max_x);
           ct.hsb_thumb_x = hsb_thumb_x;
 
           ct.scroll_x = calc_scroll_x(ct, hsb_thumb_x);
@@ -312,13 +300,7 @@ function update(ct: Canvas_Table) {
       }
 
       const { hsb_thumb_y, hsb_thumb_width, hsb_thumb_height } = ct;
-      const inside = is_mouse_in_rect(
-        gui,
-        hsb_thumb_x,
-        hsb_thumb_y,
-        hsb_thumb_width,
-        hsb_thumb_height
-      );
+      const inside = is_mouse_in_rect(gui, hsb_thumb_x, hsb_thumb_y, hsb_thumb_width, hsb_thumb_height);
       if (inside) {
         set_hot_widget(gui, id);
       } else if (is_widget_hot(gui, id)) {
@@ -342,7 +324,7 @@ function update(ct: Canvas_Table) {
           y: hsb_thumb_y,
           width: hsb_thumb_width,
           height: hsb_thumb_height,
-          sort_order: RENDER_LAYER_3
+          sort_order: 3
         });
       }
     }
@@ -357,7 +339,8 @@ function update(ct: Canvas_Table) {
         y: ct.vsb_y,
         width: ct.vsb_width,
         height: ct.vsb_height,
-        fill_color: theme.scrollbarTrackColor
+        fill_color: theme.scrollbarTrackColor,
+        sort_order: 1
       });
     }
 
@@ -369,11 +352,7 @@ function update(ct: Canvas_Table) {
         if (is_mouse_released(gui, MOUSE_BUTTONS.PRIMARY)) {
           set_active_widget(gui, null);
         } else {
-          vsb_thumb_y = clamp(
-            gui.drag_anchor_y + gui.drag_distance_y,
-            ct.vsb_thumb_min_y,
-            ct.vsb_thumb_max_y
-          );
+          vsb_thumb_y = clamp(gui.drag_anchor_y + gui.drag_distance_y, ct.vsb_thumb_min_y, ct.vsb_thumb_max_y);
           ct.vsb_thumb_y = vsb_thumb_y;
 
           ct.scroll_y = calc_scroll_y(ct, vsb_thumb_y);
@@ -388,13 +367,7 @@ function update(ct: Canvas_Table) {
       }
 
       const { vsb_thumb_x, vsb_thumb_width, vsb_thumb_height } = ct;
-      const inside = is_mouse_in_rect(
-        gui,
-        vsb_thumb_x,
-        vsb_thumb_y,
-        vsb_thumb_width,
-        vsb_thumb_height
-      );
+      const inside = is_mouse_in_rect(gui, vsb_thumb_x, vsb_thumb_y, vsb_thumb_width, vsb_thumb_height);
       if (inside) {
         set_hot_widget(gui, id);
       } else if (is_widget_hot(gui, id)) {
@@ -418,7 +391,7 @@ function update(ct: Canvas_Table) {
           y: vsb_thumb_y,
           width: vsb_thumb_width,
           height: vsb_thumb_height,
-          sort_order: RENDER_LAYER_3
+          sort_order: 3
         });
       }
     }
@@ -508,7 +481,7 @@ function update(ct: Canvas_Table) {
     y: 0,
     length: ct.table_width,
     color: theme.tableBorderColor,
-    sort_order: RENDER_LAYER_1
+    sort_order: 2
   });
 
   // Draw bottom outer table border
@@ -519,7 +492,7 @@ function update(ct: Canvas_Table) {
     y: ct.table_height - 1,
     length: ct.table_width,
     color: theme.tableBorderColor,
-    sort_order: RENDER_LAYER_1
+    sort_order: 2
   });
 
   // Draw left outer table border
@@ -530,7 +503,7 @@ function update(ct: Canvas_Table) {
     y: 0,
     length: ct.table_height,
     color: theme.tableBorderColor,
-    sort_order: RENDER_LAYER_1
+    sort_order: 2
   });
 
   // Draw right outer table border
@@ -541,7 +514,7 @@ function update(ct: Canvas_Table) {
     y: 0,
     length: ct.table_height,
     color: theme.tableBorderColor,
-    sort_order: RENDER_LAYER_1
+    sort_order: 2
   });
 
   const grid_width = ct.body_visible_width;
@@ -555,7 +528,7 @@ function update(ct: Canvas_Table) {
     y: theme.rowHeight,
     length: ct.table_width,
     color: theme.tableBorderColor,
-    sort_order: RENDER_LAYER_1
+    sort_order: 2
   });
 
   // If horizontal scrollbar is visible, draw its border, otherwise,
@@ -568,7 +541,7 @@ function update(ct: Canvas_Table) {
       y: ct.hsb_y - 1,
       length: ct.table_width,
       color: theme.tableBorderColor,
-      sort_order: RENDER_LAYER_1
+      sort_order: 2
     });
   } else {
     push_draw_command(renderer, {
@@ -578,7 +551,7 @@ function update(ct: Canvas_Table) {
       y: 0,
       length: grid_height,
       color: theme.tableBorderColor,
-      sort_order: RENDER_LAYER_1
+      sort_order: 2
     });
   }
 
@@ -592,7 +565,7 @@ function update(ct: Canvas_Table) {
       y: 0,
       length: ct.table_height,
       color: theme.tableBorderColor,
-      sort_order: RENDER_LAYER_1
+      sort_order: 2
     });
   } else {
     push_draw_command(renderer, {
@@ -602,7 +575,7 @@ function update(ct: Canvas_Table) {
       y: grid_height,
       length: grid_width,
       color: theme.tableBorderColor,
-      sort_order: RENDER_LAYER_1
+      sort_order: 2
     });
   }
 
@@ -615,7 +588,7 @@ function update(ct: Canvas_Table) {
       y: calc_row_screen_y(ct, row_index),
       length: grid_width,
       color: theme.tableBorderColor,
-      sort_order: RENDER_LAYER_1
+      sort_order: 2
     });
   }
 
@@ -628,7 +601,7 @@ function update(ct: Canvas_Table) {
       y: 0,
       length: grid_height,
       color: theme.tableBorderColor,
-      sort_order: RENDER_LAYER_1
+      sort_order: 2
     });
   }
 
@@ -798,10 +771,7 @@ function refresh_layout(ct: Canvas_Table) {
 
   ct.hsb_thumb_y = ct.hsb_track_y;
   ct.hsb_thumb_height = ct.hsb_track_height;
-  ct.hsb_thumb_width = Math.max(
-    (body_area_width / ct.scroll_width_min_capped) * ct.hsb_track_width,
-    MIN_THUMB_LENGTH
-  );
+  ct.hsb_thumb_width = Math.max((body_area_width / ct.scroll_width_min_capped) * ct.hsb_track_width, MIN_THUMB_LENGTH);
   ct.hsb_thumb_min_x = ct.hsb_track_x;
   ct.hsb_thumb_max_x = ct.hsb_track_x + ct.hsb_track_width - ct.hsb_thumb_width;
 
@@ -817,10 +787,7 @@ function refresh_layout(ct: Canvas_Table) {
 
   ct.vsb_thumb_x = ct.vsb_track_x;
   ct.vsb_thumb_width = ct.vsb_track_width;
-  ct.vsb_thumb_height = Math.max(
-    (body_area_height / ct.scroll_height_min_capped) * ct.vsb_track_height,
-    MIN_THUMB_LENGTH
-  );
+  ct.vsb_thumb_height = Math.max((body_area_height / ct.scroll_height_min_capped) * ct.vsb_track_height, MIN_THUMB_LENGTH);
   ct.vsb_thumb_min_y = ct.vsb_track_y;
   ct.vsb_thumb_max_y = ct.vsb_track_y + ct.vsb_track_height - ct.vsb_thumb_height;
 }

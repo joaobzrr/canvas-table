@@ -26,12 +26,14 @@ module.exports = {
         "sourceType": "module"
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "@stylistic"
     ],
     "rules": {
-      "@typescript-eslint/no-explicit-any": "off",
       "no-debugger":"off",
       "no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      '@typescript-eslint/no-non-null-assertion': 'off',
       "@typescript-eslint/no-unused-vars": [
         "warn", // or "error"
         { 
@@ -39,6 +41,9 @@ module.exports = {
           "varsIgnorePattern": "^_",
           "caughtErrorsIgnorePattern": "^_"
         }
-      ]
+      ],
+      "@stylistic/semi": "error",
+      "@stylistic/linebreak-style": ["error", "unix"],
+      "@stylistic/comma-dangle": ["error", "never"]
     }
 }

@@ -21,7 +21,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                tableBackgroundColor: event.target.value || undefined,
+                tableBackgroundColor: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -32,7 +32,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                bodyBackgroundColor: event.target.value || undefined,
+                bodyBackgroundColor: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -43,7 +43,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                headerBackgroundColor: event.target.value || undefined,
+                headerBackgroundColor: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -54,7 +54,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                hoveredRowColor: event.target.value || undefined,
+                hoveredRowColor: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -65,7 +65,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                selectedRowColor: event.target.value || undefined,
+                selectedRowColor: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -76,7 +76,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                tableBorderColor: event.target.value || undefined,
+                tableBorderColor: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -87,7 +87,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                fontFamily: event.target.value || undefined,
+                fontFamily: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -98,7 +98,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                fontSize: event.target.value || undefined,
+                fontSize: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -109,7 +109,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                fontColor: event.target.value || undefined,
+                fontColor: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -120,7 +120,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                bodyFontColor: event.target.value || undefined,
+                bodyFontColor: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -131,7 +131,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                headerFontColor: event.target.value || undefined,
+                headerFontColor: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -142,7 +142,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                fontStyle: event.target.value || undefined,
+                fontStyle: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -153,7 +153,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                bodyFontStyle: event.target.value || undefined,
+                bodyFontStyle: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -164,7 +164,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                headerFontStyle: event.target.value || undefined,
+                headerFontStyle: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -175,7 +175,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                scrollbarThickness: parseInt(event.target.value) || undefined,
+                scrollbarThickness: parseInt(event.target.value) || undefined
               })
             }
             className={styles.input}
@@ -186,7 +186,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                scrollbarTrackMargin: parseInt(event.target.value) || undefined,
+                scrollbarTrackMargin: parseInt(event.target.value) || undefined
               })
             }
             className={styles.input}
@@ -197,7 +197,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                scrollbarThumbColor: event.target.value || undefined,
+                scrollbarThumbColor: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -208,7 +208,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                scrollbarTrackColor: event.target.value || undefined,
+                scrollbarTrackColor: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -219,7 +219,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                scrollbarThumbHoverColor: event.target.value || undefined,
+                scrollbarThumbHoverColor: event.target.value || undefined
               })
             }
             className={styles.input}
@@ -230,7 +230,7 @@ export default function ThemeForm(props: PropsType) {
           <input
             onChange={(event) =>
               onChange({
-                scrollbarThumbPressedColor: event.target.value || undefined,
+                scrollbarThumbPressedColor: event.target.value || undefined
               })
             }
             className={styles.input}

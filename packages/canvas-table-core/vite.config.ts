@@ -6,7 +6,7 @@ import eslint from "vite-plugin-eslint";
 export default defineConfig({
   plugins: [
     dts({ insertTypesEntry: true }),
-    eslint()
+    eslint({ fix: true })
   ],
   build: {
     sourcemap: true,

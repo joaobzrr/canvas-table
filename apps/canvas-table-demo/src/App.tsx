@@ -6,7 +6,7 @@ import {
   Data_Row,
   Theme,
   Data_Row_ID,
-  Prop_Value,
+  Prop_Value
 } from "@bzrr/canvas-table-core";
 import ThemeForm from "./components/ThemeForm";
 import TableList from "./components/TableList";
@@ -43,7 +43,7 @@ function App() {
     }
 
     const rowIndex = table.dataRows.findIndex(
-      ({ id }) => id === selectedRow.id,
+      ({ id }) => id === selectedRow.id
     );
     if (rowIndex === -1) {
       throw new Error("This should not happen");
@@ -57,21 +57,21 @@ function App() {
       dataRows: [
         ...table.dataRows.slice(0, rowIndex),
         newRow,
-        ...table.dataRows.slice(rowIndex + 1),
-      ],
+        ...table.dataRows.slice(rowIndex + 1)
+      ]
     };
 
     setTables([
       ...tables.slice(0, tableIndex),
       newTable,
-      ...tables.slice(tableIndex + 1),
+      ...tables.slice(tableIndex + 1)
     ]);
   };
 
   const updateTheme = debounce((partial: Partial<Theme>) => {
     setThemeSettings((prevThemeSettings) => ({
       ...prevThemeSettings,
-      ...partial,
+      ...partial
     }));
   }, 250);
 
@@ -82,12 +82,12 @@ function App() {
           items={[
             {
               key: "tables",
-              label: "Tables",
+              label: "Tables"
             },
             {
               key: "theme",
-              label: "Theme",
-            },
+              label: "Theme"
+            }
           ]}
           selected={selectedTab}
           onTabClick={(key) => setSelectedTab(key)}
