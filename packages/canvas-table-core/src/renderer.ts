@@ -1,6 +1,6 @@
 import Graphemer from "graphemer";
 import { make_glyph_atlas, cache_glyph, blit_glyph } from "./glyph_atlas";
-import { get_context, is_whitespace } from "./utils";
+import { get_context, is_whitespace, modf } from "./utils";
 import { Renderer, Make_Renderer_Params, Draw_Command } from "./types";
 
 export function make_renderer(params: Make_Renderer_Params): Renderer {
@@ -116,11 +116,11 @@ function draw_text(
   max_width = Infinity,
   ellipsis = false
 ) {
-  const full_stop_glyph_metrics = cache_glyph(renderer.glyph_atlas, ".", font, color);
+  const { advance: full_stop_advance } = cache_glyph(renderer.glyph_atlas, ".", font, color);
 
   const ellipsis_enabled = ellipsis && max_width !== Infinity;
   const available_content_width = ellipsis_enabled
-    ? Math.max(max_width - full_stop_glyph_metrics.advance * 3, 0)
+    ? Math.max(max_width - full_stop_advance * 3, 0)
     : max_width;
 
   let total_content_width = 0;
@@ -137,11 +137,13 @@ function draw_text(
     const grapheme = str.slice(string_index, next_string_index);
     string_index = next_string_index;
 
+    const subpixel_offset = modf(total_content_width);
     const { sx, sy, sw, sh, hshift, vshift, advance } = cache_glyph(
       renderer.glyph_atlas,
       grapheme,
       font,
-      color
+      color,
+      subpixel_offset
     );
 
     if (total_content_width + advance > available_content_width) {
@@ -151,7 +153,7 @@ function draw_text(
 
     const got_whitespace = is_whitespace(grapheme);
     if (!got_whitespace) {
-      const dx = x + total_content_width - hshift;
+      const dx = Math.floor(x + total_content_width - hshift);
       const dy = y - vshift;
       blit_glyph(renderer.glyph_atlas, ctx, sx, sy, sw, sh, dx, dy, sw, sh);
     }
@@ -163,20 +165,27 @@ function draw_text(
   }
 
   if (ellipsis_enabled && do_ellipsis) {
-    let total_width = total_content_width_up_to_last_char_before_whitespace;
-
-    const { sx, sy, sw, sh, hshift, vshift, advance } = full_stop_glyph_metrics;
-    const dy = y - vshift;
+    let total_content_width = total_content_width_up_to_last_char_before_whitespace;
 
     for (let i = 0; i < 3; i++) {
-      if (total_width + advance > max_width) {
+      const subpixel_offset = modf(total_content_width);
+      const { sx, sy, sw, sh, hshift, vshift, advance } = cache_glyph(
+        renderer.glyph_atlas,
+        ".",
+        font,
+        color,
+        subpixel_offset);
+
+
+      if (total_content_width + advance > max_width) {
         break;
       }
 
-      const dx = x + total_width - hshift;
+      const dx = Math.floor(x + total_content_width - hshift);
+      const dy = y - vshift;
       blit_glyph(renderer.glyph_atlas, ctx, sx, sy, sw, sh, dx, dy, sw, sh);
 
-      total_width += advance;
+      total_content_width += advance;
     }
   }
 }

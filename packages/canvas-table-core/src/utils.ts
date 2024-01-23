@@ -49,6 +49,10 @@ export function is_empty(obj: Record<string, unknown>) {
   return true;
 }
 
+export function modf(n: number) {
+  return n - Math.floor(n);
+}
+
 export function clamp(value: number, min: number, max: number) {
   if (value < min) return min;
   if (value > max) return max;
@@ -110,3 +114,4 @@ export function is_number(val: any) {
 export function is_object(val: any) {
   return val != null && val.constructor.name === "Object";
 }
+

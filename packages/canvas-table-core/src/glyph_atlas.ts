@@ -4,6 +4,8 @@ const DEFAULT_GLYPH_ATLAS_WIDTH = 1024;
 const DEFAULT_GLYPH_ATLAS_HEIGHT = 1024;
 const GLYPH_OUTER_PADDING = 1;
 const GLYPH_INNER_PADDING = 1;
+const SUBPIXEL_ALIGNMENT_STEPS = 4;
+const SUBPIXEL_ALIGNMENT_FRAC = 1 / SUBPIXEL_ALIGNMENT_STEPS;
 const SEPARATOR = "\u001F";
 
 export function make_glyph_atlas(params?: Glyph_Atlas_Params): Glyph_Atlas {
@@ -32,9 +34,13 @@ export function cache_glyph(
   atlas: Glyph_Atlas,
   str: string,
   font: string,
-  color: string
+  color: string,
+  subpixel_offset = 0
 ): Glyph_Metrics {
-  const key = [font, color, str].join(SEPARATOR);
+  const subpixel_alignment = Math.floor(SUBPIXEL_ALIGNMENT_STEPS * subpixel_offset);
+  const quantized_subpixel_offset = SUBPIXEL_ALIGNMENT_FRAC * subpixel_alignment;
+
+  const key = [font, color, str, subpixel_alignment].join(SEPARATOR);
 
   const cached = atlas.cache.get(key);
   if (cached) {
@@ -68,7 +74,7 @@ export function cache_glyph(
     }
   }
 
-  const draw_x = node.metrics.sx + actualBoundingBoxLeft + GLYPH_INNER_PADDING;
+  const draw_x = node.metrics.sx + actualBoundingBoxLeft + GLYPH_INNER_PADDING + quantized_subpixel_offset;
   const draw_y = node.metrics.sy + actualBoundingBoxAscent + GLYPH_INNER_PADDING;
 
   atlas.ctx.fillText(str, draw_x, draw_y);
