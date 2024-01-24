@@ -13,26 +13,31 @@
   "files": [
     "dist"
   ],
+  "main": "./dist/canvas-table-core.js",
+  "exports": {
+    "types": "./dist/canvas-table-core.d.ts",
+    "default": "./dist/canvas-table-core.js"
+  },
   "module": "./dist/canvas-table-core.js",
   "types": "./dist/canvas-table-core.d.ts",
-  "exports": "./dist/canvas-table-core.js",
   "scripts": {
-    "watch": "vite build --watch",
-    "build": "vite build",
+    "watch": "rollup --config rollup.config.mjs --watch",
+    "build": "rollup --config rollup.config.mjs",
     "lint": "eslint --ext .js,.ts --fix ./src",
     "prepublish": "npm run build && npm run lint"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
     "@stylistic/eslint-plugin": "^1.5.4",
     "@types/node": "^20.8.7",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
     "eslint": "^8.44.0",
     "glob": "^10.3.10",
-    "typescript": "^5.0.2",
-    "vite": "^4.4.0",
-    "vite-plugin-dts": "^3.5.2",
-    "vite-plugin-eslint": "^1.8.1"
+    "rollup-plugin-dts": "^6.1.0",
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "graphemer": "^1.4.0"

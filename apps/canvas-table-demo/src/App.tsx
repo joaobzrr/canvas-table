@@ -1,13 +1,6 @@
 import { useState, useMemo } from "react";
 import { debounce } from "lodash";
-import { CanvasTable } from "@bzrr/canvas-table-react";
-import {
-  defaultTheme,
-  Data_Row,
-  Theme,
-  Data_Row_ID,
-  Prop_Value
-} from "@bzrr/canvas-table-core";
+import { CanvasTable, defaultTheme, Data_Row, Theme, Data_Row_ID, Prop_Value } from "@bzrr/canvas-table-react";
 import ThemeForm from "./components/ThemeForm";
 import TableList from "./components/TableList";
 import Tabs from "./components/Tabs";

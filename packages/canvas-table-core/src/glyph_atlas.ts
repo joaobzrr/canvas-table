@@ -4,9 +4,9 @@ const DEFAULT_GLYPH_ATLAS_WIDTH = 1024;
 const DEFAULT_GLYPH_ATLAS_HEIGHT = 1024;
 const GLYPH_OUTER_PADDING = 1;
 const GLYPH_INNER_PADDING = 1;
+const SEPARATOR = "\u001F";
 const SUBPIXEL_ALIGNMENT_STEPS = 4;
 const SUBPIXEL_ALIGNMENT_FRAC = 1 / SUBPIXEL_ALIGNMENT_STEPS;
-const SEPARATOR = "\u001F";
 
 export function make_glyph_atlas(params?: Glyph_Atlas_Params): Glyph_Atlas {
   const canvas = document.createElement("canvas");
