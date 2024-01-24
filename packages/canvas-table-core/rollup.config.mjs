@@ -2,6 +2,7 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import dts from "rollup-plugin-dts";
+import { cleandir } from "rollup-plugin-cleandir";
 
 export default [
   {
@@ -14,6 +15,7 @@ export default [
       nodeResolve(),
       commonjs(),
       typescript(),
+      cleandir("./dist")
     ]
   },
   {
