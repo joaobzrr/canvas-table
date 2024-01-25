@@ -1,11 +1,9 @@
 import Graphemer from "graphemer";
-import { make_glyph_atlas, cache_glyph, blit_glyph } from "./glyph_atlas";
+import { make_glyph_atlas, cache_glyph } from "./glyph_atlas";
 import { get_context, is_whitespace, modf } from "./utils";
 import { Renderer, Make_Renderer_Params, Draw_Command } from "./types";
 
 export function make_renderer(params: Make_Renderer_Params): Renderer {
-  const ctx = get_context(params.canvas);
-
   const glyph_atlas = make_glyph_atlas(params?.glyph_atlas_params);
 
   const hline_canvas = document.createElement("canvas");
@@ -26,7 +24,7 @@ export function make_renderer(params: Make_Renderer_Params): Renderer {
 
   return {
     canvas: params.canvas,
-    ctx,
+    ctx: params.ctx,
     glyph_atlas,
     hline_canvas,
     vline_canvas,
@@ -50,9 +48,6 @@ export function render(renderer: Renderer) {
     const { sort_order: b_sort_order = 0 } = b;
     return b_sort_order - a_sort_order;
   });
-
-  ctx.save();
-  ctx.imageSmoothingEnabled = false;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -101,8 +96,6 @@ export function render(renderer: Renderer) {
       ctx.restore();
     }
   }
-
-  ctx.restore();
 }
 
 function draw_text(
@@ -116,12 +109,17 @@ function draw_text(
   max_width = Infinity,
   ellipsis = false
 ) {
-  const { advance: full_stop_advance } = cache_glyph(renderer.glyph_atlas, ".", font, color);
+  const { glyph_atlas } = renderer;
 
   const ellipsis_enabled = ellipsis && max_width !== Infinity;
-  const available_content_width = ellipsis_enabled
-    ? Math.max(max_width - full_stop_advance * 3, 0)
-    : max_width;
+
+  let available_content_width: number;
+  if (ellipsis_enabled) {
+    const { advance: full_stop_advance } = cache_glyph(glyph_atlas, ".", font);
+    available_content_width = Math.max(max_width - full_stop_advance * 3, 0);
+  } else {
+    available_content_width = max_width;
+  }
 
   let total_content_width = 0;
   let total_content_width_up_to_last_char_before_whitespace = 0;
@@ -139,7 +137,7 @@ function draw_text(
 
     const subpixel_offset = modf(total_content_width);
     const { sx, sy, sw, sh, hshift, vshift, advance } = cache_glyph(
-      renderer.glyph_atlas,
+      glyph_atlas,
       grapheme,
       font,
       color,
@@ -155,7 +153,7 @@ function draw_text(
     if (!got_whitespace) {
       const dx = Math.floor(x + total_content_width - hshift);
       const dy = y - vshift;
-      blit_glyph(renderer.glyph_atlas, ctx, sx, sy, sw, sh, dx, dy, sw, sh);
+      ctx.drawImage(glyph_atlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
     }
 
     total_content_width += advance;
@@ -169,8 +167,7 @@ function draw_text(
 
     for (let i = 0; i < 3; i++) {
       const subpixel_offset = modf(total_content_width);
-      const { sx, sy, sw, sh, hshift, vshift, advance } = cache_glyph(
-        renderer.glyph_atlas,
+      const { sx, sy, sw, sh, hshift, vshift, advance } = cache_glyph(glyph_atlas,
         ".",
         font,
         color,
@@ -183,7 +180,7 @@ function draw_text(
 
       const dx = Math.floor(x + total_content_width - hshift);
       const dy = y - vshift;
-      blit_glyph(renderer.glyph_atlas, ctx, sx, sy, sw, sh, dx, dy, sw, sh);
+      ctx.drawImage(glyph_atlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
 
       total_content_width += advance;
     }

@@ -18,6 +18,9 @@ export function make_gui_context(container_id: string): GUI_Context {
   const canvas = document.createElement("canvas");
   wrapper_el.appendChild(canvas);
 
+  const ctx = get_context(canvas);
+  restore_canvas_context_properties(ctx);
+
   const font_metrics_canvas = document.createElement("canvas");
   const font_metrics_canvas_ctx = get_context(font_metrics_canvas);
 
@@ -25,6 +28,7 @@ export function make_gui_context(container_id: string): GUI_Context {
     container_el: container_el as HTMLDivElement,
     wrapper_el,
     canvas,
+    ctx,
     font_metrics_canvas,
     font_metrics_canvas_ctx,
 
@@ -155,27 +159,11 @@ export function is_mouse_released(guictx: GUI_Context, button: Mouse_Button_Valu
   return (guictx.curr_mouse_buttons & value) === 0 && (guictx.prev_mouse_buttons & value) === 1;
 }
 
-function normalized_to_buttons_value(value: Mouse_Button_Value): number {
-  switch (value) {
-    case MOUSE_BUTTONS.PRIMARY:
-      return 1;
-    case MOUSE_BUTTONS.SECONDARY:
-      return 2;
-    case MOUSE_BUTTONS.AUXILIARY:
-      return 4;
-    case MOUSE_BUTTONS.FOURTH:
-      return 8;
-    case MOUSE_BUTTONS.FIFTH:
-      return 16;
-  }
-}
-
 function animate(guictx: GUI_Context) {
   const { container_el, canvas } = guictx;
 
   if (container_el.offsetWidth !== canvas.width || container_el.offsetHeight !== canvas.height) {
-    canvas.width = container_el.offsetWidth;
-    canvas.height = container_el.offsetHeight;
+    resize_canvas(guictx, container_el.offsetWidth, container_el.offsetHeight);
   }
 
   if (is_mouse_pressed(guictx, MOUSE_BUTTONS.PRIMARY)) {
@@ -195,6 +183,31 @@ function animate(guictx: GUI_Context) {
   guictx.scroll_amount_y = 0;
 
   guictx.raf_id = requestAnimationFrame(() => animate(guictx));
+}
+
+function resize_canvas(guictx: GUI_Context, width: number, height: number) {
+  guictx.canvas.width = width;
+  guictx.canvas.height = height;
+  restore_canvas_context_properties(guictx.ctx);
+}
+
+function restore_canvas_context_properties(ctx: CanvasRenderingContext2D) {
+  ctx.imageSmoothingEnabled = false;
+}
+
+function normalized_to_buttons_value(value: Mouse_Button_Value): number {
+  switch (value) {
+    case MOUSE_BUTTONS.PRIMARY:
+      return 1;
+    case MOUSE_BUTTONS.SECONDARY:
+      return 2;
+    case MOUSE_BUTTONS.AUXILIARY:
+      return 4;
+    case MOUSE_BUTTONS.FOURTH:
+      return 8;
+    case MOUSE_BUTTONS.FIFTH:
+      return 16;
+  }
 }
 
 function update_mouse_state(guictx: GUI_Context, event: MouseEvent) {

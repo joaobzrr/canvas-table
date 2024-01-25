@@ -49,7 +49,7 @@ export function make_canvas_table(params: Create_Canvas_Table_Params): Canvas_Ta
     selectProp
   };
 
-  const renderer = make_renderer({ canvas: gui.canvas });
+  const renderer = make_renderer({ canvas: gui.canvas, ctx: gui.ctx });
 
   const batched_props = [] as Partial<Table_Props>[];
 
@@ -146,7 +146,6 @@ function update(ct: Canvas_Table) {
   if (ct.table_width !== gui.canvas.width || ct.table_height !== gui.canvas.height) {
     ct.table_width = gui.canvas.width;
     ct.table_height = gui.canvas.height;
-
     table_resized = true;
   }
 

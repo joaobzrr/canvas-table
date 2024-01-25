@@ -141,6 +141,7 @@ export type GUI_Context = {
   container_el: HTMLDivElement;
   wrapper_el: HTMLDivElement;
   canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
   font_metrics_canvas: HTMLCanvasElement;
   font_metrics_canvas_ctx: CanvasRenderingContext2D;
 
@@ -185,6 +186,7 @@ export type Renderer = {
 
 export type Make_Renderer_Params = {
   canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
   glyph_atlas_params?: {
     atlas_width?: number;
     atlas_height?: number;

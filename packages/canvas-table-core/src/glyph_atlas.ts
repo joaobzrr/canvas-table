@@ -34,7 +34,7 @@ export function cache_glyph(
   atlas: Glyph_Atlas,
   str: string,
   font: string,
-  color: string,
+  color = "black",
   subpixel_offset = 0
 ): Glyph_Metrics {
   const subpixel_alignment = Math.floor(SUBPIXEL_ALIGNMENT_STEPS * subpixel_offset);
@@ -88,21 +88,6 @@ export function cache_glyph(
   atlas.cache.set(key, node);
 
   return node.metrics;
-}
-
-export function blit_glyph(
-  atlas: Glyph_Atlas,
-  ctx: CanvasRenderingContext2D,
-  sx: number,
-  sy: number,
-  sw: number,
-  sh: number,
-  dx: number,
-  dy: number,
-  dw: number,
-  dh: number
-) {
-  ctx.drawImage(atlas.canvas, sx, sy, sw, sh, dx, dy, dw, dh);
 }
 
 export function clear_glyph_atlas(atlas: Glyph_Atlas) {
