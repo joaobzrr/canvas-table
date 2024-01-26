@@ -13,12 +13,13 @@
   "files": [
     "dist"
   ],
-  "module": "./dist/canvas-table-react.js",
-  "types": "./dist/canvas-table-react.d.ts",
+  "main": "./dist/index.js",
   "exports": {
-    "types": "./dist/canvas-table-react.d.ts",
-    "default": "./dist/canvas-table-react.js"
+    "types": "./dist/index.d.ts",
+    "default": "./dist/index.js"
   },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "watch": "rollup --config rollup.config.mjs --watch",
     "build": "rollup --config rollup.config.mjs",

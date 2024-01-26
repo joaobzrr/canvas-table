@@ -8,8 +8,9 @@ export default [
   {
     input: "src/index.ts",
     output: {
-      file: "dist/canvas-table-react.js",
+      file: "dist/index.js",
       format: "es",
+      sourcemap: true
     },
     plugins: [
       nodeResolve(),
@@ -25,7 +26,7 @@ export default [
   {
     input: "src/index.ts",
     output: {
-      file: "dist/canvas-table-react.d.ts",
+      file: "dist/index.d.ts",
       format: "es"
     },
     plugins: [dts()]

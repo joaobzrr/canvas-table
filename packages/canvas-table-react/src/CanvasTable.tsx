@@ -8,18 +8,18 @@ export type CanvasTableComponentProps = Omit<CanvasTableParams, "container"> & {
 
 let count = 0;
 
+function getContainerId() {
+  const result = `canvas-table-container-${count}`;
+  count++;
+  return result;
+}
+
 export function usePrevious<T>(value: T) {
   const ref = useRef<T>();
   useEffect(() => {
     ref.current = value;
   }, [value]);
   return ref.current;
-}
-
-function getContainerId() {
-  const result = `canvas-table-container-${count}`;
-  count++;
-  return result;
 }
 
 export function CanvasTableComponent(props: CanvasTableComponentProps) {
