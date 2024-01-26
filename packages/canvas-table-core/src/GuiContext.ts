@@ -95,7 +95,11 @@ export class GuiContext {
 
   getFontMetrics(font: string) {
     this.fontMetricsCanvasCtx.font = font;
-    const { fontBoundingBoxAscent, fontBoundingBoxDescent } = this.ctx.measureText("M");
+    const {
+      fontBoundingBoxAscent,
+      fontBoundingBoxDescent
+    } = this.fontMetricsCanvasCtx.measureText("M");
+
     return {
       fontBoundingBoxAscent,
       fontBoundingBoxDescent

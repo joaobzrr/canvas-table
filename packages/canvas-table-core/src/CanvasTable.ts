@@ -98,8 +98,8 @@ export class CanvasTable {
 
   selectedRowId: DataRowId | null = null;
 
-  bodyAreaClipRegion = new Path2D();
-  headerAreaClipRegion = new Path2D();
+  bodyAreaClipRegion?: Path2D;
+  headerAreaClipRegion?: Path2D;
 
   constructor(params: CanvasTableParams) {
     const { container, columnDefs, ...partialProps } = params;
@@ -178,12 +178,6 @@ export class CanvasTable {
 
     if (tableResized || dataChanged) {
       this.refreshLayout();
-
-      this.bodyAreaClipRegion = new Path2D();
-      this.bodyAreaClipRegion.rect(this.bodyAreaX, this.bodyAreaY, this.bodyAreaWidth, this.bodyAreaHeight);
-
-      this.headerAreaClipRegion = new Path2D();
-      this.headerAreaClipRegion.rect(this.headerAreaX, this.headerAreaY, this.headerAreaWidth, this.headerAreaHeight);
     }
 
     let scrollPosChanged = false;
@@ -647,14 +641,14 @@ export class CanvasTable {
         const column_pos = this.calculateColumnScreenX(columnIndex);
 
         const x = column_pos + theme.cellPadding;
-        const max_width = columnWidth - theme.cellPadding * 2;
+        const maxWidth = columnWidth - theme.cellPadding * 2;
 
         for (const row_index of this.tableRowRange()) {
           const data_row = this.props.dataRows[row_index];
 
-          const row_pos = this.calculateRowScreenY(row_index);
+          const rowPos = this.calculateRowScreenY(row_index);
 
-          const y = row_pos + theme.rowHeight / 2 + halfFontBoundingBoxAscent;
+          const y = rowPos + theme.rowHeight / 2 + halfFontBoundingBoxAscent;
 
           const value = this.props.selectProp(data_row, columnDef);
           const text = isNumber(value) ? value.toString() : (value as string);
@@ -666,7 +660,7 @@ export class CanvasTable {
             color: actualFontColor,
             text,
             font,
-            maxWidth: max_width,
+            maxWidth: maxWidth,
             clipRegion: this.bodyAreaClipRegion
           });
         }
@@ -776,6 +770,12 @@ export class CanvasTable {
     this.vsbThumbHeight = Math.max((bodyAreaHeight / this.scrollHeightMinCapped) * this.vsbTrackHeight, MIN_THUMB_LENGTH);
     this.vsbThumbMinY = this.vsbTrackY;
     this.vsbThumbMaxY = this.vsbTrackY + this.vsbTrackHeight - this.vsbThumbHeight;
+
+    this.bodyAreaClipRegion = new Path2D();
+    this.bodyAreaClipRegion.rect(this.bodyAreaX, this.bodyAreaY, this.bodyAreaWidth, this.bodyAreaHeight);
+
+    this.headerAreaClipRegion = new Path2D();
+    this.headerAreaClipRegion.rect(this.headerAreaX, this.headerAreaY, this.headerAreaWidth, this.headerAreaHeight);
   }
 
   refreshViewport() {
