@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { debounce } from "lodash";
-import { CanvasTable, defaultTheme, Data_Row, Theme, Data_Row_ID, Prop_Value } from "@bzrr/canvas-table-react";
+import { CanvasTable, defaultTheme, DataRow, Theme, DataRowId, PropValue } from "@bzrr/canvas-table-react";
 import ThemeForm from "./components/ThemeForm";
 import TableList from "./components/TableList";
 import Tabs from "./components/Tabs";
@@ -28,7 +28,7 @@ function App() {
 
   const [selectedTab, setSelectedTab] = useState<React.Key>("tables");
 
-  const [selectedRow, setSelectedRow] = useState<Data_Row>();
+  const [selectedRow, setSelectedRow] = useState<DataRow>();
 
   const onEdit = (key: string, value: string) => {
     if (!selectedRow) {
@@ -101,7 +101,7 @@ function App() {
           dataRows={table.dataRows}
           theme={theme}
           containerClassName={styles.canvasTable}
-          selectId={(row) => row.id as Data_Row_ID}
+          selectId={(row) => row.id as DataRowId}
           onSelectRow={(_, row) => setSelectedRow(row)}
         />
       </main>
@@ -112,7 +112,7 @@ function App() {
               <div className={styles.row} key={key}>
                 <label className={styles.label}>{title}</label>
                 <input
-                  value={selectedRow[key] as Prop_Value}
+                  value={selectedRow[key] as PropValue}
                   onChange={(e) => onEdit(key, e.target.value)}
                   className={styles.input}
                   disabled={!selectedRow}

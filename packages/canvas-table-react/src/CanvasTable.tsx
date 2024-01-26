@@ -1,15 +1,20 @@
-import { useRef, useLayoutEffect } from "react";
-import {
-  make_canvas_table,
-  config_canvas_table,
-  destroy_canvas_table,
-  Canvas_Table
-} from "@bzrr/canvas-table-core";
-import { usePrevious } from "./hooks";
-import { shallowMatch } from "./utils";
-import { CanvasTableProps } from "./types";
+import { useRef, useEffect, useLayoutEffect } from "react";
+import { CanvasTable, CanvasTableParams, shallowMatch } from "@bzrr/canvas-table-core";
+
+export type CanvasTableComponentProps = Omit<CanvasTableParams, "container"> & {
+  containerClassName?: string;
+  containerStyle?: React.CSSProperties;
+};
 
 let count = 0;
+
+export function usePrevious<T>(value: T) {
+  const ref = useRef<T>();
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+  return ref.current;
+}
 
 function getContainerId() {
   const result = `canvas-table-container-${count}`;
@@ -17,30 +22,30 @@ function getContainerId() {
   return result;
 }
 
-export function CanvasTableComponent(props: CanvasTableProps) {
+export function CanvasTableComponent(props: CanvasTableComponentProps) {
   const { containerClassName, containerStyle, ...tableProps } = props;
 
-  const canvasTableRef = useRef<Canvas_Table | null>(null);
+  const canvasTableRef = useRef<CanvasTable | null>(null);
   const containerIdRef = useRef(getContainerId());
 
   const prevTableProps = usePrevious(tableProps);
 
   useLayoutEffect(() => {
-    canvasTableRef.current = make_canvas_table({
+    canvasTableRef.current = new CanvasTable({
       container: containerIdRef.current,
       ...tableProps
     });
 
     return () => {
       if (canvasTableRef.current) {
-        destroy_canvas_table(canvasTableRef.current);
+        canvasTableRef.current.destroy();
         canvasTableRef.current = null;
       }
     };
   }, []);
 
   if (prevTableProps && !shallowMatch(tableProps, prevTableProps)) {
-    config_canvas_table(canvasTableRef.current!, tableProps);
+    canvasTableRef.current!.config(tableProps);
   }
 
   return <div id={containerIdRef.current} className={containerClassName} style={containerStyle} />;

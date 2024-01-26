@@ -1,282 +1,323 @@
 import Graphemer from "graphemer";
-import { make_glyph_atlas, cache_glyph } from "./glyph_atlas";
-import { get_context, is_whitespace, modf } from "./utils";
-import { Renderer, Make_Renderer_Params, Draw_Command } from "./types";
+import { GlyphAtlas } from "./GlyphAtlas";
+import { getContext, isWhitespace, modf } from "./utils";
 
-export function make_renderer(params: Make_Renderer_Params): Renderer {
-  const glyph_atlas = make_glyph_atlas(params?.glyph_atlas_params);
-
-  const hline_canvas = document.createElement("canvas");
-  hline_canvas.width = 1;
-  hline_canvas.height = 1;
-
-  const vline_canvas = document.createElement("canvas");
-  vline_canvas.width = 1;
-  vline_canvas.height = 1;
-
-  const hline_canvas_ctx = get_context(hline_canvas);
-  const vline_canvas_ctx = get_context(vline_canvas);
-
-  const hline_color = "black";
-  const vline_color = "black";
-
-  const command_buffer: Draw_Command[] = [];
-
-  return {
-    canvas: params.canvas,
-    ctx: params.ctx,
-    glyph_atlas,
-    hline_canvas,
-    vline_canvas,
-    hline_canvas_ctx,
-    vline_canvas_ctx,
-    hline_color,
-    vline_color,
-    command_buffer
+export type RendererParams = {
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+  glyphAtlasParams?: {
+    width?: number;
+    height?: number;
   };
-}
+};
 
-export function push_draw_command(renderer: Renderer, shape: Draw_Command) {
-  renderer.command_buffer.unshift(shape);
-}
+export type DrawLineCommand = BaseDrawCommand & {
+  type: "line";
+  orientation: LineOrientation;
+  length: number;
+  color: string;
+};
 
-export function render(renderer: Renderer) {
-  const { canvas, ctx } = renderer;
+export type DrawRectCommand = BaseDrawCommand & {
+  type: "rect";
+  width: number;
+  height: number;
+  strokeColor?: string;
+  strokeWidth?: number;
+  fillColor?: string;
+};
 
-  renderer.command_buffer.sort((a, b) => {
-    const { sort_order: a_sort_order = 0 } = a;
-    const { sort_order: b_sort_order = 0 } = b;
-    return b_sort_order - a_sort_order;
-  });
+export type DrawTextCommand = BaseDrawCommand & {
+  type: "text";
+  font: string;
+  text: string;
+  maxWidth?: number;
+  color: string;
+};
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+export type BaseDrawCommand = {
+  type: string;
+  x: number;
+  y: number;
+  opacity?: number;
+  clipRegion?: Path2D;
+  sortOrder?: number;
+};
 
-  while (renderer.command_buffer.length > 0) {
-    const command = renderer.command_buffer.pop()!;
+export type DrawCommand = DrawLineCommand | DrawRectCommand | DrawTextCommand;
 
-    if (command.clip_region) {
-      ctx.save();
-      ctx.clip(command.clip_region);
-    }
+export type LineOrientation = "horizontal" | "vertical";
 
-    switch (command.type) {
-      case "text": {
-        const { text, x, y, font, color, max_width } = command;
+export class Renderer {
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
 
-        draw_text(renderer, ctx, text, x, y, font, color, max_width, true);
-        break;
-      }
-      case "line": {
-        const { x, y, length, color } = command;
+  glyphAtlas: GlyphAtlas;
 
-        if (command.orientation === "horizontal") {
-          draw_horizontal_line(renderer, ctx, x, y, length, color);
-        } else {
-          draw_vertical_line(renderer, ctx, x, y, length, color);
-        }
+  hlineCanvas: HTMLCanvasElement;
+  vlineCanvas: HTMLCanvasElement;
+  hlineCanvasCtx: CanvasRenderingContext2D;
+  vlineCanvasCtx: CanvasRenderingContext2D;
+  hlineColor: string;
+  vlineColor: string;
 
-        break;
-      }
-      case "rect": {
-        const { x, y, width, height, fill_color, stroke_color, stroke_width } = command;
+  commandBuffer: DrawCommand[];
 
-        if (fill_color) {
-          fill_rect(renderer, ctx, x, y, width, height, fill_color);
-        }
+  constructor(params: RendererParams) {
+    this.canvas = params.canvas;
+    this.ctx = params.ctx;
 
-        if (stroke_color && stroke_width) {
-          stroke_rect(renderer, ctx, x, y, width, height, stroke_color, stroke_width);
-        }
+    this.glyphAtlas = new GlyphAtlas(params.glyphAtlasParams);
 
-        break;
-      }
-    }
+    this.hlineCanvas = document.createElement("canvas");
+    this.hlineCanvas.width  = 1;
+    this.hlineCanvas.height = 1;
 
-    if (command.clip_region) {
-      ctx.restore();
-    }
-  }
-}
+    this.vlineCanvas = document.createElement("canvas");
+    this.vlineCanvas.width = 1;
+    this.vlineCanvas.height = 1;
 
-function draw_text(
-  renderer: Renderer,
-  ctx: CanvasRenderingContext2D,
-  str: string,
-  x: number,
-  y: number,
-  font: string,
-  color: string,
-  max_width = Infinity,
-  ellipsis = false
-) {
-  const { glyph_atlas } = renderer;
+    this.hlineCanvasCtx = getContext(this.hlineCanvas);
+    this.vlineCanvasCtx = getContext(this.vlineCanvas);
 
-  const ellipsis_enabled = ellipsis && max_width !== Infinity;
+    this.hlineColor = "black";
+    this.vlineColor = "black";
 
-  let available_content_width: number;
-  if (ellipsis_enabled) {
-    const { advance: full_stop_advance } = cache_glyph(glyph_atlas, ".", font);
-    available_content_width = Math.max(max_width - full_stop_advance * 3, 0);
-  } else {
-    available_content_width = max_width;
+    this.commandBuffer = [];
   }
 
-  let total_content_width = 0;
-  let total_content_width_up_to_last_char_before_whitespace = 0;
+  render() {
+    this.commandBuffer.sort((a, b) => {
+      const { sortOrder: aSortOrder = 0 } = a;
+      const { sortOrder: bSortOrder = 0 } = b;
+      return bSortOrder - aSortOrder;
+    });
 
-  let string_index = 0;
-  let do_ellipsis = false;
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-  for (;;) {
-    const next_string_index = Graphemer.nextBreak(str, string_index);
-    if (next_string_index === string_index) {
-      break;
-    }
-    const grapheme = str.slice(string_index, next_string_index);
-    string_index = next_string_index;
+    while (this.commandBuffer.length > 0) {
+      const command = this.commandBuffer.pop()!;
 
-    const subpixel_offset = modf(total_content_width);
-    const { sx, sy, sw, sh, hshift, vshift, advance } = cache_glyph(
-      glyph_atlas,
-      grapheme,
-      font,
-      color,
-      subpixel_offset
-    );
+      if (command.clipRegion) {
+        this.ctx.save();
+        this.ctx.clip(command.clipRegion);
+      }
 
-    if (total_content_width + advance > available_content_width) {
-      do_ellipsis = true;
-      break;
-    }
+      switch (command.type) {
+        case "text": {
+          const { text, x, y, font, color, maxWidth } = command;
 
-    const got_whitespace = is_whitespace(grapheme);
-    if (!got_whitespace) {
-      const dx = Math.floor(x + total_content_width - hshift);
-      const dy = y - vshift;
-      ctx.drawImage(glyph_atlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
-    }
+          this.drawText(this.ctx, text, x, y, font, color, maxWidth, true);
 
-    total_content_width += advance;
-    if (!got_whitespace) {
-      total_content_width_up_to_last_char_before_whitespace = total_content_width;
+          break;
+        }
+        case "line": {
+          const { x, y, length, color } = command;
+          
+          if (command.orientation === "horizontal") {
+            this.drawHorizontalLine(this.ctx, x, y, length, color);
+          } else {
+            this.drawVerticalLine(this.ctx, x, y, length, color);
+          }
+
+          break;
+        }
+        case "rect": {
+          const { x, y, width, height, fillColor, strokeColor, strokeWidth } = command;
+
+          if (fillColor) {
+            this.fillRect(this.ctx, x, y, width, height, fillColor);
+          }
+
+          if (strokeColor && strokeWidth) {
+            this.strokeRect(this.ctx, x, y, width, height, strokeColor, strokeWidth);
+          }
+
+          break;
+        }
+
+      }
+
+      if (command.clipRegion) {
+        this.ctx.restore();
+      }
     }
   }
 
-  if (ellipsis_enabled && do_ellipsis) {
-    let total_content_width = total_content_width_up_to_last_char_before_whitespace;
+  pushDrawCommand(shape: DrawCommand) {
+    this.commandBuffer.unshift(shape);
+  }
 
-    for (let i = 0; i < 3; i++) {
-      const subpixel_offset = modf(total_content_width);
-      const { sx, sy, sw, sh, hshift, vshift, advance } = cache_glyph(glyph_atlas,
-        ".",
+  drawText(
+    ctx: CanvasRenderingContext2D,
+    str: string,
+    x: number,
+    y: number,
+    font: string,
+    color: string,
+    maxWidth = Infinity,
+    ellipsis = false
+  ) {
+    const ellipsisEnabled = ellipsis && maxWidth !== Infinity;
+
+    let availableContentWidth: number;
+    if (ellipsisEnabled) {
+      const { advance: fullStopAdvance } = this.glyphAtlas.cacheGlyph(".", font);
+      availableContentWidth = Math.max(maxWidth - fullStopAdvance * 3, 0);
+    } else {
+      availableContentWidth = maxWidth;
+    }
+
+    let totalContentWidth = 0;
+    let totalContentWidthUpToLastCharBeforeWhitespace = 0;
+
+    let stringIndex = 0;
+    let doEllipsis = false;
+
+    for (;;) {
+      const next_string_index = Graphemer.nextBreak(str, stringIndex);
+      if (next_string_index === stringIndex) {
+        break;
+      }
+      const grapheme = str.slice(stringIndex, next_string_index);
+      stringIndex = next_string_index;
+
+      const subpixelOffset = modf(totalContentWidth);
+      const { sx, sy, sw, sh, hshift, vshift, advance } = this.glyphAtlas.cacheGlyph(
+        grapheme,
         font,
         color,
-        subpixel_offset);
+        subpixelOffset
+      );
 
-
-      if (total_content_width + advance > max_width) {
+      if (totalContentWidth + advance > availableContentWidth) {
+        doEllipsis = true;
         break;
       }
 
-      const dx = Math.floor(x + total_content_width - hshift);
-      const dy = y - vshift;
-      ctx.drawImage(glyph_atlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
+      const gotWhitespace = isWhitespace(grapheme);
+      if (!gotWhitespace) {
+        const dx = Math.floor(x + totalContentWidth - hshift);
+        const dy = y - vshift;
+        ctx.drawImage(this.glyphAtlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
+      }
 
-      total_content_width += advance;
+      totalContentWidth += advance;
+      if (!gotWhitespace) {
+        totalContentWidthUpToLastCharBeforeWhitespace = totalContentWidth;
+      }
+    }
+
+    if (ellipsisEnabled && doEllipsis) {
+      let totalContentWidth = totalContentWidthUpToLastCharBeforeWhitespace;
+
+      for (let i = 0; i < 3; i++) {
+        const subpixelOffset = modf(totalContentWidth);
+        const { sx, sy, sw, sh, hshift, vshift, advance } = this.glyphAtlas.cacheGlyph(
+          ".",
+          font,
+          color,
+          subpixelOffset);
+
+
+        if (totalContentWidth + advance > maxWidth) {
+          break;
+        }
+
+        const dx = Math.floor(x + totalContentWidth - hshift);
+        const dy = y - vshift;
+        ctx.drawImage(this.glyphAtlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
+
+        totalContentWidth += advance;
+      }
     }
   }
-}
 
-function fill_rect(
-  _renderer: Renderer,
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  color: string
-) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x, y, width, height);
-}
-
-function stroke_rect(
-  renderer: Renderer,
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  color: string,
-  stroke_width: number
-) {
-  let x1 = x;
-  let y1 = y;
-  let x2 = x + width;
-  let y2 = y + height;
-
-  for (let i = 0; i < stroke_width; i++) {
-    const w = x2 - x1 + 1;
-    const h = y2 - y1 + 1;
-
-    draw_horizontal_line(renderer, ctx, x1, y1, w, color);
-    draw_horizontal_line(renderer, ctx, x1, y2, w, color);
-    draw_vertical_line(renderer, ctx, x1, y1, h, color);
-    draw_vertical_line(renderer, ctx, x2, y1, h, color);
-
-    x1++;
-    y1++;
-    x2--;
-    y2--;
-  }
-}
-
-function draw_horizontal_line(
-  renderer: Renderer,
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  length: number,
-  color: string
-) {
-  const { hline_canvas, hline_canvas_ctx } = renderer;
-
-  const should_resize_canvas = hline_canvas.width < length;
-  if (should_resize_canvas) {
-    hline_canvas.width = length;
+  fillRect(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    color: string
+  ) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, width, height);
   }
 
-  if (should_resize_canvas || color !== renderer.hline_color) {
-    renderer.hline_color = color;
+  strokeRect(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    color: string,
+    stroke_width: number
+  ) {
+    let x1 = x;
 
-    hline_canvas_ctx.fillStyle = color;
-    hline_canvas_ctx.fillRect(0, 0, hline_canvas.width, hline_canvas.height);
+    let y1 = y;
+    let x2 = x + width;
+    let y2 = y + height;
+
+    for (let i = 0; i < stroke_width; i++) {
+      const w = x2 - x1 + 1;
+      const h = y2 - y1 + 1;
+
+      this.drawHorizontalLine(ctx, x1, y1, w, color);
+      this.drawHorizontalLine(ctx, x1, y2, w, color);
+      this.drawVerticalLine(ctx, x1, y1, h, color);
+      this.drawVerticalLine(ctx, x2, y1, h, color);
+
+      x1++;
+      y1++;
+      x2--;
+      y2--;
+    }
   }
 
-  ctx.drawImage(renderer.hline_canvas, 0, 0, length, 1, x, y, length, 1);
-}
+  drawHorizontalLine(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    length: number,
+    color: string
+  ) {
+    const shouldResizeCanvas = this.hlineCanvas.width < length;
+    if (shouldResizeCanvas) {
+      this.hlineCanvas.width = length;
+    }
 
-function draw_vertical_line(
-  renderer: Renderer,
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  length: number,
-  color: string
-) {
-  const { vline_canvas, vline_canvas_ctx } = renderer;
+    if (shouldResizeCanvas || color !== this.hlineColor) {
+      this.hlineColor = color;
 
-  const should_resize_canvas = vline_canvas.height < length;
-  if (should_resize_canvas) {
-    vline_canvas.height = length;
+      this.hlineCanvasCtx.fillStyle = color;
+      this.hlineCanvasCtx.fillRect(0, 0, this.hlineCanvas.width, this.hlineCanvas.height);
+    }
+
+    ctx.drawImage(this.hlineCanvas, 0, 0, length, 1, x, y, length, 1);
   }
 
-  if (should_resize_canvas || color !== renderer.vline_color) {
-    renderer.vline_color = color;
+  drawVerticalLine(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    length: number,
+    color: string
+  ) {
+    const shouldResizeCanvas = this.vlineCanvas.height < length;
+    if (shouldResizeCanvas) {
+      this.vlineCanvas.height = length;
+    }
 
-    vline_canvas_ctx.fillStyle = color;
-    vline_canvas_ctx.fillRect(0, 0, vline_canvas.width, vline_canvas.height);
+    if (shouldResizeCanvas || color !== this.vlineColor) {
+      this.vlineColor = color;
+
+      this.vlineCanvasCtx.fillStyle = color;
+      this.vlineCanvasCtx.fillRect(0, 0, this.vlineCanvas.width, this.vlineCanvas.height);
+    }
+
+    ctx.drawImage(this.vlineCanvas, 0, 0, 1, length, x, y, 1, length);
+
   }
-
-  ctx.drawImage(renderer.vline_canvas, 0, 0, 1, length, x, y, 1, length);
 }

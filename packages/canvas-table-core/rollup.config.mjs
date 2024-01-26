@@ -8,7 +8,7 @@ export default [
   {
     input: "src/index.ts",
     output: {
-      file: "dist/canvas-table-core.js",
+      file: "dist/index.js",
       format: "es",
     },
     plugins: [
@@ -21,7 +21,7 @@ export default [
   {
     input: "src/index.ts",
     output: {
-      file: "dist/canvas-table-core.d.ts",
+      file: "dist/index.d.ts",
       format: "es"
     },
     plugins: [dts()]
