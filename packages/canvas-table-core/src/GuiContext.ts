@@ -55,6 +55,7 @@ export class GuiContext {
     this.wrapperEl.appendChild(this.canvas);
 
     this.ctx = getContext(this.canvas);
+    this.restoreCanvasContextProperties();
 
     this.fontMetricsCanvas = document.createElement("canvas");
     this.fontMetricsCanvasCtx = getContext(this.fontMetricsCanvas);
@@ -184,6 +185,7 @@ export class GuiContext {
   resizeCanvas(width: number, height: number) {
     this.canvas.width = width;
     this.canvas.height = height;
+    this.restoreCanvasContextProperties();
   }
 
   restoreCanvasContextProperties() {
