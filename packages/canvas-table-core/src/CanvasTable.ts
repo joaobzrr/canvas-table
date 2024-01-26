@@ -52,6 +52,7 @@ export class CanvasTable {
   scrollHeightMinCapped = 1;
   maxScrollX = 0;
   maxScrollY = 0;
+
   hsbX = 0;
   hsbY = 0;
   hsbWidth = 1;
@@ -66,6 +67,7 @@ export class CanvasTable {
   hsbThumbHeight = 1;
   hsbThumbMinX = 0;
   hsbThumbMaxX = 0;
+
   vsbX = 0;
   vsbY = 0;
   vsbWidth = 1;
@@ -80,16 +82,24 @@ export class CanvasTable {
   vsbThumbHeight = 1;
   vsbThumbMinY = 0;
   vsbThumbMaxY = 0;
+
   overflowX = false;
   overflowY = false;
+
   columnStart = 0;
   columnEnd = 0;
   rowStart = 0;
   rowEnd = 0;
+
   mouseRow = -1;
+
   columnWidths: number[];
   canonicalColumnPositions: number[] = [];
+
   selectedRowId: DataRowId | null = null;
+
+  bodyAreaClipRegion = new Path2D();
+  headerAreaClipRegion = new Path2D();
 
   constructor(params: CanvasTableParams) {
     const { container, columnDefs, ...partialProps } = params;
@@ -168,6 +178,12 @@ export class CanvasTable {
 
     if (tableResized || dataChanged) {
       this.refreshLayout();
+
+      this.bodyAreaClipRegion = new Path2D();
+      this.bodyAreaClipRegion.rect(this.bodyAreaX, this.bodyAreaY, this.bodyAreaWidth, this.bodyAreaHeight);
+
+      this.headerAreaClipRegion = new Path2D();
+      this.headerAreaClipRegion.rect(this.headerAreaX, this.headerAreaY, this.headerAreaWidth, this.headerAreaHeight);
     }
 
     let scrollPosChanged = false;
@@ -245,7 +261,7 @@ export class CanvasTable {
           width: resizerWidth,
           height: resizerHeight,
           fillColor: theme.columnResizerColor,
-          clipRegion: this.makeHeaderAreaClipRegion(),
+          clipRegion: this.headerAreaClipRegion,
           sortOrder: 3
         });
         break;
@@ -391,7 +407,7 @@ export class CanvasTable {
           width: this.bodyVisibleWidth,
           height: theme.rowHeight,
           fillColor: theme.hoveredRowColor,
-          clipRegion: this.makeBodyAreaClipRegion()
+          clipRegion: this.bodyAreaClipRegion
         });
       }
     }
@@ -408,7 +424,7 @@ export class CanvasTable {
             width: this.bodyVisibleWidth,
             height: theme.rowHeight,
             fillColor: theme.selectedRowColor,
-            clipRegion: this.makeBodyAreaClipRegion()
+            clipRegion: this.bodyAreaClipRegion
           });
           break;
         }
@@ -492,8 +508,8 @@ export class CanvasTable {
       sortOrder: 2
     });
 
-    const grid_width = this.bodyVisibleWidth;
-    const grid_height = this.bodyVisibleHeight + theme.rowHeight;
+    const gridWidth = this.bodyVisibleWidth;
+    const gridHeight = this.bodyVisibleHeight + theme.rowHeight;
 
     // Draw header bottom border
     this.renderer.pushDrawCommand({
@@ -522,9 +538,9 @@ export class CanvasTable {
       this.renderer.pushDrawCommand({
         type: "line",
         orientation: "vertical",
-        x: grid_width,
+        x: gridWidth,
         y: 0,
-        length: grid_height,
+        length: gridHeight,
         color: theme.tableBorderColor,
         sortOrder: 2
       });
@@ -547,8 +563,8 @@ export class CanvasTable {
         type: "line",
         orientation: "horizontal",
         x: 0,
-        y: grid_height,
-        length: grid_width,
+        y: gridHeight,
+        length: gridWidth,
         color: theme.tableBorderColor,
         sortOrder: 2
       });
@@ -561,7 +577,7 @@ export class CanvasTable {
         orientation: "horizontal",
         x: 0,
         y: this.calculateRowScreenY(rowIndex),
-        length: grid_width,
+        length: gridWidth,
         color: theme.tableBorderColor,
         sortOrder: 2
       });
@@ -574,13 +590,13 @@ export class CanvasTable {
         orientation: "vertical",
         x: this.calculateColumnScreenX(columnIndex),
         y: 0,
-        length: grid_height,
+        length: gridHeight,
         color: theme.tableBorderColor,
         sortOrder: 2
       });
     }
 
-    // Draw body text
+    // Draw header text
     {
       const actualFontStyle = theme.headerFontStyle ?? theme.fontStyle;
       const font = createFontSpecifier(theme.fontFamily, theme.fontSize, actualFontStyle);
@@ -589,8 +605,6 @@ export class CanvasTable {
       const halfFontBoundingBoxAscent = Math.floor(fontBoundingBoxAscent / 2);
 
       const actualFontColor = theme.headerFontColor ?? theme.fontColor;
-
-      const clipRegion = this.makeHeaderAreaClipRegion();
 
       for (const columnIndex of this.tableColumnRange()) {
         const columnDef = this.props.columnDefs[columnIndex];
@@ -611,11 +625,12 @@ export class CanvasTable {
           text,
           font,
           maxWidth,
-          clipRegion
+          clipRegion: this.headerAreaClipRegion
         });
       }
     }
 
+    // Draw body text
     {
       const actualFontStyle = theme.bodyFontStyle ?? theme.fontStyle;
       const font = createFontSpecifier(theme.fontFamily, theme.fontSize, actualFontStyle);
@@ -624,8 +639,6 @@ export class CanvasTable {
       const halfFontBoundingBoxAscent = Math.floor(fontBoundingBoxAscent / 2);
 
       const actualFontColor = theme.bodyFontColor ?? theme.fontColor;
-
-      const clipRegion = this.makeBodyAreaClipRegion();
 
       for (const columnIndex of this.tableColumnRange()) {
         const columnDef = this.props.columnDefs[columnIndex];
@@ -654,7 +667,7 @@ export class CanvasTable {
             text,
             font,
             maxWidth: max_width,
-            clipRegion: clipRegion
+            clipRegion: this.bodyAreaClipRegion
           });
         }
       }
@@ -882,17 +895,5 @@ export class CanvasTable {
 
   calculateVerticalScrollbarThumbY(scrollY: number) {
     return Math.round(lerp(scrollY, 0, this.maxScrollY, this.vsbThumbMinY, this.vsbThumbMaxY));
-  }
-
-  makeBodyAreaClipRegion() {
-    const bodyClipRegion = new Path2D();
-    bodyClipRegion.rect(this.bodyAreaX, this.bodyAreaY, this.bodyAreaWidth, this.bodyAreaHeight);
-    return bodyClipRegion;
-  }
-
-  makeHeaderAreaClipRegion() {
-    const headerAreaRegion = new Path2D();
-    headerAreaRegion.rect(this.headerAreaX, this.headerAreaY, this.headerAreaWidth, this.headerAreaHeight);
-    return headerAreaRegion;
   }
 }
