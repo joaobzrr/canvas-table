@@ -595,8 +595,9 @@ export class CanvasTable {
       const actualFontStyle = theme.headerFontStyle ?? theme.fontStyle;
       const font = createFontSpecifier(theme.fontFamily, theme.fontSize, actualFontStyle);
 
-      const { fontBoundingBoxAscent } = this.gui.getFontMetrics(font);
-      const halfFontBoundingBoxAscent = Math.floor(fontBoundingBoxAscent / 2);
+      const { fontBoundingBoxAscent, fontBoundingBoxDescent } = this.gui.getFontMetrics(font);
+      const fontHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
+      const baselineY = Math.floor((theme.rowHeight - fontHeight) / 2 + fontBoundingBoxAscent);
 
       const actualFontColor = theme.headerFontColor ?? theme.fontColor;
 
@@ -607,7 +608,8 @@ export class CanvasTable {
         const columnPos = this.calculateColumnScreenX(columnIndex);
 
         const x = columnPos + theme.cellPadding;
-        const y = theme.rowHeight / 2 + halfFontBoundingBoxAscent;
+        const y = baselineY;
+
         const maxWidth = columnWidth - theme.cellPadding * 2;
         const text = columnDef.title;
 
@@ -629,8 +631,9 @@ export class CanvasTable {
       const actualFontStyle = theme.bodyFontStyle ?? theme.fontStyle;
       const font = createFontSpecifier(theme.fontFamily, theme.fontSize, actualFontStyle);
 
-      const { fontBoundingBoxAscent } = this.gui.getFontMetrics(font);
-      const halfFontBoundingBoxAscent = Math.floor(fontBoundingBoxAscent / 2);
+      const { fontBoundingBoxAscent, fontBoundingBoxDescent } = this.gui.getFontMetrics(font);
+      const fontHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
+      const baselineY = Math.floor((theme.rowHeight - fontHeight) / 2 + fontBoundingBoxAscent);
 
       const actualFontColor = theme.bodyFontColor ?? theme.fontColor;
 
@@ -647,8 +650,7 @@ export class CanvasTable {
           const data_row = this.props.dataRows[row_index];
 
           const rowPos = this.calculateRowScreenY(row_index);
-
-          const y = rowPos + theme.rowHeight / 2 + halfFontBoundingBoxAscent;
+          const y = rowPos + baselineY;
 
           const value = this.props.selectProp(data_row, columnDef);
           const text = isNumber(value) ? value.toString() : (value as string);
