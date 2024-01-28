@@ -112,7 +112,9 @@ export class GuiContext {
   }
 
   setHotWidget(id: string | null) {
-    this.hotWidget = id;
+    if (this.isNoWidgetActive()) {
+      this.hotWidget = id;
+    }
   }
 
   isWidgetActive(id: string | null) {

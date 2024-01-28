@@ -647,12 +647,12 @@ export class CanvasTable {
         const maxWidth = columnWidth - theme.cellPadding * 2;
 
         for (const row_index of this.tableRowRange()) {
-          const data_row = this.props.dataRows[row_index];
+          const dataRow = this.props.dataRows[row_index];
 
           const rowPos = this.calculateRowScreenY(row_index);
           const y = rowPos + baselineY;
 
-          const value = this.props.selectProp(data_row, columnDef);
+          const value = this.props.selectProp(dataRow, columnDef);
           const text = isNumber(value) ? value.toString() : (value as string);
 
           this.renderer.pushDrawCommand({
