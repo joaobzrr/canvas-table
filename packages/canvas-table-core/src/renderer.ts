@@ -1,5 +1,5 @@
 import Graphemer from "graphemer";
-import { GlyphAtlas } from "./GlyphAtlas";
+import { GlyphAtlas, BIN_PADDING } from "./GlyphAtlas";
 import { getContext, isWhitespace, modf } from "./utils";
 
 export type RendererParams = {
@@ -183,7 +183,7 @@ export class Renderer {
       stringIndex = next_string_index;
 
       const subpixelOffset = modf(totalContentWidth);
-      const { sx, sy, sw, sh, hshift, vshift, advance } = this.glyphAtlas.cacheGlyph(
+      const { sx, sy, sw, sh, actualBoundingBoxAscent, advance } = this.glyphAtlas.cacheGlyph(
         grapheme,
         font,
         color,
@@ -197,8 +197,8 @@ export class Renderer {
 
       const gotWhitespace = isWhitespace(grapheme);
       if (!gotWhitespace) {
-        const dx = Math.floor(x + totalContentWidth - hshift);
-        const dy = y - vshift;
+        const dx = x - BIN_PADDING + totalContentWidth - subpixelOffset;
+        const dy = y - BIN_PADDING - Math.floor(actualBoundingBoxAscent);
         ctx.drawImage(this.glyphAtlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
       }
 
@@ -213,7 +213,7 @@ export class Renderer {
 
       for (let i = 0; i < 3; i++) {
         const subpixelOffset = modf(totalContentWidth);
-        const { sx, sy, sw, sh, hshift, vshift, advance } = this.glyphAtlas.cacheGlyph(
+        const { sx, sy, sw, sh, actualBoundingBoxAscent, advance } = this.glyphAtlas.cacheGlyph(
           ".",
           font,
           color,
@@ -224,8 +224,8 @@ export class Renderer {
           break;
         }
 
-        const dx = Math.floor(x + totalContentWidth - hshift);
-        const dy = y - vshift;
+        const dx = Math.floor(x - BIN_PADDING + totalContentWidth);
+        const dy = Math.floor(y - BIN_PADDING - actualBoundingBoxAscent);
         ctx.drawImage(this.glyphAtlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
 
         totalContentWidth += advance;
@@ -318,6 +318,5 @@ export class Renderer {
     }
 
     ctx.drawImage(this.vlineCanvas, 0, 0, 1, length, x, y, 1, length);
-
   }
 }

@@ -19,18 +19,23 @@ export type GlyphMetrics = {
   sy: number;
   sw: number;
   sh: number;
-  hshift: number;
-  vshift: number;
+  actualBoundingBoxLeft: number;
+  actualBoundingBoxRight: number;
+  actualBoundingBoxAscent: number;
+  actualBoundingBoxDescent: number;
   advance: number;
 };
 
 const DEFAULT_GLYPH_ATLAS_WIDTH = 1024;
 const DEFAULT_GLYPH_ATLAS_HEIGHT = 1024;
-const GLYPH_OUTER_PADDING = 1;
-const GLYPH_INNER_PADDING = 1;
-const SEPARATOR = "\u001F";
+
+export const BIN_MARGIN = 1;
+export const BIN_PADDING = 1;
+
 const SUBPIXEL_ALIGNMENT_STEPS = 4;
 const SUBPIXEL_ALIGNMENT_FRAC = 1 / SUBPIXEL_ALIGNMENT_STEPS;
+
+const SEPARATOR = "\u001F";
 
 export class GlyphAtlas {
   canvas: HTMLCanvasElement;
@@ -48,7 +53,15 @@ export class GlyphAtlas {
   }
 
   static createNode(sx: number, sy: number, width: number, height: number) {
-    const metrics = { sx, sy } as GlyphMetrics;
+    const metrics = {
+      sx,
+      sy,
+      actualBoundingBoxLeft: 0,
+      actualBoundingBoxRight: 0,
+      actualBoundingBoxAscent: 0,
+      actualBoundingBoxDescent: 0
+    } as GlyphMetrics;
+
     return {
       left: null,
       right: null,
@@ -72,19 +85,20 @@ export class GlyphAtlas {
     this.ctx.font = font;
     this.ctx.fillStyle = color;
 
-    const {
-      actualBoundingBoxLeft,
-      actualBoundingBoxRight,
-      actualBoundingBoxAscent,
-      actualBoundingBoxDescent,
-      width: advance
-    } = this.ctx.measureText(str);
+    const textMetrics = this.ctx.measureText(str);
+    // @Note Given that the textAlign property is set to the default value of "start",
+    // should we would expect the value of actualBoundingBoxLeft to be zero?
+    const actualBoundingBoxLeft    = Math.abs(textMetrics.actualBoundingBoxLeft);
+    const actualBoundingBoxRight   = Math.abs(textMetrics.actualBoundingBoxRight);
+    const actualBoundingBoxAscent  = Math.abs(textMetrics.actualBoundingBoxAscent);
+    const actualBoundingBoxDescent = Math.abs(textMetrics.actualBoundingBoxDescent);
+    const advance = textMetrics.width;
 
-    const glyphWidth = actualBoundingBoxLeft + actualBoundingBoxRight;
+    const glyphWidth  = actualBoundingBoxLeft   + actualBoundingBoxRight;
     const glyphHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
 
-    const binWidth = Math.ceil(glyphWidth + GLYPH_INNER_PADDING * 2 + GLYPH_OUTER_PADDING);
-    const binHeight = Math.ceil(glyphHeight + GLYPH_INNER_PADDING * 2 + GLYPH_OUTER_PADDING);
+    const binWidth  = Math.ceil(glyphWidth  + BIN_PADDING * 2 + BIN_MARGIN);
+    const binHeight = Math.ceil(glyphHeight + BIN_PADDING * 2 + BIN_MARGIN);
 
     let node = this.packGlyph(binWidth, binHeight, this.root);
     if (!node) {
@@ -96,14 +110,17 @@ export class GlyphAtlas {
       }
     }
 
-    const drawX = node.metrics.sx + actualBoundingBoxLeft + GLYPH_INNER_PADDING + quantizedSubpixelOffset;
-    const drawY = node.metrics.sy + actualBoundingBoxAscent + GLYPH_INNER_PADDING;
+    const drawX = node.metrics.sx + BIN_PADDING + quantizedSubpixelOffset;
+    const drawY = node.metrics.sy + BIN_PADDING + Math.floor(actualBoundingBoxAscent);
     this.ctx.fillText(str, drawX, drawY);
 
-    node.metrics.sw = binWidth - GLYPH_OUTER_PADDING;
-    node.metrics.sh = binHeight - GLYPH_OUTER_PADDING;
-    node.metrics.hshift = actualBoundingBoxLeft + GLYPH_INNER_PADDING;
-    node.metrics.vshift = actualBoundingBoxAscent + GLYPH_INNER_PADDING;
+    node.metrics.sw = binWidth  - BIN_MARGIN;
+    node.metrics.sh = binHeight - BIN_MARGIN;
+
+    node.metrics.actualBoundingBoxLeft = actualBoundingBoxLeft;
+    node.metrics.actualBoundingBoxRight = actualBoundingBoxRight;
+    node.metrics.actualBoundingBoxAscent = actualBoundingBoxAscent;
+    node.metrics.actualBoundingBoxDescent = actualBoundingBoxDescent;
     node.metrics.advance = advance;
 
     this.cache.set(key, node);
@@ -158,8 +175,8 @@ export class GlyphAtlas {
 
   createRootNode() {
     return GlyphAtlas.createNode(
-      GLYPH_OUTER_PADDING,
-      GLYPH_OUTER_PADDING,
+      BIN_MARGIN,
+      BIN_MARGIN,
       this.canvas.width,
       this.canvas.height
     );
