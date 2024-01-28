@@ -29,11 +29,8 @@ export type GlyphMetrics = {
 const DEFAULT_GLYPH_ATLAS_WIDTH = 1024;
 const DEFAULT_GLYPH_ATLAS_HEIGHT = 1024;
 
-export const BIN_MARGIN = 1;
-export const BIN_PADDING = 1;
-
-const SUBPIXEL_ALIGNMENT_STEPS = 4;
-const SUBPIXEL_ALIGNMENT_FRAC = 1 / SUBPIXEL_ALIGNMENT_STEPS;
+export const GLYPH_ATLAS_BIN_MARGIN = 1;
+export const GLYPH_ATLAS_BIN_PADDING = 1;
 
 const SEPARATOR = "\u001F";
 
@@ -73,10 +70,7 @@ export class GlyphAtlas {
   }
 
   cacheGlyph(str: string, font: string, color = "black", subpixelOffset = 0) {
-    const subpixelAlignment = Math.floor(SUBPIXEL_ALIGNMENT_STEPS * subpixelOffset);
-    const quantizedSubpixelOffset = SUBPIXEL_ALIGNMENT_FRAC * subpixelAlignment;
-
-    const key = [font, color, str, subpixelAlignment].join(SEPARATOR);
+    const key = [font, color, str, subpixelOffset].join(SEPARATOR);
     const cached = this.cache.get(key);
     if (cached) {
       return cached.metrics;
@@ -97,8 +91,8 @@ export class GlyphAtlas {
     const glyphWidth  = actualBoundingBoxLeft   + actualBoundingBoxRight;
     const glyphHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
 
-    const binWidth  = Math.ceil(glyphWidth  + BIN_PADDING * 2 + BIN_MARGIN);
-    const binHeight = Math.ceil(glyphHeight + BIN_PADDING * 2 + BIN_MARGIN);
+    const binWidth  = Math.ceil(glyphWidth  + GLYPH_ATLAS_BIN_PADDING * 2 + GLYPH_ATLAS_BIN_MARGIN);
+    const binHeight = Math.ceil(glyphHeight + GLYPH_ATLAS_BIN_PADDING * 2 + GLYPH_ATLAS_BIN_MARGIN);
 
     let node = this.packGlyph(binWidth, binHeight, this.root);
     if (!node) {
@@ -110,12 +104,12 @@ export class GlyphAtlas {
       }
     }
 
-    const drawX = node.metrics.sx + BIN_PADDING + quantizedSubpixelOffset;
-    const drawY = node.metrics.sy + BIN_PADDING + Math.floor(actualBoundingBoxAscent);
+    const drawX = node.metrics.sx + GLYPH_ATLAS_BIN_PADDING + subpixelOffset;
+    const drawY = node.metrics.sy + GLYPH_ATLAS_BIN_PADDING + Math.floor(actualBoundingBoxAscent);
     this.ctx.fillText(str, drawX, drawY);
 
-    node.metrics.sw = binWidth  - BIN_MARGIN;
-    node.metrics.sh = binHeight - BIN_MARGIN;
+    node.metrics.sw = binWidth  - GLYPH_ATLAS_BIN_MARGIN;
+    node.metrics.sh = binHeight - GLYPH_ATLAS_BIN_MARGIN;
 
     node.metrics.actualBoundingBoxLeft = actualBoundingBoxLeft;
     node.metrics.actualBoundingBoxRight = actualBoundingBoxRight;
@@ -175,8 +169,8 @@ export class GlyphAtlas {
 
   createRootNode() {
     return GlyphAtlas.createNode(
-      BIN_MARGIN,
-      BIN_MARGIN,
+      GLYPH_ATLAS_BIN_MARGIN,
+      GLYPH_ATLAS_BIN_MARGIN,
       this.canvas.width,
       this.canvas.height
     );

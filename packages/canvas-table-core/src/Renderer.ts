@@ -1,6 +1,9 @@
 import Graphemer from "graphemer";
-import { GlyphAtlas, BIN_PADDING } from "./GlyphAtlas";
+import { GlyphAtlas, GLYPH_ATLAS_BIN_PADDING, GlyphMetrics } from "./GlyphAtlas";
 import { getContext, isWhitespace, modf } from "./utils";
+
+const SUBPIXEL_ALIGNMENT_STEPS = 4;
+const SUBPIXEL_ALIGNMENT_FRAC = 1 / SUBPIXEL_ALIGNMENT_STEPS;
 
 export type RendererParams = {
   canvas: HTMLCanvasElement;
@@ -182,27 +185,22 @@ export class Renderer {
       const grapheme = str.slice(stringIndex, next_string_index);
       stringIndex = next_string_index;
 
-      const subpixelOffset = modf(totalContentWidth);
-      const { sx, sy, sw, sh, actualBoundingBoxAscent, advance } = this.glyphAtlas.cacheGlyph(
-        grapheme,
-        font,
-        color,
-        subpixelOffset
-      );
+      const glyphX = x + totalContentWidth;
+      const glyphY = y;
 
-      if (totalContentWidth + advance > availableContentWidth) {
+      const quantizedSubpixelOffset = this.calculateQuantizedGlyphSubpixelOffset(glyphX);
+      const metrics = this.glyphAtlas.cacheGlyph(grapheme, font, color, quantizedSubpixelOffset);
+      if (totalContentWidth + metrics.advance > availableContentWidth) {
         doEllipsis = true;
         break;
       }
 
       const gotWhitespace = isWhitespace(grapheme);
       if (!gotWhitespace) {
-        const dx = x - BIN_PADDING + totalContentWidth - subpixelOffset;
-        const dy = y - BIN_PADDING - Math.floor(actualBoundingBoxAscent);
-        ctx.drawImage(this.glyphAtlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
+        this.blitGlyph(ctx, metrics, glyphX, glyphY, quantizedSubpixelOffset);
       }
 
-      totalContentWidth += advance;
+      totalContentWidth += metrics.advance;
       if (!gotWhitespace) {
         totalContentWidthUpToLastCharBeforeWhitespace = totalContentWidth;
       }
@@ -212,25 +210,37 @@ export class Renderer {
       let totalContentWidth = totalContentWidthUpToLastCharBeforeWhitespace;
 
       for (let i = 0; i < 3; i++) {
-        const subpixelOffset = modf(totalContentWidth);
-        const { sx, sy, sw, sh, actualBoundingBoxAscent, advance } = this.glyphAtlas.cacheGlyph(
-          ".",
-          font,
-          color,
-          subpixelOffset);
+        const glyphX = x + totalContentWidth;
+        const glyphY = y;
 
-
-        if (totalContentWidth + advance > maxWidth) {
+        const quantizedSubpixelOffset = this.calculateQuantizedGlyphSubpixelOffset(glyphX);
+        const metrics = this.glyphAtlas.cacheGlyph(".", font, color, quantizedSubpixelOffset);
+        if (totalContentWidth + metrics.advance > maxWidth) {
           break;
         }
 
-        const dx = Math.floor(x - BIN_PADDING + totalContentWidth);
-        const dy = Math.floor(y - BIN_PADDING - actualBoundingBoxAscent);
-        ctx.drawImage(this.glyphAtlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
-
-        totalContentWidth += advance;
+        this.blitGlyph(ctx, metrics, glyphX, glyphY, quantizedSubpixelOffset);
+        totalContentWidth += metrics.advance;
       }
     }
+  }
+
+  blitGlyph(
+    ctx: CanvasRenderingContext2D,
+    metrics: GlyphMetrics,
+    x: number,
+    y: number,
+    quantizedSubpixelOffset: number
+  ) {
+    const { sx, sy, sw, sh, actualBoundingBoxAscent } = metrics;
+
+    const dx = x - GLYPH_ATLAS_BIN_PADDING - quantizedSubpixelOffset;
+    const dy = y - GLYPH_ATLAS_BIN_PADDING - Math.floor(actualBoundingBoxAscent);
+    ctx.drawImage(this.glyphAtlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
+  }
+
+  calculateQuantizedGlyphSubpixelOffset(x: number) {
+    return SUBPIXEL_ALIGNMENT_FRAC * Math.floor(SUBPIXEL_ALIGNMENT_STEPS * modf(x));
   }
 
   fillRect(

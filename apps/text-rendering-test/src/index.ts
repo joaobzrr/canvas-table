@@ -5,11 +5,11 @@ const CANVAS_HEIGHT = 240;
 const ATLAS_WIDTH = 320;
 const ATLAS_HEIGHT = 240;
 
-const FONT_FAMILY = "Calibri";
-const FONT_SIZE = 20;
+const FONT_FAMILY = "Arial";
+const FONT_SIZE = 14;
 const FONT = `${FONT_SIZE}px ${FONT_FAMILY}`;
-const TEXT = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const TEXT_X = 0;
+const TEXT = "Drums";
+const TEXT_X = 100;
 
 const rootEl = document.getElementById("root");
 if (!rootEl) {
