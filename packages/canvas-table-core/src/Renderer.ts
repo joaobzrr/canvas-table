@@ -232,10 +232,10 @@ export class Renderer {
     y: number,
     quantizedSubpixelOffset: number
   ) {
-    const { sx, sy, sw, sh, actualBoundingBoxAscent } = metrics;
+    const { sx, sy, sw, sh, ascent } = metrics;
 
     const dx = x - GLYPH_ATLAS_BIN_PADDING - quantizedSubpixelOffset;
-    const dy = y - GLYPH_ATLAS_BIN_PADDING - Math.floor(actualBoundingBoxAscent);
+    const dy = y - GLYPH_ATLAS_BIN_PADDING - Math.floor(ascent);
     ctx.drawImage(this.glyphAtlas.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
   }
 

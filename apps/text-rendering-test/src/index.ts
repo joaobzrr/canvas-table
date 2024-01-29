@@ -6,9 +6,9 @@ const ATLAS_WIDTH = 320;
 const ATLAS_HEIGHT = 240;
 
 const FONT_FAMILY = "Arial";
-const FONT_SIZE = 14;
+const FONT_SIZE = 20;
 const FONT = `${FONT_SIZE}px ${FONT_FAMILY}`;
-const TEXT = "Drums";
+const TEXT = "Name";
 const TEXT_X = 100;
 
 const rootEl = document.getElementById("root");
@@ -109,4 +109,4 @@ renderer.pushDrawCommand({
 renderer.render();
 
 ctx.fillStyle = "#555555";
-ctx.fillText(TEXT, TEXT_X, baselineY - 40);
+ctx.fillText(TEXT, TEXT_X, baselineY + fontHeight);

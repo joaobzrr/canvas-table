@@ -19,10 +19,8 @@ export type GlyphMetrics = {
   sy: number;
   sw: number;
   sh: number;
-  actualBoundingBoxLeft: number;
-  actualBoundingBoxRight: number;
-  actualBoundingBoxAscent: number;
-  actualBoundingBoxDescent: number;
+  ascent: number;
+  descent: number;
   advance: number;
 };
 
@@ -53,10 +51,9 @@ export class GlyphAtlas {
     const metrics = {
       sx,
       sy,
-      actualBoundingBoxLeft: 0,
-      actualBoundingBoxRight: 0,
-      actualBoundingBoxAscent: 0,
-      actualBoundingBoxDescent: 0
+      ascent: 0,
+      descent: 0,
+      advance: 0,
     } as GlyphMetrics;
 
     return {
@@ -80,17 +77,30 @@ export class GlyphAtlas {
     this.ctx.fillStyle = color;
 
     const textMetrics = this.ctx.measureText(str);
-    // @Note Given that the textAlign property is set to the default value of "start",
-    // should we would expect the value of actualBoundingBoxLeft to be zero?
+    // @Note Given that the textAlign property is set to the default value
+    // of "start", shouldn't the value of actualBoundingBoxLeft be zero?
     const actualBoundingBoxLeft    = Math.abs(textMetrics.actualBoundingBoxLeft);
     const actualBoundingBoxRight   = Math.abs(textMetrics.actualBoundingBoxRight);
     const actualBoundingBoxAscent  = Math.abs(textMetrics.actualBoundingBoxAscent);
     const actualBoundingBoxDescent = Math.abs(textMetrics.actualBoundingBoxDescent);
+    const fontBoundingBoxAscent    = Math.abs(textMetrics.fontBoundingBoxAscent);
+    const fontBoundingBoxDescent   = Math.abs(textMetrics.fontBoundingBoxDescent);
     const advance = textMetrics.width;
 
-    const glyphWidth  = actualBoundingBoxLeft   + actualBoundingBoxRight;
-    const glyphHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
+    const glyphWidth = (actualBoundingBoxLeft + actualBoundingBoxRight) || advance;
 
+    let glyphHeight: number = (actualBoundingBoxAscent + actualBoundingBoxDescent);
+    let ascent: number;
+    let descent: number;
+    if (glyphHeight > 0) {
+      ascent  = actualBoundingBoxAscent;
+      descent = actualBoundingBoxDescent;
+    } else {
+      glyphHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
+      ascent  = fontBoundingBoxAscent;
+      descent = fontBoundingBoxDescent;
+    }
+    
     const binWidth  = Math.ceil(glyphWidth  + GLYPH_ATLAS_BIN_PADDING * 2 + GLYPH_ATLAS_BIN_MARGIN);
     const binHeight = Math.ceil(glyphHeight + GLYPH_ATLAS_BIN_PADDING * 2 + GLYPH_ATLAS_BIN_MARGIN);
 
@@ -111,10 +121,8 @@ export class GlyphAtlas {
     node.metrics.sw = binWidth  - GLYPH_ATLAS_BIN_MARGIN;
     node.metrics.sh = binHeight - GLYPH_ATLAS_BIN_MARGIN;
 
-    node.metrics.actualBoundingBoxLeft = actualBoundingBoxLeft;
-    node.metrics.actualBoundingBoxRight = actualBoundingBoxRight;
-    node.metrics.actualBoundingBoxAscent = actualBoundingBoxAscent;
-    node.metrics.actualBoundingBoxDescent = actualBoundingBoxDescent;
+    node.metrics.ascent  = ascent;
+    node.metrics.descent = descent;
     node.metrics.advance = advance;
 
     this.cache.set(key, node);
