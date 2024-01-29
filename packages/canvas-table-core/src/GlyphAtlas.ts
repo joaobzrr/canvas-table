@@ -89,13 +89,10 @@ export class GlyphAtlas {
 
     const glyphWidth = (actualBoundingBoxLeft + actualBoundingBoxRight) || advance;
 
-    let glyphHeight: number = (actualBoundingBoxAscent + actualBoundingBoxDescent);
-    let ascent: number;
-    let descent: number;
-    if (glyphHeight > 0) {
-      ascent  = actualBoundingBoxAscent;
-      descent = actualBoundingBoxDescent;
-    } else {
+    let glyphHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
+    let ascent  = actualBoundingBoxAscent;
+    let descent = actualBoundingBoxDescent;
+    if (glyphHeight === 0) {
       glyphHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
       ascent  = fontBoundingBoxAscent;
       descent = fontBoundingBoxDescent;
@@ -115,7 +112,7 @@ export class GlyphAtlas {
     }
 
     const drawX = node.metrics.sx + GLYPH_ATLAS_BIN_PADDING + subpixelOffset;
-    const drawY = node.metrics.sy + GLYPH_ATLAS_BIN_PADDING + Math.floor(actualBoundingBoxAscent);
+    const drawY = node.metrics.sy + GLYPH_ATLAS_BIN_PADDING + Math.floor(ascent);
     this.ctx.fillText(str, drawX, drawY);
 
     node.metrics.sw = binWidth  - GLYPH_ATLAS_BIN_MARGIN;
