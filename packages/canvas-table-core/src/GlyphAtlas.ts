@@ -53,7 +53,7 @@ export class GlyphAtlas {
       sy,
       ascent: 0,
       descent: 0,
-      advance: 0,
+      advance: 0
     } as GlyphMetrics;
 
     return {
