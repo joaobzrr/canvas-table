@@ -6,10 +6,10 @@ const ATLAS_WIDTH = 320;
 const ATLAS_HEIGHT = 240;
 
 const FONT_FAMILY = "Arial";
-const FONT_SIZE = 20;
+const FONT_SIZE = 40;
 const FONT = `${FONT_SIZE}px ${FONT_FAMILY}`;
-const TEXT = "Name";
-const TEXT_X = 100;
+const TEXT = "😯😨😗😲😇💩😂🤬🤡😎🥳😝👨‍👧🔴🤢👽";
+const TEXT_X = 0;
 
 const rootEl = document.getElementById("root");
 if (!rootEl) {

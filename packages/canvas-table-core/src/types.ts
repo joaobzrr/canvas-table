@@ -17,7 +17,7 @@ export type CanvasTableProps = {
 
 export type SelectRowCallback = (id: DataRowId, dataRow: DataRow) => void;
 
-export type ColumnResizeCallback = (key: string, width: number) => void;
+export type ColumnResizeCallback = (key: string, index: number, width: number) => void;
 
 export type IdSelector = (dataRow: DataRow) => DataRowId;
 

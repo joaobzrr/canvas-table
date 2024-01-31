@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { Theme } from "@bzrr/canvas-table-core";
+import { Theme } from "@bzrr/canvas-table-react";
 import styles from "./ThemeForm.module.css";
 
 type PropsType = {

@@ -77,8 +77,6 @@ export class GlyphAtlas {
     this.ctx.fillStyle = color;
 
     const textMetrics = this.ctx.measureText(str);
-    // @Note Given that the textAlign property is set to the default value
-    // of "start", shouldn't the value of actualBoundingBoxLeft be zero?
     const actualBoundingBoxLeft    = Math.abs(textMetrics.actualBoundingBoxLeft);
     const actualBoundingBoxRight   = Math.abs(textMetrics.actualBoundingBoxRight);
     const actualBoundingBoxAscent  = Math.abs(textMetrics.actualBoundingBoxAscent);
@@ -87,12 +85,21 @@ export class GlyphAtlas {
     const fontBoundingBoxDescent   = Math.abs(textMetrics.fontBoundingBoxDescent);
     const advance = textMetrics.width;
 
-    const glyphWidth = (actualBoundingBoxLeft + actualBoundingBoxRight) || advance;
+    let glyphWidth = actualBoundingBoxLeft + actualBoundingBoxRight;
+    if (glyphWidth === 0) {
+      // @Note: Fallback to fontBoundingBox to calculate glyph dimensions if
+      // actualBoundingBox is zeroed. As of January 31 2024, this has only
+      // been found to occur on versions of Firefox prior to v.123.
+      glyphWidth = advance;
+    }
 
     let glyphHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
     let ascent  = actualBoundingBoxAscent;
     let descent = actualBoundingBoxDescent;
     if (glyphHeight === 0) {
+      // @Note: Fallback to fontBoundingBox to calculate glyph dimensions if
+      // actualBoundingBox is zeroed. As of January 31 2024, this has only
+      // been found to occur on versions of Firefox prior to v.123.
       glyphHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
       ascent  = fontBoundingBoxAscent;
       descent = fontBoundingBoxDescent;
@@ -117,7 +124,6 @@ export class GlyphAtlas {
 
     node.metrics.sw = binWidth  - GLYPH_ATLAS_BIN_MARGIN;
     node.metrics.sh = binHeight - GLYPH_ATLAS_BIN_MARGIN;
-
     node.metrics.ascent  = ascent;
     node.metrics.descent = descent;
     node.metrics.advance = advance;

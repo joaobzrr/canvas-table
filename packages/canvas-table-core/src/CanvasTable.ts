@@ -94,7 +94,7 @@ export class CanvasTable {
   mouseRow = -1;
 
   columnWidths: number[];
-  canonicalColumnPositions: number[] = [];
+  columnPositions: number[] = [];
 
   selectedRowId: DataRowId | null = null;
 
@@ -288,7 +288,6 @@ export class CanvasTable {
       } else if (this.gui.isWidgetHot(id)) {
         if (this.gui.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
           this.gui.setActiveWidget(id);
-
           this.gui.dragAnchorX = this.hsbThumbX;
         }
       }
@@ -782,7 +781,7 @@ export class CanvasTable {
 
   refreshViewport() {
     let columnPos = 0;
-    this.canonicalColumnPositions = [];
+    this.columnPositions = [];
 
     for (this.columnStart = 0; this.columnStart < this.columnWidths.length; this.columnStart++) {
       const column_width = this.columnWidths[this.columnStart];
@@ -790,7 +789,7 @@ export class CanvasTable {
       if (nextColumnPos > this.scrollX) {
         break;
       }
-      this.canonicalColumnPositions.push(columnPos);
+      this.columnPositions.push(columnPos);
       columnPos = nextColumnPos;
     }
 
@@ -799,7 +798,7 @@ export class CanvasTable {
         break;
       }
 
-      this.canonicalColumnPositions.push(columnPos);
+      this.columnPositions.push(columnPos);
       columnPos += this.columnWidths[this.columnEnd];
     }
 
@@ -821,7 +820,7 @@ export class CanvasTable {
     this.vsbThumbY = this.calculateVerticalScrollbarThumbY(this.scrollY);
 
     const columnDef = this.props.columnDefs[columnIndex];
-    this.props.onResizeColumn?.(columnDef.key, columnWidth);
+    this.props.onResizeColumn?.(columnDef.key, columnIndex, columnWidth);
   }
 
   *tableColumnRange(start = 0) {
@@ -848,7 +847,7 @@ export class CanvasTable {
   }
 
   calculateColumnScrollX(columnIndex: number) {
-    return this.canonicalColumnPositions[columnIndex];
+    return this.columnPositions[columnIndex];
   }
 
   calculateRowScrollY(rowIndex: number) {
@@ -856,23 +855,23 @@ export class CanvasTable {
   }
 
   calculateColumnScreenX(columnIndex: number) {
-    const canonicalPos = this.calculateColumnScrollX(columnIndex);
-    const screenColumnX = this.scrollToScreenX(canonicalPos);
-    return screenColumnX;
+    const columnScrollX = this.calculateColumnScrollX(columnIndex);
+    const columnScreenX = this.scrollToScreenX(columnScrollX);
+    return columnScreenX;
   }
 
   calculateRowScreenY(rowIndex: number) {
-    const canonicalPos = this.calculateRowScrollY(rowIndex);
-    const screenRowY = this.scrollToScreenY(canonicalPos) + this.props.theme.rowHeight;
-    return screenRowY;
+    const rowScrollY = this.calculateRowScrollY(rowIndex);
+    const rowScreenY = this.scrollToScreenY(rowScrollY) + this.props.theme.rowHeight;
+    return rowScreenY;
   }
 
-  scrollToScreenX(canonicalX: number) {
-    return canonicalX - this.scrollX;
+  scrollToScreenX(scrollX: number) {
+    return scrollX - this.scrollX;
   }
 
-  scrollToScreenY(canonicalY: number) {
-    return canonicalY - this.scrollY;
+  scrollToScreenY(scrollY: number) {
+    return scrollY - this.scrollY;
   }
 
   screenToScrollX(screenX: number) {
