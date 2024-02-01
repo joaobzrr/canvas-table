@@ -256,7 +256,7 @@ export class CanvasTable {
           height: resizerHeight,
           fillColor: theme.columnResizerColor,
           clipRegion: this.headerAreaClipRegion,
-          sortOrder: 3
+          sortOrder: 5
         });
         break;
       }
@@ -272,7 +272,7 @@ export class CanvasTable {
           width: this.hsbWidth,
           height: this.hsbHeight,
           fillColor: theme.scrollbarTrackColor,
-          sortOrder: 2
+          sortOrder: 3
         });
       }
 
@@ -316,7 +316,7 @@ export class CanvasTable {
           width: this.hsbThumbWidth,
           height: this.hsbThumbHeight,
           fillColor: fillColor,
-          sortOrder: 3
+          sortOrder: 4
         });
       }
     }
@@ -331,7 +331,7 @@ export class CanvasTable {
           width: this.vsbWidth,
           height: this.vsbHeight,
           fillColor: theme.scrollbarTrackColor,
-          sortOrder: 2
+          sortOrder: 3
         });
       }
 
@@ -376,7 +376,7 @@ export class CanvasTable {
           width: this.vsbThumbWidth,
           height: this.vsbThumbHeight,
           fillColor: fillColor,
-          sortOrder: 3
+          sortOrder: 4
         });
       }
     }
@@ -400,7 +400,8 @@ export class CanvasTable {
           width: this.bodyVisibleWidth,
           height: theme.rowHeight,
           fillColor: theme.hoveredRowColor,
-          clipRegion: this.bodyAreaClipRegion
+          clipRegion: this.bodyAreaClipRegion,
+          sortOrder: 1
         });
       }
     }
@@ -417,7 +418,8 @@ export class CanvasTable {
             width: this.bodyVisibleWidth,
             height: theme.rowHeight,
             fillColor: theme.selectedRowColor,
-            clipRegion: this.bodyAreaClipRegion
+            clipRegion: this.bodyAreaClipRegion,
+            sortOrder: 1
           });
           break;
         }
@@ -465,7 +467,7 @@ export class CanvasTable {
       y: 0,
       length: this.tableWidth,
       color: theme.tableBorderColor,
-      sortOrder: 2
+      sortOrder: 4
     });
 
     // Draw bottom outer table border
@@ -476,7 +478,7 @@ export class CanvasTable {
       y: this.tableHeight - BORDER_WIDTH,
       length: this.tableWidth,
       color: theme.tableBorderColor,
-      sortOrder: 2
+      sortOrder: 4
     });
 
     // Draw left outer table border
@@ -487,7 +489,7 @@ export class CanvasTable {
       y: 0,
       length: this.tableHeight,
       color: theme.tableBorderColor,
-      sortOrder: 2
+      sortOrder: 4
     });
 
     // Draw right outer table border
@@ -498,7 +500,7 @@ export class CanvasTable {
       y: 0,
       length: this.tableHeight,
       color: theme.tableBorderColor,
-      sortOrder: 2
+      sortOrder: 4
     });
 
     const gridWidth = this.bodyVisibleWidth;
@@ -512,7 +514,7 @@ export class CanvasTable {
       y: theme.rowHeight,
       length: this.tableWidth,
       color: theme.tableBorderColor,
-      sortOrder: 2
+      sortOrder: 4
     });
 
     // If horizontal scrollbar is visible, draw its border, otherwise,
@@ -525,7 +527,7 @@ export class CanvasTable {
         y: this.hsbY - BORDER_WIDTH,
         length: this.tableWidth,
         color: theme.tableBorderColor,
-        sortOrder: 2
+        sortOrder: 4
       });
     } else {
       this.renderer.pushDrawCommand({
@@ -535,7 +537,7 @@ export class CanvasTable {
         y: 0,
         length: gridHeight,
         color: theme.tableBorderColor,
-        sortOrder: 2
+        sortOrder: 4
       });
     }
 
@@ -549,7 +551,7 @@ export class CanvasTable {
         y: 0,
         length: this.tableHeight,
         color: theme.tableBorderColor,
-        sortOrder: 2
+        sortOrder: 4
       });
     } else {
       this.renderer.pushDrawCommand({
@@ -559,7 +561,7 @@ export class CanvasTable {
         y: gridHeight,
         length: gridWidth,
         color: theme.tableBorderColor,
-        sortOrder: 2
+        sortOrder: 4
       });
     }
 
@@ -572,7 +574,7 @@ export class CanvasTable {
         y: this.calculateRowScreenY(rowIndex),
         length: gridWidth,
         color: theme.tableBorderColor,
-        sortOrder: 2
+        sortOrder: 4
       });
     }
 
@@ -585,7 +587,7 @@ export class CanvasTable {
         y: 0,
         length: gridHeight,
         color: theme.tableBorderColor,
-        sortOrder: 2
+        sortOrder: 4
       });
     }
 
@@ -620,7 +622,8 @@ export class CanvasTable {
           text,
           font,
           maxWidth,
-          clipRegion: this.headerAreaClipRegion
+          clipRegion: this.headerAreaClipRegion,
+          sortOrder: 2
         });
       }
     }
@@ -662,7 +665,8 @@ export class CanvasTable {
             text,
             font,
             maxWidth: maxWidth,
-            clipRegion: this.bodyAreaClipRegion
+            clipRegion: this.bodyAreaClipRegion,
+            sortOrder: 2
           });
         }
       }
