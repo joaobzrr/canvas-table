@@ -240,7 +240,7 @@ export class Renderer {
   }
 
   calculateQuantizedGlyphSubpixelOffset(x: number) {
-    return SUBPIXEL_ALIGNMENT_FRAC * Math.floor(SUBPIXEL_ALIGNMENT_STEPS * modf(x));
+    return SUBPIXEL_ALIGNMENT_FRAC * Math.floor(SUBPIXEL_ALIGNMENT_STEPS * (x - Math.floor(x)));
   }
 
   fillRect(
