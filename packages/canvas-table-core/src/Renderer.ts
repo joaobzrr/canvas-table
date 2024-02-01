@@ -1,6 +1,6 @@
 import Graphemer from "graphemer";
 import { GlyphAtlas, GLYPH_ATLAS_BIN_PADDING, GlyphMetrics } from "./GlyphAtlas";
-import { getContext, isWhitespace, modf } from "./utils";
+import { getContext, isWhitespace } from "./utils";
 
 const SUBPIXEL_ALIGNMENT_STEPS = 4;
 const SUBPIXEL_ALIGNMENT_FRAC = 1 / SUBPIXEL_ALIGNMENT_STEPS;
