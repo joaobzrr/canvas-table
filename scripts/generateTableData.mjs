@@ -12,7 +12,7 @@ function randint(min, max) {
 }
 
 function choice(options) {
-  const index = randint(0, options.length)
+  const index = randint(0, options.length - 1);
   return options[index];
 }
 
