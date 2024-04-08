@@ -614,14 +614,17 @@ export class CanvasTable {
         const maxWidth = columnWidth - theme.cellPadding * 2;
         const text = columnDef.title;
 
+        const { chars, subpixelOffsets } = this.renderer.textRenderer.prepareText(
+          text, x, font, actualFontColor, maxWidth, true);
+
         this.renderer.pushDrawCommand({
           type: "text",
+          chars,
+          subpixelOffsets,
           x,
           y,
-          color: actualFontColor,
-          text,
           font,
-          maxWidth,
+          color: actualFontColor,
           clipRegion: this.headerAreaClipRegion,
           sortOrder: 2
         });
@@ -657,14 +660,17 @@ export class CanvasTable {
           const value = this.props.selectProp(dataRow, columnDef);
           const text = isNumber(value) ? value.toString() : (value as string);
 
+          const { chars, subpixelOffsets } = this.renderer.textRenderer.prepareText(
+            text, x, font, actualFontColor, maxWidth, true);
+
           this.renderer.pushDrawCommand({
             type: "text",
+            chars,
+            subpixelOffsets,
             x,
             y,
-            color: actualFontColor,
-            text,
             font,
-            maxWidth: maxWidth,
+            color: actualFontColor,
             clipRegion: this.bodyAreaClipRegion,
             sortOrder: 2
           });

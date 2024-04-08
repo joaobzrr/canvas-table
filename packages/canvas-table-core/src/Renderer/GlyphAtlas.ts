@@ -1,4 +1,4 @@
-import { getContext } from "./utils";
+import { getContext } from "../utils";
 
 export type GlyphAtlasParams = {
   width?: number;
