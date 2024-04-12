@@ -9,6 +9,8 @@ import { shallowMerge } from "./utils";
 import { Table } from "./types";
 import styles from "./App.module.css";
 
+const batchedColumnWidthChanges = new Map<string, number>();
+
 function App() {
   const [tables, setTables] = useState<Table[]>(allTables);
   const [selectedTableId, setSelectedTableId] = useState(tables[0].id);
@@ -35,9 +37,7 @@ function App() {
       return;
     }
 
-    const rowIndex = table.dataRows.findIndex(
-      ({ id }) => id === selectedRow.id
-    );
+    const rowIndex = table.dataRows.findIndex(({ id }) => id === selectedRow.id);
     if (rowIndex === -1) {
       throw new Error("This should not happen");
     }
@@ -59,14 +59,58 @@ function App() {
       newTable,
       ...tables.slice(tableIndex + 1)
     ]);
-  };
+  }
+
+  const onResizeColumn = (columnKey: string, _: number, columnWidth: number) => {
+    const key = selectedTableId + "," + columnKey;
+    batchedColumnWidthChanges.set(key, columnWidth);
+    updateTableColumnWidths();
+  }
+
+  const updateTableColumnWidths = debounce(() => {
+    let newTables = tables;
+
+    for (const [key, width] of batchedColumnWidthChanges) {
+      const [tableId, columnKey] = key.split(",");
+
+      const tableIndex = newTables.findIndex((table) => table.id === tableId);
+      if (tableIndex === -1) {
+        throw new Error("This should not happen");
+      }
+      const table = newTables[tableIndex];
+
+      const columnDefIndex = table.columnDefs.findIndex((columnDef) => columnDef.key === columnKey);
+      if (columnDefIndex === -1) {
+        throw new Error("This should not happen");
+      }
+      const columnDef = table.columnDefs[columnDefIndex];
+
+      const newColumnDef = { ...columnDef, width: width };
+      const newColumnDefs = [
+        ...table.columnDefs.slice(0, columnDefIndex),
+        newColumnDef,
+        ...table.columnDefs.slice(columnDefIndex + 1)
+      ];
+
+      const newTable = { ...table, columnDefs: newColumnDefs };
+      newTables = [
+        ...newTables.slice(0, tableIndex),
+        newTable,
+        ...newTables.slice(tableIndex + 1)
+      ];
+    }
+
+    batchedColumnWidthChanges.clear();
+
+    setTables(newTables);
+  }, 1000);
 
   const updateTheme = debounce((partial: Partial<Theme>) => {
     setThemeSettings((prevThemeSettings) => ({
       ...prevThemeSettings,
       ...partial
     }));
-  }, 250);
+  }, 100);
 
   return (
     <div className={styles.app}>
@@ -103,6 +147,7 @@ function App() {
           containerClassName={styles.canvasTable}
           selectId={(row) => row.id as DataRowId}
           onSelectRow={(_, row) => setSelectedRow(row)}
+          onResizeColumn={onResizeColumn}
         />
       </main>
       <div className={styles.rightSidebar}>
