@@ -59,13 +59,13 @@ function App() {
       newTable,
       ...tables.slice(tableIndex + 1)
     ]);
-  }
+  };
 
   const onResizeColumn = (columnKey: string, _: number, columnWidth: number) => {
     const key = selectedTableId + "," + columnKey;
     batchedColumnWidthChanges.set(key, columnWidth);
     updateTableColumnWidths();
-  }
+  };
 
   const updateTableColumnWidths = debounce(() => {
     let newTables = tables;

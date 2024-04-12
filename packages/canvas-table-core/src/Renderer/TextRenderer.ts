@@ -9,7 +9,7 @@ export type TextRendererParams = {
     width?: number;
     height?: number;
   }
-}
+};
 
 const SUBPIXEL_ALIGNMENT_STEPS = 4;
 const SUBPIXEL_ALIGNMENT_FRAC = 1 / SUBPIXEL_ALIGNMENT_STEPS;

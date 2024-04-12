@@ -593,14 +593,14 @@ export class CanvasTable {
 
     // Draw header text
     {
-      const actualFontStyle = theme.headerFontStyle ?? theme.fontStyle;
-      const font = createFontSpecifier(theme.fontFamily, theme.fontSize, actualFontStyle);
+      const fontStyle = theme.headerFontStyle ?? theme.fontStyle;
+      const font = createFontSpecifier(theme.fontFamily, theme.fontSize, fontStyle);
 
       const { fontBoundingBoxAscent, fontBoundingBoxDescent } = this.gui.getFontMetrics(font);
       const fontHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
       const baselineY = Math.floor((theme.rowHeight - fontHeight) / 2 + fontBoundingBoxAscent);
 
-      const actualFontColor = theme.headerFontColor ?? theme.fontColor;
+      const fontColor = theme.headerFontColor ?? theme.fontColor;
 
       for (const columnIndex of this.tableColumnRange()) {
         const columnDef = this.props.columnDefs[columnIndex];
@@ -615,7 +615,7 @@ export class CanvasTable {
         const text = columnDef.title;
 
         const { chars, subpixelOffsets } = this.renderer.textRenderer.prepareText(
-          text, x, font, actualFontColor, maxWidth, true);
+          text, x, font, fontColor, maxWidth, true);
 
         this.renderer.pushDrawCommand({
           type: "text",
@@ -624,7 +624,7 @@ export class CanvasTable {
           x,
           y,
           font,
-          color: actualFontColor,
+          color: fontColor,
           clipRegion: this.headerAreaClipRegion,
           sortOrder: 2
         });
@@ -633,14 +633,14 @@ export class CanvasTable {
 
     // Draw body text
     {
-      const actualFontStyle = theme.bodyFontStyle ?? theme.fontStyle;
-      const font = createFontSpecifier(theme.fontFamily, theme.fontSize, actualFontStyle);
+      const fontStyle = theme.bodyFontStyle ?? theme.fontStyle;
+      const font = createFontSpecifier(theme.fontFamily, theme.fontSize, fontStyle);
 
       const { fontBoundingBoxAscent, fontBoundingBoxDescent } = this.gui.getFontMetrics(font);
       const fontHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
       const baselineY = Math.floor((theme.rowHeight - fontHeight) / 2 + fontBoundingBoxAscent);
 
-      const actualFontColor = theme.bodyFontColor ?? theme.fontColor;
+      const fontColor = theme.bodyFontColor ?? theme.fontColor;
 
       for (const columnIndex of this.tableColumnRange()) {
         const columnDef = this.props.columnDefs[columnIndex];
@@ -661,7 +661,7 @@ export class CanvasTable {
           const text = isNumber(value) ? value.toString() : (value as string);
 
           const { chars, subpixelOffsets } = this.renderer.textRenderer.prepareText(
-            text, x, font, actualFontColor, maxWidth, true);
+            text, x, font, fontColor, maxWidth, true);
 
           this.renderer.pushDrawCommand({
             type: "text",
@@ -670,7 +670,7 @@ export class CanvasTable {
             x,
             y,
             font,
-            color: actualFontColor,
+            color: fontColor,
             clipRegion: this.bodyAreaClipRegion,
             sortOrder: 2
           });

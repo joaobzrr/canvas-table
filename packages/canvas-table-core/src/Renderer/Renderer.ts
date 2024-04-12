@@ -1,7 +1,6 @@
-import { DrawLineCommand, DrawRectCommand } from "..";
 import { TextRenderer } from "./TextRenderer";
 import { getContext } from "../utils";
-import type { DrawCommand } from "./types";
+import type { DrawLineCommand, DrawRectCommand, DrawCommand } from "./types";
 
 export type RendererParams = {
   canvas: HTMLCanvasElement;
