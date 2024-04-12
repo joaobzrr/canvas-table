@@ -6,18 +6,18 @@ High performance table component made with Canvas.
 
 ```
 # npm
-pnpm install @bzrr/canvas-table-core @bzrr/canvas-table-react
+npm install @bzrr/canvas-table-react
+npm install @bzrr/canvas-table-solid
 
 # pnpm
-pnpm install @bzrr/canvas-table-core @bzrr/canvas-table-react
+pnpm install @bzrr/canvas-table-react
+pnpm install @bzrr/canvas-table-solid
 ```
 
 ## Usage
 
 ```tsx
-import React from "react";
-import { CanvasTable } from "@bzrr/canvas-table-react";
-import { ColumnDef, DataRow } from "@bzrr/canvas-table-core";
+import { CanvasTable, type ColumnDef, type DataRow } from "@bzrr/canvas-table-react";
 
 export function App() {
   const columnDefs: ColumnDef[] = [
