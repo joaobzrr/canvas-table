@@ -20,7 +20,8 @@ export default [
     ],
     external: [
       "react",
-      "react/jsx-runtime"
+      "react/jsx-runtime",
+      "@bzrr/canvas-table-core"
     ]
   },
   {
