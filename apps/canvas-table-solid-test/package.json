@@ -1,0 +1,25 @@
+{
+  "name": "canvas-table-solid-test",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "serve": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx --fix ./src",
+    "preview": "vite preview",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "@bzrr/canvas-table-solid": "workspace:^",
+    "solid-js": "^1.8.16"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^1.5.4",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
+    "eslint": "^8.44.0",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.0",
+    "vite-plugin-solid": "^2.10.2"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "name": "@bzrr/canvas-table-solid",
+  "version": "0.0.17",
+  "keywords": [
+    "table",
+    "canvas",
+    "datagrid"
+  ],
+  "author": "João Bezerra",
+  "license": "MIT",
+  "description": "High performance table component made with Canvas.",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "default": "./dist/index.js"
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "watch": "rollup --config rollup.config.ts --configPlugin typescript --watch",
+    "build": "rollup --config rollup.config.ts --configPlugin typescript",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx --fix ./src",
+    "prepublish": "npm run build"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.4",
+    "@babel/preset-env": "^7.24.4",
+    "@babel/preset-typescript": "^7.24.1",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@stylistic/eslint-plugin": "^1.5.4",
+    "@types/node": "^20.8.7",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
+    "babel-preset-solid": "^1.8.16",
+    "eslint": "^8.44.0",
+    "rollup": "^4.14.2",
+    "rollup-plugin-cleandir": "^2.0.0",
+    "rollup-plugin-dts": "^6.1.0",
+    "rollup-preset-solid": "^2.0.1",
+    "typescript": "5.1.6"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.8.16"
+  },
+  "dependencies": {
+    "@bzrr/canvas-table-core": "workspace:^"
+  }
+}
