@@ -144,6 +144,7 @@ function App() {
           columnDefs={table.columnDefs}
           dataRows={table.dataRows}
           theme={theme}
+          selectedRowId={selectedRow?.id as DataRowId}
           containerClassName={styles.canvasTable}
           selectId={(row) => row.id as DataRowId}
           onSelectRow={(_, row) => setSelectedRow(row)}

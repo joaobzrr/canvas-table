@@ -173,6 +173,9 @@ export class CanvasTable {
         }
 
         shallowMerge(this.props, newProps);
+
+        // @Note Selected row id may be undefined so we update it separately.
+        this.props.selectedRowId = newProps.selectedRowId;
       }
     }
 
@@ -386,8 +389,8 @@ export class CanvasTable {
       const dataRow = this.props.dataRows[this.mouseRow];
       if (this.gui.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
         const dataRowId = this.props.selectId(dataRow);
-        if (dataRowId !== this.selectedRowId) {
-          this.selectedRowId = dataRowId;
+        if (dataRowId !== this.props.selectedRowId) {
+          this.props.selectedRowId = dataRowId;
           this.props.onSelectRow?.(dataRowId, dataRow);
         }
       }
@@ -406,11 +409,11 @@ export class CanvasTable {
       }
     }
 
-    if (this.selectedRowId !== null) {
+    if (this.props.selectedRowId !== null) {
       for (const rowIndex of this.tableRowRange()) {
         const dataRow = this.props.dataRows[rowIndex];
         const dataRowId = this.props.selectId(dataRow);
-        if (this.selectedRowId == dataRowId) {
+        if (this.props.selectedRowId == dataRowId) {
           this.renderer.pushDrawCommand({
             type: "rect",
             x: 0,

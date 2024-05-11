@@ -9,6 +9,7 @@ export type CanvasTableProps = {
   columnDefs: ColumnDef[];
   dataRows: DataRow[];
   theme: Theme;
+  selectedRowId?: DataRowId;
   selectId: IdSelector;
   selectProp: PropSelector;
   onSelectRow?: SelectRowCallback;
