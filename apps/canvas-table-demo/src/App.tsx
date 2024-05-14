@@ -1,41 +1,41 @@
-import { useState, useMemo } from "react";
-import { debounce } from "lodash";
+import { useState, useMemo } from 'react';
+import { debounce } from 'lodash';
 import {
   CanvasTable,
   defaultTheme,
   type DataRow,
   type Theme,
   type DataRowId,
-  type PropValue
-} from "@bzrr/canvas-table-react";
-import ThemeForm from "./components/ThemeForm";
-import TableList from "./components/TableList";
-import Tabs from "./components/Tabs";
-import { tables as allTables } from "./tables";
-import { shallowMerge } from "./utils";
-import { Table } from "./types";
-import styles from "./App.module.css";
+  type PropValue,
+} from '@bzrr/canvas-table-react';
+import { ThemeForm } from './components/ThemeForm';
+import { TableList } from './components/TableList';
+import { Tabs } from './components/Tabs';
+import { tables as allTables } from './tables';
+import { shallowMerge } from './utils';
+import type { Table } from './types';
+import styles from './App.module.css';
 
 const batchedColumnWidthChanges = new Map<string, number>();
 
-function App() {
+export const App = () => {
   const [tables, setTables] = useState<Table[]>(allTables);
   const [selectedTableId, setSelectedTableId] = useState(tables[0].id);
 
   const tableIndex = tables.findIndex((table) => table.id === selectedTableId);
   if (tableIndex === -1) {
-    throw new Error("This should not happen");
+    throw new Error('This should not happen');
   }
 
   const table = tables[tableIndex];
 
-  const [themeSettings, setThemeSettings] = useState<Partial<Theme>>();
+  const [themeSettings, setThemeSettings] = useState<Partial<Theme>>({});
 
   const theme = useMemo(() => {
-    return shallowMerge({}, defaultTheme, themeSettings);
+    return shallowMerge<Theme>({}, defaultTheme, themeSettings);
   }, [themeSettings]);
 
-  const [selectedTab, setSelectedTab] = useState<React.Key>("tables");
+  const [selectedTab, setSelectedTab] = useState<React.Key>('tables');
 
   const [selectedRow, setSelectedRow] = useState<DataRow>();
 
@@ -46,7 +46,7 @@ function App() {
 
     const rowIndex = table.dataRows.findIndex(({ id }) => id === selectedRow.id);
     if (rowIndex === -1) {
-      throw new Error("This should not happen");
+      throw new Error('This should not happen');
     }
 
     const newRow = { ...selectedRow, [key]: value };
@@ -57,19 +57,15 @@ function App() {
       dataRows: [
         ...table.dataRows.slice(0, rowIndex),
         newRow,
-        ...table.dataRows.slice(rowIndex + 1)
-      ]
+        ...table.dataRows.slice(rowIndex + 1),
+      ],
     };
 
-    setTables([
-      ...tables.slice(0, tableIndex),
-      newTable,
-      ...tables.slice(tableIndex + 1)
-    ]);
+    setTables([...tables.slice(0, tableIndex), newTable, ...tables.slice(tableIndex + 1)]);
   };
 
   const onResizeColumn = (columnKey: string, _: number, columnWidth: number) => {
-    const key = selectedTableId + "," + columnKey;
+    const key = selectedTableId + ',' + columnKey;
     batchedColumnWidthChanges.set(key, columnWidth);
     updateTableColumnWidths();
   };
@@ -78,17 +74,17 @@ function App() {
     let newTables = tables;
 
     for (const [key, width] of batchedColumnWidthChanges) {
-      const [tableId, columnKey] = key.split(",");
+      const [tableId, columnKey] = key.split(',');
 
       const tableIndex = newTables.findIndex((table) => table.id === tableId);
       if (tableIndex === -1) {
-        throw new Error("This should not happen");
+        throw new Error('This should not happen');
       }
       const table = newTables[tableIndex];
 
       const columnDefIndex = table.columnDefs.findIndex((columnDef) => columnDef.key === columnKey);
       if (columnDefIndex === -1) {
-        throw new Error("This should not happen");
+        throw new Error('This should not happen');
       }
       const columnDef = table.columnDefs[columnDefIndex];
 
@@ -96,15 +92,11 @@ function App() {
       const newColumnDefs = [
         ...table.columnDefs.slice(0, columnDefIndex),
         newColumnDef,
-        ...table.columnDefs.slice(columnDefIndex + 1)
+        ...table.columnDefs.slice(columnDefIndex + 1),
       ];
 
       const newTable = { ...table, columnDefs: newColumnDefs };
-      newTables = [
-        ...newTables.slice(0, tableIndex),
-        newTable,
-        ...newTables.slice(tableIndex + 1)
-      ];
+      newTables = [...newTables.slice(0, tableIndex), newTable, ...newTables.slice(tableIndex + 1)];
     }
 
     batchedColumnWidthChanges.clear();
@@ -115,7 +107,7 @@ function App() {
   const updateTheme = debounce((partial: Partial<Theme>) => {
     setThemeSettings((prevThemeSettings) => ({
       ...prevThemeSettings,
-      ...partial
+      ...partial,
     }));
   }, 100);
 
@@ -125,25 +117,28 @@ function App() {
         <Tabs
           items={[
             {
-              key: "tables",
-              label: "Tables"
+              key: 'tables',
+              label: 'Tables',
             },
             {
-              key: "theme",
-              label: "Theme"
-            }
+              key: 'theme',
+              label: 'Theme',
+            },
           ]}
           selected={selectedTab}
           onTabClick={(key) => setSelectedTab(key)}
         />
-        {selectedTab === "tables" ? (
+        {selectedTab === 'tables' ? (
           <TableList
             value={table.id}
             tables={tables}
             onChange={setSelectedTableId}
           />
         ) : (
-          <ThemeForm style={{ flex: 1 }} onChange={updateTheme} />
+          <ThemeForm
+            style={{ flex: 1 }}
+            onChange={updateTheme}
+          />
         )}
       </div>
       <main className={styles.main}>
@@ -162,7 +157,10 @@ function App() {
         {selectedRow && (
           <form>
             {table.columnDefs.map(({ title, key }) => (
-              <div className={styles.row} key={key}>
+              <div
+                className={styles.row}
+                key={key}
+              >
                 <label className={styles.label}>{title}</label>
                 <input
                   value={selectedRow[key] as PropValue}
@@ -177,6 +175,4 @@ function App() {
       </div>
     </div>
   );
-}
-
-export default App;
+};

@@ -1,7 +1,7 @@
-import React, { useRef, useLayoutEffect } from "react";
-import { CanvasTable, CanvasTableParams } from "@bzrr/canvas-table-core";
+import React, { useRef, useLayoutEffect } from 'react';
+import { CanvasTable, type CanvasTableParams } from '@bzrr/canvas-table-core';
 
-export type CanvasTableComponentProps = Omit<CanvasTableParams, "container"> & {
+export type CanvasTableComponentProps = Omit<CanvasTableParams, 'container'> & {
   containerClassName?: string;
   containerStyle?: React.CSSProperties;
 };
@@ -23,7 +23,7 @@ export const CanvasTableComponent = React.memo((props: CanvasTableComponentProps
   useLayoutEffect(() => {
     canvasTableRef.current = new CanvasTable({
       container: containerIdRef.current,
-      ...tableProps
+      ...tableProps,
     });
 
     return () => {
@@ -38,5 +38,11 @@ export const CanvasTableComponent = React.memo((props: CanvasTableComponentProps
     canvasTableRef.current.config(tableProps);
   }
 
-  return <div id={containerIdRef.current} className={containerClassName} style={containerStyle} />;
+  return (
+    <div
+      id={containerIdRef.current}
+      className={containerClassName}
+      style={containerStyle}
+    />
+  );
 });

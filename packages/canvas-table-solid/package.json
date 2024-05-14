@@ -23,7 +23,6 @@
   "scripts": {
     "watch": "rollup --config rollup.config.ts --configPlugin typescript --watch",
     "build": "rollup --config rollup.config.ts --configPlugin typescript",
-    "lint": "eslint --ext .js,.jsx,.ts,.tsx --fix ./src",
     "prepublish": "npm run build"
   },
   "devDependencies": {

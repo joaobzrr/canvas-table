@@ -1,6 +1,6 @@
-import { clsx } from "clsx";
-import { TabItem } from "../../types";
-import styles from "./Tabs.module.css";
+import { clsx } from 'clsx';
+import { type TabItem } from '../../types';
+import styles from './Tabs.module.css';
 
 type PropsType = {
   items: TabItem[];
@@ -8,7 +8,7 @@ type PropsType = {
   onTabClick?: (key: React.Key) => void;
 };
 
-export default function Tabs(props: PropsType) {
+export const Tabs = (props: PropsType) => {
   const { items, selected, onTabClick } = props;
 
   return (
@@ -18,7 +18,7 @@ export default function Tabs(props: PropsType) {
           <button
             onClick={() => onTabClick?.(key)}
             className={clsx(styles.button, {
-              [styles.selected]: key === selected
+              [styles.selected]: key === selected,
             })}
             key={key}
           >
@@ -28,4 +28,4 @@ export default function Tabs(props: PropsType) {
       </div>
     </div>
   );
-}
+};

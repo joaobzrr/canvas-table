@@ -1,4 +1,4 @@
-import { getContext } from "../utils";
+import { getContext } from '../utils';
 
 export type GlyphAtlasParams = {
   width?: number;
@@ -30,7 +30,7 @@ const DEFAULT_GLYPH_ATLAS_HEIGHT = 1024;
 export const GLYPH_ATLAS_BIN_MARGIN = 1;
 export const GLYPH_ATLAS_BIN_PADDING = 1;
 
-const SEPARATOR = "\u001F";
+const SEPARATOR = '\u001F';
 
 export class GlyphAtlas {
   canvas: HTMLCanvasElement;
@@ -39,7 +39,7 @@ export class GlyphAtlas {
   root: GlyphAtlasNode;
 
   constructor(params?: GlyphAtlasParams) {
-    this.canvas = document.createElement("canvas");
+    this.canvas = document.createElement('canvas');
     this.canvas.width = params?.width ?? DEFAULT_GLYPH_ATLAS_WIDTH;
     this.canvas.height = params?.height ?? DEFAULT_GLYPH_ATLAS_HEIGHT;
     this.ctx = getContext(this.canvas);
@@ -53,7 +53,7 @@ export class GlyphAtlas {
       sy,
       ascent: 0,
       descent: 0,
-      advance: 0
+      advance: 0,
     } as GlyphMetrics;
 
     return {
@@ -62,11 +62,11 @@ export class GlyphAtlas {
       filled: false,
       width,
       height,
-      metrics
+      metrics,
     };
   }
 
-  cacheGlyph(str: string, font: string, color = "black", subpixelOffset = 0) {
+  cacheGlyph(str: string, font: string, color = 'black', subpixelOffset = 0) {
     const key = [font, color, str, subpixelOffset].join(SEPARATOR);
     const cached = this.cache.get(key);
     if (cached) {
@@ -77,12 +77,12 @@ export class GlyphAtlas {
     this.ctx.fillStyle = color;
 
     const textMetrics = this.ctx.measureText(str);
-    const actualBoundingBoxLeft    = Math.abs(textMetrics.actualBoundingBoxLeft);
-    const actualBoundingBoxRight   = Math.abs(textMetrics.actualBoundingBoxRight);
-    const actualBoundingBoxAscent  = Math.abs(textMetrics.actualBoundingBoxAscent);
+    const actualBoundingBoxLeft = Math.abs(textMetrics.actualBoundingBoxLeft);
+    const actualBoundingBoxRight = Math.abs(textMetrics.actualBoundingBoxRight);
+    const actualBoundingBoxAscent = Math.abs(textMetrics.actualBoundingBoxAscent);
     const actualBoundingBoxDescent = Math.abs(textMetrics.actualBoundingBoxDescent);
-    const fontBoundingBoxAscent    = Math.abs(textMetrics.fontBoundingBoxAscent);
-    const fontBoundingBoxDescent   = Math.abs(textMetrics.fontBoundingBoxDescent);
+    const fontBoundingBoxAscent = Math.abs(textMetrics.fontBoundingBoxAscent);
+    const fontBoundingBoxDescent = Math.abs(textMetrics.fontBoundingBoxDescent);
     const advance = textMetrics.width;
 
     let glyphWidth = actualBoundingBoxLeft + actualBoundingBoxRight;
@@ -94,18 +94,18 @@ export class GlyphAtlas {
     }
 
     let glyphHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
-    let ascent  = actualBoundingBoxAscent;
+    let ascent = actualBoundingBoxAscent;
     let descent = actualBoundingBoxDescent;
     if (glyphHeight === 0) {
       // @Note: Fallback to fontBoundingBox to calculate glyph dimensions if
       // actualBoundingBox is zeroed. As of January 31 2024, this has only
       // been found to occur on versions of Firefox prior to v.123.
       glyphHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
-      ascent  = fontBoundingBoxAscent;
+      ascent = fontBoundingBoxAscent;
       descent = fontBoundingBoxDescent;
     }
-    
-    const binWidth  = Math.ceil(glyphWidth  + GLYPH_ATLAS_BIN_PADDING * 2 + GLYPH_ATLAS_BIN_MARGIN);
+
+    const binWidth = Math.ceil(glyphWidth + GLYPH_ATLAS_BIN_PADDING * 2 + GLYPH_ATLAS_BIN_MARGIN);
     const binHeight = Math.ceil(glyphHeight + GLYPH_ATLAS_BIN_PADDING * 2 + GLYPH_ATLAS_BIN_MARGIN);
 
     let node = this.packGlyph(binWidth, binHeight, this.root);
@@ -114,7 +114,7 @@ export class GlyphAtlas {
 
       node = this.packGlyph(binWidth, binHeight, this.root);
       if (!node) {
-        throw new Error("Failed to pack glyph");
+        throw new Error('Failed to pack glyph');
       }
     }
 
@@ -122,9 +122,9 @@ export class GlyphAtlas {
     const drawY = node.metrics.sy + GLYPH_ATLAS_BIN_PADDING + Math.floor(ascent);
     this.ctx.fillText(str, drawX, drawY);
 
-    node.metrics.sw = binWidth  - GLYPH_ATLAS_BIN_MARGIN;
+    node.metrics.sw = binWidth - GLYPH_ATLAS_BIN_MARGIN;
     node.metrics.sh = binHeight - GLYPH_ATLAS_BIN_MARGIN;
-    node.metrics.ascent  = ascent;
+    node.metrics.ascent = ascent;
     node.metrics.descent = descent;
     node.metrics.advance = advance;
 
@@ -183,7 +183,7 @@ export class GlyphAtlas {
       GLYPH_ATLAS_BIN_MARGIN,
       GLYPH_ATLAS_BIN_MARGIN,
       this.canvas.width,
-      this.canvas.height
+      this.canvas.height,
     );
   }
 }

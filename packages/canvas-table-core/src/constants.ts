@@ -12,5 +12,5 @@ export const MOUSE_BUTTONS = {
   SECONDARY: 1,
   AUXILIARY: 2,
   FOURTH: 3,
-  FIFTH: 4
+  FIFTH: 4,
 } as const;

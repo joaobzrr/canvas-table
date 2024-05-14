@@ -1,6 +1,6 @@
-import { TextRenderer } from "./TextRenderer";
-import { getContext } from "../utils";
-import type { DrawLineCommand, DrawRectCommand, DrawCommand } from "./types";
+import { TextRenderer } from './TextRenderer';
+import { getContext } from '../utils';
+import type { DrawLineCommand, DrawRectCommand, DrawCommand } from './types';
 
 export type RendererParams = {
   canvas: HTMLCanvasElement;
@@ -31,22 +31,22 @@ export class Renderer {
     this.ctx = params.ctx;
 
     this.textRenderer = new TextRenderer({
-      glyphAtlas: params.glyphAtlasParams
+      glyphAtlas: params.glyphAtlasParams,
     });
 
-    this.hlineCanvas = document.createElement("canvas");
-    this.hlineCanvas.width  = 1;
+    this.hlineCanvas = document.createElement('canvas');
+    this.hlineCanvas.width = 1;
     this.hlineCanvas.height = 1;
 
-    this.vlineCanvas = document.createElement("canvas");
+    this.vlineCanvas = document.createElement('canvas');
     this.vlineCanvas.width = 1;
     this.vlineCanvas.height = 1;
 
     this.hlineCanvasCtx = getContext(this.hlineCanvas);
     this.vlineCanvasCtx = getContext(this.vlineCanvas);
 
-    this.hlineColor = "black";
-    this.vlineColor = "black";
+    this.hlineColor = 'black';
+    this.vlineColor = 'black';
 
     this.commandBuffer = [];
   }
@@ -69,15 +69,15 @@ export class Renderer {
       }
 
       switch (command.type) {
-        case "text": {
+        case 'text': {
           this.textRenderer.drawText(this.ctx, command);
           break;
         }
-        case "line": {
+        case 'line': {
           this.drawLine(command);
           break;
         }
-        case "rect": {
+        case 'rect': {
           this.drawRect(command);
           break;
         }
@@ -111,7 +111,7 @@ export class Renderer {
     y: number,
     width: number,
     height: number,
-    color: string
+    color: string,
   ) {
     ctx.fillStyle = color;
     ctx.fillRect(x, y, width, height);
@@ -124,7 +124,7 @@ export class Renderer {
     width: number,
     height: number,
     color: string,
-    stroke_width: number
+    stroke_width: number,
   ) {
     let x1 = x;
 
@@ -150,8 +150,8 @@ export class Renderer {
 
   drawLine(command: DrawLineCommand) {
     const { x, y, length, color } = command;
-    
-    if (command.orientation === "horizontal") {
+
+    if (command.orientation === 'horizontal') {
       this.drawHorizontalLine(this.ctx, x, y, length, color);
     } else {
       this.drawVerticalLine(this.ctx, x, y, length, color);
@@ -163,7 +163,7 @@ export class Renderer {
     x: number,
     y: number,
     length: number,
-    color: string
+    color: string,
   ) {
     const shouldResizeCanvas = this.hlineCanvas.width < length;
     if (shouldResizeCanvas) {
@@ -185,7 +185,7 @@ export class Renderer {
     x: number,
     y: number,
     length: number,
-    color: string
+    color: string,
   ) {
     const shouldResizeCanvas = this.vlineCanvas.height < length;
     if (shouldResizeCanvas) {

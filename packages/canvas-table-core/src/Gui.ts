@@ -1,13 +1,13 @@
-import { Platform } from "./Platform";
-import { Renderer } from "./Renderer";
-import { TableState } from "./TableState";
-import { createFontSpecifier, isNumber } from "./utils";
+import { type Platform } from './Platform';
+import { type TableState } from './TableState';
+import { Renderer } from './Renderer';
+import { createFontSpecifier, isNumber } from './utils';
 import {
   BORDER_WIDTH,
   COLUMN_RESIZER_LEFT_WIDTH,
   COLUMN_RESIZER_WIDTH,
-  MOUSE_BUTTONS
-} from "./constants";
+  MOUSE_BUTTONS,
+} from './constants';
 
 export class Gui {
   platform: Platform;
@@ -19,9 +19,9 @@ export class Gui {
     this.state = state;
     this.renderer = new Renderer({
       canvas: this.platform.canvas,
-      ctx: this.platform.ctx
+      ctx: this.platform.ctx,
     });
-  } 
+  }
 
   private doColumnResizer(columnIndex: number) {
     const { props, guictx } = this.state;
@@ -69,11 +69,14 @@ export class Gui {
       const { headerAreaClipRegion } = guictx;
 
       this.renderer.pushDrawCommand({
-        type: "rect",
-        x, y, width, height,
+        type: 'rect',
+        x,
+        y,
+        width,
+        height,
         fillColor: columnResizerColor,
         clipRegion: headerAreaClipRegion,
-        sortOrder: 5
+        sortOrder: 5,
       });
       return true;
     }
@@ -88,17 +91,17 @@ export class Gui {
     if (scrollbarTrackColor) {
       const { hsbX, hsbY, hsbWidth, hsbHeight } = layout;
       this.renderer.pushDrawCommand({
-        type: "rect",
+        type: 'rect',
         x: hsbX,
         y: hsbY,
         width: hsbWidth,
         height: hsbHeight,
         fillColor: scrollbarTrackColor,
-        sortOrder: 3
+        sortOrder: 3,
       });
     }
 
-    const id = "horizontal-scrollbar-thumb";
+    const id = 'horizontal-scrollbar-thumb';
     if (guictx.isWidgetActive(id)) {
       if (this.platform.isMouseReleased(MOUSE_BUTTONS.PRIMARY)) {
         guictx.setActiveWidget(null);
@@ -116,7 +119,7 @@ export class Gui {
       hsbThumbX: x,
       hsbThumbY: y,
       hsbThumbWidth: width,
-      hsbThumbHeight: height 
+      hsbThumbHeight: height,
     } = this.state.layout;
 
     const inside = this.platform.isMouseInRect(x, y, width, height);
@@ -126,11 +129,8 @@ export class Gui {
       guictx.setHotWidget(null);
     }
 
-    const {
-      scrollbarThumbPressedColor,
-      scrollbarThumbHoverColor,
-      scrollbarThumbColor
-    } = props.theme;
+    const { scrollbarThumbPressedColor, scrollbarThumbHoverColor, scrollbarThumbColor } =
+      props.theme;
 
     let fillColor: string | undefined;
     if (guictx.isWidgetActive(id)) {
@@ -143,10 +143,13 @@ export class Gui {
 
     if (fillColor) {
       this.renderer.pushDrawCommand({
-        type: "rect",
-        x, y, width, height,
+        type: 'rect',
+        x,
+        y,
+        width,
+        height,
         fillColor: fillColor,
-        sortOrder: 4
+        sortOrder: 4,
       });
     }
   }
@@ -158,17 +161,17 @@ export class Gui {
     if (scrollbarTrackColor) {
       const { vsbX, vsbY, vsbWidth, vsbHeight } = layout;
       this.renderer.pushDrawCommand({
-        type: "rect",
+        type: 'rect',
         x: vsbX,
         y: vsbY,
         width: vsbWidth,
         height: vsbHeight,
         fillColor: scrollbarTrackColor,
-        sortOrder: 3
+        sortOrder: 3,
       });
     }
 
-    const id = "vertical-scrollbar-thumb";
+    const id = 'vertical-scrollbar-thumb';
     if (guictx.isWidgetActive(id)) {
       if (this.platform.isMouseReleased(MOUSE_BUTTONS.PRIMARY)) {
         guictx.setActiveWidget(null);
@@ -186,7 +189,7 @@ export class Gui {
       vsbThumbX: x,
       vsbThumbY: y,
       vsbThumbWidth: width,
-      vsbThumbHeight: height
+      vsbThumbHeight: height,
     } = this.state.layout;
 
     const inside = this.platform.isMouseInRect(x, y, width, height);
@@ -196,11 +199,8 @@ export class Gui {
       guictx.setHotWidget(null);
     }
 
-    const {
-      scrollbarThumbPressedColor,
-      scrollbarThumbHoverColor,
-      scrollbarThumbColor
-    } = props.theme;
+    const { scrollbarThumbPressedColor, scrollbarThumbHoverColor, scrollbarThumbColor } =
+      props.theme;
 
     let fillColor: string | undefined;
     if (guictx.isWidgetActive(id)) {
@@ -213,10 +213,13 @@ export class Gui {
 
     if (fillColor) {
       this.renderer.pushDrawCommand({
-        type: "rect",
-        x, y, width, height,
+        type: 'rect',
+        x,
+        y,
+        width,
+        height,
         fillColor: fillColor,
-        sortOrder: 4
+        sortOrder: 4,
       });
     }
   }
@@ -241,14 +244,14 @@ export class Gui {
       const { hoveredRowColor } = props.theme;
       if (hoveredRowColor && guictx.isNoWidgetActive()) {
         this.renderer.pushDrawCommand({
-          type: "rect",
+          type: 'rect',
           x: 0,
           y: this.state.calculateRowScreenY(hoveredRowIndex),
           width: bodyVisibleWidth,
           height: rowHeight,
           fillColor: hoveredRowColor,
           clipRegion: bodyAreaClipRegion,
-          sortOrder: 1
+          sortOrder: 1,
         });
       }
     }
@@ -262,14 +265,14 @@ export class Gui {
           const { selectedRowColor } = props.theme;
 
           this.renderer.pushDrawCommand({
-            type: "rect",
+            type: 'rect',
             x: 0,
             y: this.state.calculateRowScreenY(rowIndex),
             width: bodyVisibleWidth,
             height: rowHeight,
             fillColor: selectedRowColor,
             clipRegion: bodyAreaClipRegion,
-            sortOrder: 1
+            sortOrder: 1,
           });
           break;
         }
@@ -282,52 +285,42 @@ export class Gui {
     const { tableBackgroundColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
-      type: "rect",
+      type: 'rect',
       x: 0,
       y: 0,
       width: tableWidth,
       height: tableHeight,
-      fillColor: tableBackgroundColor
+      fillColor: tableBackgroundColor,
     });
   }
 
   private drawBodyBackground() {
-    const {
-      bodyAreaX,
-      bodyAreaY,
-      bodyAreaWidth,
-      bodyAreaHeight
-    } = this.state.layout;
+    const { bodyAreaX, bodyAreaY, bodyAreaWidth, bodyAreaHeight } = this.state.layout;
 
     const { bodyBackgroundColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
-      type: "rect",
+      type: 'rect',
       x: bodyAreaX,
       y: bodyAreaY,
       width: bodyAreaWidth,
       height: bodyAreaHeight,
-      fillColor: bodyBackgroundColor
+      fillColor: bodyBackgroundColor,
     });
   }
 
   private drawHeaderBackground() {
-    const {
-      headerAreaX,
-      headerAreaY,
-      headerAreaWidth,
-      headerAreaHeight
-    } = this.state.layout;
+    const { headerAreaX, headerAreaY, headerAreaWidth, headerAreaHeight } = this.state.layout;
 
     const { headerBackgroundColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
-      type: "rect",
+      type: 'rect',
       x: headerAreaX,
       y: headerAreaY,
       width: headerAreaWidth,
       height: headerAreaHeight,
-      fillColor: headerBackgroundColor
+      fillColor: headerBackgroundColor,
     });
   }
 
@@ -337,46 +330,46 @@ export class Gui {
 
     // Draw top outer table border
     this.renderer.pushDrawCommand({
-      type: "line",
-      orientation: "horizontal",
+      type: 'line',
+      orientation: 'horizontal',
       x: 0,
       y: 0,
       length: tableWidth,
       color: tableBorderColor,
-      sortOrder: 4
+      sortOrder: 4,
     });
 
     // Draw bottom outer table border
     this.renderer.pushDrawCommand({
-      type: "line",
-      orientation: "horizontal",
+      type: 'line',
+      orientation: 'horizontal',
       x: 0,
       y: tableHeight - BORDER_WIDTH,
       length: tableWidth,
       color: tableBorderColor,
-      sortOrder: 4
+      sortOrder: 4,
     });
 
     // Draw left outer table border
     this.renderer.pushDrawCommand({
-      type: "line",
-      orientation: "vertical",
+      type: 'line',
+      orientation: 'vertical',
       x: 0,
       y: 0,
       length: tableHeight,
       color: tableBorderColor,
-      sortOrder: 4
+      sortOrder: 4,
     });
 
     // Draw right outer table border
     this.renderer.pushDrawCommand({
-      type: "line",
-      orientation: "vertical",
+      type: 'line',
+      orientation: 'vertical',
       x: tableWidth - BORDER_WIDTH,
       y: 0,
       length: tableHeight,
       color: tableBorderColor,
-      sortOrder: 4
+      sortOrder: 4,
     });
   }
 
@@ -385,13 +378,13 @@ export class Gui {
     const { rowHeight, tableBorderColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
-      type: "line",
-      orientation: "horizontal",
+      type: 'line',
+      orientation: 'horizontal',
       x: 0,
       y: rowHeight,
       length: tableWidth,
       color: tableBorderColor,
-      sortOrder: 4
+      sortOrder: 4,
     });
   }
 
@@ -400,13 +393,13 @@ export class Gui {
     const { tableBorderColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
-      type: "line",
-      orientation: "horizontal",
+      type: 'line',
+      orientation: 'horizontal',
       x: 0,
       y: hsbY - BORDER_WIDTH,
       length: tableWidth,
       color: tableBorderColor,
-      sortOrder: 4
+      sortOrder: 4,
     });
   }
 
@@ -415,13 +408,13 @@ export class Gui {
     const { tableBorderColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
-      type: "line",
-      orientation: "vertical",
+      type: 'line',
+      orientation: 'vertical',
       x: vsbX - BORDER_WIDTH,
       y: 0,
       length: tableHeight,
       color: tableBorderColor,
-      sortOrder: 4
+      sortOrder: 4,
     });
   }
 
@@ -430,13 +423,13 @@ export class Gui {
     const { tableBorderColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
-      type: "line",
-      orientation: "vertical",
+      type: 'line',
+      orientation: 'vertical',
       x: gridWidth,
       y: 0,
       length: gridHeight,
       color: tableBorderColor,
-      sortOrder: 4
+      sortOrder: 4,
     });
   }
 
@@ -445,13 +438,13 @@ export class Gui {
     const { tableBorderColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
-      type: "line",
-      orientation: "horizontal",
+      type: 'line',
+      orientation: 'horizontal',
       x: 0,
       y: gridHeight,
       length: gridWidth,
       color: tableBorderColor,
-      sortOrder: 4
+      sortOrder: 4,
     });
   }
 
@@ -461,13 +454,13 @@ export class Gui {
 
     for (const rowIndex of this.state.rowRange(1)) {
       this.renderer.pushDrawCommand({
-        type: "line",
-        orientation: "horizontal",
+        type: 'line',
+        orientation: 'horizontal',
         x: 0,
         y: this.state.calculateRowScreenY(rowIndex),
         length: gridWidth,
         color: tableBorderColor,
-        sortOrder: 4
+        sortOrder: 4,
       });
     }
   }
@@ -478,13 +471,13 @@ export class Gui {
 
     for (const columnIndex of this.state.columnRange(1)) {
       this.renderer.pushDrawCommand({
-        type: "line",
-        orientation: "vertical",
+        type: 'line',
+        orientation: 'vertical',
         x: this.state.calculateColumnScreenX(columnIndex),
         y: 0,
         length: gridHeight,
         color: tableBorderColor,
-        sortOrder: 4
+        sortOrder: 4,
       });
     }
   }
@@ -501,7 +494,7 @@ export class Gui {
       fontStyle,
       headerFontStyle,
       fontColor,
-      headerFontColor
+      headerFontColor,
     } = theme;
 
     const { headerAreaClipRegion } = this.state.guictx;
@@ -511,14 +504,10 @@ export class Gui {
     const textStyle = headerFontStyle ?? fontStyle;
     const font = createFontSpecifier(fontFamily, fontSize, textStyle);
 
-    const {
-      fontBoundingBoxAscent,
-      fontBoundingBoxDescent
-    } = this.platform.getFontMetrics(font);
+    const { fontBoundingBoxAscent, fontBoundingBoxDescent } = this.platform.getFontMetrics(font);
 
     const fontHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
-    const baselineY = Math.floor(
-      (rowHeight - fontHeight) / 2 + fontBoundingBoxAscent);
+    const baselineY = Math.floor((rowHeight - fontHeight) / 2 + fontBoundingBoxAscent);
 
     const textColor = headerFontColor ?? fontColor;
 
@@ -535,10 +524,16 @@ export class Gui {
       const text = columnDef.title;
 
       const { chars, subpixelOffsets } = textRenderer.prepareText(
-        text, x, font, textColor, maxWidth, true);
+        text,
+        x,
+        font,
+        textColor,
+        maxWidth,
+        true,
+      );
 
       this.renderer.pushDrawCommand({
-        type: "text",
+        type: 'text',
         chars,
         subpixelOffsets,
         x,
@@ -546,7 +541,7 @@ export class Gui {
         font,
         color: textColor,
         clipRegion: headerAreaClipRegion,
-        sortOrder: 2
+        sortOrder: 2,
       });
     }
   }
@@ -563,7 +558,7 @@ export class Gui {
       fontStyle,
       bodyFontStyle,
       fontColor,
-      bodyFontColor
+      bodyFontColor,
     } = theme;
 
     const { bodyAreaClipRegion } = this.state.guictx;
@@ -573,14 +568,10 @@ export class Gui {
     const textStyle = bodyFontStyle ?? fontStyle;
     const font = createFontSpecifier(fontFamily, fontSize, textStyle);
 
-    const {
-      fontBoundingBoxAscent,
-      fontBoundingBoxDescent
-    } = this.platform.getFontMetrics(font);
+    const { fontBoundingBoxAscent, fontBoundingBoxDescent } = this.platform.getFontMetrics(font);
 
     const fontHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
-    const baselineY = Math.floor((
-      rowHeight - fontHeight) / 2 + fontBoundingBoxAscent);
+    const baselineY = Math.floor((rowHeight - fontHeight) / 2 + fontBoundingBoxAscent);
 
     const textColor = bodyFontColor ?? fontColor;
 
@@ -603,10 +594,16 @@ export class Gui {
         const text = isNumber(value) ? value.toString() : (value as string);
 
         const { chars, subpixelOffsets } = textRenderer.prepareText(
-          text, x, font, fontColor, maxWidth, true);
+          text,
+          x,
+          font,
+          fontColor,
+          maxWidth,
+          true,
+        );
 
         this.renderer.pushDrawCommand({
-          type: "text",
+          type: 'text',
           chars,
           subpixelOffsets,
           x,
@@ -614,7 +611,7 @@ export class Gui {
           font,
           color: textColor,
           clipRegion: bodyAreaClipRegion,
-          sortOrder: 2
+          sortOrder: 2,
         });
       }
     }
@@ -623,7 +620,10 @@ export class Gui {
   public update(state: TableState) {
     this.state = state;
 
-    const { layout, props: { theme } } = this.state; 
+    const {
+      layout,
+      props: { theme },
+    } = this.state;
 
     for (const columnIndex of this.state.columnRange()) {
       if (this.doColumnResizer(columnIndex)) {
@@ -656,7 +656,7 @@ export class Gui {
     this.drawOuterTableBorders();
 
     this.drawHeaderBottomBorder();
-    
+
     if (layout.overflowX) {
       this.drawHorizontalScrollbarBorder();
     } else {

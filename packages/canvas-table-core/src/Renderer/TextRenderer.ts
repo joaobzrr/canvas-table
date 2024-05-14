@@ -1,14 +1,14 @@
-import Graphemer from "graphemer";
-import { GlyphAtlas, GLYPH_ATLAS_BIN_PADDING, type GlyphMetrics } from "./GlyphAtlas";
-import { PreparedText } from "./PreparedText";
-import { isWhitespace } from "../utils";
-import type { DrawTextCommand } from "./types";
+import Graphemer from 'graphemer';
+import { GlyphAtlas, GLYPH_ATLAS_BIN_PADDING, type GlyphMetrics } from './GlyphAtlas';
+import { PreparedText } from './PreparedText';
+import { isWhitespace } from '../utils';
+import type { DrawTextCommand } from './types';
 
 export type TextRendererParams = {
   glyphAtlas?: {
     width?: number;
     height?: number;
-  }
+  };
 };
 
 const SUBPIXEL_ALIGNMENT_STEPS = 4;
@@ -23,7 +23,7 @@ export class TextRenderer {
 
   drawText(ctx: CanvasRenderingContext2D, command: DrawTextCommand) {
     const { chars, subpixelOffsets, x, y, font, color } = command;
-    
+
     let width = 0;
     for (const [index, char] of chars.entries()) {
       const subpixelOffset = subpixelOffsets[index];
@@ -43,7 +43,7 @@ export class TextRenderer {
     metrics: GlyphMetrics,
     x: number,
     y: number,
-    quantizedSubpixelOffset: number
+    quantizedSubpixelOffset: number,
   ) {
     const { sx, sy, sw, sh, ascent } = metrics;
     const dx = x - GLYPH_ATLAS_BIN_PADDING - quantizedSubpixelOffset;
@@ -57,13 +57,13 @@ export class TextRenderer {
     font: string,
     color: string,
     maxWidth = Infinity,
-    ellipsis = false
+    ellipsis = false,
   ) {
     const ellipsisEnabled = ellipsis && maxWidth !== Infinity;
 
     let availableContentWidth: number;
     if (ellipsisEnabled) {
-      const { advance: fullStopAdvance } = this.glyphAtlas.cacheGlyph(".", font);
+      const { advance: fullStopAdvance } = this.glyphAtlas.cacheGlyph('.', font);
       availableContentWidth = Math.max(maxWidth - fullStopAdvance * 3, 0);
     } else {
       availableContentWidth = maxWidth;
@@ -111,12 +111,12 @@ export class TextRenderer {
       const glyphX = x + totalContentWidth;
       const subpixelOffset = this.calculateQuantizedGlyphSubpixelOffset(glyphX);
 
-      const metrics = this.glyphAtlas.cacheGlyph(".", font, color, subpixelOffset);
+      const metrics = this.glyphAtlas.cacheGlyph('.', font, color, subpixelOffset);
       if (totalContentWidth + metrics.advance > maxWidth) {
         break;
       }
 
-      preparedText.pushChar(".", subpixelOffset);
+      preparedText.pushChar('.', subpixelOffset);
 
       totalContentWidth += metrics.advance;
     }

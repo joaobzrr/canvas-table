@@ -1,9 +1,9 @@
-import { Platform } from "./Platform";
-import { Gui } from "./Gui";
-import { TableState } from "./TableState";
-import { defaultTheme } from "./defaultTheme";
-import { shallowMerge } from "./utils";
-import {
+import { Platform } from './Platform';
+import { Gui } from './Gui';
+import { TableState } from './TableState';
+import { defaultTheme } from './defaultTheme';
+import { shallowMerge } from './utils';
+import type {
   CanvasTableProps,
   CanvasTableParams,
   ColumnDef,
@@ -11,8 +11,8 @@ import {
   DataRowId,
   PropValue,
   IdSelector,
-  PropSelector
-} from "./types";
+  PropSelector,
+} from './types';
 
 export class CanvasTable {
   private state: TableState;
@@ -36,25 +36,16 @@ export class CanvasTable {
 
     let selectId = params.selectId as IdSelector;
     if (!params.selectId) {
-      selectId = CanvasTable.defaultIdSelector;
+      selectId = defaultIdSelector;
     }
 
     let selectProp = params.selectProp as PropSelector;
     if (!params.selectProp) {
-      selectProp = CanvasTable.defaultPropSelector; 
+      selectProp = defaultPropSelector;
     }
 
     return { ...params, theme, selectId, selectProp };
   }
-
-  private static defaultIdSelector(row: DataRow) {
-    return row.id as DataRowId;
-  }
-
-  private static defaultPropSelector(row: DataRow, columnDef: ColumnDef) {
-    return row[columnDef.key] as PropValue;
-  }
-
   private update() {
     const props = this.mergeBatchedProps();
     this.state = this.state.update(props);
@@ -64,7 +55,7 @@ export class CanvasTable {
   private mergeBatchedProps() {
     const props = {} as Partial<CanvasTableProps>;
     while (this.batchedProps.length > 0) {
-      shallowMerge(props, this.batchedProps.shift());
+      shallowMerge(props, this.batchedProps.shift()!);
     }
     return props;
   }
@@ -77,3 +68,11 @@ export class CanvasTable {
     this.gui.destroy();
   }
 }
+
+const defaultIdSelector = (row: DataRow) => {
+  return row.id as DataRowId;
+};
+
+const defaultPropSelector = (row: DataRow, columnDef: ColumnDef) => {
+  return row[columnDef.key] as PropValue;
+};

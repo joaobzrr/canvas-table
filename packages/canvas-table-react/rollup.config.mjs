@@ -1,35 +1,26 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
-import dts from "rollup-plugin-dts";
-import { cleandir } from "rollup-plugin-cleandir";
+import dts from 'rollup-plugin-dts';
+import { cleandir } from 'rollup-plugin-cleandir';
 
 export default [
   {
-    input: "src/index.ts",
+    input: 'src/index.ts',
     output: {
-      file: "dist/index.js",
-      format: "es",
-      sourcemap: true
+      file: 'dist/index.js',
+      format: 'es',
+      sourcemap: true,
     },
-    plugins: [
-      nodeResolve(),
-      commonjs(),
-      typescript(),
-      cleandir("./dist")
-    ],
-    external: [
-      "react",
-      "react/jsx-runtime",
-      "@bzrr/canvas-table-core"
-    ]
+    plugins: [nodeResolve(), commonjs(), typescript(), cleandir('./dist')],
+    external: ['react', 'react/jsx-runtime', '@bzrr/canvas-table-core'],
   },
   {
-    input: "src/index.ts",
+    input: 'src/index.ts',
     output: {
-      file: "dist/index.d.ts",
-      format: "es"
+      file: 'dist/index.d.ts',
+      format: 'es',
     },
-    plugins: [dts()]
-  }
-]
+    plugins: [dts()],
+  },
+];

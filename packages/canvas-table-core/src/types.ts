@@ -1,4 +1,4 @@
-export type CanvasTableParams = Omit<CanvasTableProps, "theme" | "selectId" | "selectProp"> & {
+export type CanvasTableParams = Omit<CanvasTableProps, 'theme' | 'selectId' | 'selectProp'> & {
   container: string;
   theme?: Theme;
   selectId?: IdSelector;
@@ -28,7 +28,7 @@ export type ColumnDef = {
   key: string;
   title: string;
   width?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 export type PropValue = string | number;

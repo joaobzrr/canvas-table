@@ -1,5 +1,5 @@
-import { createEffect, splitProps, type JSX } from "solid-js";
-import { CanvasTable, CanvasTableParams } from "@bzrr/canvas-table-core";
+import { createEffect, splitProps, type JSX } from 'solid-js';
+import { CanvasTable, type CanvasTableParams } from '@bzrr/canvas-table-core';
 
 let instanceCount = 0;
 
@@ -9,13 +9,13 @@ const makeContainerId = () => {
   return result;
 };
 
-export type CanvasTableComponentProps = Omit<CanvasTableParams, "container"> & {
+export type CanvasTableComponentProps = Omit<CanvasTableParams, 'container'> & {
   containerClass?: string;
   containerStyle?: JSX.CSSProperties;
 };
 
 export const CanvasTableComponent = (props: CanvasTableComponentProps) => {
-  const [custom, tableProps] = splitProps(props, ["containerClass", "containerStyle"]);
+  const [custom, tableProps] = splitProps(props, ['containerClass', 'containerStyle']);
 
   const containerId = makeContainerId();
 

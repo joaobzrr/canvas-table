@@ -23,7 +23,6 @@
   "scripts": {
     "watch": "rollup --config rollup.config.mjs --watch",
     "build": "rollup --config rollup.config.mjs",
-    "lint": "eslint --ext .js,.ts --fix ./src",
     "prepublish": "npm run build && npm run lint"
   },
   "devDependencies": {

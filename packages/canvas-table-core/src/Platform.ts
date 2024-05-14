@@ -1,5 +1,5 @@
-import { getContext, isPointInRect } from "./utils";
-import { MOUSE_BUTTONS } from "./constants";
+import { getContext, isPointInRect } from './utils';
+import { MOUSE_BUTTONS } from './constants';
 
 export type Mouse_Buttons = typeof MOUSE_BUTTONS;
 export type Mouse_Button_Value = Mouse_Buttons[keyof Mouse_Buttons];
@@ -31,7 +31,7 @@ export class Platform {
   dragStartY = 0;
 
   dragDistanceX = 0;
-  dragDistanceY = 0 ;
+  dragDistanceY = 0;
 
   scrollAmountX = 0;
   scrollAmountY = 0;
@@ -51,41 +51,41 @@ export class Platform {
     }
     this.containerEl = containerEl as HTMLDivElement;
     this.containerEl.replaceChildren();
-    this.containerEl.style.overflow = "hidden";
+    this.containerEl.style.overflow = 'hidden';
 
-    this.wrapperEl = document.createElement("div");
-    this.wrapperEl.style.height = "100%";
-    this.wrapperEl.classList.add("canvas-table-wrapper");
+    this.wrapperEl = document.createElement('div');
+    this.wrapperEl.style.height = '100%';
+    this.wrapperEl.classList.add('canvas-table-wrapper');
     this.containerEl.appendChild(this.wrapperEl);
 
-    this.canvas = document.createElement("canvas");
+    this.canvas = document.createElement('canvas');
     this.wrapperEl.appendChild(this.canvas);
 
     this.ctx = getContext(this.canvas);
     this.restoreCanvasContextProperties();
 
-    this.fontMetricsCanvas = document.createElement("canvas");
+    this.fontMetricsCanvas = document.createElement('canvas');
     this.fontMetricsCanvasCtx = getContext(this.fontMetricsCanvas);
 
-    this.mouseDownHandler        = this.onMouseDown.bind(this);
-    this.mouseUpHandler          = this.onMouseUp.bind(this);
-    this.mouseMoveHandler        = this.onMouseMove.bind(this);
-    this.wheelHandler            = this.onWheel.bind(this);
+    this.mouseDownHandler = this.onMouseDown.bind(this);
+    this.mouseUpHandler = this.onMouseUp.bind(this);
+    this.mouseMoveHandler = this.onMouseMove.bind(this);
+    this.wheelHandler = this.onWheel.bind(this);
     this.visibilityChangeHandler = this.onVisibilityChange.bind(this);
 
-    this.canvas.addEventListener("mousedown", this.mouseDownHandler);
-    this.canvas.addEventListener("wheel", this.wheelHandler);
-    document.addEventListener("mousemove", this.mouseMoveHandler);
-    document.addEventListener("mouseup", this.mouseUpHandler);
-    document.addEventListener("visibilitychange", this.visibilityChangeHandler);
+    this.canvas.addEventListener('mousedown', this.mouseDownHandler);
+    this.canvas.addEventListener('wheel', this.wheelHandler);
+    document.addEventListener('mousemove', this.mouseMoveHandler);
+    document.addEventListener('mouseup', this.mouseUpHandler);
+    document.addEventListener('visibilitychange', this.visibilityChangeHandler);
   }
 
   destroy() {
     this.stopAnimation();
 
-    document.removeEventListener("mousemove", this.mouseMoveHandler);
-    document.removeEventListener("mouseup", this.mouseUpHandler);
-    document.removeEventListener("visibilitychange", this.visibilityChangeHandler);
+    document.removeEventListener('mousemove', this.mouseMoveHandler);
+    document.removeEventListener('mouseup', this.mouseUpHandler);
+    document.removeEventListener('visibilitychange', this.visibilityChangeHandler);
   }
 
   startAnimation() {
@@ -103,14 +103,12 @@ export class Platform {
 
   getFontMetrics(font: string) {
     this.fontMetricsCanvasCtx.font = font;
-    const {
-      fontBoundingBoxAscent,
-      fontBoundingBoxDescent
-    } = this.fontMetricsCanvasCtx.measureText("M");
+    const { fontBoundingBoxAscent, fontBoundingBoxDescent } =
+      this.fontMetricsCanvasCtx.measureText('M');
 
     return {
       fontBoundingBoxAscent,
-      fontBoundingBoxDescent
+      fontBoundingBoxDescent,
     };
   }
 
@@ -134,7 +132,10 @@ export class Platform {
   }
 
   animate() {
-    if (this.containerEl.offsetWidth !== this.canvas.width || this.containerEl.offsetHeight !== this.canvas.height) {
+    if (
+      this.containerEl.offsetWidth !== this.canvas.width ||
+      this.containerEl.offsetHeight !== this.canvas.height
+    ) {
       this.resizeCanvas(this.containerEl.offsetWidth, this.containerEl.offsetHeight);
     }
 
