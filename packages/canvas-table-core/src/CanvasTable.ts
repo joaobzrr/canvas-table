@@ -1,14 +1,13 @@
 import { Renderer } from "./Renderer";
 import { GuiContext } from "./GuiContext";
+import { TableState } from "./TableState";
 import { defaultTheme } from "./defaultTheme";
-import { clamp, lerp, createFontSpecifier, isNumber, shallowMerge, isEmpty } from "./utils";
+import { clamp, createFontSpecifier, isNumber, shallowMerge } from "./utils";
 import {
   BORDER_WIDTH,
   COLUMN_RESIZER_LEFT_WIDTH,
   COLUMN_RESIZER_WIDTH,
-  DEFAULT_COLUMN_WIDTH,
   MIN_COLUMN_WIDTH,
-  MIN_THUMB_LENGTH,
   MOUSE_BUTTONS
 } from "./constants";
 import {
@@ -17,120 +16,42 @@ import {
   ColumnDef,
   DataRow,
   DataRowId,
-  PropValue
+  PropValue,
+  IdSelector,
+  PropSelector
 } from "./types";
 
 export class CanvasTable {
   renderer: Renderer;
   gui: GuiContext;
-
-  // State stuff
-  props: CanvasTableProps;
+  state: TableState;
   batchedProps: Partial<CanvasTableProps>[] = [];
 
-  tableWidth = 1;
-  tableHeight = 1;
-  tableAreaX = 0;
-  tableAreaY = 0;
-  tableAreaWidth = 1;
-  tableAreaHeight = 1;
-  bodyAreaX = 0;
-  bodyAreaY = 0;
-  bodyAreaWidth = 1;
-  bodyAreaHeight = 1;
-  headerAreaX = 0;
-  headerAreaY = 0;
-  headerAreaWidth = 1;
-  headerAreaHeight = 1;
-  bodyVisibleWidth = 1;
-  bodyVisibleHeight = 1;
-  scrollX = 0;
-  scrollY = 0;
-  scrollWidth = 1;
-  scrollHeight = 1;
-  scrollWidthMinCapped = 1;
-  scrollHeightMinCapped = 1;
-  maxScrollX = 0;
-  maxScrollY = 0;
-
-  hsbX = 0;
-  hsbY = 0;
-  hsbWidth = 1;
-  hsbHeight = 1;
-  hsbTrackX = 0;
-  hsbTrackY = 0;
-  hsbTrackWidth = 1;
-  hsbTrackHeight = 1;
-  hsbThumbX = 0;
-  hsbThumbY = 0;
-  hsbThumbWidth = 1;
-  hsbThumbHeight = 1;
-  hsbThumbMinX = 0;
-  hsbThumbMaxX = 0;
-
-  vsbX = 0;
-  vsbY = 0;
-  vsbWidth = 1;
-  vsbHeight = 1;
-  vsbTrackX = 0;
-  vsbTrackY = 0;
-  vsbTrackWidth = 1;
-  vsbTrackHeight = 1;
-  vsbThumbX = 0;
-  vsbThumbY = 0;
-  vsbThumbWidth = 1;
-  vsbThumbHeight = 1;
-  vsbThumbMinY = 0;
-  vsbThumbMaxY = 0;
-
-  overflowX = false;
-  overflowY = false;
-
-  columnStart = 0;
-  columnEnd = 0;
-  rowStart = 0;
-  rowEnd = 0;
-
-  mouseRow = -1;
-
-  columnWidths: number[];
-  columnPositions: number[] = [];
-
-  selectedRowId: DataRowId | null = null;
-
-  bodyAreaClipRegion?: Path2D;
-  headerAreaClipRegion?: Path2D;
-
   constructor(params: CanvasTableParams) {
-    const { container, columnDefs, ...partialProps } = params;
-
-    this.gui = new GuiContext(container);
+    this.gui = new GuiContext(params.container);
     this.gui.updateFunction = this.update.bind(this);
-
     this.renderer = new Renderer({ canvas: this.gui.canvas, ctx: this.gui.ctx });
 
-    const theme = params.theme ?? defaultTheme;
-    const selectId = params.selectId ?? ((row: DataRow) => row.id as DataRowId);
-    const selectProp = params.selectProp ?? ((row: DataRow, columnDef: ColumnDef) => row[columnDef.key] as PropValue);
-    this.props = {
-      ...partialProps,
-      columnDefs,
-      theme,
-      selectId,
-      selectProp
-    };
-
-    this.columnWidths = CanvasTable.calculateColumnWidths(columnDefs);
+    const props = CanvasTable.createInitialProps(params);
+    this.state = new TableState(props);
 
     this.gui.startAnimation();
   }
 
-  static calculateColumnWidths(columnDefs: ColumnDef[]) {
-    const column_widths = [] as number[];
-    for (const { width } of columnDefs) {
-      column_widths.push(width ?? DEFAULT_COLUMN_WIDTH);
+  static createInitialProps({ container: _, ...params }: CanvasTableParams) {
+    const theme = params.theme ?? defaultTheme;
+
+    let selectId = params.selectId as IdSelector;
+    if (!params.selectId) {
+      selectId = (row: DataRow) => row.id as DataRowId;
     }
-    return column_widths;
+
+    let selectProp = params.selectProp as PropSelector;
+    if (!params.selectProp) {
+      selectProp = (row: DataRow, columnDef: ColumnDef) => row[columnDef.key] as PropValue;
+    }
+
+    return { ...params, theme, selectId, selectProp };
   }
 
   config(props: Partial<CanvasTableProps>) {
@@ -142,94 +63,47 @@ export class CanvasTable {
   }
 
   update() {
-    const { theme } = this.props;
+    const { theme } = this.state.props;
 
-    let tableResized = false;
-    if (this.tableWidth !== this.gui.canvas.width || this.tableHeight !== this.gui.canvas.height) {
-      this.tableWidth = this.gui.canvas.width;
-      this.tableHeight = this.gui.canvas.height;
-      tableResized = true;
-    }
-
-    let dataChanged = false;
-    {
-      const newProps = {} as Partial<CanvasTableProps>;
-      while (this.batchedProps.length > 0) {
-        shallowMerge(newProps, this.batchedProps.shift());
-      }
-
-      if (!isEmpty(newProps)) {
-        if (newProps.columnDefs && !Object.is(newProps.columnDefs, this.props.columnDefs)) {
-          this.columnWidths = CanvasTable.calculateColumnWidths(newProps.columnDefs);
-          dataChanged = true;
-        }
-
-        if (newProps.dataRows && !Object.is(newProps.dataRows, this.props.dataRows)) {
-          dataChanged = true;
-        }
-
-        if (newProps.theme && !Object.is(newProps.theme, this.props.theme)) {
-          dataChanged = true;
-        }
-
-        shallowMerge(this.props, newProps);
-
-        // @Note Selected row id may be undefined so we update it separately.
-        this.props.selectedRowId = newProps.selectedRowId;
-      }
-    }
-
-    if (tableResized || dataChanged) {
-      this.refreshLayout();
-    }
-
-    let scrollPosChanged = false;
-    {
-      let newScrollX = this.scrollX;
-      let newScrollY = this.scrollY;
-      if (this.gui.isNoWidgetActive()) {
-        newScrollX += this.gui.scrollAmountX;
-        newScrollY += this.gui.scrollAmountY;
-      }
-      newScrollX = clamp(newScrollX, 0, this.maxScrollX);
-      newScrollY = clamp(newScrollY, 0, this.maxScrollY);
-
-      if (newScrollX !== this.scrollX || newScrollY !== this.scrollY) {
-        this.scrollX = newScrollX;
-        this.scrollY = newScrollY;
-
-        scrollPosChanged = true;
-      }
-    }
-
-    if (tableResized || dataChanged || scrollPosChanged) {
-      this.refreshViewport();
-
-      this.hsbThumbX = this.calculateHorizontalScrollbarThumbX(this.scrollX);
-      this.vsbThumbY = this.calculateVerticalScrollbarThumbY(this.scrollY);
-    }
-
-    if (this.gui.isMouseInRect(this.bodyAreaX, this.bodyAreaY, this.bodyVisibleWidth, this.bodyVisibleHeight)) {
-      this.mouseRow = Math.floor((this.screenToScrollY(this.gui.currMouseY) - theme.rowHeight) / theme.rowHeight);
+    let scrollAmountX: number;
+    let scrollAmountY: number;
+    if (this.gui.isNoWidgetActive()) {
+      scrollAmountX = this.gui.scrollAmountX;
+      scrollAmountY = this.gui.scrollAmountY;
     } else {
-      this.mouseRow = -1;
+      scrollAmountX = 0;
+      scrollAmountY = 0;
+    }
+
+    this.state = this.state.update(
+      this.mergeBatchedProps(),
+      this.gui.canvas.width,
+      this.gui.canvas.height,
+      scrollAmountX,
+      scrollAmountY
+    );
+
+    if (this.gui.isMouseInRect(this.state.layout.bodyAreaX, this.state.layout.bodyAreaY, this.state.layout.bodyVisibleWidth, this.state.layout.bodyVisibleHeight)) {
+      this.state.mouseRow = Math.floor((this.state.screenToScrollY(this.gui.currMouseY) - theme.rowHeight) / theme.rowHeight);
+    } else {
+      this.state.mouseRow = -1;
     }
 
     // Do column resizers
-    for (const columnIndex of this.tableColumnRange()) {
+    for (const columnIndex of this.state.columnRange()) {
       const id = `column-resizer-${columnIndex}`;
 
-      let resizerScrollX = this.calculateResizerScrollX(columnIndex);
+      let resizerScrollX = this.state.calculateResizerScrollX(columnIndex);
       if (this.gui.isWidgetActive(id)) {
         if (this.gui.isMouseReleased(MOUSE_BUTTONS.PRIMARY)) {
           this.gui.setActiveWidget(null);
         } else {
-          const columnScrollLeft = this.calculateColumnScrollX(columnIndex);
+          const columnScrollLeft = this.state.calculateColumnScrollX(columnIndex);
           const columnScrollRight = this.gui.dragAnchorX + this.gui.dragDistanceX;
           const columnWidth = Math.max(columnScrollRight - columnScrollLeft, MIN_COLUMN_WIDTH);
-          this.resizeTableColumn(columnIndex, columnWidth);
+          this.state.resizeColumn(columnIndex, columnWidth);
 
-          resizerScrollX = this.calculateResizerScrollX(columnIndex);
+          resizerScrollX = this.state.calculateResizerScrollX(columnIndex);
         }
       } else if (this.gui.isWidgetHot(id)) {
         if (this.gui.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
@@ -238,7 +112,7 @@ export class CanvasTable {
         }
       }
 
-      const resizerX = this.scrollToScreenX(resizerScrollX);
+      const resizerX = this.state.scrollToScreenX(resizerScrollX);
       const resizerY = BORDER_WIDTH;
       const resizerWidth = COLUMN_RESIZER_WIDTH;
       const resizerHeight = theme.rowHeight - BORDER_WIDTH;
@@ -258,7 +132,7 @@ export class CanvasTable {
           width: resizerWidth,
           height: resizerHeight,
           fillColor: theme.columnResizerColor,
-          clipRegion: this.headerAreaClipRegion,
+          clipRegion: this.state.headerAreaClipRegion,
           sortOrder: 5
         });
         break;
@@ -266,14 +140,14 @@ export class CanvasTable {
     }
 
     // Do horizontal scrollbar
-    if (this.overflowX) {
+    if (this.state.layout.overflowX) {
       if (theme.scrollbarTrackColor) {
         this.renderer.pushDrawCommand({
           type: "rect",
-          x: this.hsbX,
-          y: this.hsbY,
-          width: this.hsbWidth,
-          height: this.hsbHeight,
+          x: this.state.layout.hsbX,
+          y: this.state.layout.hsbY,
+          width: this.state.layout.hsbWidth,
+          height: this.state.layout.hsbHeight,
           fillColor: theme.scrollbarTrackColor,
           sortOrder: 3
         });
@@ -284,18 +158,18 @@ export class CanvasTable {
         if (this.gui.isMouseReleased(MOUSE_BUTTONS.PRIMARY)) {
           this.gui.setActiveWidget(null);
         } else {
-          this.hsbThumbX = clamp(this.gui.dragAnchorX + this.gui.dragDistanceX, this.hsbThumbMinX, this.hsbThumbMaxX);
-          this.scrollX = this.calculateScrollX(this.hsbThumbX);
-          this.refreshViewport();
+          this.state.layout.hsbThumbX = clamp(this.gui.dragAnchorX + this.gui.dragDistanceX, this.state.layout.hsbThumbMinX, this.state.layout.hsbThumbMaxX);
+          this.state.layout.scrollX = this.state.calculateScrollX(this.state.layout.hsbThumbX);
+          this.state.refreshViewport();
         }
       } else if (this.gui.isWidgetHot(id)) {
         if (this.gui.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
           this.gui.setActiveWidget(id);
-          this.gui.dragAnchorX = this.hsbThumbX;
+          this.gui.dragAnchorX = this.state.layout.hsbThumbX;
         }
       }
 
-      const inside = this.gui.isMouseInRect(this.hsbThumbX, this.hsbThumbY, this.hsbThumbWidth, this.hsbThumbHeight);
+      const inside = this.gui.isMouseInRect(this.state.layout.hsbThumbX, this.state.layout.hsbThumbY, this.state.layout.hsbThumbWidth, this.state.layout.hsbThumbHeight);
       if (inside) {
         this.gui.setHotWidget(id);
       } else if (this.gui.isWidgetHot(id)) {
@@ -314,10 +188,10 @@ export class CanvasTable {
       if (fillColor) {
         this.renderer.pushDrawCommand({
           type: "rect",
-          x: this.hsbThumbX,
-          y: this.hsbThumbY,
-          width: this.hsbThumbWidth,
-          height: this.hsbThumbHeight,
+          x: this.state.layout.hsbThumbX,
+          y: this.state.layout.hsbThumbY,
+          width: this.state.layout.hsbThumbWidth,
+          height: this.state.layout.hsbThumbHeight,
           fillColor: fillColor,
           sortOrder: 4
         });
@@ -325,14 +199,14 @@ export class CanvasTable {
     }
 
     // Do vertical scrollbar
-    if (this.overflowY) {
+    if (this.state.layout.overflowY) {
       if (theme.scrollbarTrackColor) {
         this.renderer.pushDrawCommand({
           type: "rect",
-          x: this.vsbX,
-          y: this.vsbY,
-          width: this.vsbWidth,
-          height: this.vsbHeight,
+          x: this.state.layout.vsbX,
+          y: this.state.layout.vsbY,
+          width: this.state.layout.vsbWidth,
+          height: this.state.layout.vsbHeight,
           fillColor: theme.scrollbarTrackColor,
           sortOrder: 3
         });
@@ -343,19 +217,19 @@ export class CanvasTable {
         if (this.gui.isMouseReleased(MOUSE_BUTTONS.PRIMARY)) {
           this.gui.setActiveWidget(null);
         } else {
-          this.vsbThumbY = clamp(this.gui.dragAnchorY + this.gui.dragDistanceY, this.vsbThumbMinY, this.vsbThumbMaxY);
-          this.scrollY = this.calculateScrollY(this.vsbThumbY);
-          this.refreshViewport();
+          this.state.layout.vsbThumbY = clamp(this.gui.dragAnchorY + this.gui.dragDistanceY, this.state.layout.vsbThumbMinY, this.state.layout.vsbThumbMaxY);
+          this.state.layout.scrollY = this.state.calculateScrollY(this.state.layout.vsbThumbY);
+          this.state.refreshViewport();
         }
       } else if (this.gui.isWidgetHot(id)) {
         if (this.gui.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
           this.gui.setActiveWidget(id);
 
-          this.gui.dragAnchorY = this.vsbThumbY;
+          this.gui.dragAnchorY = this.state.layout.vsbThumbY;
         }
       }
 
-      const inside = this.gui.isMouseInRect(this.vsbThumbX, this.vsbThumbY, this.vsbThumbWidth, this.vsbThumbHeight);
+      const inside = this.gui.isMouseInRect(this.state.layout.vsbThumbX, this.state.layout.vsbThumbY, this.state.layout.vsbThumbWidth, this.state.layout.vsbThumbHeight);
       if (inside) {
         this.gui.setHotWidget(id);
       } else if (this.gui.isWidgetHot(id)) {
@@ -374,10 +248,10 @@ export class CanvasTable {
       if (fillColor) {
         this.renderer.pushDrawCommand({
           type: "rect",
-          x: this.vsbThumbX,
-          y: this.vsbThumbY,
-          width: this.vsbThumbWidth,
-          height: this.vsbThumbHeight,
+          x: this.state.layout.vsbThumbX,
+          y: this.state.layout.vsbThumbY,
+          width: this.state.layout.vsbThumbWidth,
+          height: this.state.layout.vsbThumbHeight,
           fillColor: fillColor,
           sortOrder: 4
         });
@@ -385,13 +259,13 @@ export class CanvasTable {
     }
 
     // Draw hovered and selected rows
-    if (this.mouseRow !== -1) {
-      const dataRow = this.props.dataRows[this.mouseRow];
+    if (this.state.mouseRow !== -1) {
+      const dataRow = this.state.props.dataRows[this.state.mouseRow];
       if (this.gui.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
-        const dataRowId = this.props.selectId(dataRow);
-        if (dataRowId !== this.props.selectedRowId) {
-          this.props.selectedRowId = dataRowId;
-          this.props.onSelectRow?.(dataRowId, dataRow);
+        const dataRowId = this.state.props.selectId(dataRow);
+        if (dataRowId !== this.state.props.selectedRowId) {
+          this.state.props.selectedRowId = dataRowId;
+          this.state.props.onSelectRow?.(dataRowId, dataRow);
         }
       }
 
@@ -399,29 +273,29 @@ export class CanvasTable {
         this.renderer.pushDrawCommand({
           type: "rect",
           x: 0,
-          y: this.calculateRowScreenY(this.mouseRow),
-          width: this.bodyVisibleWidth,
+          y: this.state.calculateRowScreenY(this.state.mouseRow),
+          width: this.state.layout.bodyVisibleWidth,
           height: theme.rowHeight,
           fillColor: theme.hoveredRowColor,
-          clipRegion: this.bodyAreaClipRegion,
+          clipRegion: this.state.bodyAreaClipRegion,
           sortOrder: 1
         });
       }
     }
 
-    if (this.props.selectedRowId !== null) {
-      for (const rowIndex of this.tableRowRange()) {
-        const dataRow = this.props.dataRows[rowIndex];
-        const dataRowId = this.props.selectId(dataRow);
-        if (this.props.selectedRowId == dataRowId) {
+    if (this.state.props.selectedRowId !== null) {
+      for (const rowIndex of this.state.rowRange()) {
+        const dataRow = this.state.props.dataRows[rowIndex];
+        const dataRowId = this.state.props.selectId(dataRow);
+        if (this.state.props.selectedRowId == dataRowId) {
           this.renderer.pushDrawCommand({
             type: "rect",
             x: 0,
-            y: this.calculateRowScreenY(rowIndex),
-            width: this.bodyVisibleWidth,
+            y: this.state.calculateRowScreenY(rowIndex),
+            width: this.state.layout.bodyVisibleWidth,
             height: theme.rowHeight,
             fillColor: theme.selectedRowColor,
-            clipRegion: this.bodyAreaClipRegion,
+            clipRegion: this.state.bodyAreaClipRegion,
             sortOrder: 1
           });
           break;
@@ -434,8 +308,8 @@ export class CanvasTable {
         type: "rect",
         x: 0,
         y: 0,
-        width: this.tableWidth,
-        height: this.tableHeight,
+        width: this.state.layout.tableWidth,
+        height: this.state.layout.tableHeight,
         fillColor: theme.tableBackgroundColor
       });
     }
@@ -443,10 +317,10 @@ export class CanvasTable {
     if (theme.bodyBackgroundColor) {
       this.renderer.pushDrawCommand({
         type: "rect",
-        x: this.bodyAreaX,
-        y: this.bodyAreaY,
-        width: this.bodyAreaWidth,
-        height: this.bodyAreaHeight,
+        x: this.state.layout.bodyAreaX,
+        y: this.state.layout.bodyAreaY,
+        width: this.state.layout.bodyAreaWidth,
+        height: this.state.layout.bodyAreaHeight,
         fillColor: theme.bodyBackgroundColor
       });
     }
@@ -454,10 +328,10 @@ export class CanvasTable {
     if (theme.headerBackgroundColor) {
       this.renderer.pushDrawCommand({
         type: "rect",
-        x: this.headerAreaX,
-        y: this.headerAreaY,
-        width: this.headerAreaWidth,
-        height: this.headerAreaHeight,
+        x: this.state.layout.headerAreaX,
+        y: this.state.layout.headerAreaY,
+        width: this.state.layout.headerAreaWidth,
+        height: this.state.layout.headerAreaHeight,
         fillColor: theme.headerBackgroundColor
       });
     }
@@ -468,7 +342,7 @@ export class CanvasTable {
       orientation: "horizontal",
       x: 0,
       y: 0,
-      length: this.tableWidth,
+      length: this.state.layout.tableWidth,
       color: theme.tableBorderColor,
       sortOrder: 4
     });
@@ -478,8 +352,8 @@ export class CanvasTable {
       type: "line",
       orientation: "horizontal",
       x: 0,
-      y: this.tableHeight - BORDER_WIDTH,
-      length: this.tableWidth,
+      y: this.state.layout.tableHeight - BORDER_WIDTH,
+      length: this.state.layout.tableWidth,
       color: theme.tableBorderColor,
       sortOrder: 4
     });
@@ -490,7 +364,7 @@ export class CanvasTable {
       orientation: "vertical",
       x: 0,
       y: 0,
-      length: this.tableHeight,
+      length: this.state.layout.tableHeight,
       color: theme.tableBorderColor,
       sortOrder: 4
     });
@@ -499,15 +373,15 @@ export class CanvasTable {
     this.renderer.pushDrawCommand({
       type: "line",
       orientation: "vertical",
-      x: this.tableWidth - BORDER_WIDTH,
+      x: this.state.layout.tableWidth - BORDER_WIDTH,
       y: 0,
-      length: this.tableHeight,
+      length: this.state.layout.tableHeight,
       color: theme.tableBorderColor,
       sortOrder: 4
     });
 
-    const gridWidth = this.bodyVisibleWidth;
-    const gridHeight = this.bodyVisibleHeight + theme.rowHeight;
+    const gridWidth = this.state.layout.bodyVisibleWidth;
+    const gridHeight = this.state.layout.bodyVisibleHeight + theme.rowHeight;
 
     // Draw header bottom border
     this.renderer.pushDrawCommand({
@@ -515,20 +389,20 @@ export class CanvasTable {
       orientation: "horizontal",
       x: 0,
       y: theme.rowHeight,
-      length: this.tableWidth,
+      length: this.state.layout.tableWidth,
       color: theme.tableBorderColor,
       sortOrder: 4
     });
 
     // If horizontal scrollbar is visible, draw its border, otherwise,
     // draw table content right border
-    if (this.overflowX) {
+    if (this.state.layout.overflowX) {
       this.renderer.pushDrawCommand({
         type: "line",
         orientation: "horizontal",
         x: 0,
-        y: this.hsbY - BORDER_WIDTH,
-        length: this.tableWidth,
+        y: this.state.layout.hsbY - BORDER_WIDTH,
+        length: this.state.layout.tableWidth,
         color: theme.tableBorderColor,
         sortOrder: 4
       });
@@ -546,13 +420,13 @@ export class CanvasTable {
 
     // If vertical scrollbar is visible, draw its border, otherwise,
     // draw table content bottom border
-    if (this.overflowY) {
+    if (this.state.layout.overflowY) {
       this.renderer.pushDrawCommand({
         type: "line",
         orientation: "vertical",
-        x: this.vsbX - BORDER_WIDTH,
+        x: this.state.layout.vsbX - BORDER_WIDTH,
         y: 0,
-        length: this.tableHeight,
+        length: this.state.layout.tableHeight,
         color: theme.tableBorderColor,
         sortOrder: 4
       });
@@ -569,12 +443,12 @@ export class CanvasTable {
     }
 
     // Draw grid horizontal lines
-    for (const rowIndex of this.tableRowRange(1)) {
+    for (const rowIndex of this.state.rowRange(1)) {
       this.renderer.pushDrawCommand({
         type: "line",
         orientation: "horizontal",
         x: 0,
-        y: this.calculateRowScreenY(rowIndex),
+        y: this.state.calculateRowScreenY(rowIndex),
         length: gridWidth,
         color: theme.tableBorderColor,
         sortOrder: 4
@@ -582,11 +456,11 @@ export class CanvasTable {
     }
 
     // Draw grid vertical lines
-    for (const columnIndex of this.tableColumnRange(1)) {
+    for (const columnIndex of this.state.columnRange(1)) {
       this.renderer.pushDrawCommand({
         type: "line",
         orientation: "vertical",
-        x: this.calculateColumnScreenX(columnIndex),
+        x: this.state.calculateColumnScreenX(columnIndex),
         y: 0,
         length: gridHeight,
         color: theme.tableBorderColor,
@@ -605,11 +479,11 @@ export class CanvasTable {
 
       const fontColor = theme.headerFontColor ?? theme.fontColor;
 
-      for (const columnIndex of this.tableColumnRange()) {
-        const columnDef = this.props.columnDefs[columnIndex];
-        const columnWidth = this.columnWidths[columnIndex];
+      for (const columnIndex of this.state.columnRange()) {
+        const columnDef = this.state.props.columnDefs[columnIndex];
+        const columnWidth = this.state.layout.columnWidths[columnIndex];
 
-        const columnPos = this.calculateColumnScreenX(columnIndex);
+        const columnPos = this.state.calculateColumnScreenX(columnIndex);
 
         const x = columnPos + theme.cellPadding;
         const y = baselineY;
@@ -628,7 +502,7 @@ export class CanvasTable {
           y,
           font,
           color: fontColor,
-          clipRegion: this.headerAreaClipRegion,
+          clipRegion: this.state.headerAreaClipRegion,
           sortOrder: 2
         });
       }
@@ -645,22 +519,22 @@ export class CanvasTable {
 
       const fontColor = theme.bodyFontColor ?? theme.fontColor;
 
-      for (const columnIndex of this.tableColumnRange()) {
-        const columnDef = this.props.columnDefs[columnIndex];
-        const columnWidth = this.columnWidths[columnIndex];
+      for (const columnIndex of this.state.columnRange()) {
+        const columnDef = this.state.props.columnDefs[columnIndex];
+        const columnWidth = this.state.layout.columnWidths[columnIndex];
 
-        const column_pos = this.calculateColumnScreenX(columnIndex);
+        const column_pos = this.state.calculateColumnScreenX(columnIndex);
 
         const x = column_pos + theme.cellPadding;
         const maxWidth = columnWidth - theme.cellPadding * 2;
 
-        for (const row_index of this.tableRowRange()) {
-          const dataRow = this.props.dataRows[row_index];
+        for (const row_index of this.state.rowRange()) {
+          const dataRow = this.state.props.dataRows[row_index];
 
-          const rowPos = this.calculateRowScreenY(row_index);
+          const rowPos = this.state.calculateRowScreenY(row_index);
           const y = rowPos + baselineY;
 
-          const value = this.props.selectProp(dataRow, columnDef);
+          const value = this.state.props.selectProp(dataRow, columnDef);
           const text = isNumber(value) ? value.toString() : (value as string);
 
           const { chars, subpixelOffsets } = this.renderer.textRenderer.prepareText(
@@ -674,7 +548,7 @@ export class CanvasTable {
             y,
             font,
             color: fontColor,
-            clipRegion: this.bodyAreaClipRegion,
+            clipRegion: this.state.bodyAreaClipRegion,
             sortOrder: 2
           });
         }
@@ -684,230 +558,11 @@ export class CanvasTable {
     this.renderer.render();
   }
 
-  refreshLayout() {
-    let scrollWidth = 0;
-    for (const width of this.columnWidths) {
-      scrollWidth += width;
+  mergeBatchedProps() {
+    const props = {} as Partial<CanvasTableProps>;
+    while (this.batchedProps.length > 0) {
+      shallowMerge(props, this.batchedProps.shift());
     }
-
-    this.scrollWidth = scrollWidth;
-    this.scrollHeight = this.props.dataRows.length * this.props.theme.rowHeight;
-
-    const tableAreaOuterWidth  = this.tableWidth  - BORDER_WIDTH;
-    const tableAreaOuterHeight = this.tableHeight - BORDER_WIDTH;
-
-    const tableAreaInnerWidth  = tableAreaOuterWidth  - this.props.theme.scrollbarThickness - BORDER_WIDTH;
-    const tableAreaInnerHeight = tableAreaOuterHeight - this.props.theme.scrollbarThickness - BORDER_WIDTH;
-
-    const bodyAreaOuterHeight = tableAreaOuterHeight - this.props.theme.rowHeight;
-    const bodyAreaInnerHeight = tableAreaInnerHeight - this.props.theme.rowHeight;
-
-    if (tableAreaOuterWidth >= this.scrollWidth && bodyAreaOuterHeight >= this.scrollHeight) {
-      this.overflowX = this.overflowY = false;
-    } else {
-      this.overflowX = tableAreaInnerWidth < this.scrollWidth;
-      this.overflowY = bodyAreaInnerHeight < this.scrollHeight;
-    }
-
-    let tableAreaWidth: number;
-    let bodyAreaWidth: number;
-
-    if (this.overflowY) {
-      tableAreaWidth = bodyAreaWidth = tableAreaInnerWidth;
-    } else {
-      tableAreaWidth = bodyAreaWidth = tableAreaOuterWidth;
-    }
-
-    let tableAreaHeight: number;
-    let bodyAreaHeight: number;
-
-    if (this.overflowX) {
-      tableAreaHeight = tableAreaInnerHeight;
-      bodyAreaHeight = bodyAreaInnerHeight;
-    } else {
-      tableAreaHeight = tableAreaOuterHeight;
-      bodyAreaHeight = bodyAreaOuterHeight;
-    }
-
-    this.tableAreaX = 0;
-    this.tableAreaY = 0;
-    this.tableAreaWidth = tableAreaWidth;
-    this.tableAreaHeight = tableAreaHeight;
-
-    this.bodyAreaX = 0;
-    this.bodyAreaY = this.props.theme.rowHeight;
-    this.bodyAreaWidth = bodyAreaWidth;
-    this.bodyAreaHeight = bodyAreaHeight;
-
-    this.headerAreaX = 0;
-    this.headerAreaY = 0;
-    this.headerAreaWidth = tableAreaWidth;
-    this.headerAreaHeight = this.props.theme.rowHeight;
-
-    this.scrollWidthMinCapped = Math.max(this.scrollWidth, bodyAreaWidth);
-    this.scrollHeightMinCapped = Math.max(this.scrollHeight, bodyAreaHeight);
-
-    this.maxScrollX = this.scrollWidthMinCapped - bodyAreaWidth;
-    this.maxScrollY = this.scrollHeightMinCapped - bodyAreaHeight;
-
-    this.bodyVisibleWidth = Math.min(this.bodyAreaWidth, this.scrollWidth);
-    this.bodyVisibleHeight = Math.min(this.bodyAreaHeight, this.scrollHeight);
-
-    this.hsbX = BORDER_WIDTH;
-    this.hsbY = tableAreaHeight + BORDER_WIDTH;
-    this.hsbWidth = tableAreaWidth - BORDER_WIDTH;
-    this.hsbHeight = this.props.theme.scrollbarThickness;
-
-    this.hsbTrackX      = this.hsbX      + this.props.theme.scrollbarTrackMargin;
-    this.hsbTrackY      = this.hsbY      + this.props.theme.scrollbarTrackMargin;
-    this.hsbTrackWidth  = this.hsbWidth  - this.props.theme.scrollbarTrackMargin * 2;
-    this.hsbTrackHeight = this.hsbHeight - this.props.theme.scrollbarTrackMargin * 2;
-
-    this.hsbThumbY = this.hsbTrackY;
-    this.hsbThumbHeight = this.hsbTrackHeight;
-    this.hsbThumbWidth = Math.max((bodyAreaWidth / this.scrollWidthMinCapped) * this.hsbTrackWidth, MIN_THUMB_LENGTH);
-    this.hsbThumbMinX = this.hsbTrackX;
-    this.hsbThumbMaxX = this.hsbTrackX + this.hsbTrackWidth - this.hsbThumbWidth;
-
-    this.vsbX = tableAreaWidth + BORDER_WIDTH;
-    this.vsbY = this.props.theme.rowHeight + BORDER_WIDTH;
-    this.vsbWidth = this.props.theme.scrollbarThickness;
-    this.vsbHeight = bodyAreaHeight - BORDER_WIDTH;
-
-    this.vsbTrackX      = this.vsbX      + this.props.theme.scrollbarTrackMargin;
-    this.vsbTrackY      = this.vsbY      + this.props.theme.scrollbarTrackMargin;
-    this.vsbTrackWidth  = this.vsbWidth  - this.props.theme.scrollbarTrackMargin * 2;
-    this.vsbTrackHeight = this.vsbHeight - this.props.theme.scrollbarTrackMargin * 2;
-
-    this.vsbThumbX = this.vsbTrackX;
-    this.vsbThumbWidth = this.vsbTrackWidth;
-    this.vsbThumbHeight = Math.max((bodyAreaHeight / this.scrollHeightMinCapped) * this.vsbTrackHeight, MIN_THUMB_LENGTH);
-    this.vsbThumbMinY = this.vsbTrackY;
-    this.vsbThumbMaxY = this.vsbTrackY + this.vsbTrackHeight - this.vsbThumbHeight;
-
-    this.bodyAreaClipRegion = new Path2D();
-    this.bodyAreaClipRegion.rect(this.bodyAreaX, this.bodyAreaY, this.bodyAreaWidth, this.bodyAreaHeight);
-
-    this.headerAreaClipRegion = new Path2D();
-    this.headerAreaClipRegion.rect(this.headerAreaX, this.headerAreaY, this.headerAreaWidth, this.headerAreaHeight);
-  }
-
-  refreshViewport() {
-    let columnPos = 0;
-    this.columnPositions = [];
-
-    for (this.columnStart = 0; this.columnStart < this.columnWidths.length; this.columnStart++) {
-      const column_width = this.columnWidths[this.columnStart];
-      const nextColumnPos = columnPos + column_width;
-      if (nextColumnPos > this.scrollX) {
-        break;
-      }
-      this.columnPositions.push(columnPos);
-      columnPos = nextColumnPos;
-    }
-
-    for (this.columnEnd = this.columnStart; this.columnEnd < this.columnWidths.length; this.columnEnd++) {
-      if (columnPos >= this.scrollX + this.bodyAreaWidth) {
-        break;
-      }
-
-      this.columnPositions.push(columnPos);
-      columnPos += this.columnWidths[this.columnEnd];
-    }
-
-    this.rowStart = Math.floor(this.scrollY / this.props.theme.rowHeight);
-    this.rowEnd = Math.min(Math.ceil((this.scrollY + this.bodyAreaHeight) / this.props.theme.rowHeight), this.props.dataRows.length);
-  }
-
-  resizeTableColumn(columnIndex: number, columnWidth: number) {
-    this.columnWidths[columnIndex] = columnWidth;
-
-    this.refreshLayout();
-
-    this.scrollX = Math.min(this.scrollX, this.maxScrollX);
-    this.scrollY = Math.min(this.scrollY, this.maxScrollY);
-
-    this.refreshViewport();
-
-    this.hsbThumbX = this.calculateHorizontalScrollbarThumbX(this.scrollX);
-    this.vsbThumbY = this.calculateVerticalScrollbarThumbY(this.scrollY);
-
-    const columnDef = this.props.columnDefs[columnIndex];
-    this.props.onResizeColumn?.(columnDef.key, columnIndex, columnWidth);
-  }
-
-  *tableColumnRange(start = 0) {
-    for (let j = this.columnStart + start; j < this.columnEnd; j++) {
-      yield j;
-    }
-  }
-
-  *tableRowRange(start = 0) {
-    for (let i = this.rowStart + start; i < this.rowEnd; i++) {
-      yield i;
-    }
-  }
-
-  calculateResizerScrollX(columnIndex: number) {
-    const columnWidth = this.columnWidths[columnIndex];
-    const columnScrollLeft = this.calculateColumnScrollX(columnIndex);
-    const columnScrollRight = columnScrollLeft + columnWidth;
-    const resizerScrollLeft = Math.min(
-      columnScrollRight - COLUMN_RESIZER_LEFT_WIDTH,
-      this.scrollWidthMinCapped - COLUMN_RESIZER_WIDTH
-    );
-    return resizerScrollLeft;
-  }
-
-  calculateColumnScrollX(columnIndex: number) {
-    return this.columnPositions[columnIndex];
-  }
-
-  calculateRowScrollY(rowIndex: number) {
-    return rowIndex * this.props.theme.rowHeight;
-  }
-
-  calculateColumnScreenX(columnIndex: number) {
-    const columnScrollX = this.calculateColumnScrollX(columnIndex);
-    const columnScreenX = this.scrollToScreenX(columnScrollX);
-    return columnScreenX;
-  }
-
-  calculateRowScreenY(rowIndex: number) {
-    const rowScrollY = this.calculateRowScrollY(rowIndex);
-    const rowScreenY = this.scrollToScreenY(rowScrollY) + this.props.theme.rowHeight;
-    return rowScreenY;
-  }
-
-  scrollToScreenX(scrollX: number) {
-    return scrollX - this.scrollX;
-  }
-
-  scrollToScreenY(scrollY: number) {
-    return scrollY - this.scrollY;
-  }
-
-  screenToScrollX(screenX: number) {
-    return screenX + this.scrollX;
-  }
-
-  screenToScrollY(screenY: number) {
-    return screenY + this.scrollY;
-  }
-
-  calculateScrollX(hsbThumbX: number) {
-    return Math.round(lerp(hsbThumbX, this.hsbThumbMinX, this.hsbThumbMaxX, 0, this.maxScrollX));
-  }
-
-  calculateScrollY(vsbThumbY: number) {
-    return Math.round(lerp(vsbThumbY, this.vsbThumbMinY, this.vsbThumbMaxY, 0, this.maxScrollY));
-  }
-
-  calculateHorizontalScrollbarThumbX(scrollX: number) {
-    return Math.round(lerp(scrollX, 0, this.maxScrollX, this.hsbThumbMinX, this.hsbThumbMaxX));
-  }
-
-  calculateVerticalScrollbarThumbY(scrollY: number) {
-    return Math.round(lerp(scrollY, 0, this.maxScrollY, this.vsbThumbMinY, this.vsbThumbMaxY));
+    return props;
   }
 }
