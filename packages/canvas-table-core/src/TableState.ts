@@ -1,64 +1,85 @@
-import * as Layout from "./Layout";
-import { CanvasTableProps } from "./types";
+import { clamp, lerp } from "./utils";
+import {
+  BORDER_WIDTH,
+  COLUMN_RESIZER_LEFT_WIDTH,
+  COLUMN_RESIZER_WIDTH,
+  DEFAULT_COLUMN_WIDTH,
+  MIN_THUMB_LENGTH
+} from "./constants";
+import { CanvasTableProps, ColumnDef } from "./types";
 
 export class TableState {
-  props: CanvasTableProps;
-  layout: Layout.Layout;
+  public props: CanvasTableProps;
+  public layout: ReturnType<typeof makeLayout>;
+  public extra: ReturnType<typeof makeExtra>;
 
-  headerAreaClipRegion!: Path2D;
-  bodyAreaClipRegion!: Path2D;
-
-  mouseRow = -1;
-
-  constructor(props: CanvasTableProps, layout?: Layout.Layout) {
+  constructor(
+    props: CanvasTableProps,
+    layout?: ReturnType<typeof makeLayout>,
+    extra?: ReturnType<typeof makeExtra>
+  ) {
     this.props = props;
-    this.layout = layout ?? Layout.makeLayout(props.columnDefs);
+    this.layout = layout ?? makeLayout(TableState.calculateColumnWidths(props.columnDefs));
+    this.extra = extra ?? makeExtra();
 
     this.updateClipRegions();
   }
 
+  static calculateColumnWidths(columnDefs: ColumnDef[]) {
+    const columnWidths = [] as number[];
+    for (const { width } of columnDefs) {
+      columnWidths.push(width ?? DEFAULT_COLUMN_WIDTH);
+    }
+    return columnWidths;
+  }
+
   private applyChanges(props: Partial<CanvasTableProps>, tableWidth: number, tableHeight: number) {
-    const newState = this.copy();
+    this.layout.tableWidth = tableWidth;
+    this.layout.tableHeight = tableHeight;
 
-    newState.layout.tableWidth = tableWidth;
-    newState.layout.tableHeight = tableHeight;
-
-    if (props.columnDefs) {
-      newState.props.columnDefs = props.columnDefs;
-      newState.layout.columnWidths = Layout.calculateColumnWidths(props.columnDefs);
+    if (props.columnDefs && !Object.is(props.columnDefs, this.props.columnDefs)) {
+      this.props.columnDefs = props.columnDefs;
+      this.layout.columnWidths = TableState.calculateColumnWidths(props.columnDefs);
     }
 
-    if (props.dataRows) {
-      newState.props.dataRows = props.dataRows;
+    if (props.dataRows && !Object.is(props.dataRows, this.props.dataRows)) {
+      this.props.dataRows = props.dataRows;
     }
 
-    if (props.theme) {
-      newState.props.theme = props.theme;
+    if (props.theme && !Object.is(props.theme, this.props.theme)) {
+      this.props.theme = props.theme;
     }
-
 
     if ('selectedRowId' in props) {
-      newState.props.selectedRowId = props.selectedRowId;
+      this.props.selectedRowId = props.selectedRowId;
     }
 
-    newState.props.selectId = props.selectId ?? this.props.selectId;
-    newState.props.selectProp = props.selectProp ?? this.props.selectProp;
-    newState.props.onSelectRow = props.onSelectRow ?? this.props.onSelectRow;
-    newState.props.onResizeColumn = props.onResizeColumn ?? this.props.onResizeColumn;
+    this.props.selectId = props.selectId ?? this.props.selectId;
+    this.props.selectProp = props.selectProp ?? this.props.selectProp;
+    this.props.onSelectRow = props.onSelectRow ?? this.props.onSelectRow;
+    this.props.onResizeColumn = props.onResizeColumn ?? this.props.onResizeColumn;
 
-    return newState;
+    return this;
+  }
+  
+  private updateScrollPos(scrollAmountX: number, scrollAmountY: number) {
+    this.layout.scrollX = clamp(this.layout.scrollX + scrollAmountX, 0, this.layout.maxScrollX);
+    this.layout.scrollY = clamp(this.layout.scrollY + scrollAmountY, 0, this.layout.maxScrollY);
+
+    this.layout.hsbThumbX = this.calculateHorizontalScrollbarThumbX();
+    this.layout.vsbThumbY = this.calculateVerticalScrollbarThumbY();
   }
 
   private updateClipRegions() {
-    this.bodyAreaClipRegion = new Path2D();
-    this.bodyAreaClipRegion.rect(
+    this.extra.bodyAreaClipRegion = new Path2D();
+    this.extra.bodyAreaClipRegion.rect(
       this.layout.bodyAreaX,
       this.layout.bodyAreaY,
       this.layout.bodyAreaWidth,
       this.layout.bodyAreaHeight);
 
-    this.headerAreaClipRegion = new Path2D();
-    this.headerAreaClipRegion.rect(
+    this.extra.headerAreaClipRegion = new Path2D();
+    this.extra.headerAreaClipRegion.rect(
       this.layout.headerAreaX,
       this.layout.headerAreaY,
       this.layout.headerAreaWidth,
@@ -68,7 +89,8 @@ export class TableState {
   public copy() {
     const props  = Object.assign({}, this.props);
     const layout = Object.assign({}, this.layout);
-    return new TableState(props, layout);
+    const extra  = Object.assign({}, this.extra);
+    return new TableState(props, layout, extra);
   }
 
   public update(
@@ -78,7 +100,7 @@ export class TableState {
     scrollAmountX: number,
     scrollAmountY: number
   ) {
-    const newState = this.applyChanges(props, tableWidth, tableHeight);
+    const newState = this.copy().applyChanges(props, tableWidth, tableHeight);
 
     const tableSizeChanged = newState.layout.tableWidth !== this.layout.tableWidth || newState.layout.tableHeight !== this.layout.tableHeight;
 
@@ -91,7 +113,7 @@ export class TableState {
       newState.refreshLayout();
     }
 
-    Layout.updateScrollPos(newState.layout, scrollAmountX, scrollAmountY);
+    newState.updateScrollPos(scrollAmountX, scrollAmountY);
     const scrollPosChanged = newState.layout.scrollX !== this.layout.scrollX || newState.layout.scrollY !== this.layout.scrollY;
     if (shouldRefreshLayout || scrollPosChanged) {
       newState.refreshViewport();
@@ -101,15 +123,134 @@ export class TableState {
   }
 
   public refreshLayout() {
-    const { dataRows, theme: { rowHeight, scrollbarThickness, scrollbarTrackMargin } } = this.props;
-    Layout.refreshLayout(this.layout, dataRows.length, rowHeight, scrollbarThickness, scrollbarTrackMargin);
-  } 
+    let scrollWidth = 0;
+    for (const width of this.layout.columnWidths) {
+      scrollWidth += width;
+    }
 
-  public refreshViewport() {
-    const { dataRows, theme: { rowHeight } } = this.props;
-    Layout.refreshViewport(this.layout, dataRows.length, rowHeight);
+    this.layout.scrollWidth = scrollWidth;
+    this.layout.scrollHeight = this.props.dataRows.length * this.props.theme.rowHeight;
+
+    const tableAreaOuterWidth  = this.layout.tableWidth  - BORDER_WIDTH;
+    const tableAreaOuterHeight = this.layout.tableHeight - BORDER_WIDTH;
+
+    const tableAreaInnerWidth  = tableAreaOuterWidth  - this.props.theme.scrollbarThickness - BORDER_WIDTH;
+    const tableAreaInnerHeight = tableAreaOuterHeight - this.props.theme.scrollbarThickness - BORDER_WIDTH;
+
+    const bodyAreaOuterHeight = tableAreaOuterHeight - this.props.theme.rowHeight;
+    const bodyAreaInnerHeight = tableAreaInnerHeight - this.props.theme.rowHeight;
+
+    if (tableAreaOuterWidth >= this.layout.scrollWidth && bodyAreaOuterHeight >= this.layout.scrollHeight) {
+      this.layout.overflowX = this.layout.overflowY = false;
+    } else {
+      this.layout.overflowX = tableAreaInnerWidth < this.layout.scrollWidth;
+      this.layout.overflowY = bodyAreaInnerHeight < this.layout.scrollHeight;
+    }
+
+    let tableAreaWidth: number;
+    let bodyAreaWidth: number;
+
+    if (this.layout.overflowY) {
+      tableAreaWidth = bodyAreaWidth = tableAreaInnerWidth;
+    } else {
+      tableAreaWidth = bodyAreaWidth = tableAreaOuterWidth;
+    }
+
+    let tableAreaHeight: number;
+    let bodyAreaHeight: number;
+
+    if (this.layout.overflowX) {
+      tableAreaHeight = tableAreaInnerHeight;
+      bodyAreaHeight = bodyAreaInnerHeight;
+    } else {
+      tableAreaHeight = tableAreaOuterHeight;
+      bodyAreaHeight = bodyAreaOuterHeight;
+    }
+
+    this.layout.tableAreaX = 0;
+    this.layout.tableAreaY = 0;
+    this.layout.tableAreaWidth = tableAreaWidth;
+    this.layout.tableAreaHeight = tableAreaHeight;
+
+    this.layout.bodyAreaX = 0;
+    this.layout.bodyAreaY = this.props.theme.rowHeight;
+    this.layout.bodyAreaWidth = bodyAreaWidth;
+    this.layout.bodyAreaHeight = bodyAreaHeight;
+
+    this.layout.headerAreaX = 0;
+    this.layout.headerAreaY = 0;
+    this.layout.headerAreaWidth = tableAreaWidth;
+    this.layout.headerAreaHeight = this.props.theme.rowHeight;
+
+    this.layout.scrollWidthMinCapped = Math.max(this.layout.scrollWidth, bodyAreaWidth);
+    this.layout.scrollHeightMinCapped = Math.max(this.layout.scrollHeight, bodyAreaHeight);
+
+    this.layout.maxScrollX = this.layout.scrollWidthMinCapped - bodyAreaWidth;
+    this.layout.maxScrollY = this.layout.scrollHeightMinCapped - bodyAreaHeight;
+
+    this.layout.bodyVisibleWidth = Math.min(this.layout.bodyAreaWidth, this.layout.scrollWidth);
+    this.layout.bodyVisibleHeight = Math.min(this.layout.bodyAreaHeight, this.layout.scrollHeight);
+
+    this.layout.hsbX = BORDER_WIDTH;
+    this.layout.hsbY = tableAreaHeight + BORDER_WIDTH;
+    this.layout.hsbWidth = tableAreaWidth - BORDER_WIDTH;
+    this.layout.hsbHeight = this.props.theme.scrollbarThickness;
+
+    this.layout.hsbTrackX      = this.layout.hsbX      + this.props.theme.scrollbarTrackMargin;
+    this.layout.hsbTrackY      = this.layout.hsbY      + this.props.theme.scrollbarTrackMargin;
+    this.layout.hsbTrackWidth  = this.layout.hsbWidth  - this.props.theme.scrollbarTrackMargin * 2;
+    this.layout.hsbTrackHeight = this.layout.hsbHeight - this.props.theme.scrollbarTrackMargin * 2;
+
+    this.layout.hsbThumbY = this.layout.hsbTrackY;
+    this.layout.hsbThumbHeight = this.layout.hsbTrackHeight;
+    this.layout.hsbThumbWidth = Math.max((bodyAreaWidth / this.layout.scrollWidthMinCapped) * this.layout.hsbTrackWidth, MIN_THUMB_LENGTH);
+    this.layout.hsbThumbMinX = this.layout.hsbTrackX;
+    this.layout.hsbThumbMaxX = this.layout.hsbTrackX + this.layout.hsbTrackWidth - this.layout.hsbThumbWidth;
+
+    this.layout.vsbX = tableAreaWidth + BORDER_WIDTH;
+    this.layout.vsbY = this.props.theme.rowHeight + BORDER_WIDTH;
+    this.layout.vsbWidth = this.props.theme.scrollbarThickness;
+    this.layout.vsbHeight = bodyAreaHeight - BORDER_WIDTH;
+
+    this.layout.vsbTrackX      = this.layout.vsbX      + this.props.theme.scrollbarTrackMargin;
+    this.layout.vsbTrackY      = this.layout.vsbY      + this.props.theme.scrollbarTrackMargin;
+    this.layout.vsbTrackWidth  = this.layout.vsbWidth  - this.props.theme.scrollbarTrackMargin * 2;
+    this.layout.vsbTrackHeight = this.layout.vsbHeight - this.props.theme.scrollbarTrackMargin * 2;
+
+    this.layout.vsbThumbX = this.layout.vsbTrackX;
+    this.layout.vsbThumbWidth = this.layout.vsbTrackWidth;
+    this.layout.vsbThumbHeight = Math.max((bodyAreaHeight / this.layout.scrollHeightMinCapped) * this.layout.vsbTrackHeight, MIN_THUMB_LENGTH);
+    this.layout.vsbThumbMinY = this.layout.vsbTrackY;
+    this.layout.vsbThumbMaxY = this.layout.vsbTrackY + this.layout.vsbTrackHeight - this.layout.vsbThumbHeight;
 
     this.updateClipRegions();
+  }
+
+  public refreshViewport() {
+    let columnPos = 0;
+    this.layout.columnPositions = [];
+
+    for (this.layout.columnStart = 0; this.layout.columnStart < this.layout.columnWidths.length; this.layout.columnStart++) {
+      const column_width = this.layout.columnWidths[this.layout.columnStart];
+      const nextColumnPos = columnPos + column_width;
+      if (nextColumnPos > this.layout.scrollX) {
+        break;
+      }
+      this.layout.columnPositions.push(columnPos);
+      columnPos = nextColumnPos;
+    }
+
+    for (this.layout.columnEnd = this.layout.columnStart; this.layout.columnEnd < this.layout.columnWidths.length; this.layout.columnEnd++) {
+      if (columnPos >= this.layout.scrollX + this.layout.bodyAreaWidth) {
+        break;
+      }
+
+      this.layout.columnPositions.push(columnPos);
+      columnPos += this.layout.columnWidths[this.layout.columnEnd];
+    }
+
+    this.layout.rowStart = Math.floor(this.layout.scrollY / this.props.theme.rowHeight);
+    this.layout.rowEnd = Math.min(Math.ceil((this.layout.scrollY + this.layout.bodyAreaHeight) / this.props.theme.rowHeight), this.props.dataRows.length);
   }
 
   public resizeColumn(columnIndex: number, columnWidth: number) {
@@ -122,12 +263,20 @@ export class TableState {
 
     this.refreshViewport();
 
-    this.layout.hsbThumbX = Layout.calculateHorizontalScrollbarThumbX(this.layout);
-    this.layout.vsbThumbY = Layout.calculateVerticalScrollbarThumbY(this.layout);
+    this.layout.hsbThumbX = this.calculateHorizontalScrollbarThumbX();
+    this.layout.vsbThumbY = this.calculateVerticalScrollbarThumbY();
 
     const columnDef = this.props.columnDefs[columnIndex];
     this.props.onResizeColumn?.(columnDef.key, columnIndex, columnWidth);
-  }  
+  }
+
+  public calculateHorizontalScrollbarThumbX() {
+    return Math.round(lerp(this.layout.scrollX, 0, this.layout.maxScrollX, this.layout.hsbThumbMinX, this.layout.hsbThumbMaxX));
+  }
+
+  public calculateVerticalScrollbarThumbY() {
+    return Math.round(lerp(this.layout.scrollY, 0, this.layout.maxScrollY, this.layout.vsbThumbMinY, this.layout.vsbThumbMaxY));
+  }
 
   public *columnRange(start = 0) {
     for (let j = this.layout.columnStart + start; j < this.layout.columnEnd; j++) {
@@ -142,48 +291,133 @@ export class TableState {
   }
 
   public calculateResizerScrollX(columnIndex: number) {
-    return Layout.calculateResizerScrollX(this.layout, columnIndex);
+    const columnWidth = this.layout.columnWidths[columnIndex];
+    const columnScrollLeft = this.calculateColumnScrollX(columnIndex);
+    const columnScrollRight = columnScrollLeft + columnWidth;
+    const resizerScrollLeft = Math.min(
+      columnScrollRight - COLUMN_RESIZER_LEFT_WIDTH,
+      this.layout.scrollWidthMinCapped - COLUMN_RESIZER_WIDTH
+    );
+    return resizerScrollLeft;
   }
 
   public calculateColumnScrollX(columnIndex: number) {
-    return Layout.calculateColumnScrollX(this.layout, columnIndex);
+    return this.layout.columnPositions[columnIndex];
   }
 
   public calculateRowScrollY(rowIndex: number) {
-    const { theme: { rowHeight } } = this.props;
-    return Layout.calculateRowScrollY(rowIndex, rowHeight);
+    return rowIndex * this.props.theme.rowHeight;
   }
 
   public calculateColumnScreenX(columnIndex: number) {
-    return Layout.calculateColumnScreenX(this.layout, columnIndex);
+    const columnScrollX = this.calculateColumnScrollX(columnIndex);
+    const columnScreenX = this.scrollToScreenX(columnScrollX);
+    return columnScreenX;
   }
 
   public calculateRowScreenY(rowIndex: number) {
-    const { theme: { rowHeight } } = this.props;
-    return Layout.calculateRowScreenY(this.layout, rowIndex, rowHeight);
+    const rowScrollY = this.calculateRowScrollY(rowIndex);
+    const rowScreenY = this.scrollToScreenY(rowScrollY) + this.props.theme.rowHeight;
+    return rowScreenY;
   }
 
   public scrollToScreenX(scrollX: number) {
-    return Layout.scrollToScreenX(this.layout, scrollX);
+    return scrollX - this.layout.scrollX;
   }
 
   public scrollToScreenY(scrollY: number) {
-    return Layout.scrollToScreenY(this.layout, scrollY);
+    return scrollY - this.layout.scrollY;
   }
 
-  public screenToScrollX(scrollX: number) {
-    return Layout.screenToScrollX(this.layout, scrollX);
+  public screenToScrollX(screenX: number) {
+    return screenX + this.layout.scrollX;
   }
 
-  public screenToScrollY(scrollY: number) {
-    return Layout.screenToScrollY(this.layout, scrollY);
+  public screenToScrollY(screenY: number) {
+    return screenY + this.layout.scrollY;
   }
 
   public calculateScrollX(hsbThumbX: number) {
-    return Layout.calculateScrollX(this.layout, hsbThumbX);
+    return Math.round(lerp(hsbThumbX, this.layout.hsbThumbMinX, this.layout.hsbThumbMaxX, 0, this.layout.maxScrollX));
   }
 
-  public calculateScrollY(hsbThumbY: number) {
-    return Layout.calculateScrollY(this.layout, hsbThumbY);
+  public calculateScrollY(vsbThumbY: number) {
+    return Math.round(lerp(vsbThumbY, this.layout.vsbThumbMinY, this.layout.vsbThumbMaxY, 0, this.layout.maxScrollY));
   }
 }
+
+const makeLayout = (columnWidths: number[]) => ({
+  tableWidth: 1,
+  tableHeight: 1,
+  tableAreaX: 0,
+  tableAreaY: 0,
+  tableAreaWidth: 1,
+  tableAreaHeight: 1,
+  bodyAreaX: 0,
+  bodyAreaY: 0,
+  bodyAreaWidth: 1,
+  bodyAreaHeight: 1,
+  headerAreaX: 0,
+  headerAreaY: 0,
+  headerAreaWidth: 1,
+  headerAreaHeight: 1,
+  bodyVisibleWidth: 1,
+  bodyVisibleHeight: 1,
+  scrollX: 0,
+  scrollY: 0,
+  scrollWidth: 1,
+  scrollHeight: 1,
+  scrollWidthMinCapped: 1,
+  scrollHeightMinCapped: 1,
+  maxScrollX: 0,
+  maxScrollY: 0,
+
+  hsbX: 0,
+  hsbY: 0,
+  hsbWidth: 1,
+  hsbHeight: 1,
+  hsbTrackX: 0,
+  hsbTrackY: 0,
+  hsbTrackWidth: 1,
+  hsbTrackHeight: 1,
+  hsbThumbX: 0,
+  hsbThumbY: 0,
+  hsbThumbWidth: 1,
+  hsbThumbHeight: 1,
+  hsbThumbMinX: 0,
+  hsbThumbMaxX: 0,
+
+  vsbX: 0,
+  vsbY: 0,
+  vsbWidth: 1,
+  vsbHeight: 1,
+  vsbTrackX: 0,
+  vsbTrackY: 0,
+  vsbTrackWidth: 1,
+  vsbTrackHeight: 1,
+  vsbThumbX: 0,
+  vsbThumbY: 0,
+  vsbThumbWidth: 1,
+  vsbThumbHeight: 1,
+  vsbThumbMinY: 0,
+  vsbThumbMaxY: 0,
+
+  overflowX: false,
+  overflowY: false,
+
+  columnStart: 0,
+  columnEnd: 0,
+  rowStart: 0,
+  rowEnd: 0,
+
+  columnWidths: columnWidths ?? [],
+  columnPositions: [] as number[]
+});
+
+export const makeExtra = () => ({
+  dragAnchorX: 0,
+  dragAnchorY: 0,
+  mouseRow: -1,
+  headerAreaClipRegion: undefined as unknown as Path2D,
+  bodyAreaClipRegion: undefined as unknown as Path2D
+});
