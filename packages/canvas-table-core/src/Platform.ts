@@ -7,8 +7,10 @@ export type Mouse_Button_Value = Mouse_Buttons[keyof Mouse_Buttons];
 export class Platform {
   containerEl: HTMLDivElement;
   wrapperEl: HTMLDivElement;
+
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
+
   fontMetricsCanvas: HTMLCanvasElement;
   fontMetricsCanvasCtx: CanvasRenderingContext2D;
 
@@ -16,14 +18,24 @@ export class Platform {
 
   currMouseX = 0;
   currMouseY = 0;
+
+  prevMouseX = 0;
+  prevMouseY = 0;
+
   currMouseButtons = 0;
   prevMouseButtons = 0;
+
+  mouseHasMoved = false;
+
   dragStartX = 0;
   dragStartY = 0;
+
   dragDistanceX = 0;
   dragDistanceY = 0 ;
+
   scrollAmountX = 0;
   scrollAmountY = 0;
+
   rafId?: number;
 
   mouseDownHandler: (event: MouseEvent) => void;
@@ -126,6 +138,8 @@ export class Platform {
       this.resizeCanvas(this.containerEl.offsetWidth, this.containerEl.offsetHeight);
     }
 
+    this.mouseHasMoved = this.currMouseX !== this.prevMouseX || this.currMouseY !== this.prevMouseY;
+
     if (this.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
       this.dragStartX = this.currMouseX;
       this.dragStartY = this.currMouseY;
@@ -138,7 +152,10 @@ export class Platform {
 
     this.updateFunction?.();
 
+    this.prevMouseX = this.currMouseX;
+    this.prevMouseY = this.currMouseY;
     this.prevMouseButtons = this.currMouseButtons;
+
     this.scrollAmountX = 0;
     this.scrollAmountY = 0;
 
@@ -172,6 +189,8 @@ export class Platform {
 
   updateMouseState(event: MouseEvent) {
     const bcr = this.wrapperEl.getBoundingClientRect();
+    this.prevMouseX = this.currMouseX;
+    this.prevMouseY = this.currMouseY;
     this.currMouseX = event.clientX - bcr.x;
     this.currMouseY = event.clientY - bcr.y;
     this.currMouseButtons = event.buttons;

@@ -1,31 +1,43 @@
+import { Platform } from "./Platform";
+import { GuiContext } from "./GuiContext";
 import { clamp, lerp } from "./utils";
 import {
   BORDER_WIDTH,
   COLUMN_RESIZER_LEFT_WIDTH,
   COLUMN_RESIZER_WIDTH,
   DEFAULT_COLUMN_WIDTH,
+  MIN_COLUMN_WIDTH,
   MIN_THUMB_LENGTH
 } from "./constants";
 import { CanvasTableProps, ColumnDef } from "./types";
 
+export type TableLayout = ReturnType<typeof makeLayout>;
+
 export class TableState {
+  private platform: Platform;
   public props: CanvasTableProps;
-  public layout: ReturnType<typeof makeLayout>;
-  public extra: ReturnType<typeof makeExtra>;
+  public layout: TableLayout;
+  public guictx: GuiContext;
 
   constructor(
+    platform: Platform,
     props: CanvasTableProps,
-    layout?: ReturnType<typeof makeLayout>,
-    extra?: ReturnType<typeof makeExtra>
+    layout?: TableLayout,
+    guictx?: GuiContext
   ) {
+    this.platform = platform;
     this.props = props;
-    this.layout = layout ?? makeLayout(TableState.calculateColumnWidths(props.columnDefs));
-    this.extra = extra ?? makeExtra();
+    this.layout = layout ?? TableState.createInitialLayout(props.columnDefs);
+    this.guictx = guictx ?? new GuiContext();
 
     this.updateClipRegions();
   }
+  
+  private static createInitialLayout(columnDefs: ColumnDef[]) {
+    return makeLayout(TableState.calculateColumnWidths(columnDefs));
+  }
 
-  static calculateColumnWidths(columnDefs: ColumnDef[]) {
+  private static calculateColumnWidths(columnDefs: ColumnDef[]) {
     const columnWidths = [] as number[];
     for (const { width } of columnDefs) {
       columnWidths.push(width ?? DEFAULT_COLUMN_WIDTH);
@@ -33,9 +45,9 @@ export class TableState {
     return columnWidths;
   }
 
-  private applyChanges(props: Partial<CanvasTableProps>, tableWidth: number, tableHeight: number) {
-    this.layout.tableWidth = tableWidth;
-    this.layout.tableHeight = tableHeight;
+  private applyChanges(props: Partial<CanvasTableProps>) {
+    this.layout.tableWidth = this.platform.canvas.width;
+    this.layout.tableHeight = this.platform.canvas.height;
 
     if (props.columnDefs && !Object.is(props.columnDefs, this.props.columnDefs)) {
       this.props.columnDefs = props.columnDefs;
@@ -71,15 +83,15 @@ export class TableState {
   }
 
   private updateClipRegions() {
-    this.extra.bodyAreaClipRegion = new Path2D();
-    this.extra.bodyAreaClipRegion.rect(
+    this.guictx.bodyAreaClipRegion = new Path2D();
+    this.guictx.bodyAreaClipRegion.rect(
       this.layout.bodyAreaX,
       this.layout.bodyAreaY,
       this.layout.bodyAreaWidth,
       this.layout.bodyAreaHeight);
 
-    this.extra.headerAreaClipRegion = new Path2D();
-    this.extra.headerAreaClipRegion.rect(
+    this.guictx.headerAreaClipRegion = new Path2D();
+    this.guictx.headerAreaClipRegion.rect(
       this.layout.headerAreaX,
       this.layout.headerAreaY,
       this.layout.headerAreaWidth,
@@ -87,20 +99,14 @@ export class TableState {
   }
 
   public copy() {
-    const props  = Object.assign({}, this.props);
+    const props = Object.assign({}, this.props);
     const layout = Object.assign({}, this.layout);
-    const extra  = Object.assign({}, this.extra);
-    return new TableState(props, layout, extra);
+    const newState = new TableState(this.platform, props, layout, this.guictx);
+    return newState;
   }
 
-  public update(
-    props: Partial<CanvasTableProps>,
-    tableWidth: number,
-    tableHeight: number,
-    scrollAmountX: number,
-    scrollAmountY: number
-  ) {
-    const newState = this.copy().applyChanges(props, tableWidth, tableHeight);
+  public update(props: Partial<CanvasTableProps>) {
+    const newState = this.copy().applyChanges(props);
 
     const tableSizeChanged = newState.layout.tableWidth !== this.layout.tableWidth || newState.layout.tableHeight !== this.layout.tableHeight;
 
@@ -113,10 +119,25 @@ export class TableState {
       newState.refreshLayout();
     }
 
+    let scrollAmountX: number;
+    let scrollAmountY: number;
+    if (this.guictx.isNoWidgetActive()) {
+      scrollAmountX = this.platform.scrollAmountX;
+      scrollAmountY = this.platform.scrollAmountY;
+    } else {
+      scrollAmountX = 0;
+      scrollAmountY = 0;
+    }
+
     newState.updateScrollPos(scrollAmountX, scrollAmountY);
+
     const scrollPosChanged = newState.layout.scrollX !== this.layout.scrollX || newState.layout.scrollY !== this.layout.scrollY;
     if (shouldRefreshLayout || scrollPosChanged) {
       newState.refreshViewport();
+    }
+
+    if (this.platform.mouseHasMoved) {
+      newState.guictx.hoveredRowIndex = this.calculateHoveredRowIndex();
     }
 
     return newState;
@@ -191,6 +212,9 @@ export class TableState {
     this.layout.bodyVisibleWidth = Math.min(this.layout.bodyAreaWidth, this.layout.scrollWidth);
     this.layout.bodyVisibleHeight = Math.min(this.layout.bodyAreaHeight, this.layout.scrollHeight);
 
+    this.layout.gridWidth = this.layout.bodyVisibleWidth;
+    this.layout.gridHeight = this.layout.bodyVisibleHeight + this.props.theme.rowHeight;
+
     this.layout.hsbX = BORDER_WIDTH;
     this.layout.hsbY = tableAreaHeight + BORDER_WIDTH;
     this.layout.hsbWidth = tableAreaWidth - BORDER_WIDTH;
@@ -253,6 +277,39 @@ export class TableState {
     this.layout.rowEnd = Math.min(Math.ceil((this.layout.scrollY + this.layout.bodyAreaHeight) / this.props.theme.rowHeight), this.props.dataRows.length);
   }
 
+  public dragHorizontalScrollbarThumb() {
+    const { dragDistanceX } = this.platform;
+    const { hsbThumbMinX: min, hsbThumbMaxX: max } = this.layout;
+    const { dragAnchorX } = this.guictx;
+
+    this.layout.hsbThumbX = clamp(dragAnchorX + dragDistanceX, min, max);
+    this.layout.scrollX = this.calculateScrollX(this.layout.hsbThumbX);
+
+    this.refreshViewport();
+  }
+
+  public dragVerticalScrollbarThumb() {
+    const { dragDistanceY } = this.platform;
+    const { vsbThumbMinY: min, vsbThumbMaxY: max } = this.layout;
+    const { dragAnchorY } = this.guictx;
+
+    this.layout.vsbThumbY = clamp(dragAnchorY + dragDistanceY, min, max);
+    this.layout.scrollY = this.calculateScrollY(this.layout.vsbThumbY);
+
+    this.refreshViewport();
+  }
+
+  public dragColumnResizer(columnIndex: number) {
+    const { dragDistanceX } = this.platform;
+    const { dragAnchorX } = this.guictx;
+
+    const left = this.calculateColumnScrollX(columnIndex);
+    const right = dragAnchorX + dragDistanceX;
+    const columnWidth = Math.max(right - left, MIN_COLUMN_WIDTH);
+
+    this.resizeColumn(columnIndex, columnWidth);
+  } 
+
   public resizeColumn(columnIndex: number, columnWidth: number) {
     this.layout.columnWidths[columnIndex] = columnWidth;
 
@@ -276,19 +333,7 @@ export class TableState {
 
   public calculateVerticalScrollbarThumbY() {
     return Math.round(lerp(this.layout.scrollY, 0, this.layout.maxScrollY, this.layout.vsbThumbMinY, this.layout.vsbThumbMaxY));
-  }
-
-  public *columnRange(start = 0) {
-    for (let j = this.layout.columnStart + start; j < this.layout.columnEnd; j++) {
-      yield j;
-    }
-  }
-
-  public *rowRange(start = 0) {
-    for (let i = this.layout.rowStart + start; i < this.layout.rowEnd; i++) {
-      yield i;
-    }
-  }
+  } 
 
   public calculateResizerScrollX(columnIndex: number) {
     const columnWidth = this.layout.columnWidths[columnIndex];
@@ -299,6 +344,29 @@ export class TableState {
       this.layout.scrollWidthMinCapped - COLUMN_RESIZER_WIDTH
     );
     return resizerScrollLeft;
+  }
+
+  private calculateHoveredRowIndex() {
+    const { currMouseY } = this.platform;
+
+    const {
+      bodyAreaX: x,
+      bodyAreaY: y,
+      bodyVisibleWidth: width,
+      bodyVisibleHeight: height
+    } = this.layout;
+
+    const { rowHeight } = this.props.theme;
+
+    let mouseRow: number;
+    if (this.platform.isMouseInRect(x, y, width, height)) {
+      const mouseScrollY = this.screenToScrollY(currMouseY);
+      mouseRow = Math.floor((mouseScrollY - rowHeight) / rowHeight);
+    } else {
+      mouseRow = -1;
+    }
+
+    return mouseRow;
   }
 
   public calculateColumnScrollX(columnIndex: number) {
@@ -344,6 +412,18 @@ export class TableState {
   public calculateScrollY(vsbThumbY: number) {
     return Math.round(lerp(vsbThumbY, this.layout.vsbThumbMinY, this.layout.vsbThumbMaxY, 0, this.layout.maxScrollY));
   }
+
+  public *columnRange(start = 0) {
+    for (let j = this.layout.columnStart + start; j < this.layout.columnEnd; j++) {
+      yield j;
+    }
+  }
+
+  public *rowRange(start = 0) {
+    for (let i = this.layout.rowStart + start; i < this.layout.rowEnd; i++) {
+      yield i;
+    }
+  }
 }
 
 const makeLayout = (columnWidths: number[]) => ({
@@ -363,6 +443,8 @@ const makeLayout = (columnWidths: number[]) => ({
   headerAreaHeight: 1,
   bodyVisibleWidth: 1,
   bodyVisibleHeight: 1,
+  gridWidth: 1,
+  gridHeight: 1,
   scrollX: 0,
   scrollY: 0,
   scrollWidth: 1,
@@ -412,12 +494,4 @@ const makeLayout = (columnWidths: number[]) => ({
 
   columnWidths: columnWidths ?? [],
   columnPositions: [] as number[]
-});
-
-export const makeExtra = () => ({
-  dragAnchorX: 0,
-  dragAnchorY: 0,
-  mouseRow: -1,
-  headerAreaClipRegion: undefined as unknown as Path2D,
-  bodyAreaClipRegion: undefined as unknown as Path2D
 });
