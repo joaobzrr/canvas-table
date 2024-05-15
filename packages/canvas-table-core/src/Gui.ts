@@ -324,6 +324,34 @@ export class Gui {
     });
   }
 
+  private drawTopRightCornerBackground() {
+    const { vsbX, vsbWidth } = this.state.layout;
+    const { rowHeight, topRightCornerBackgroundColor } = this.state.props.theme;
+
+    this.renderer.pushDrawCommand({
+      type: 'rect',
+      x: vsbX,
+      y: 0,
+      width: vsbWidth,
+      height: rowHeight,
+      fillColor: topRightCornerBackgroundColor,
+    });
+  }
+
+  private drawBottomRightCornerBackground() {
+    const { hsbY, vsbX, vsbWidth } = this.state.layout;
+    const { scrollbarThickness, bottomRightCornerBackgroundColor } = this.state.props.theme;
+
+    this.renderer.pushDrawCommand({
+      type: 'rect',
+      x: vsbX,
+      y: hsbY,
+      width: vsbWidth,
+      height: scrollbarThickness,
+      fillColor: bottomRightCornerBackgroundColor,
+    });
+  }
+
   private drawEvenRowsBackground() {
     const { gridWidth } = this.state.layout;
     const { rowHeight, evenRowBackgroundColor } = this.state.props.theme;
@@ -697,6 +725,15 @@ export class Gui {
 
     if (theme.headerBackgroundColor) {
       this.drawHeaderBackground();
+    }
+
+    if (layout.overflowX && layout.overflowY) {
+      if (theme.topRightCornerBackgroundColor) {
+        this.drawTopRightCornerBackground();
+      }
+      if (theme.bottomRightCornerBackgroundColor) {
+        this.drawBottomRightCornerBackground();
+      }
     }
 
     if (theme.evenRowBackgroundColor) {

@@ -50,6 +50,8 @@ export type Theme = {
   tableBackgroundColor?: string;
   bodyBackgroundColor?: string;
   headerBackgroundColor?: string;
+  topRightCornerBackgroundColor?: string;
+  bottomRightCornerBackgroundColor?: string;
 
   rowHeight: number;
   hoveredRowBackgroundColor?: string;
