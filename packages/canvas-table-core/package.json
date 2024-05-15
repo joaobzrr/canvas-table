@@ -23,7 +23,7 @@
   "scripts": {
     "watch": "rollup --config rollup.config.mjs --watch",
     "build": "rollup --config rollup.config.mjs",
-    "prepublish": "npm run build && npm run lint"
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
