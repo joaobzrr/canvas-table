@@ -324,6 +324,52 @@ export class Gui {
     });
   }
 
+  private drawEvenRowsBackground() {
+    const { gridWidth } = this.state.layout;
+    const { rowHeight, evenRowColor } = this.state.props.theme;
+    const { bodyAreaClipRegion } = this.state.guictx;
+
+    const x = 0;
+    const width = gridWidth;
+    const height = rowHeight;
+
+    for (const rowIndex of this.state.rowRange(0, 2)) {
+      const y = this.state.calculateRowScreenY(rowIndex);
+      this.renderer.pushDrawCommand({
+        type: 'rect',
+        x,
+        y,
+        width,
+        height,
+        fillColor: evenRowColor,
+        clipRegion: bodyAreaClipRegion,
+      });
+    }
+  }
+
+  private drawOddRowsBackground() {
+    const { gridWidth } = this.state.layout;
+    const { rowHeight, oddRowColor } = this.state.props.theme;
+    const { bodyAreaClipRegion } = this.state.guictx;
+
+    const x = 0;
+    const width = gridWidth;
+    const height = rowHeight;
+
+    for (const rowIndex of this.state.rowRange(1, 2)) {
+      const y = this.state.calculateRowScreenY(rowIndex);
+      this.renderer.pushDrawCommand({
+        type: 'rect',
+        x,
+        y,
+        width,
+        height,
+        fillColor: oddRowColor,
+        clipRegion: bodyAreaClipRegion,
+      });
+    }
+  }
+
   private drawOuterTableBorders() {
     const { tableWidth, tableHeight } = this.state.layout;
     const { tableBorderColor } = this.state.props.theme;
@@ -651,6 +697,14 @@ export class Gui {
 
     if (theme.headerBackgroundColor) {
       this.drawHeaderBackground();
+    }
+
+    if (theme.evenRowColor) {
+      this.drawEvenRowsBackground();
+    }
+
+    if (theme.oddRowColor) {
+      this.drawOddRowsBackground();
     }
 
     this.drawOuterTableBorders();

@@ -10,19 +10,16 @@ export function createFontSpecifier(fontFamily: string, fontSize: string, fontSt
   return [fontStyle, fontSize, fontFamily].join(' ');
 }
 
-export function shallowMerge<T = unknown>(
-  obj1: Record<string, unknown>,
-  ...objs: Record<string, unknown>[]
-): T {
-  const result = obj1;
-  for (const obj2 of objs.slice(1)) {
-    if (obj2 === null || obj2 === undefined) {
+export function shallowMerge<T = unknown>(...objs: Record<string, unknown>[]): T {
+  const result = {} as Record<string, unknown>;
+  for (const obj of objs) {
+    if (obj === null || obj === undefined) {
       continue;
     }
 
-    for (const key of Object.keys(obj2)) {
-      if (obj2[key] !== undefined) {
-        result[key] = obj2[key];
+    for (const key of Object.keys(obj)) {
+      if (obj[key] !== undefined) {
+        result[key] = obj[key];
       }
     }
   }

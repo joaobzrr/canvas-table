@@ -58,6 +58,8 @@ export type Theme = {
   headerBackgroundColor?: string;
   hoveredRowColor?: string;
   selectedRowColor: string;
+  evenRowColor?: string;
+  oddRowColor?: string;
   scrollbarTrackColor?: string;
   scrollbarThumbHoverColor?: string;
   scrollbarThumbPressedColor?: string;

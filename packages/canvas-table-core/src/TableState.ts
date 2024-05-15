@@ -476,14 +476,14 @@ export class TableState {
     );
   }
 
-  public *columnRange(start = 0) {
-    for (let j = this.layout.columnStart + start; j < this.layout.columnEnd; j++) {
+  public *columnRange(start = 0, step = 1) {
+    for (let j = this.layout.columnStart + start; j < this.layout.columnEnd; j += step) {
       yield j;
     }
   }
 
-  public *rowRange(start = 0) {
-    for (let i = this.layout.rowStart + start; i < this.layout.rowEnd; i++) {
+  public *rowRange(start = 0, step = 1) {
+    for (let i = this.layout.rowStart + start; i < this.layout.rowEnd; i += step) {
       yield i;
     }
   }

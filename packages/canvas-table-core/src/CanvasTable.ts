@@ -53,11 +53,7 @@ export class CanvasTable {
   }
 
   private mergeBatchedProps() {
-    const props = {} as Partial<CanvasTableProps>;
-    while (this.batchedProps.length > 0) {
-      shallowMerge(props, this.batchedProps.shift()!);
-    }
-    return props;
+    return shallowMerge<Partial<CanvasTableProps>>(...this.batchedProps);
   }
 
   public config(props: Partial<CanvasTableProps>) {
