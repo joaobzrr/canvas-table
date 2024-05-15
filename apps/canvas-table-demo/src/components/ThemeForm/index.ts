@@ -1,1 +1,1 @@
-export { default } from "./ThemeForm";
+export { ThemeForm } from './ThemeForm';

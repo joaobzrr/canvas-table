@@ -1,5 +1,4 @@
-import React from "react";
-import { ColumnDef, DataRow } from "@bzrr/canvas-table-react";
+import { type ColumnDef, type DataRow } from '@bzrr/canvas-table-react';
 
 export type Table = {
   id: string;

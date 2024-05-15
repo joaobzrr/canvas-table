@@ -4,10 +4,19 @@
   "main": "index.js",
   "scripts": {
     "build:all": "pnpm --filter @bzrr/canvas-table-core run build && pnpm --filter @bzrr/canvas-table-react run build && pnpm --filter @bzrr/canvas-table-solid run build && pnpm --filter canvas-table-demo run build",
-    "lint:all": "pnpm --filter @bzrr/canvas-table-core run lint && pnpm --filter @bzrr/canvas-table-react run lint && pnpm --filter @bzrr/canvas-table-solid run lint && pnpm --filter canvas-table-demo run lint",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint .",
+    "format": "npx prettier --write \"**/*.{js,mjs,cjs,ts,tsx,mts,cts,json}\""
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^9.1.1",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-solid": "^0.13.2",
+    "prettier": "^3.2.5",
+    "prettier-plugin-tailwindcss": "^0.5.14",
+    "typescript-eslint": "^7.7.0"
+  }
 }

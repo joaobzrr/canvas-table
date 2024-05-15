@@ -5,7 +5,6 @@
   "scripts": {
     "serve": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint --ext .js,.jsx,.ts,.tsx --fix ./src",
     "preview": "vite preview",
     "deploy": "gh-pages -d dist"
   },

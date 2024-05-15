@@ -1,5 +1,5 @@
-import styles from "./TableList.module.css";
-import { Table } from "../../types";
+import { type Table } from '../../types';
+import styles from './TableList.module.css';
 
 type PropsType = {
   tables: Table[];
@@ -7,7 +7,7 @@ type PropsType = {
   onChange?: (table: string) => void;
 };
 
-export default function TableList(props: PropsType) {
+export const TableList = (props: PropsType) => {
   const { tables, value, onChange } = props;
 
   return (
@@ -18,9 +18,13 @@ export default function TableList(props: PropsType) {
         className={styles.select}
       >
         {tables.map(({ id, name }) => (
-          <option value={id} label={name} key={id} />
+          <option
+            value={id}
+            label={name}
+            key={id}
+          />
         ))}
       </select>
     </div>
   );
-}
+};

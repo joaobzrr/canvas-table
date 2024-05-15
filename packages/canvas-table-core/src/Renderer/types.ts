@@ -1,12 +1,12 @@
 export type DrawLineCommand = BaseDrawCommand & {
-  type: "line";
+  type: 'line';
   orientation: LineOrientation;
   length: number;
   color: string;
 };
 
 export type DrawRectCommand = BaseDrawCommand & {
-  type: "rect";
+  type: 'rect';
   width: number;
   height: number;
   strokeColor?: string;
@@ -15,7 +15,7 @@ export type DrawRectCommand = BaseDrawCommand & {
 };
 
 export type DrawTextCommand = BaseDrawCommand & {
-  type: "text";
+  type: 'text';
   chars: string[];
   subpixelOffsets: number[];
   font: string;
@@ -33,5 +33,4 @@ export type BaseDrawCommand = {
 
 export type DrawCommand = DrawLineCommand | DrawRectCommand | DrawTextCommand;
 
-export type LineOrientation = "horizontal" | "vertical";
-
+export type LineOrientation = 'horizontal' | 'vertical';

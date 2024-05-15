@@ -1,29 +1,29 @@
-import { Renderer } from "@bzrr/canvas-table-core";
+import { Renderer } from '@bzrr/canvas-table-core';
 
 const CANVAS_WIDTH = 320;
 const CANVAS_HEIGHT = 240;
 const ATLAS_WIDTH = 320;
 const ATLAS_HEIGHT = 240;
 
-const FONT_FAMILY = "Arial";
+const FONT_FAMILY = 'Arial';
 const FONT_SIZE = 40;
 const FONT = `${FONT_SIZE}px ${FONT_FAMILY}`;
-const TEXT = "😯😨😗😲😇💩😂🤬🤡😎🥳😝👨‍👧🔴🤢👽";
+const TEXT = '😯😨😗😲😇💩😂🤬🤡😎🥳😝👨‍👧🔴🤢👽';
 const TEXT_X = 0;
 
-const rootEl = document.getElementById("root");
+const rootEl = document.getElementById('root');
 if (!rootEl) {
   throw new Error("Element with id 'root' was not found");
 }
 
-const canvas = document.createElement("canvas");
+const canvas = document.createElement('canvas');
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
-canvas.style.border = "1px solid black";
+canvas.style.border = '1px solid black';
 rootEl.appendChild(canvas);
-const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext('2d');
 if (!ctx) {
-  throw new Error("Could not instantiate canvas context");
+  throw new Error('Could not instantiate canvas context');
 }
 
 const renderer = new Renderer({
@@ -31,26 +31,26 @@ const renderer = new Renderer({
   ctx,
   glyphAtlasParams: {
     width: ATLAS_WIDTH,
-    height: ATLAS_HEIGHT
-  }
+    height: ATLAS_HEIGHT,
+  },
 });
-renderer.glyphAtlas.canvas.style.border = "1px solid black";
-renderer.glyphAtlas.canvas.style.marginLeft = "10px";
-rootEl.appendChild(renderer.glyphAtlas.canvas);
+renderer.textRenderer.glyphAtlas.canvas.style.border = '1px solid black';
+renderer.textRenderer.glyphAtlas.canvas.style.marginLeft = '10px';
+rootEl.appendChild(renderer.textRenderer.glyphAtlas.canvas);
 
 ctx.imageSmoothingEnabled = false;
 
 ctx.font = FONT;
-const { fontBoundingBoxAscent, fontBoundingBoxDescent } = ctx.measureText("M");
+const { fontBoundingBoxAscent, fontBoundingBoxDescent } = ctx.measureText('M');
 const fontHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
 const baselineY = Math.floor((CANVAS_HEIGHT - fontHeight) / 2 + fontBoundingBoxAscent);
 
-const {
-  actualBoundingBoxAscent,
-  actualBoundingBoxDescent,
-  actualBoundingBoxLeft,
-  actualBoundingBoxRight
-} = ctx.measureText(TEXT);
+//const {
+//  actualBoundingBoxAscent,
+//  actualBoundingBoxDescent,
+//  actualBoundingBoxLeft,
+//  actualBoundingBoxRight,
+//} = ctx.measureText(TEXT);
 
 // renderer.pushDrawCommand({
 //   type: "line",
@@ -60,7 +60,7 @@ const {
 //   length: CANVAS_WIDTH,
 //   color: "red"
 // })
-// 
+//
 // renderer.pushDrawCommand({
 //   type: "line",
 //   orientation: "horizontal",
@@ -69,7 +69,7 @@ const {
 //   length: CANVAS_WIDTH,
 //   color: "lightgreen"
 // })
-// 
+//
 // renderer.pushDrawCommand({
 //   type: "line",
 //   orientation: "horizontal",
@@ -78,7 +78,7 @@ const {
 //   length: CANVAS_WIDTH,
 //   color: "blue"
 // })
-// 
+//
 // renderer.pushDrawCommand({
 //   type: "line",
 //   orientation: "vertical",
@@ -87,7 +87,7 @@ const {
 //   length: CANVAS_HEIGHT,
 //   color: "purple"
 // })
-// 
+//
 // renderer.pushDrawCommand({
 //   type: "line",
 //   orientation: "vertical",
@@ -96,17 +96,18 @@ const {
 //   length: CANVAS_HEIGHT,
 //   color: "orange"
 // })
-// 
+//
 renderer.pushDrawCommand({
-  type: "text",
+  type: 'text',
   x: TEXT_X,
   y: baselineY,
-  text: TEXT,
+  chars: [],
+  subpixelOffsets: [],
   font: FONT,
-  color: "black"
+  color: 'black',
 });
 
 renderer.render();
 
-ctx.fillStyle = "#555555";
+ctx.fillStyle = '#555555';
 ctx.fillText(TEXT, TEXT_X, baselineY + fontHeight);
