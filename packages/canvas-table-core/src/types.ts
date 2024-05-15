@@ -44,12 +44,12 @@ export type Theme = {
   fontStyle: string;
   bodyFontStyle?: string;
   bodyFontColor?: string;
-  headerFontColor?: string;
-  headerFontStyle?: string;
+  headFontColor?: string;
+  headFontStyle?: string;
 
   tableBackgroundColor?: string;
   bodyBackgroundColor?: string;
-  headerBackgroundColor?: string;
+  headBackgroundColor?: string;
   topRightCornerBackgroundColor?: string;
   bottomRightCornerBackgroundColor?: string;
 
@@ -61,7 +61,7 @@ export type Theme = {
 
   // @Note For now, these only serve as way to disable borders by specifying a width of zero.
   borderWidth: number;
-  headerBorderWidth?: number;
+  headBorderWidth?: number;
   rowBorderWidth?: number;
   columnBorderWidth?: number;
 

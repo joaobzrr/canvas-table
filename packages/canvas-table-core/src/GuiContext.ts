@@ -7,7 +7,7 @@ export class GuiContext {
   public dragAnchorX = 0;
   public dragAnchorY = 0;
 
-  public headerAreaClipRegion: Path2D = undefined!;
+  public headAreaClipRegion: Path2D = undefined!;
   public bodyAreaClipRegion: Path2D = undefined!;
 
   setActiveWidget(id: string | null) {
