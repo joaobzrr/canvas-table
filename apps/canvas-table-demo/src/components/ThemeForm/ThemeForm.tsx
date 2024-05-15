@@ -53,22 +53,22 @@ export const ThemeForm = (props: PropsType) => {
           />
         </div>
         <div className={styles.row}>
-          <label className={styles.label}>Hovered Row Color</label>
+          <label className={styles.label}>Hovered Row Background Color</label>
           <input
             onChange={(event) =>
               onChange({
-                hoveredRowColor: event.target.value || undefined,
+                hoveredRowBackgroundColor: event.target.value || undefined,
               })
             }
             className={styles.input}
           />
         </div>
         <div className={styles.row}>
-          <label className={styles.label}>Selected Row Color</label>
+          <label className={styles.label}>Selected Row Background Color</label>
           <input
             onChange={(event) =>
               onChange({
-                selectedRowColor: event.target.value || undefined,
+                selectedRowBackgroundColor: event.target.value || undefined,
               })
             }
             className={styles.input}
@@ -79,7 +79,7 @@ export const ThemeForm = (props: PropsType) => {
           <input
             onChange={(event) =>
               onChange({
-                tableBorderColor: event.target.value || undefined,
+                borderColor: event.target.value || undefined,
               })
             }
             className={styles.input}

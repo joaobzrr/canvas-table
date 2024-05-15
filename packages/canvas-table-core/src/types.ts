@@ -38,13 +38,6 @@ export type DataRowId = PropValue;
 export type DataRow = Record<string, unknown>;
 
 export type Theme = {
-  rowHeight: number;
-  cellPadding: number;
-  tableBorderColor: string;
-  scrollbarThickness: number;
-  scrollbarTrackMargin: number;
-  scrollbarThumbColor: string;
-  columnResizerOpacity: number;
   fontSize: string;
   fontFamily: string;
   fontColor: string;
@@ -53,15 +46,34 @@ export type Theme = {
   bodyFontColor?: string;
   headerFontColor?: string;
   headerFontStyle?: string;
+
   tableBackgroundColor?: string;
   bodyBackgroundColor?: string;
   headerBackgroundColor?: string;
-  hoveredRowColor?: string;
-  selectedRowColor: string;
-  evenRowColor?: string;
-  oddRowColor?: string;
+
+  rowHeight: number;
+  hoveredRowBackgroundColor?: string;
+  selectedRowBackgroundColor: string;
+  evenRowBackgroundColor?: string;
+  oddRowBackgroundColor?: string;
+
+  // @Note For now, these only serve as way to disable borders by specifying a width of zero.
+  borderWidth: number;
+  headerBorderWidth?: number;
+  rowBorderWidth?: number;
+  columnBorderWidth?: number;
+
+  borderColor: string;
+
+  scrollbarThickness: number;
+  scrollbarTrackMargin: number;
   scrollbarTrackColor?: string;
+  scrollbarThumbColor: string;
   scrollbarThumbHoverColor?: string;
   scrollbarThumbPressedColor?: string;
+
   columnResizerColor: string;
+  columnResizerOpacity: number;
+
+  cellPadding: number;
 };
