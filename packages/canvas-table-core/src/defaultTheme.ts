@@ -5,7 +5,7 @@ export const defaultTheme: Theme = {
   fontFamily: 'Arial',
   fontColor: 'black',
   fontStyle: 'normal',
-  headerFontStyle: 'bold',
+  headFontStyle: 'bold',
 
   rowHeight: 30,
   hoveredRowBackgroundColor: '#d6e9ff',

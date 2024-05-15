@@ -66,7 +66,7 @@ export class Gui {
 
     if (guictx.isWidgetActive(id) || guictx.isWidgetHot(id)) {
       const { columnResizerColor } = props.theme;
-      const { headerAreaClipRegion } = guictx;
+      const { headAreaClipRegion } = guictx;
 
       this.renderer.pushDrawCommand({
         type: 'rect',
@@ -75,7 +75,7 @@ export class Gui {
         width,
         height,
         fillColor: columnResizerColor,
-        clipRegion: headerAreaClipRegion,
+        clipRegion: headAreaClipRegion,
         sortOrder: 5,
       });
       return true;
@@ -309,18 +309,18 @@ export class Gui {
     });
   }
 
-  private drawHeaderBackground() {
-    const { headerAreaX, headerAreaY, headerAreaWidth, headerAreaHeight } = this.state.layout;
+  private drawHeadBackground() {
+    const { headAreaX, headAreaY, headAreaWidth, headAreaHeight } = this.state.layout;
 
-    const { headerBackgroundColor } = this.state.props.theme;
+    const { headBackgroundColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
       type: 'rect',
-      x: headerAreaX,
-      y: headerAreaY,
-      width: headerAreaWidth,
-      height: headerAreaHeight,
-      fillColor: headerBackgroundColor,
+      x: headAreaX,
+      y: headAreaY,
+      width: headAreaWidth,
+      height: headAreaHeight,
+      fillColor: headBackgroundColor,
     });
   }
 
@@ -447,7 +447,7 @@ export class Gui {
     });
   }
 
-  private drawHeaderBottomBorder() {
+  private drawHeadBottomBorder() {
     const { tableWidth } = this.state.layout;
     const { rowHeight, borderColor } = this.state.props.theme;
 
@@ -556,7 +556,7 @@ export class Gui {
     }
   }
 
-  private drawHeaderText() {
+  private drawHeadText() {
     const { columnDefs, theme } = this.state.props;
     const { columnWidths } = this.state.layout;
 
@@ -566,16 +566,16 @@ export class Gui {
       fontSize,
       fontFamily,
       fontStyle,
-      headerFontStyle,
+      headFontStyle,
       fontColor,
-      headerFontColor,
+      headFontColor,
     } = theme;
 
-    const { headerAreaClipRegion } = this.state.guictx;
+    const { headAreaClipRegion } = this.state.guictx;
 
     const { textRenderer } = this.renderer;
 
-    const textStyle = headerFontStyle ?? fontStyle;
+    const textStyle = headFontStyle ?? fontStyle;
     const font = createFontSpecifier(fontFamily, fontSize, textStyle);
 
     const { fontBoundingBoxAscent, fontBoundingBoxDescent } = this.platform.getFontMetrics(font);
@@ -583,7 +583,7 @@ export class Gui {
     const fontHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
     const baselineY = Math.floor((rowHeight - fontHeight) / 2 + fontBoundingBoxAscent);
 
-    const textColor = headerFontColor ?? fontColor;
+    const textColor = headFontColor ?? fontColor;
 
     for (const columnIndex of this.state.columnRange()) {
       const columnDef = columnDefs[columnIndex];
@@ -614,7 +614,7 @@ export class Gui {
         y,
         font,
         color: textColor,
-        clipRegion: headerAreaClipRegion,
+        clipRegion: headAreaClipRegion,
         sortOrder: 2,
       });
     }
@@ -723,8 +723,8 @@ export class Gui {
       this.drawBodyBackground();
     }
 
-    if (theme.headerBackgroundColor) {
-      this.drawHeaderBackground();
+    if (theme.headBackgroundColor) {
+      this.drawHeadBackground();
     }
 
     if (layout.overflowX && layout.overflowY) {
@@ -746,11 +746,11 @@ export class Gui {
 
     this.drawOuterTableBorders();
 
-    const shouldDrawHeaderBorder =
-      (theme.headerBorderWidth !== undefined && theme.headerBorderWidth > 0) ||
-      (theme.headerBorderWidth === undefined && theme.borderWidth > 0);
-    if (shouldDrawHeaderBorder) {
-      this.drawHeaderBottomBorder();
+    const shouldDrawHeadBorder =
+      (theme.headBorderWidth !== undefined && theme.headBorderWidth > 0) ||
+      (theme.headBorderWidth === undefined && theme.borderWidth > 0);
+    if (shouldDrawHeadBorder) {
+      this.drawHeadBottomBorder();
     }
 
     if (layout.overflowX) {
@@ -779,7 +779,7 @@ export class Gui {
       this.drawColumnBorders();
     }
 
-    this.drawHeaderText();
+    this.drawHeadText();
 
     this.drawBodyText();
 

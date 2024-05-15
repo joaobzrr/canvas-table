@@ -91,12 +91,12 @@ export class TableState {
       this.layout.bodyAreaHeight,
     );
 
-    this.guictx.headerAreaClipRegion = new Path2D();
-    this.guictx.headerAreaClipRegion.rect(
-      this.layout.headerAreaX,
-      this.layout.headerAreaY,
-      this.layout.headerAreaWidth,
-      this.layout.headerAreaHeight,
+    this.guictx.headAreaClipRegion = new Path2D();
+    this.guictx.headAreaClipRegion.rect(
+      this.layout.headAreaX,
+      this.layout.headAreaY,
+      this.layout.headAreaWidth,
+      this.layout.headAreaHeight,
     );
   }
 
@@ -210,10 +210,10 @@ export class TableState {
     this.layout.bodyAreaWidth = bodyAreaWidth;
     this.layout.bodyAreaHeight = bodyAreaHeight;
 
-    this.layout.headerAreaX = 0;
-    this.layout.headerAreaY = 0;
-    this.layout.headerAreaWidth = tableAreaWidth;
-    this.layout.headerAreaHeight = this.props.theme.rowHeight;
+    this.layout.headAreaX = 0;
+    this.layout.headAreaY = 0;
+    this.layout.headAreaWidth = tableAreaWidth;
+    this.layout.headAreaHeight = this.props.theme.rowHeight;
 
     this.layout.scrollWidthMinCapped = Math.max(this.layout.scrollWidth, bodyAreaWidth);
     this.layout.scrollHeightMinCapped = Math.max(this.layout.scrollHeight, bodyAreaHeight);
@@ -500,10 +500,10 @@ const makeLayout = (columnWidths: number[]) => ({
   bodyAreaY: 0,
   bodyAreaWidth: 1,
   bodyAreaHeight: 1,
-  headerAreaX: 0,
-  headerAreaY: 0,
-  headerAreaWidth: 1,
-  headerAreaHeight: 1,
+  headAreaX: 0,
+  headAreaY: 0,
+  headAreaWidth: 1,
+  headAreaHeight: 1,
   bodyVisibleWidth: 1,
   bodyVisibleHeight: 1,
   gridWidth: 1,

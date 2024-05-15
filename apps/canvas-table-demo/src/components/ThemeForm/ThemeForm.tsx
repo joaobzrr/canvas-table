@@ -42,11 +42,11 @@ export const ThemeForm = (props: PropsType) => {
           />
         </div>
         <div className={styles.row}>
-          <label className={styles.label}>Header Background Color</label>
+          <label className={styles.label}>Head Background Color</label>
           <input
             onChange={(event) =>
               onChange({
-                headerBackgroundColor: event.target.value || undefined,
+                headBackgroundColor: event.target.value || undefined,
               })
             }
             className={styles.input}
@@ -130,11 +130,11 @@ export const ThemeForm = (props: PropsType) => {
           />
         </div>
         <div className={styles.row}>
-          <label className={styles.label}>Header Font Color</label>
+          <label className={styles.label}>Head Font Color</label>
           <input
             onChange={(event) =>
               onChange({
-                headerFontColor: event.target.value || undefined,
+                headFontColor: event.target.value || undefined,
               })
             }
             className={styles.input}
@@ -163,11 +163,11 @@ export const ThemeForm = (props: PropsType) => {
           />
         </div>
         <div className={styles.row}>
-          <label className={styles.label}>Header Font Style</label>
+          <label className={styles.label}>Head Font Style</label>
           <input
             onChange={(event) =>
               onChange({
-                headerFontStyle: event.target.value || undefined,
+                headFontStyle: event.target.value || undefined,
               })
             }
             className={styles.input}
