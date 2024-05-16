@@ -87,8 +87,8 @@ export class Gui {
   private doHorizontalScrollbar() {
     const { props, layout, guictx } = this.state;
 
-    const { scrollbarTrackColor } = props.theme;
-    if (scrollbarTrackColor) {
+    const { scrollbarBackgroundColor } = props.theme;
+    if (scrollbarBackgroundColor) {
       const { hsbX, hsbY, hsbWidth, hsbHeight } = layout;
       this.renderer.pushDrawCommand({
         type: 'rect',
@@ -96,7 +96,7 @@ export class Gui {
         y: hsbY,
         width: hsbWidth,
         height: hsbHeight,
-        fillColor: scrollbarTrackColor,
+        fillColor: scrollbarBackgroundColor,
         sortOrder: 3,
       });
     }
@@ -157,8 +157,8 @@ export class Gui {
   private doVerticalScrollbar() {
     const { props, layout, guictx } = this.state;
 
-    const { scrollbarTrackColor } = props.theme;
-    if (scrollbarTrackColor) {
+    const { scrollbarBackgroundColor } = props.theme;
+    if (scrollbarBackgroundColor) {
       const { vsbX, vsbY, vsbWidth, vsbHeight } = layout;
       this.renderer.pushDrawCommand({
         type: 'rect',
@@ -166,7 +166,7 @@ export class Gui {
         y: vsbY,
         width: vsbWidth,
         height: vsbHeight,
-        fillColor: scrollbarTrackColor,
+        fillColor: scrollbarBackgroundColor,
         sortOrder: 3,
       });
     }
@@ -227,7 +227,7 @@ export class Gui {
   private doRows() {
     const { props, layout, guictx } = this.state;
     const { rowHeight } = props.theme;
-    const { bodyVisibleWidth } = layout;
+    const { bodyVisibleWidth, rowStart, rowEnd } = layout;
     const { hoveredRowIndex, bodyAreaClipRegion } = guictx;
 
     if (hoveredRowIndex !== -1) {
@@ -246,7 +246,7 @@ export class Gui {
         this.renderer.pushDrawCommand({
           type: 'rect',
           x: 0,
-          y: this.state.calculateRowScreenY(hoveredRowIndex),
+          y: this.state.calculateRowScreenTop(hoveredRowIndex),
           width: bodyVisibleWidth,
           height: rowHeight,
           fillColor: hoveredRowBackgroundColor,
@@ -257,8 +257,8 @@ export class Gui {
     }
 
     if (props.selectedRowId !== null) {
-      for (const rowIndex of this.state.rowRange()) {
-        const dataRow = props.dataRows[rowIndex];
+      for (let i = rowStart; i < rowEnd; i++) {
+        const dataRow = props.dataRows[i];
         const dataRowId = props.selectId(dataRow);
 
         if (props.selectedRowId == dataRowId) {
@@ -267,7 +267,7 @@ export class Gui {
           this.renderer.pushDrawCommand({
             type: 'rect',
             x: 0,
-            y: this.state.calculateRowScreenY(rowIndex),
+            y: this.state.calculateRowScreenTop(i),
             width: bodyVisibleWidth,
             height: rowHeight,
             fillColor: selectedRowBackgroundColor,
@@ -281,15 +281,15 @@ export class Gui {
   }
 
   private drawTableBackground() {
-    const { tableWidth, tableHeight } = this.state.layout;
+    const { canvasWidth, canvasHeight } = this.state.layout;
     const { tableBackgroundColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
       type: 'rect',
       x: 0,
       y: 0,
-      width: tableWidth,
-      height: tableHeight,
+      width: canvasWidth,
+      height: canvasHeight,
       fillColor: tableBackgroundColor,
     });
   }
@@ -353,7 +353,7 @@ export class Gui {
   }
 
   private drawEvenRowsBackground() {
-    const { gridWidth } = this.state.layout;
+    const { gridWidth, rowStart, rowEnd } = this.state.layout;
     const { rowHeight, evenRowBackgroundColor } = this.state.props.theme;
     const { bodyAreaClipRegion } = this.state.guictx;
 
@@ -361,8 +361,8 @@ export class Gui {
     const width = gridWidth;
     const height = rowHeight;
 
-    for (const rowIndex of this.state.rowRange(0, 2)) {
-      const y = this.state.calculateRowScreenY(rowIndex);
+    for (let i = rowStart; i < rowEnd; i += 2) {
+      const y = this.state.calculateRowScreenTop(i);
       this.renderer.pushDrawCommand({
         type: 'rect',
         x,
@@ -376,7 +376,7 @@ export class Gui {
   }
 
   private drawOddRowsBackground() {
-    const { gridWidth } = this.state.layout;
+    const { gridWidth, rowStart, rowEnd } = this.state.layout;
     const { rowHeight, oddRowBackgroundColor } = this.state.props.theme;
     const { bodyAreaClipRegion } = this.state.guictx;
 
@@ -384,8 +384,8 @@ export class Gui {
     const width = gridWidth;
     const height = rowHeight;
 
-    for (const rowIndex of this.state.rowRange(1, 2)) {
-      const y = this.state.calculateRowScreenY(rowIndex);
+    for (let i = rowStart + 1; i < rowEnd; i += 2) {
+      const y = this.state.calculateRowScreenTop(i);
       this.renderer.pushDrawCommand({
         type: 'rect',
         x,
@@ -399,7 +399,7 @@ export class Gui {
   }
 
   private drawOuterTableBorders() {
-    const { tableWidth, tableHeight } = this.state.layout;
+    const { canvasWidth, canvasHeight } = this.state.layout;
     const { borderColor } = this.state.props.theme;
 
     // Draw top outer table border
@@ -408,7 +408,7 @@ export class Gui {
       orientation: 'horizontal',
       x: 0,
       y: 0,
-      length: tableWidth,
+      length: canvasWidth,
       color: borderColor,
       sortOrder: 4,
     });
@@ -418,8 +418,8 @@ export class Gui {
       type: 'line',
       orientation: 'horizontal',
       x: 0,
-      y: tableHeight - BORDER_WIDTH,
-      length: tableWidth,
+      y: canvasHeight - BORDER_WIDTH,
+      length: canvasWidth,
       color: borderColor,
       sortOrder: 4,
     });
@@ -430,7 +430,7 @@ export class Gui {
       orientation: 'vertical',
       x: 0,
       y: 0,
-      length: tableHeight,
+      length: canvasHeight,
       color: borderColor,
       sortOrder: 4,
     });
@@ -439,54 +439,54 @@ export class Gui {
     this.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'vertical',
-      x: tableWidth - BORDER_WIDTH,
+      x: canvasWidth - BORDER_WIDTH,
       y: 0,
-      length: tableHeight,
+      length: canvasHeight,
       color: borderColor,
       sortOrder: 4,
     });
   }
 
   private drawHeadBottomBorder() {
-    const { tableWidth } = this.state.layout;
+    const { canvasWidth, shift } = this.state.layout;
     const { rowHeight, borderColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'horizontal',
       x: 0,
-      y: rowHeight,
-      length: tableWidth,
+      y: rowHeight - shift,
+      length: canvasWidth,
       color: borderColor,
       sortOrder: 4,
     });
   }
 
   private drawHorizontalScrollbarBorder() {
-    const { tableWidth, hsbY } = this.state.layout;
+    const { canvasWidth, hsbY } = this.state.layout;
     const { borderColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'horizontal',
       x: 0,
-      y: hsbY - BORDER_WIDTH,
-      length: tableWidth,
+      y: hsbY,
+      length: canvasWidth,
       color: borderColor,
       sortOrder: 4,
     });
   }
 
   private drawVerticalScrollbarBorder() {
-    const { tableHeight, vsbX } = this.state.layout;
+    const { canvasHeight, vsbX } = this.state.layout;
     const { borderColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'vertical',
-      x: vsbX - BORDER_WIDTH,
+      x: vsbX,
       y: 0,
-      length: tableHeight,
+      length: canvasHeight,
       color: borderColor,
       sortOrder: 4,
     });
@@ -523,15 +523,15 @@ export class Gui {
   }
 
   private drawRowBorders() {
-    const { gridWidth } = this.state.layout;
+    const { rowStart, rowEnd, gridWidth } = this.state.layout;
     const { borderColor } = this.state.props.theme;
 
-    for (const rowIndex of this.state.rowRange(1)) {
+    for (let rowIndex = rowStart; rowIndex < rowEnd - 1; rowIndex++) {
       this.renderer.pushDrawCommand({
         type: 'line',
         orientation: 'horizontal',
         x: 0,
-        y: this.state.calculateRowScreenY(rowIndex),
+        y: this.state.calculateRowScreenBottom(rowIndex),
         length: gridWidth,
         color: borderColor,
         sortOrder: 4,
@@ -540,14 +540,14 @@ export class Gui {
   }
 
   private drawColumnBorders() {
-    const { gridHeight } = this.state.layout;
+    const { columnStart, columnEnd, gridHeight } = this.state.layout;
     const { borderColor } = this.state.props.theme;
 
-    for (const columnIndex of this.state.columnRange(1)) {
+    for (let columnIndex = columnStart; columnIndex < columnEnd - 1; columnIndex++) {
       this.renderer.pushDrawCommand({
         type: 'line',
         orientation: 'vertical',
-        x: this.state.calculateColumnScreenX(columnIndex),
+        x: this.state.calculateColumnScreenRight(columnIndex),
         y: 0,
         length: gridHeight,
         color: borderColor,
@@ -558,7 +558,7 @@ export class Gui {
 
   private drawHeadText() {
     const { columnDefs, theme } = this.state.props;
-    const { columnWidths } = this.state.layout;
+    const { columnWidths, columnStart, columnEnd } = this.state.layout;
 
     const {
       rowHeight,
@@ -585,11 +585,11 @@ export class Gui {
 
     const textColor = headFontColor ?? fontColor;
 
-    for (const columnIndex of this.state.columnRange()) {
-      const columnDef = columnDefs[columnIndex];
-      const columnWidth = columnWidths[columnIndex];
+    for (let j = columnStart; j < columnEnd; j++) {
+      const columnDef = columnDefs[j];
+      const columnWidth = columnWidths[j];
 
-      const columnPos = this.state.calculateColumnScreenX(columnIndex);
+      const columnPos = this.state.calculateColumnScreenLeft(j);
 
       const x = columnPos + cellPadding;
       const y = baselineY;
@@ -622,7 +622,7 @@ export class Gui {
 
   private drawBodyText() {
     const { columnDefs, dataRows, theme, selectProp } = this.state.props;
-    const { columnWidths } = this.state.layout;
+    const { columnWidths, rowStart, rowEnd, columnStart, columnEnd } = this.state.layout;
 
     const {
       rowHeight,
@@ -649,19 +649,19 @@ export class Gui {
 
     const textColor = bodyFontColor ?? fontColor;
 
-    for (const columnIndex of this.state.columnRange()) {
-      const columnDef = columnDefs[columnIndex];
-      const columnWidth = columnWidths[columnIndex];
+    for (let j = columnStart; j < columnEnd; j++) {
+      const columnDef = columnDefs[j];
+      const columnWidth = columnWidths[j];
 
-      const columnPos = this.state.calculateColumnScreenX(columnIndex);
+      const columnPos = this.state.calculateColumnScreenLeft(j);
 
       const x = columnPos + cellPadding;
       const maxWidth = columnWidth - cellPadding * 2;
 
-      for (const rowIndex of this.state.rowRange()) {
-        const dataRow = dataRows[rowIndex];
+      for (let i = rowStart; i < rowEnd; i++) {
+        const dataRow = dataRows[i];
 
-        const rowPos = this.state.calculateRowScreenY(rowIndex);
+        const rowPos = this.state.calculateRowScreenTop(i);
         const y = rowPos + baselineY;
 
         const value = selectProp(dataRow, columnDef);
@@ -698,9 +698,10 @@ export class Gui {
       layout,
       props: { theme },
     } = this.state;
+    const { columnStart, columnEnd } = layout;
 
-    for (const columnIndex of this.state.columnRange()) {
-      if (this.doColumnResizer(columnIndex)) {
+    for (let j = columnStart; j < columnEnd; j++) {
+      if (this.doColumnResizer(j)) {
         break;
       }
     }
@@ -744,7 +745,12 @@ export class Gui {
       this.drawOddRowsBackground();
     }
 
-    this.drawOuterTableBorders();
+    const shouldDrawOuterBorder =
+      (theme.outerBorderWidth !== undefined && theme.outerBorderWidth > 0) ||
+      (theme.outerBorderWidth === undefined && theme.borderWidth > 0);
+    if (shouldDrawOuterBorder) {
+      this.drawOuterTableBorders();
+    }
 
     const shouldDrawHeadBorder =
       (theme.headBorderWidth !== undefined && theme.headBorderWidth > 0) ||

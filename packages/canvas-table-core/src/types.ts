@@ -52,6 +52,7 @@ export type Theme = {
   headBackgroundColor?: string;
   topRightCornerBackgroundColor?: string;
   bottomRightCornerBackgroundColor?: string;
+  scrollbarBackgroundColor?: string;
 
   rowHeight: number;
   hoveredRowBackgroundColor?: string;
@@ -61,6 +62,7 @@ export type Theme = {
 
   // @Note For now, these only serve as way to disable borders by specifying a width of zero.
   borderWidth: number;
+  outerBorderWidth?: number;
   headBorderWidth?: number;
   rowBorderWidth?: number;
   columnBorderWidth?: number;
@@ -68,8 +70,7 @@ export type Theme = {
   borderColor: string;
 
   scrollbarThickness: number;
-  scrollbarTrackMargin: number;
-  scrollbarTrackColor?: string;
+  scrollbarPadding: number;
   scrollbarThumbColor: string;
   scrollbarThumbHoverColor?: string;
   scrollbarThumbPressedColor?: string;

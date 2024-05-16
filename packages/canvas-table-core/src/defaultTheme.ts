@@ -15,8 +15,8 @@ export const defaultTheme: Theme = {
   borderColor: '#665C54',
 
   scrollbarThickness: 20,
-  scrollbarTrackMargin: 0,
-  scrollbarTrackColor: '#F1F1F1',
+  scrollbarPadding: 0,
+  scrollbarBackgroundColor: '#F1F1F1',
   scrollbarThumbColor: '#C1C1C1',
   scrollbarThumbHoverColor: '#A8A8A8',
   scrollbarThumbPressedColor: '#787878',

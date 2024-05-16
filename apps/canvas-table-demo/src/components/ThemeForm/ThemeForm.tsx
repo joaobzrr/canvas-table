@@ -185,11 +185,11 @@ export const ThemeForm = (props: PropsType) => {
           />
         </div>
         <div className={styles.row}>
-          <label className={styles.label}>Scrollbar Track Margin</label>
+          <label className={styles.label}>Scrollbar Padding</label>
           <input
             onChange={(event) =>
               onChange({
-                scrollbarTrackMargin: parseInt(event.target.value) || undefined,
+                scrollbarPadding: parseInt(event.target.value) || undefined,
               })
             }
             className={styles.input}
@@ -207,11 +207,11 @@ export const ThemeForm = (props: PropsType) => {
           />
         </div>
         <div className={styles.row}>
-          <label className={styles.label}>Scrollbar Track Color</label>
+          <label className={styles.label}>Scrollbar Background Color</label>
           <input
             onChange={(event) =>
               onChange({
-                scrollbarTrackColor: event.target.value || undefined,
+                scrollbarBackgroundColor: event.target.value || undefined,
               })
             }
             className={styles.input}

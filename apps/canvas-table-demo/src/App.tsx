@@ -29,7 +29,12 @@ export const App = () => {
 
   const table = tables[tableIndex];
 
-  const [themeSettings, setThemeSettings] = useState<Partial<Theme>>({});
+  const [themeSettings, setThemeSettings] = useState<Partial<Theme>>({
+    outerBorderWidth: 0,
+    //    bodyBackgroundColor: 'lightgreen',
+    //    headBackgroundColor: 'tomato',
+    //    headBorderWidth: 0,
+  });
 
   const theme = useMemo(() => {
     return shallowMerge<Theme>({}, defaultTheme, themeSettings);
@@ -142,16 +147,18 @@ export const App = () => {
         )}
       </div>
       <main className={styles.main}>
-        <CanvasTable
-          columnDefs={table.columnDefs}
-          dataRows={table.dataRows}
-          theme={theme}
-          selectedRowId={selectedRow?.id as DataRowId}
-          containerClassName={styles.canvasTable}
-          selectId={(row) => row.id as DataRowId}
-          onSelectRow={(_, row) => setSelectedRow(row)}
-          onResizeColumn={onResizeColumn}
-        />
+        <div style={{ height: '100%', border: '1px solid red' }}>
+          <CanvasTable
+            columnDefs={table.columnDefs}
+            dataRows={table.dataRows}
+            theme={theme}
+            selectedRowId={selectedRow?.id as DataRowId}
+            containerClassName={styles.canvasTable}
+            selectId={(row) => row.id as DataRowId}
+            onSelectRow={(_, row) => setSelectedRow(row)}
+            onResizeColumn={onResizeColumn}
+          />
+        </div>
       </main>
       <div className={styles.rightSidebar}>
         {selectedRow && (
