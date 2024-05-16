@@ -74,8 +74,12 @@ export class TableState {
   }
 
   private updateScrollPos(scrollAmountX: number, scrollAmountY: number) {
-    this.layout.scrollX = clamp(this.layout.scrollX + scrollAmountX, 0, this.layout.maxScrollX);
-    this.layout.scrollY = clamp(this.layout.scrollY + scrollAmountY, 0, this.layout.maxScrollY);
+    this.layout.scrollLeft = clamp(
+      this.layout.scrollLeft + scrollAmountX,
+      0,
+      this.layout.maxScrollX,
+    );
+    this.layout.scrollTop = clamp(this.layout.scrollTop + scrollAmountY, 0, this.layout.maxScrollY);
 
     this.layout.hsbThumbX = this.calculateHorizontalScrollbarThumbX();
     this.layout.vsbThumbY = this.calculateVerticalScrollbarThumbY();
@@ -136,8 +140,8 @@ export class TableState {
     newState.updateScrollPos(scrollAmountX, scrollAmountY);
 
     const scrollPosChanged =
-      newState.layout.scrollX !== this.layout.scrollX ||
-      newState.layout.scrollY !== this.layout.scrollY;
+      newState.layout.scrollLeft !== this.layout.scrollLeft ||
+      newState.layout.scrollTop !== this.layout.scrollTop;
     if (shouldRefreshLayout || scrollPosChanged) {
       newState.refreshViewport();
     }
@@ -150,23 +154,23 @@ export class TableState {
   }
 
   public refreshLayout() {
-    this.layout.shift = this.outerBorderWidth === 0 ? 1 : 0;
+    this.layout.shift = this.outerBorderWidth > 0 ? 1 : 0;
 
     let scrollWidth = 0;
     for (const width of this.layout.columnWidths) {
       scrollWidth += width;
     }
-    scrollWidth -= this.layout.shift;
+    scrollWidth -= this.layout.shift ^ 1;
 
     const scrollHeight =
-      this.props.dataRows.length * this.props.theme.rowHeight - this.layout.shift;
+      this.props.dataRows.length * this.props.theme.rowHeight - (this.layout.shift ^ 1);
 
     this.layout.scrollWidth = scrollWidth;
     this.layout.scrollHeight = scrollHeight;
 
-    const tableOuterWidth = this.layout.canvasWidth - this.outerBorderWidth;
+    const tableOuterWidth = this.layout.canvasWidth;
     const tableInnerWidth = tableOuterWidth - this.props.theme.scrollbarThickness;
-    const tableOuterHeight = this.layout.canvasHeight - this.outerBorderWidth;
+    const tableOuterHeight = this.layout.canvasHeight;
     const tableInnerHeight = tableOuterHeight - this.props.theme.scrollbarThickness;
 
     const viewportOuterWidth = tableOuterWidth;
@@ -209,18 +213,18 @@ export class TableState {
       viewportAreaHeight = viewportOuterHeight;
     }
 
-    this.layout.tableAreaX = 0;
-    this.layout.tableAreaY = 0;
+    this.layout.tableAreaX = this.layout.shift;
+    this.layout.tableAreaY = this.layout.shift;
     this.layout.tableAreaWidth = tableAreaWidth;
     this.layout.tableAreaHeight = tableAreaHeight;
 
-    this.layout.bodyAreaX = 0;
-    this.layout.bodyAreaY = this.props.theme.rowHeight;
+    this.layout.bodyAreaX = this.layout.shift;
+    this.layout.bodyAreaY = this.props.theme.rowHeight + this.layout.shift;
     this.layout.bodyAreaWidth = viewportAreaWidth;
     this.layout.bodyAreaHeight = viewportAreaHeight;
 
-    this.layout.headAreaX = 0;
-    this.layout.headAreaY = 0;
+    this.layout.headAreaX = this.layout.shift;
+    this.layout.headAreaY = this.layout.shift;
     this.layout.headAreaWidth = tableAreaWidth;
     this.layout.headAreaHeight = this.props.theme.rowHeight;
 
@@ -293,7 +297,7 @@ export class TableState {
     ) {
       const column_width = this.layout.columnWidths[this.layout.columnStart];
       const nextColumnPos = columnPos + column_width;
-      if (nextColumnPos > this.layout.scrollX) {
+      if (nextColumnPos > this.layout.scrollLeft) {
         break;
       }
       this.layout.columnPositions.push(columnPos);
@@ -305,7 +309,7 @@ export class TableState {
       this.layout.columnEnd < this.layout.columnWidths.length;
       this.layout.columnEnd++
     ) {
-      if (columnPos >= this.layout.scrollX + this.layout.bodyAreaWidth) {
+      if (columnPos >= this.layout.scrollLeft + this.layout.bodyAreaWidth) {
         break;
       }
 
@@ -313,9 +317,9 @@ export class TableState {
       columnPos += this.layout.columnWidths[this.layout.columnEnd];
     }
 
-    this.layout.rowStart = Math.floor(this.layout.scrollY / this.props.theme.rowHeight);
+    this.layout.rowStart = Math.floor(this.layout.scrollTop / this.props.theme.rowHeight);
     this.layout.rowEnd = Math.min(
-      Math.ceil((this.layout.scrollY + this.layout.bodyAreaHeight) / this.props.theme.rowHeight),
+      Math.ceil((this.layout.scrollTop + this.layout.bodyAreaHeight) / this.props.theme.rowHeight),
       this.props.dataRows.length,
     );
   }
@@ -326,7 +330,7 @@ export class TableState {
     const { dragAnchorX } = this.guictx;
 
     this.layout.hsbThumbX = clamp(dragAnchorX + dragDistanceX, min, max);
-    this.layout.scrollX = this.calculateScrollX(this.layout.hsbThumbX);
+    this.layout.scrollLeft = this.calculateScrollX(this.layout.hsbThumbX);
 
     this.refreshViewport();
   }
@@ -337,7 +341,7 @@ export class TableState {
     const { dragAnchorY } = this.guictx;
 
     this.layout.vsbThumbY = clamp(dragAnchorY + dragDistanceY, min, max);
-    this.layout.scrollY = this.calculateScrollY(this.layout.vsbThumbY);
+    this.layout.scrollTop = this.calculateScrollY(this.layout.vsbThumbY);
 
     this.refreshViewport();
   }
@@ -358,8 +362,8 @@ export class TableState {
 
     this.refreshLayout();
 
-    this.layout.scrollX = Math.min(this.layout.scrollX, this.layout.maxScrollX);
-    this.layout.scrollY = Math.min(this.layout.scrollY, this.layout.maxScrollY);
+    this.layout.scrollLeft = Math.min(this.layout.scrollLeft, this.layout.maxScrollX);
+    this.layout.scrollTop = Math.min(this.layout.scrollTop, this.layout.maxScrollY);
 
     this.refreshViewport();
 
@@ -373,7 +377,7 @@ export class TableState {
   public calculateHorizontalScrollbarThumbX() {
     return Math.round(
       lerp(
-        this.layout.scrollX,
+        this.layout.scrollLeft,
         0,
         this.layout.maxScrollX,
         this.layout.hsbThumbMinX,
@@ -385,7 +389,7 @@ export class TableState {
   public calculateVerticalScrollbarThumbY() {
     return Math.round(
       lerp(
-        this.layout.scrollY,
+        this.layout.scrollTop,
         0,
         this.layout.maxScrollY,
         this.layout.vsbThumbMinY,
@@ -419,19 +423,12 @@ export class TableState {
 
     let mouseRow: number;
     if (this.platform.isMouseInRect(x, y, width, height)) {
-      const mouseScrollY = this.screenToScrollY(currMouseY);
-      mouseRow = Math.floor((mouseScrollY - rowHeight) / rowHeight);
+      mouseRow = Math.floor(this.screenToScrollY(currMouseY) / rowHeight);
     } else {
       mouseRow = -1;
     }
 
     return mouseRow;
-  }
-
-  public calculateHeadBottom() {
-    const { shift } = this.layout;
-    const { rowHeight } = this.props.theme;
-    return rowHeight + (shift ^ 1);
   }
 
   public calculateColumnScrollLeft(columnIndex: number) {
@@ -443,46 +440,47 @@ export class TableState {
   }
 
   public calculateColumnScreenLeft(columnIndex: number) {
-    const { shift } = this.layout;
-
     const columnScrollLeft = this.calculateColumnScrollLeft(columnIndex);
-    const columnScreenLeft = this.scrollToScreenX(columnScrollLeft) + (shift ^ 1);
+    const columnScreenLeft = this.scrollToScreenX(columnScrollLeft);
     return columnScreenLeft;
   }
 
   public calculateColumnScreenRight(columnIndex: number) {
     const { columnWidths } = this.layout;
-    return this.calculateColumnScreenLeft(columnIndex) + columnWidths[columnIndex];
+    const columnScreenLeft = this.calculateColumnScreenLeft(columnIndex);
+    return columnScreenLeft + columnWidths[columnIndex];
   }
 
   public calculateRowScreenTop(rowIndex: number) {
-    const { shift } = this.layout;
-    const { rowHeight } = this.props.theme;
-
     const rowScrollTop = this.calculateRowScrollTop(rowIndex);
-    const rowScreenTop = this.scrollToScreenY(rowScrollTop) + rowHeight + (shift ^ 1);
+    const rowScreenTop = this.scrollToScreenY(rowScrollTop);
     return rowScreenTop;
   }
 
   public calculateRowScreenBottom(rowIndex: number) {
     const { rowHeight } = this.props.theme;
-    return this.calculateRowScreenTop(rowIndex) + rowHeight;
+    const rowScreenTop = this.calculateRowScreenTop(rowIndex);
+    return rowScreenTop + rowHeight;
   }
 
   public scrollToScreenX(scrollX: number) {
-    return scrollX - this.layout.scrollX;
+    const { bodyAreaX, scrollLeft } = this.layout;
+    return scrollX - scrollLeft + bodyAreaX;
   }
 
   public scrollToScreenY(scrollY: number) {
-    return scrollY - this.layout.scrollY;
+    const { bodyAreaY, scrollTop } = this.layout;
+    return scrollY - scrollTop + bodyAreaY;
   }
 
   public screenToScrollX(screenX: number) {
-    return screenX + this.layout.scrollX;
+    const { bodyAreaX, scrollLeft } = this.layout;
+    return screenX - bodyAreaX + scrollLeft;
   }
 
   public screenToScrollY(screenY: number) {
-    return screenY + this.layout.scrollY;
+    const { bodyAreaY, scrollTop } = this.layout;
+    return screenY - bodyAreaY + scrollTop;
   }
 
   public calculateScrollX(hsbThumbX: number) {
@@ -528,28 +526,37 @@ export class TableState {
 const makeLayout = (columnWidths: number[]) => ({
   canvasWidth: 1,
   canvasHeight: 1,
+
   tableAreaX: 0,
   tableAreaY: 0,
   tableAreaWidth: 1,
   tableAreaHeight: 1,
+
   bodyAreaX: 0,
   bodyAreaY: 0,
   bodyAreaWidth: 1,
   bodyAreaHeight: 1,
+
   headAreaX: 0,
   headAreaY: 0,
   headAreaWidth: 1,
   headAreaHeight: 1,
+
   bodyVisibleWidth: 1,
   bodyVisibleHeight: 1,
+
   gridWidth: 1,
   gridHeight: 1,
-  scrollX: 0,
-  scrollY: 0,
+
+  scrollLeft: 0,
+  scrollTop: 0,
+
   scrollWidth: 1,
   scrollHeight: 1,
+
   scrollWidthMinCapped: 1,
   scrollHeightMinCapped: 1,
+
   maxScrollX: 0,
   maxScrollY: 0,
 
@@ -557,14 +564,17 @@ const makeLayout = (columnWidths: number[]) => ({
   hsbY: 0,
   hsbWidth: 1,
   hsbHeight: 1,
+
   hsbTrackX: 0,
   hsbTrackY: 0,
   hsbTrackWidth: 1,
   hsbTrackHeight: 1,
+
   hsbThumbX: 0,
   hsbThumbY: 0,
   hsbThumbWidth: 1,
   hsbThumbHeight: 1,
+
   hsbThumbMinX: 0,
   hsbThumbMaxX: 0,
 
@@ -572,14 +582,17 @@ const makeLayout = (columnWidths: number[]) => ({
   vsbY: 0,
   vsbWidth: 1,
   vsbHeight: 1,
+
   vsbTrackX: 0,
   vsbTrackY: 0,
   vsbTrackWidth: 1,
   vsbTrackHeight: 1,
+
   vsbThumbX: 0,
   vsbThumbY: 0,
   vsbThumbWidth: 1,
   vsbThumbHeight: 1,
+
   vsbThumbMinY: 0,
   vsbThumbMaxY: 0,
 

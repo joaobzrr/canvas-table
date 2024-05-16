@@ -448,14 +448,14 @@ export class Gui {
   }
 
   private drawHeadBottomBorder() {
-    const { canvasWidth } = this.state.layout;
+    const { canvasWidth, headAreaY, headAreaHeight } = this.state.layout;
     const { borderColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'horizontal',
       x: 0,
-      y: this.state.calculateHeadBottom() - 1,
+      y: headAreaY + headAreaHeight - 1,
       length: canvasWidth,
       color: borderColor,
       sortOrder: 4,
