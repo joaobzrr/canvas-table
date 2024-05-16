@@ -160,57 +160,53 @@ export class TableState {
     for (const width of this.layout.columnWidths) {
       scrollWidth += width;
     }
-    scrollWidth -= this.layout.shift ^ 1;
+    scrollWidth -= 1;
 
-    const scrollHeight =
-      this.props.dataRows.length * this.props.theme.rowHeight - (this.layout.shift ^ 1);
+    const scrollHeight = this.props.dataRows.length * this.props.theme.rowHeight - 1;
 
     this.layout.scrollWidth = scrollWidth;
     this.layout.scrollHeight = scrollHeight;
 
-    const tableOuterWidth = this.layout.canvasWidth;
+    const tableOuterWidth = this.layout.canvasWidth - this.layout.shift * 2;
     const tableInnerWidth = tableOuterWidth - this.props.theme.scrollbarThickness;
-    const tableOuterHeight = this.layout.canvasHeight;
+    const tableOuterHeight = this.layout.canvasHeight - this.layout.shift * 2;
     const tableInnerHeight = tableOuterHeight - this.props.theme.scrollbarThickness;
 
-    const viewportOuterWidth = tableOuterWidth;
-    const viewportInnerWidth = tableInnerWidth;
-    const viewportOuterHeight = tableOuterHeight - this.props.theme.rowHeight;
-    const viewportInnerHeight = tableInnerHeight - this.props.theme.rowHeight;
+    const bodyOuterWidth = tableOuterWidth;
+    const bodyInnerWidth = tableInnerWidth;
+    const bodyOuterHeight = tableOuterHeight - this.props.theme.rowHeight;
+    const bodyInnerHeight = tableInnerHeight - this.props.theme.rowHeight;
 
     //const viewportOuterWidth = bodyOuterWidth - this.outerBorderWidth;
     //const viewportOuterHeight = bodyOuterHeight - this.outerBorderWidth;
     //const viewportInnerWidth = bodyInnerWidth - this.outerBorderWidth;
     //const viewportInnerHeight = bodyInnerHeight - this.outerBorderWidth;
 
-    if (
-      viewportOuterWidth >= this.layout.scrollWidth &&
-      viewportOuterHeight >= this.layout.scrollHeight
-    ) {
+    if (bodyOuterWidth >= this.layout.scrollWidth && bodyOuterHeight >= this.layout.scrollHeight) {
       this.layout.overflowX = this.layout.overflowY = false;
     } else {
-      this.layout.overflowX = viewportInnerWidth < this.layout.scrollWidth;
-      this.layout.overflowY = viewportInnerHeight < this.layout.scrollHeight;
+      this.layout.overflowX = bodyInnerWidth < this.layout.scrollWidth;
+      this.layout.overflowY = bodyInnerHeight < this.layout.scrollHeight;
     }
 
     let tableAreaWidth: number;
-    let viewportAreaWidth: number;
+    let bodyAreaWidth: number;
     if (this.layout.overflowY) {
       tableAreaWidth = tableInnerWidth;
-      viewportAreaWidth = viewportInnerWidth;
+      bodyAreaWidth = bodyInnerWidth;
     } else {
       tableAreaWidth = tableOuterWidth;
-      viewportAreaWidth = viewportOuterWidth;
+      bodyAreaWidth = bodyOuterWidth;
     }
 
     let tableAreaHeight: number;
-    let viewportAreaHeight: number;
+    let bodyAreaHeight: number;
     if (this.layout.overflowX) {
       tableAreaHeight = tableInnerHeight;
-      viewportAreaHeight = viewportInnerHeight;
+      bodyAreaHeight = bodyInnerHeight;
     } else {
       tableAreaHeight = tableOuterHeight;
-      viewportAreaHeight = viewportOuterHeight;
+      bodyAreaHeight = bodyOuterHeight;
     }
 
     this.layout.tableAreaX = this.layout.shift;
@@ -218,65 +214,65 @@ export class TableState {
     this.layout.tableAreaWidth = tableAreaWidth;
     this.layout.tableAreaHeight = tableAreaHeight;
 
-    this.layout.bodyAreaX = this.layout.shift;
-    this.layout.bodyAreaY = this.props.theme.rowHeight + this.layout.shift;
-    this.layout.bodyAreaWidth = viewportAreaWidth;
-    this.layout.bodyAreaHeight = viewportAreaHeight;
+    this.layout.bodyAreaX = this.layout.tableAreaX;
+    this.layout.bodyAreaY = this.layout.tableAreaY + this.props.theme.rowHeight;
+    this.layout.bodyAreaWidth = bodyAreaWidth;
+    this.layout.bodyAreaHeight = bodyAreaHeight;
 
-    this.layout.headAreaX = this.layout.shift;
-    this.layout.headAreaY = this.layout.shift;
+    this.layout.headAreaX = this.layout.tableAreaX;
+    this.layout.headAreaY = this.layout.tableAreaY;
     this.layout.headAreaWidth = tableAreaWidth;
     this.layout.headAreaHeight = this.props.theme.rowHeight;
 
-    this.layout.scrollWidthMinCapped = Math.max(this.layout.scrollWidth, viewportAreaWidth);
-    this.layout.scrollHeightMinCapped = Math.max(this.layout.scrollHeight, viewportAreaHeight);
+    this.layout.scrollWidthMinCapped = Math.max(this.layout.scrollWidth, this.layout.bodyAreaWidth);
+    this.layout.scrollHeightMinCapped = Math.max(
+      this.layout.scrollHeight,
+      this.layout.bodyAreaHeight,
+    );
 
-    this.layout.maxScrollX = this.layout.scrollWidthMinCapped - viewportAreaWidth;
-    this.layout.maxScrollY = this.layout.scrollHeightMinCapped - viewportAreaHeight;
+    this.layout.maxScrollX = this.layout.scrollWidthMinCapped - this.layout.bodyAreaWidth;
+    this.layout.maxScrollY = this.layout.scrollHeightMinCapped - this.layout.bodyAreaHeight;
 
-    this.layout.bodyVisibleWidth = Math.min(viewportAreaWidth, this.layout.scrollWidth);
-    this.layout.bodyVisibleHeight = Math.min(viewportAreaHeight, this.layout.scrollHeight);
+    this.layout.bodyVisibleWidth = Math.min(this.layout.bodyAreaWidth, this.layout.scrollWidth);
+    this.layout.bodyVisibleHeight = Math.min(this.layout.bodyAreaHeight, this.layout.scrollHeight);
 
     this.layout.gridWidth = this.layout.bodyVisibleWidth;
     this.layout.gridHeight = this.layout.bodyVisibleHeight + this.props.theme.rowHeight;
 
-    this.layout.hsbX = 0;
-    this.layout.hsbY = tableAreaHeight;
-    this.layout.hsbWidth = tableAreaWidth;
+    this.layout.hsbX = this.layout.tableAreaX;
+    this.layout.hsbY = this.layout.tableAreaY + this.layout.tableAreaHeight;
+    this.layout.hsbWidth = this.layout.tableAreaWidth;
     this.layout.hsbHeight = this.props.theme.scrollbarThickness;
 
-    this.layout.hsbTrackX =
-      this.layout.hsbX + this.props.theme.scrollbarPadding + this.outerBorderWidth;
+    this.layout.hsbTrackX = this.layout.hsbX + this.props.theme.scrollbarPadding;
     this.layout.hsbTrackY = this.layout.hsbY + this.props.theme.scrollbarPadding + this.borderWidth;
-    this.layout.hsbTrackWidth =
-      this.layout.hsbWidth - this.props.theme.scrollbarPadding * 2 - this.borderWidth;
-    this.layout.hsbTrackHeight =
-      this.layout.hsbHeight - this.props.theme.scrollbarPadding * 2 - this.borderWidth;
+    this.layout.hsbTrackWidth = this.layout.hsbWidth - this.props.theme.scrollbarPadding * 2;
+    this.layout.hsbTrackHeight = this.layout.hsbHeight - this.props.theme.scrollbarPadding * 2;
 
     this.layout.hsbThumbY = this.layout.hsbTrackY;
     this.layout.hsbThumbHeight = this.layout.hsbTrackHeight;
     this.layout.hsbThumbWidth = Math.max(
-      (viewportAreaWidth / this.layout.scrollWidthMinCapped) * this.layout.hsbTrackWidth,
+      (bodyAreaWidth / this.layout.scrollWidthMinCapped) * this.layout.hsbTrackWidth,
       MIN_THUMB_LENGTH,
     );
     this.layout.hsbThumbMinX = this.layout.hsbTrackX;
     this.layout.hsbThumbMaxX =
       this.layout.hsbTrackX + this.layout.hsbTrackWidth - this.layout.hsbThumbWidth;
 
-    this.layout.vsbX = tableAreaWidth;
-    this.layout.vsbY = this.props.theme.rowHeight;
+    this.layout.vsbX = this.layout.tableAreaX + this.layout.tableAreaWidth;
+    this.layout.vsbY = this.layout.bodyAreaY;
     this.layout.vsbWidth = this.props.theme.scrollbarThickness;
-    this.layout.vsbHeight = viewportAreaHeight;
+    this.layout.vsbHeight = this.layout.bodyAreaHeight;
 
     this.layout.vsbTrackX = this.layout.vsbX + this.props.theme.scrollbarPadding + this.borderWidth;
-    this.layout.vsbTrackY = this.layout.vsbY + this.props.theme.scrollbarPadding + this.borderWidth;
+    this.layout.vsbTrackY = this.layout.vsbY + this.props.theme.scrollbarPadding;
     this.layout.vsbTrackWidth = this.layout.vsbWidth - this.props.theme.scrollbarPadding * 2;
     this.layout.vsbTrackHeight = this.layout.vsbHeight - this.props.theme.scrollbarPadding * 2;
 
     this.layout.vsbThumbX = this.layout.vsbTrackX;
     this.layout.vsbThumbWidth = this.layout.vsbTrackWidth;
     this.layout.vsbThumbHeight = Math.max(
-      (viewportAreaHeight / this.layout.scrollHeightMinCapped) * this.layout.vsbTrackHeight,
+      (bodyAreaHeight / this.layout.scrollHeightMinCapped) * this.layout.vsbTrackHeight,
       MIN_THUMB_LENGTH,
     );
     this.layout.vsbThumbMinY = this.layout.vsbTrackY;
