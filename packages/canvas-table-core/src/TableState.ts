@@ -428,33 +428,45 @@ export class TableState {
     return mouseRow;
   }
 
+  public calculateHeadBottom() {
+    const { shift } = this.layout;
+    const { rowHeight } = this.props.theme;
+    return rowHeight + (shift ^ 1);
+  }
+
   public calculateColumnScrollLeft(columnIndex: number) {
-    return this.layout.columnPositions[columnIndex] + (this.layout.shift ^ 1);
+    return this.layout.columnPositions[columnIndex];
   }
 
   public calculateRowScrollTop(rowIndex: number) {
-    return rowIndex * this.props.theme.rowHeight + (this.layout.shift ^ 1);
+    return rowIndex * this.props.theme.rowHeight;
   }
 
   public calculateColumnScreenLeft(columnIndex: number) {
-    const columnScrollX = this.calculateColumnScrollLeft(columnIndex);
-    const columnScreenX = this.scrollToScreenX(columnScrollX);
-    return columnScreenX;
+    const { shift } = this.layout;
+
+    const columnScrollLeft = this.calculateColumnScrollLeft(columnIndex);
+    const columnScreenLeft = this.scrollToScreenX(columnScrollLeft) + (shift ^ 1);
+    return columnScreenLeft;
   }
 
   public calculateColumnScreenRight(columnIndex: number) {
-    const columnWidth = this.layout.columnWidths[columnIndex];
-    return this.calculateColumnScreenLeft(columnIndex) + columnWidth - 1;
+    const { columnWidths } = this.layout;
+    return this.calculateColumnScreenLeft(columnIndex) + columnWidths[columnIndex];
   }
 
   public calculateRowScreenTop(rowIndex: number) {
-    const rowScrollY = this.calculateRowScrollTop(rowIndex);
-    const rowScreenY = this.scrollToScreenY(rowScrollY) + this.props.theme.rowHeight;
-    return rowScreenY;
+    const { shift } = this.layout;
+    const { rowHeight } = this.props.theme;
+
+    const rowScrollTop = this.calculateRowScrollTop(rowIndex);
+    const rowScreenTop = this.scrollToScreenY(rowScrollTop) + rowHeight + (shift ^ 1);
+    return rowScreenTop;
   }
 
   public calculateRowScreenBottom(rowIndex: number) {
-    return this.calculateRowScreenTop(rowIndex) + this.props.theme.rowHeight - 1;
+    const { rowHeight } = this.props.theme;
+    return this.calculateRowScreenTop(rowIndex) + rowHeight;
   }
 
   public scrollToScreenX(scrollX: number) {

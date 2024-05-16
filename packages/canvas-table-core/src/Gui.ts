@@ -448,14 +448,14 @@ export class Gui {
   }
 
   private drawHeadBottomBorder() {
-    const { canvasWidth, shift } = this.state.layout;
-    const { rowHeight, borderColor } = this.state.props.theme;
+    const { canvasWidth } = this.state.layout;
+    const { borderColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'horizontal',
       x: 0,
-      y: rowHeight - shift,
+      y: this.state.calculateHeadBottom() - 1,
       length: canvasWidth,
       color: borderColor,
       sortOrder: 4,
@@ -531,7 +531,7 @@ export class Gui {
         type: 'line',
         orientation: 'horizontal',
         x: 0,
-        y: this.state.calculateRowScreenBottom(rowIndex),
+        y: this.state.calculateRowScreenBottom(rowIndex) - 1,
         length: gridWidth,
         color: borderColor,
         sortOrder: 4,
@@ -547,7 +547,7 @@ export class Gui {
       this.renderer.pushDrawCommand({
         type: 'line',
         orientation: 'vertical',
-        x: this.state.calculateColumnScreenRight(columnIndex),
+        x: this.state.calculateColumnScreenRight(columnIndex) - 1,
         y: 0,
         length: gridHeight,
         color: borderColor,
