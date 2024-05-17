@@ -2,6 +2,7 @@ import { type Platform } from './Platform';
 import { GuiContext } from './GuiContext';
 import { clamp, lerp } from './utils';
 import {
+  BORDER_WIDTH,
   COLUMN_RESIZER_LEFT_WIDTH,
   COLUMN_RESIZER_WIDTH,
   DEFAULT_COLUMN_WIDTH,
@@ -154,7 +155,11 @@ export class TableState {
   }
 
   public refreshLayout() {
-    this.layout.shift = this.outerBorderWidth > 0 ? 1 : 0;
+    this.layout.shift =
+      (this.props.theme.outerBorder !== undefined && this.props.theme.outerBorder) ||
+      this.props.theme.border
+        ? 1
+        : 0;
 
     let scrollWidth = 0;
     for (const width of this.layout.columnWidths) {
@@ -245,7 +250,7 @@ export class TableState {
     this.layout.hsbHeight = this.props.theme.scrollbarThickness;
 
     this.layout.hsbTrackX = this.layout.hsbX + this.props.theme.scrollbarPadding;
-    this.layout.hsbTrackY = this.layout.hsbY + this.props.theme.scrollbarPadding + this.borderWidth;
+    this.layout.hsbTrackY = this.layout.hsbY + this.props.theme.scrollbarPadding + BORDER_WIDTH;
     this.layout.hsbTrackWidth = this.layout.hsbWidth - this.props.theme.scrollbarPadding * 2;
     this.layout.hsbTrackHeight = this.layout.hsbHeight - this.props.theme.scrollbarPadding * 2;
 
@@ -264,7 +269,7 @@ export class TableState {
     this.layout.vsbWidth = this.props.theme.scrollbarThickness;
     this.layout.vsbHeight = this.layout.bodyAreaHeight;
 
-    this.layout.vsbTrackX = this.layout.vsbX + this.props.theme.scrollbarPadding + this.borderWidth;
+    this.layout.vsbTrackX = this.layout.vsbX + this.props.theme.scrollbarPadding + BORDER_WIDTH;
     this.layout.vsbTrackY = this.layout.vsbY + this.props.theme.scrollbarPadding;
     this.layout.vsbTrackWidth = this.layout.vsbWidth - this.props.theme.scrollbarPadding * 2;
     this.layout.vsbTrackHeight = this.layout.vsbHeight - this.props.theme.scrollbarPadding * 2;
@@ -505,21 +510,6 @@ export class TableState {
         this.layout.maxScrollY,
       ),
     );
-  }
-
-  // @Remove
-  get theme() {
-    return this.props.theme;
-  }
-
-  // @Remove
-  get borderWidth() {
-    return this.theme.borderWidth;
-  }
-
-  // @Remove
-  get outerBorderWidth() {
-    return this.theme.outerBorderWidth ?? this.theme.borderWidth;
   }
 }
 

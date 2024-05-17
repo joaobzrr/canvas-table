@@ -11,7 +11,7 @@ export const defaultTheme: Theme = {
   hoveredRowBackgroundColor: '#d6e9ff',
   selectedRowBackgroundColor: '#99C8FF',
 
-  borderWidth: 1,
+  border: true,
   borderColor: '#665C54',
 
   scrollbarThickness: 20,

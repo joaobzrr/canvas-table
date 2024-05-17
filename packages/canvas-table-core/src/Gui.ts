@@ -2,7 +2,12 @@ import { type Platform } from './Platform';
 import { type TableState } from './TableState';
 import { Renderer } from './Renderer';
 import { createFontSpecifier, isNumber } from './utils';
-import { COLUMN_RESIZER_LEFT_WIDTH, COLUMN_RESIZER_WIDTH, MOUSE_BUTTONS } from './constants';
+import {
+  BORDER_WIDTH,
+  COLUMN_RESIZER_LEFT_WIDTH,
+  COLUMN_RESIZER_WIDTH,
+  MOUSE_BUTTONS,
+} from './constants';
 
 export class Gui {
   platform: Platform;
@@ -21,7 +26,6 @@ export class Gui {
   private doColumnResizer(columnIndex: number) {
     const { props, layout, guictx } = this.state;
     const { headAreaY, headAreaHeight } = layout;
-    const { borderWidth } = props.theme;
 
     const initialResizerScrollX = this.state.calculateResizerScrollX(columnIndex);
     let columnWasResized = false;
@@ -51,7 +55,7 @@ export class Gui {
     const x = this.state.scrollToScreenX(finalResizerScrollX);
     const y = headAreaY;
     const width = COLUMN_RESIZER_WIDTH;
-    const height = headAreaHeight - borderWidth;
+    const height = headAreaHeight - BORDER_WIDTH;
 
     const inside = this.platform.isMouseInRect(x, y, width, height);
     if (inside) {
@@ -388,7 +392,7 @@ export class Gui {
 
   private drawOuterTableBorders() {
     const { canvasWidth, canvasHeight } = this.state.layout;
-    const { borderWidth, borderColor } = this.state.props.theme;
+    const { borderColor } = this.state.props.theme;
 
     // Draw top outer table border
     this.renderer.pushDrawCommand({
@@ -406,7 +410,7 @@ export class Gui {
       type: 'line',
       orientation: 'horizontal',
       x: 0,
-      y: canvasHeight - borderWidth,
+      y: canvasHeight - BORDER_WIDTH,
       length: canvasWidth,
       color: borderColor,
       sortOrder: 4,
@@ -427,7 +431,7 @@ export class Gui {
     this.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'vertical',
-      x: canvasWidth - borderWidth,
+      x: canvasWidth - BORDER_WIDTH,
       y: 0,
       length: canvasHeight,
       color: borderColor,
@@ -733,18 +737,13 @@ export class Gui {
     }
 
     const shouldDrawOuterBorder =
-      (theme.outerBorderWidth !== undefined && theme.outerBorderWidth > 0) ||
-      (theme.outerBorderWidth === undefined && theme.borderWidth > 0);
+      (theme.outerBorder !== undefined && theme.outerBorder) ||
+      (theme.outerBorder === undefined && theme.border);
     if (shouldDrawOuterBorder) {
       this.drawOuterTableBorders();
     }
 
-    const shouldDrawHeadBorder =
-      (theme.headBorderWidth !== undefined && theme.headBorderWidth > 0) ||
-      (theme.headBorderWidth === undefined && theme.borderWidth > 0);
-    if (shouldDrawHeadBorder) {
-      this.drawHeadBottomBorder();
-    }
+    this.drawHeadBottomBorder();
 
     if (layout.overflowX) {
       this.drawHorizontalScrollbarBorder();
@@ -759,15 +758,15 @@ export class Gui {
     }
 
     const shouldDrawRowBorders =
-      (theme.rowBorderWidth !== undefined && theme.rowBorderWidth > 0) ||
-      (theme.rowBorderWidth === undefined && theme.borderWidth > 0);
+      (theme.rowBorder !== undefined && theme.rowBorder) ||
+      (theme.rowBorder === undefined && theme.border);
     if (shouldDrawRowBorders) {
       this.drawRowBorders();
     }
 
     const shouldDrawColumnBorders =
-      (theme.columnBorderWidth !== undefined && theme.columnBorderWidth > 0) ||
-      (theme.columnBorderWidth === undefined && theme.borderWidth > 0);
+      (theme.columnBorder !== undefined && theme.columnBorder) ||
+      (theme.columnBorder === undefined && theme.border);
     if (shouldDrawColumnBorders) {
       this.drawColumnBorders();
     }

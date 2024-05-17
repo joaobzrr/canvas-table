@@ -30,7 +30,7 @@ export const App = () => {
   const table = tables[tableIndex];
 
   const [themeSettings, setThemeSettings] = useState<Partial<Theme>>({
-    outerBorderWidth: 0,
+    columnBorder: false,
   });
 
   const theme = useMemo(() => {
@@ -144,7 +144,7 @@ export const App = () => {
         )}
       </div>
       <main className={styles.main}>
-        <div style={{ height: '100%', border: '1px solid red' }}>
+        <div style={{ height: '100%' }}>
           <CanvasTable
             columnDefs={table.columnDefs}
             dataRows={table.dataRows}
