@@ -64,14 +64,6 @@ export type Theme = {
   outerBorder?: boolean;
   rowBorder?: boolean;
   columnBorder?: boolean;
-
-  // @Note For now, these only serve as way to disable borders by specifying a width of zero.
-  //  borderWidth: number;
-  //  outerBorderWidth?: number;
-  //  headBorderWidth?: number;
-  //  rowBorderWidth?: number;
-  //  columnBorderWidth?: number;
-
   borderColor: string;
 
   scrollbarThickness: number;

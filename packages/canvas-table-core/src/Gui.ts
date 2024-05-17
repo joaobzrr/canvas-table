@@ -390,55 +390,6 @@ export class Gui {
     }
   }
 
-  private drawOuterTableBorders() {
-    const { canvasWidth, canvasHeight } = this.state.layout;
-    const { borderColor } = this.state.props.theme;
-
-    // Draw top outer table border
-    this.renderer.pushDrawCommand({
-      type: 'line',
-      orientation: 'horizontal',
-      x: 0,
-      y: 0,
-      length: canvasWidth,
-      color: borderColor,
-      sortOrder: 4,
-    });
-
-    // Draw bottom outer table border
-    this.renderer.pushDrawCommand({
-      type: 'line',
-      orientation: 'horizontal',
-      x: 0,
-      y: canvasHeight - BORDER_WIDTH,
-      length: canvasWidth,
-      color: borderColor,
-      sortOrder: 4,
-    });
-
-    // Draw left outer table border
-    this.renderer.pushDrawCommand({
-      type: 'line',
-      orientation: 'vertical',
-      x: 0,
-      y: 0,
-      length: canvasHeight,
-      color: borderColor,
-      sortOrder: 4,
-    });
-
-    // Draw right outer table border
-    this.renderer.pushDrawCommand({
-      type: 'line',
-      orientation: 'vertical',
-      x: canvasWidth - BORDER_WIDTH,
-      y: 0,
-      length: canvasHeight,
-      color: borderColor,
-      sortOrder: 4,
-    });
-  }
-
   private drawHeadBottomBorder() {
     const { canvasWidth, headAreaY, headAreaHeight } = this.state.layout;
     const { borderColor } = this.state.props.theme;
@@ -734,13 +685,6 @@ export class Gui {
 
     if (theme.oddRowBackgroundColor) {
       this.drawOddRowsBackground();
-    }
-
-    const shouldDrawOuterBorder =
-      (theme.outerBorder !== undefined && theme.outerBorder) ||
-      (theme.outerBorder === undefined && theme.border);
-    if (shouldDrawOuterBorder) {
-      this.drawOuterTableBorders();
     }
 
     this.drawHeadBottomBorder();

@@ -6,7 +6,7 @@ export type Mouse_Button_Value = Mouse_Buttons[keyof Mouse_Buttons];
 
 export class Platform {
   containerEl: HTMLDivElement;
-  wrapperEl: HTMLDivElement;
+  sizingEl: HTMLDivElement;
 
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
@@ -53,13 +53,13 @@ export class Platform {
     this.containerEl.replaceChildren();
     this.containerEl.style.overflow = 'hidden';
 
-    this.wrapperEl = document.createElement('div');
-    this.wrapperEl.style.height = '100%';
-    this.wrapperEl.classList.add('canvas-table-wrapper');
-    this.containerEl.appendChild(this.wrapperEl);
+    this.sizingEl = document.createElement('div');
+    this.sizingEl.style.height = '100%';
+    this.sizingEl.style.overflow = 'hidden';
+    this.containerEl.appendChild(this.sizingEl);
 
     this.canvas = document.createElement('canvas');
-    this.wrapperEl.appendChild(this.canvas);
+    this.sizingEl.appendChild(this.canvas);
 
     this.ctx = getContext(this.canvas);
     this.restoreCanvasContextProperties();
@@ -80,7 +80,7 @@ export class Platform {
     document.addEventListener('visibilitychange', this.visibilityChangeHandler);
   }
 
-  destroy() {
+  public destroy() {
     this.stopAnimation();
 
     document.removeEventListener('mousemove', this.mouseMoveHandler);
@@ -88,20 +88,20 @@ export class Platform {
     document.removeEventListener('visibilitychange', this.visibilityChangeHandler);
   }
 
-  startAnimation() {
+  public startAnimation() {
     if (this.rafId === undefined) {
       this.rafId = requestAnimationFrame(() => this.animate());
     }
   }
 
-  stopAnimation() {
+  public stopAnimation() {
     if (this.rafId !== undefined) {
       cancelAnimationFrame(this.rafId);
       this.rafId = undefined;
     }
   }
 
-  getFontMetrics(font: string) {
+  public getFontMetrics(font: string) {
     this.fontMetricsCanvasCtx.font = font;
     const { fontBoundingBoxAscent, fontBoundingBoxDescent } =
       this.fontMetricsCanvasCtx.measureText('M');
@@ -112,31 +112,31 @@ export class Platform {
     };
   }
 
-  isMouseInRect(rx: number, ry: number, rw: number, rh: number) {
+  public isMouseInRect(rx: number, ry: number, rw: number, rh: number) {
     return isPointInRect(this.currMouseX, this.currMouseY, rx, ry, rw, rh);
   }
 
-  isMouseDown(button: Mouse_Button_Value) {
+  public isMouseDown(button: Mouse_Button_Value) {
     const value = this.normalizedToButtonsValue(button);
     return this.currMouseButtons & value;
   }
 
-  isMousePressed(button: Mouse_Button_Value) {
+  public isMousePressed(button: Mouse_Button_Value) {
     const value = this.normalizedToButtonsValue(button);
     return (this.currMouseButtons & value) === 1 && (this.prevMouseButtons & value) === 0;
   }
 
-  isMouseReleased(button: Mouse_Button_Value) {
+  public isMouseReleased(button: Mouse_Button_Value) {
     const value = this.normalizedToButtonsValue(button);
     return (this.currMouseButtons & value) === 0 && (this.prevMouseButtons & value) === 1;
   }
 
-  animate() {
+  private animate() {
     if (
-      this.containerEl.offsetWidth !== this.canvas.width ||
-      this.containerEl.offsetHeight !== this.canvas.height
+      this.sizingEl.offsetWidth !== this.canvas.width ||
+      this.sizingEl.offsetHeight !== this.canvas.height
     ) {
-      this.resizeCanvas(this.containerEl.offsetWidth, this.containerEl.offsetHeight);
+      this.resizeCanvas(this.sizingEl.offsetWidth, this.sizingEl.offsetHeight);
     }
 
     this.mouseHasMoved = this.currMouseX !== this.prevMouseX || this.currMouseY !== this.prevMouseY;
@@ -163,17 +163,17 @@ export class Platform {
     this.rafId = requestAnimationFrame(() => this.animate());
   }
 
-  resizeCanvas(width: number, height: number) {
+  private resizeCanvas(width: number, height: number) {
     this.canvas.width = width;
     this.canvas.height = height;
     this.restoreCanvasContextProperties();
   }
 
-  restoreCanvasContextProperties() {
+  private restoreCanvasContextProperties() {
     this.ctx.imageSmoothingEnabled = false;
   }
 
-  normalizedToButtonsValue(value: Mouse_Button_Value): number {
+  private normalizedToButtonsValue(value: Mouse_Button_Value): number {
     switch (value) {
       case MOUSE_BUTTONS.PRIMARY:
         return 1;
@@ -188,8 +188,8 @@ export class Platform {
     }
   }
 
-  updateMouseState(event: MouseEvent) {
-    const bcr = this.wrapperEl.getBoundingClientRect();
+  private updateMouseState(event: MouseEvent) {
+    const bcr = this.sizingEl.getBoundingClientRect();
     this.prevMouseX = this.currMouseX;
     this.prevMouseY = this.currMouseY;
     this.currMouseX = event.clientX - bcr.x;
@@ -197,25 +197,25 @@ export class Platform {
     this.currMouseButtons = event.buttons;
   }
 
-  onMouseDown(event: MouseEvent) {
+  private onMouseDown(event: MouseEvent) {
     event.preventDefault();
     this.updateMouseState(event);
   }
 
-  onMouseUp(event: MouseEvent) {
+  private onMouseUp(event: MouseEvent) {
     this.updateMouseState(event);
   }
 
-  onMouseMove(event: MouseEvent) {
+  private onMouseMove(event: MouseEvent) {
     this.updateMouseState(event);
   }
 
-  onWheel(event: WheelEvent) {
+  private onWheel(event: WheelEvent) {
     this.scrollAmountX = event.deltaX;
     this.scrollAmountY = event.deltaY;
   }
 
-  onVisibilityChange() {
+  private onVisibilityChange() {
     if (document.hidden) {
       this.stopAnimation();
     } else {

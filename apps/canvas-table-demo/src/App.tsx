@@ -29,9 +29,7 @@ export const App = () => {
 
   const table = tables[tableIndex];
 
-  const [themeSettings, setThemeSettings] = useState<Partial<Theme>>({
-    columnBorder: false,
-  });
+  const [themeSettings, setThemeSettings] = useState<Partial<Theme>>({});
 
   const theme = useMemo(() => {
     return shallowMerge<Theme>({}, defaultTheme, themeSettings);

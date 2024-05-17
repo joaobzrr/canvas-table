@@ -151,16 +151,17 @@ export class TableState {
       newState.guictx.hoveredRowIndex = this.calculateHoveredRowIndex();
     }
 
+    const shouldSetContainerBorder =
+      (newState.props.theme.outerBorder !== undefined && newState.props.theme.outerBorder) ||
+      (newState.props.theme.outerBorder === undefined && newState.props.theme.border);
+    if (shouldSetContainerBorder) {
+      this.platform.containerEl.style.border = `${BORDER_WIDTH}px solid ${newState.props.theme.borderColor}`;
+    }
+
     return newState;
   }
 
   public refreshLayout() {
-    this.layout.shift =
-      (this.props.theme.outerBorder !== undefined && this.props.theme.outerBorder) ||
-      this.props.theme.border
-        ? 1
-        : 0;
-
     let scrollWidth = 0;
     for (const width of this.layout.columnWidths) {
       scrollWidth += width;
@@ -172,20 +173,15 @@ export class TableState {
     this.layout.scrollWidth = scrollWidth;
     this.layout.scrollHeight = scrollHeight;
 
-    const tableOuterWidth = this.layout.canvasWidth - this.layout.shift * 2;
+    const tableOuterWidth = this.layout.canvasWidth;
     const tableInnerWidth = tableOuterWidth - this.props.theme.scrollbarThickness;
-    const tableOuterHeight = this.layout.canvasHeight - this.layout.shift * 2;
+    const tableOuterHeight = this.layout.canvasHeight;
     const tableInnerHeight = tableOuterHeight - this.props.theme.scrollbarThickness;
 
     const bodyOuterWidth = tableOuterWidth;
     const bodyInnerWidth = tableInnerWidth;
     const bodyOuterHeight = tableOuterHeight - this.props.theme.rowHeight;
     const bodyInnerHeight = tableInnerHeight - this.props.theme.rowHeight;
-
-    //const viewportOuterWidth = bodyOuterWidth - this.outerBorderWidth;
-    //const viewportOuterHeight = bodyOuterHeight - this.outerBorderWidth;
-    //const viewportInnerWidth = bodyInnerWidth - this.outerBorderWidth;
-    //const viewportInnerHeight = bodyInnerHeight - this.outerBorderWidth;
 
     if (bodyOuterWidth >= this.layout.scrollWidth && bodyOuterHeight >= this.layout.scrollHeight) {
       this.layout.overflowX = this.layout.overflowY = false;
@@ -214,8 +210,8 @@ export class TableState {
       bodyAreaHeight = bodyOuterHeight;
     }
 
-    this.layout.tableAreaX = this.layout.shift;
-    this.layout.tableAreaY = this.layout.shift;
+    this.layout.tableAreaX = 0;
+    this.layout.tableAreaY = 0;
     this.layout.tableAreaWidth = tableAreaWidth;
     this.layout.tableAreaHeight = tableAreaHeight;
 
@@ -588,8 +584,6 @@ const makeLayout = (columnWidths: number[]) => ({
 
   overflowX: false,
   overflowY: false,
-
-  shift: 0,
 
   columnStart: 0,
   columnEnd: 0,
