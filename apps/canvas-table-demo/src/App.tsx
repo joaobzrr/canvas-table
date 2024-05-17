@@ -31,9 +31,6 @@ export const App = () => {
 
   const [themeSettings, setThemeSettings] = useState<Partial<Theme>>({
     outerBorderWidth: 0,
-    //    bodyBackgroundColor: 'lightgreen',
-    //    headBackgroundColor: 'tomato',
-    //    headBorderWidth: 0,
   });
 
   const theme = useMemo(() => {

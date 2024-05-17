@@ -346,9 +346,9 @@ export class TableState {
     const { dragDistanceX } = this.platform;
     const { dragAnchorX } = this.guictx;
 
-    const left = this.calculateColumnScrollLeft(columnIndex);
-    const right = dragAnchorX + dragDistanceX;
-    const columnWidth = Math.max(right - left, MIN_COLUMN_WIDTH);
+    const columnScrollLeft = this.calculateColumnScrollLeft(columnIndex);
+    const columnScrollRight = dragAnchorX + dragDistanceX;
+    const columnWidth = Math.max(columnScrollRight - columnScrollLeft + 1, MIN_COLUMN_WIDTH);
 
     this.resizeColumn(columnIndex, columnWidth);
   }
@@ -395,12 +395,16 @@ export class TableState {
   }
 
   public calculateResizerScrollX(columnIndex: number) {
-    const columnWidth = this.layout.columnWidths[columnIndex];
+    const { columnWidths, scrollWidthMinCapped } = this.layout;
+
     const columnScrollLeft = this.calculateColumnScrollLeft(columnIndex);
+
+    const columnWidth = columnWidths[columnIndex];
     const columnScrollRight = columnScrollLeft + columnWidth;
+
     const resizerScrollLeft = Math.min(
-      columnScrollRight - COLUMN_RESIZER_LEFT_WIDTH,
-      this.layout.scrollWidthMinCapped - COLUMN_RESIZER_WIDTH,
+      columnScrollRight - COLUMN_RESIZER_LEFT_WIDTH - 1,
+      scrollWidthMinCapped - COLUMN_RESIZER_WIDTH,
     );
     return resizerScrollLeft;
   }

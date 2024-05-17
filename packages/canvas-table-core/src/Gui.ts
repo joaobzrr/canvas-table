@@ -2,12 +2,7 @@ import { type Platform } from './Platform';
 import { type TableState } from './TableState';
 import { Renderer } from './Renderer';
 import { createFontSpecifier, isNumber } from './utils';
-import {
-  BORDER_WIDTH,
-  COLUMN_RESIZER_LEFT_WIDTH,
-  COLUMN_RESIZER_WIDTH,
-  MOUSE_BUTTONS,
-} from './constants';
+import { COLUMN_RESIZER_LEFT_WIDTH, COLUMN_RESIZER_WIDTH, MOUSE_BUTTONS } from './constants';
 
 export class Gui {
   platform: Platform;
@@ -24,8 +19,9 @@ export class Gui {
   }
 
   private doColumnResizer(columnIndex: number) {
-    const { props, guictx } = this.state;
-    const { rowHeight } = props.theme;
+    const { props, layout, guictx } = this.state;
+    const { headAreaY, headAreaHeight } = layout;
+    const { borderWidth } = props.theme;
 
     const initialResizerScrollX = this.state.calculateResizerScrollX(columnIndex);
     let columnWasResized = false;
@@ -53,9 +49,9 @@ export class Gui {
     }
 
     const x = this.state.scrollToScreenX(finalResizerScrollX);
-    const y = BORDER_WIDTH;
+    const y = headAreaY;
     const width = COLUMN_RESIZER_WIDTH;
-    const height = rowHeight - BORDER_WIDTH;
+    const height = headAreaHeight - borderWidth;
 
     const inside = this.platform.isMouseInRect(x, y, width, height);
     if (inside) {
@@ -227,7 +223,7 @@ export class Gui {
   private doRows() {
     const { props, layout, guictx } = this.state;
     const { rowHeight } = props.theme;
-    const { bodyVisibleWidth, rowStart, rowEnd } = layout;
+    const { bodyAreaX, bodyVisibleWidth, rowStart, rowEnd } = layout;
     const { hoveredRowIndex, bodyAreaClipRegion } = guictx;
 
     if (hoveredRowIndex !== -1) {
@@ -245,7 +241,7 @@ export class Gui {
       if (hoveredRowBackgroundColor && guictx.isNoWidgetActive()) {
         this.renderer.pushDrawCommand({
           type: 'rect',
-          x: 0,
+          x: bodyAreaX,
           y: this.state.calculateRowScreenTop(hoveredRowIndex),
           width: bodyVisibleWidth,
           height: rowHeight,
@@ -266,7 +262,7 @@ export class Gui {
 
           this.renderer.pushDrawCommand({
             type: 'rect',
-            x: 0,
+            x: bodyAreaX,
             y: this.state.calculateRowScreenTop(i),
             width: bodyVisibleWidth,
             height: rowHeight,
@@ -352,68 +348,19 @@ export class Gui {
     });
   }
 
-  private drawTopRightCornerLeftBorder() {
-    const { tableAreaX, tableAreaY, tableAreaWidth } = this.state.layout;
-    const { rowHeight, borderColor } = this.state.props.theme;
-
-    this.renderer.pushDrawCommand({
-      type: 'line',
-      orientation: 'vertical',
-      x: tableAreaX + tableAreaWidth,
-      y: tableAreaY,
-      length: rowHeight,
-      color: borderColor,
-      sortOrder: 4,
-    });
-  }
-
-  private drawBottomRightCornerLeftBorder() {
-    const { tableAreaX, tableAreaY, tableAreaWidth, tableAreaHeight } = this.state.layout;
-    const { scrollbarThickness, borderColor } = this.state.props.theme;
-
-    this.renderer.pushDrawCommand({
-      type: 'line',
-      orientation: 'vertical',
-      x: tableAreaX + tableAreaWidth,
-      y: tableAreaY + tableAreaHeight,
-      length: scrollbarThickness,
-      color: borderColor,
-      sortOrder: 4,
-    });
-  }
-
-  private drawBottomRightCornerTopBorder() {
-    const { tableAreaX, tableAreaY, tableAreaWidth, tableAreaHeight } = this.state.layout;
-    const { scrollbarThickness, borderColor } = this.state.props.theme;
-
-    this.renderer.pushDrawCommand({
-      type: 'line',
-      orientation: 'horizontal',
-      x: tableAreaX + tableAreaWidth,
-      y: tableAreaY + tableAreaHeight,
-      length: scrollbarThickness,
-      color: borderColor,
-      sortOrder: 4,
-    });
-  }
-
   private drawEvenRowsBackground() {
-    const { gridWidth, rowStart, rowEnd } = this.state.layout;
+    const { bodyAreaX, gridWidth, rowStart, rowEnd } = this.state.layout;
     const { rowHeight, evenRowBackgroundColor } = this.state.props.theme;
     const { bodyAreaClipRegion } = this.state.guictx;
-
-    const x = 0;
-    const width = gridWidth;
-    const height = rowHeight;
 
     for (let i = rowStart; i < rowEnd; i += 2) {
       const y = this.state.calculateRowScreenTop(i);
       this.renderer.pushDrawCommand({
         type: 'rect',
-        x,
+        x: bodyAreaX,
         y,
-        width,
-        height,
+        width: gridWidth,
+        height: rowHeight,
         fillColor: evenRowBackgroundColor,
         clipRegion: bodyAreaClipRegion,
       });
@@ -421,22 +368,18 @@ export class Gui {
   }
 
   private drawOddRowsBackground() {
-    const { gridWidth, rowStart, rowEnd } = this.state.layout;
+    const { bodyAreaX, gridWidth, rowStart, rowEnd } = this.state.layout;
     const { rowHeight, oddRowBackgroundColor } = this.state.props.theme;
     const { bodyAreaClipRegion } = this.state.guictx;
-
-    const x = 0;
-    const width = gridWidth;
-    const height = rowHeight;
 
     for (let i = rowStart + 1; i < rowEnd; i += 2) {
       const y = this.state.calculateRowScreenTop(i);
       this.renderer.pushDrawCommand({
         type: 'rect',
-        x,
+        x: bodyAreaX,
         y,
-        width,
-        height,
+        width: gridWidth,
+        height: rowHeight,
         fillColor: oddRowBackgroundColor,
         clipRegion: bodyAreaClipRegion,
       });
@@ -445,7 +388,7 @@ export class Gui {
 
   private drawOuterTableBorders() {
     const { canvasWidth, canvasHeight } = this.state.layout;
-    const { borderColor } = this.state.props.theme;
+    const { borderWidth, borderColor } = this.state.props.theme;
 
     // Draw top outer table border
     this.renderer.pushDrawCommand({
@@ -463,7 +406,7 @@ export class Gui {
       type: 'line',
       orientation: 'horizontal',
       x: 0,
-      y: canvasHeight - BORDER_WIDTH,
+      y: canvasHeight - borderWidth,
       length: canvasWidth,
       color: borderColor,
       sortOrder: 4,
@@ -484,7 +427,7 @@ export class Gui {
     this.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'vertical',
-      x: canvasWidth - BORDER_WIDTH,
+      x: canvasWidth - borderWidth,
       y: 0,
       length: canvasHeight,
       color: borderColor,
@@ -538,14 +481,14 @@ export class Gui {
   }
 
   private drawRightTableContentBorder() {
-    const { gridWidth, gridHeight } = this.state.layout;
+    const { tableAreaX, tableAreaY, gridWidth, gridHeight } = this.state.layout;
     const { borderColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'vertical',
-      x: gridWidth,
-      y: 0,
+      x: tableAreaX + gridWidth,
+      y: tableAreaY,
       length: gridHeight,
       color: borderColor,
       sortOrder: 4,
@@ -553,14 +496,14 @@ export class Gui {
   }
 
   private drawBottomTableContentBorder() {
-    const { gridWidth, gridHeight } = this.state.layout;
+    const { tableAreaX, tableAreaY, gridWidth, gridHeight } = this.state.layout;
     const { borderColor } = this.state.props.theme;
 
     this.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'horizontal',
-      x: 0,
-      y: gridHeight,
+      x: tableAreaX,
+      y: tableAreaY + gridHeight,
       length: gridWidth,
       color: borderColor,
       sortOrder: 4,
@@ -773,17 +716,12 @@ export class Gui {
       this.drawHeadBackground();
     }
 
-    //this.drawTopRightCornerLeftBorder();
-    //this.drawBottomRightCornerLeftBorder();
-    //this.drawBottomRightCornerTopBorder();
+    if (layout.overflowY && theme.topRightCornerBackgroundColor) {
+      this.drawTopRightCornerBackground();
+    }
 
-    if (layout.overflowX && layout.overflowY) {
-      if (theme.topRightCornerBackgroundColor) {
-        this.drawTopRightCornerBackground();
-      }
-      if (theme.bottomRightCornerBackgroundColor) {
-        this.drawBottomRightCornerBackground();
-      }
+    if (layout.overflowX && layout.overflowY && theme.bottomRightCornerBackgroundColor) {
+      this.drawBottomRightCornerBackground();
     }
 
     if (theme.evenRowBackgroundColor) {
