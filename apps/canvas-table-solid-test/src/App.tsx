@@ -2,14 +2,7 @@ import { CanvasTable } from '@bzrr/canvas-table-solid';
 
 export const App = () => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        width: '100%',
-        height: '100%',
-        padding: '2rem',
-      }}
-    >
+    <div style={{ width: '100%', height: '100%' }}>
       <CanvasTable
         columnDefs={[
           {
@@ -33,10 +26,12 @@ export const App = () => {
             lastName: 'McCartney',
           },
         ]}
-        containerStyle={{
-          width: '100%',
-          height: '100%',
-        }}
+        renderContainer={(containerProps) => (
+          <div
+            style={{ width: '100%', height: '100%' }}
+            {...containerProps}
+          />
+        )}
       />
     </div>
   );

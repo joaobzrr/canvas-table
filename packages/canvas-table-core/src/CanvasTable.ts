@@ -15,6 +15,7 @@ import type {
 } from './types';
 
 export class CanvasTable {
+  private platform: Platform;
   private state: TableState;
   private gui: Gui;
 
@@ -23,12 +24,20 @@ export class CanvasTable {
   constructor(params: CanvasTableParams) {
     const { container, ...rest } = params;
 
-    const platform = new Platform(container);
-    this.state = new TableState(platform, CanvasTable.createProps(rest));
-    this.gui = new Gui(platform, this.state);
+    this.platform = this.createPlatform(container);
+    this.state = new TableState(this.platform, CanvasTable.createProps(rest));
+    this.gui = new Gui(this.platform, this.state);
 
-    platform.updateFunction = this.update.bind(this);
-    platform.startAnimation();
+    this.platform.updateFunction = this.update.bind(this);
+    this.platform.startAnimation();
+  }
+
+  public config(props: Partial<CanvasTableProps>) {
+    this.batchedProps.push(props);
+  }
+
+  public destroy() {
+    this.platform.destroy();
   }
 
   private static createProps(params: Omit<CanvasTableParams, 'container'>) {
@@ -46,6 +55,7 @@ export class CanvasTable {
 
     return { ...params, theme, selectId, selectProp };
   }
+
   private update() {
     const props = this.mergeBatchedProps();
     this.state = this.state.update(props);
@@ -56,12 +66,19 @@ export class CanvasTable {
     return shallowMerge<Partial<CanvasTableProps>>(...this.batchedProps);
   }
 
-  public config(props: Partial<CanvasTableProps>) {
-    this.batchedProps.push(props);
+  private reattach(prevPlatform: Platform) {
+    prevPlatform.destroy();
+
+    this.platform = this.createPlatform(prevPlatform.containerId);
+    this.state.setPlatform(this.platform);
+    this.gui.setPlatform(this.platform);
+
+    this.platform.updateFunction = this.update.bind(this);
+    this.platform.startAnimation();
   }
 
-  public destroy() {
-    this.gui.destroy();
+  private createPlatform(containerId: string) {
+    return new Platform({ containerId, onDetach: this.reattach.bind(this) });
   }
 }
 

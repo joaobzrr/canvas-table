@@ -4,7 +4,17 @@ import { MOUSE_BUTTONS } from './constants';
 export type Mouse_Buttons = typeof MOUSE_BUTTONS;
 export type Mouse_Button_Value = Mouse_Buttons[keyof Mouse_Buttons];
 
+export type PlatformParams = {
+  containerId: string;
+  onDetach?: (platform: Platform) => void;
+};
+
+let counter = 0;
+
 export class Platform {
+  ID: number;
+
+  containerId: string;
   containerEl: HTMLDivElement;
   sizingEl: HTMLDivElement;
 
@@ -15,6 +25,7 @@ export class Platform {
   fontMetricsCanvasCtx: CanvasRenderingContext2D;
 
   updateFunction?: () => void;
+  isUpdating = false;
 
   currMouseX = 0;
   currMouseY = 0;
@@ -38,20 +49,19 @@ export class Platform {
 
   rafId?: number;
 
-  mouseDownHandler: (event: MouseEvent) => void;
-  mouseUpHandler: (event: MouseEvent) => void;
-  mouseMoveHandler: (event: MouseEvent) => void;
-  wheelHandler: (event: WheelEvent) => void;
-  visibilityChangeHandler: () => void;
+  onDetach?: (platform: Platform) => void;
 
-  constructor(containerId: string) {
-    const containerEl = document.getElementById(containerId);
+  constructor(params: PlatformParams) {
+    this.ID = counter++;
+
+    this.containerId = params.containerId;
+
+    const containerEl = document.getElementById(params.containerId);
     if (!containerEl) {
-      throw new Error(`Element with id "${containerId}" could not be found`);
+      throw new Error(`Element with id "${params.containerId}" could not be found`);
     }
     this.containerEl = containerEl as HTMLDivElement;
     this.containerEl.replaceChildren();
-    this.containerEl.style.overflow = 'hidden';
 
     this.sizingEl = document.createElement('div');
     this.sizingEl.style.height = '100%';
@@ -67,37 +77,43 @@ export class Platform {
     this.fontMetricsCanvas = document.createElement('canvas');
     this.fontMetricsCanvasCtx = getContext(this.fontMetricsCanvas);
 
-    this.mouseDownHandler = this.onMouseDown.bind(this);
-    this.mouseUpHandler = this.onMouseUp.bind(this);
-    this.mouseMoveHandler = this.onMouseMove.bind(this);
-    this.wheelHandler = this.onWheel.bind(this);
-    this.visibilityChangeHandler = this.onVisibilityChange.bind(this);
+    this.onDetach = params.onDetach;
 
-    this.canvas.addEventListener('mousedown', this.mouseDownHandler);
-    this.canvas.addEventListener('wheel', this.wheelHandler);
-    document.addEventListener('mousemove', this.mouseMoveHandler);
-    document.addEventListener('mouseup', this.mouseUpHandler);
-    document.addEventListener('visibilitychange', this.visibilityChangeHandler);
+    this.onMouseDown = this.onMouseDown.bind(this);
+    this.onMouseUp = this.onMouseUp.bind(this);
+    this.onMouseMove = this.onMouseMove.bind(this);
+    this.onWheel = this.onWheel.bind(this);
+    this.onVisibilityChange = this.onVisibilityChange.bind(this);
+
+    this.canvas.addEventListener('mousedown', this.onMouseDown);
+    this.canvas.addEventListener('wheel', this.onWheel);
+    document.addEventListener('mousemove', this.onMouseMove);
+    document.addEventListener('mouseup', this.onMouseUp);
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
   }
 
   public destroy() {
     this.stopAnimation();
 
-    document.removeEventListener('mousemove', this.mouseMoveHandler);
-    document.removeEventListener('mouseup', this.mouseUpHandler);
-    document.removeEventListener('visibilitychange', this.visibilityChangeHandler);
+    this.canvas.removeEventListener('mousedown', this.onMouseDown);
+    this.canvas.removeEventListener('mouseup', this.onMouseUp);
+    document.removeEventListener('mousemove', this.onMouseMove);
+    document.removeEventListener('mouseup', this.onMouseUp);
+    document.removeEventListener('visibilitychange', this.onVisibilityChange);
   }
 
   public startAnimation() {
     if (this.rafId === undefined) {
       this.rafId = requestAnimationFrame(() => this.animate());
     }
+    this.isUpdating = true;
   }
 
   public stopAnimation() {
     if (this.rafId !== undefined) {
       cancelAnimationFrame(this.rafId);
       this.rafId = undefined;
+      this.isUpdating = false;
     }
   }
 
@@ -132,6 +148,10 @@ export class Platform {
   }
 
   private animate() {
+    if (!document.contains(this.containerEl)) {
+      this.onDetach?.(this);
+    }
+
     if (
       this.sizingEl.offsetWidth !== this.canvas.width ||
       this.sizingEl.offsetHeight !== this.canvas.height
@@ -160,7 +180,9 @@ export class Platform {
     this.scrollAmountX = 0;
     this.scrollAmountY = 0;
 
-    this.rafId = requestAnimationFrame(() => this.animate());
+    if (this.isUpdating) {
+      this.rafId = requestAnimationFrame(() => this.animate());
+    }
   }
 
   private resizeCanvas(width: number, height: number) {

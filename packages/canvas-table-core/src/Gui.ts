@@ -17,10 +17,100 @@ export class Gui {
   constructor(platform: Platform, state: TableState) {
     this.platform = platform;
     this.state = state;
-    this.renderer = new Renderer({
-      canvas: this.platform.canvas,
-      ctx: this.platform.ctx,
-    });
+    this.renderer = new Renderer({ ctx: this.platform.ctx });
+  }
+
+  public setPlatform(platform: Platform) {
+    this.platform = platform;
+    this.renderer.setContext(this.platform.ctx);
+  }
+
+  public update(state: TableState) {
+    this.state = state;
+
+    const {
+      layout,
+      props: { theme },
+    } = this.state;
+    const { columnStart, columnEnd } = layout;
+
+    for (let j = columnStart; j < columnEnd; j++) {
+      if (this.doColumnResizer(j)) {
+        break;
+      }
+    }
+
+    if (layout.overflowX) {
+      this.doHorizontalScrollbar();
+    }
+
+    if (layout.overflowY) {
+      this.doVerticalScrollbar();
+    }
+
+    this.doRows();
+
+    if (theme.tableBackgroundColor) {
+      this.drawTableBackground();
+    }
+
+    if (theme.bodyBackgroundColor) {
+      this.drawBodyBackground();
+    }
+
+    if (theme.headBackgroundColor) {
+      this.drawHeadBackground();
+    }
+
+    if (layout.overflowY && theme.topRightCornerBackgroundColor) {
+      this.drawTopRightCornerBackground();
+    }
+
+    if (layout.overflowX && layout.overflowY && theme.bottomRightCornerBackgroundColor) {
+      this.drawBottomRightCornerBackground();
+    }
+
+    if (theme.evenRowBackgroundColor) {
+      this.drawEvenRowsBackground();
+    }
+
+    if (theme.oddRowBackgroundColor) {
+      this.drawOddRowsBackground();
+    }
+
+    this.drawHeadBottomBorder();
+
+    if (layout.overflowX) {
+      this.drawHorizontalScrollbarBorder();
+    } else {
+      this.drawRightTableContentBorder();
+    }
+
+    if (layout.overflowY) {
+      this.drawVerticalScrollbarBorder();
+    } else {
+      this.drawBottomTableContentBorder();
+    }
+
+    const shouldDrawRowBorders =
+      (theme.rowBorder !== undefined && theme.rowBorder) ||
+      (theme.rowBorder === undefined && theme.border);
+    if (shouldDrawRowBorders) {
+      this.drawRowBorders();
+    }
+
+    const shouldDrawColumnBorders =
+      (theme.columnBorder !== undefined && theme.columnBorder) ||
+      (theme.columnBorder === undefined && theme.border);
+    if (shouldDrawColumnBorders) {
+      this.drawColumnBorders();
+    }
+
+    this.drawHeadText();
+
+    this.drawBodyText();
+
+    this.renderer.render();
   }
 
   private doColumnResizer(columnIndex: number) {
@@ -632,97 +722,5 @@ export class Gui {
         });
       }
     }
-  }
-
-  public update(state: TableState) {
-    this.state = state;
-
-    const {
-      layout,
-      props: { theme },
-    } = this.state;
-    const { columnStart, columnEnd } = layout;
-
-    for (let j = columnStart; j < columnEnd; j++) {
-      if (this.doColumnResizer(j)) {
-        break;
-      }
-    }
-
-    if (layout.overflowX) {
-      this.doHorizontalScrollbar();
-    }
-
-    if (layout.overflowY) {
-      this.doVerticalScrollbar();
-    }
-
-    this.doRows();
-
-    if (theme.tableBackgroundColor) {
-      this.drawTableBackground();
-    }
-
-    if (theme.bodyBackgroundColor) {
-      this.drawBodyBackground();
-    }
-
-    if (theme.headBackgroundColor) {
-      this.drawHeadBackground();
-    }
-
-    if (layout.overflowY && theme.topRightCornerBackgroundColor) {
-      this.drawTopRightCornerBackground();
-    }
-
-    if (layout.overflowX && layout.overflowY && theme.bottomRightCornerBackgroundColor) {
-      this.drawBottomRightCornerBackground();
-    }
-
-    if (theme.evenRowBackgroundColor) {
-      this.drawEvenRowsBackground();
-    }
-
-    if (theme.oddRowBackgroundColor) {
-      this.drawOddRowsBackground();
-    }
-
-    this.drawHeadBottomBorder();
-
-    if (layout.overflowX) {
-      this.drawHorizontalScrollbarBorder();
-    } else {
-      this.drawRightTableContentBorder();
-    }
-
-    if (layout.overflowY) {
-      this.drawVerticalScrollbarBorder();
-    } else {
-      this.drawBottomTableContentBorder();
-    }
-
-    const shouldDrawRowBorders =
-      (theme.rowBorder !== undefined && theme.rowBorder) ||
-      (theme.rowBorder === undefined && theme.border);
-    if (shouldDrawRowBorders) {
-      this.drawRowBorders();
-    }
-
-    const shouldDrawColumnBorders =
-      (theme.columnBorder !== undefined && theme.columnBorder) ||
-      (theme.columnBorder === undefined && theme.border);
-    if (shouldDrawColumnBorders) {
-      this.drawColumnBorders();
-    }
-
-    this.drawHeadText();
-
-    this.drawBodyText();
-
-    this.renderer.render();
-  }
-
-  public destroy() {
-    this.platform.destroy();
   }
 }

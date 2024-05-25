@@ -1,24 +1,29 @@
 import React, { useRef, useLayoutEffect } from 'react';
 import { CanvasTable, type CanvasTableParams } from '@bzrr/canvas-table-core';
 
-export type CanvasTableComponentProps = Omit<CanvasTableParams, 'container'> & {
-  containerClassName?: string;
-  containerStyle?: React.CSSProperties;
-};
+let instanceCount = 0;
 
-let count = 0;
-
-function getContainerId() {
-  const result = `canvas-table-container-${count}`;
-  count++;
+function makeContainerId() {
+  const result = `canvas-table-container-${instanceCount}`;
+  instanceCount++;
   return result;
 }
 
+export type CanvasTableContainerProps = {
+  id: string;
+};
+
+export type RenderContainerFunction = (containerProps: CanvasTableContainerProps) => JSX.Element;
+
+export type CanvasTableComponentProps = Omit<CanvasTableParams, 'container'> & {
+  renderContainer?: RenderContainerFunction;
+};
+
 export const CanvasTableComponent = React.memo((props: CanvasTableComponentProps) => {
-  const { containerClassName, containerStyle, ...tableProps } = props;
+  const { renderContainer, ...tableProps } = props;
 
   const canvasTableRef = useRef<CanvasTable | null>(null);
-  const containerIdRef = useRef(getContainerId());
+  const containerIdRef = useRef(makeContainerId());
 
   useLayoutEffect(() => {
     canvasTableRef.current = new CanvasTable({
@@ -38,11 +43,21 @@ export const CanvasTableComponent = React.memo((props: CanvasTableComponentProps
     canvasTableRef.current.config(tableProps);
   }
 
+  if (!renderContainer) {
+    return <DefaultContainer id={containerIdRef.current} />;
+  }
+
+  return renderContainer({ id: containerIdRef.current });
+});
+
+const DefaultContainer = (props: CanvasTableContainerProps) => {
   return (
     <div
-      id={containerIdRef.current}
-      className={containerClassName}
-      style={containerStyle}
+      {...props}
+      style={{
+        width: '300px',
+        height: '150px',
+      }}
     />
   );
-});
+};

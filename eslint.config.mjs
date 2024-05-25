@@ -65,6 +65,7 @@ export default tseslint.config(
           message: 'Prefer named exports',
         },
       ],
+      '@typescript-eslint/unbound-method': 'off',
     },
   },
   prettier,

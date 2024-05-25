@@ -1,4 +1,4 @@
-import { createEffect, splitProps, type JSX } from 'solid-js';
+import { createEffect, splitProps, Show, type JSX } from 'solid-js';
 import { CanvasTable, type CanvasTableParams } from '@bzrr/canvas-table-core';
 
 let instanceCount = 0;
@@ -9,30 +9,48 @@ const makeContainerId = () => {
   return result;
 };
 
+export type CanvasTableContainerProps = {
+  id: string;
+};
+
+export type RenderContainerFunction = (containerProps: CanvasTableContainerProps) => JSX.Element;
+
 export type CanvasTableComponentProps = Omit<CanvasTableParams, 'container'> & {
-  containerClass?: string;
-  containerStyle?: JSX.CSSProperties;
+  renderContainer?: RenderContainerFunction;
 };
 
 export const CanvasTableComponent = (props: CanvasTableComponentProps) => {
-  const [custom, tableProps] = splitProps(props, ['containerClass', 'containerStyle']);
+  const [local, others] = splitProps(props, ['renderContainer']);
 
   const containerId = makeContainerId();
 
   let instance: CanvasTable | null = null;
   createEffect(() => {
     if (instance) {
-      instance.config({ ...tableProps });
+      instance.config({ ...others });
     } else {
-      instance = new CanvasTable({ container: containerId, ...tableProps });
+      instance = new CanvasTable({ container: containerId, ...others });
     }
   });
 
   return (
+    <Show
+      when={local.renderContainer}
+      fallback={<DefaultContainer id={containerId} />}
+    >
+      {local.renderContainer!({ id: containerId })}
+    </Show>
+  );
+};
+
+const DefaultContainer = (props: CanvasTableContainerProps) => {
+  return (
     <div
-      id={containerId}
-      class={custom.containerClass}
-      style={custom.containerStyle}
+      {...props}
+      style={{
+        width: '300px',
+        height: '150px',
+      }}
     />
   );
 };

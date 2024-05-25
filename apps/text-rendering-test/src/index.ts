@@ -27,7 +27,6 @@ if (!ctx) {
 }
 
 const renderer = new Renderer({
-  canvas,
   ctx,
   glyphAtlasParams: {
     width: ATLAS_WIDTH,

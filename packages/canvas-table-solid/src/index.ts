@@ -1,13 +1,11 @@
-export {
-  defaultTheme,
-  type ColumnDef,
-  type DataRow,
-  type Theme,
-  type DataRowId,
-  type PropValue,
-} from '@bzrr/canvas-table-core';
+export type { ColumnDef, DataRow, Theme, DataRowId, PropValue } from '@bzrr/canvas-table-core';
 
-export {
-  CanvasTableComponent as CanvasTable,
-  type CanvasTableComponentProps as CanvasTableProps,
+export { defaultTheme } from '@bzrr/canvas-table-core';
+
+export type {
+  CanvasTableComponentProps as CanvasTableProps,
+  CanvasTableContainerProps,
+  RenderContainerFunction,
 } from './CanvasTable';
+
+export { CanvasTableComponent as CanvasTable } from './CanvasTable';

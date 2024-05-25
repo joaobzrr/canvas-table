@@ -148,10 +148,15 @@ export const App = () => {
             dataRows={table.dataRows}
             theme={theme}
             selectedRowId={selectedRow?.id as DataRowId}
-            containerClassName={styles.canvasTable}
             selectId={(row) => row.id as DataRowId}
             onSelectRow={(_, row) => setSelectedRow(row)}
             onResizeColumn={onResizeColumn}
+            renderContainer={(containerProps) => (
+              <div
+                {...containerProps}
+                className={styles.canvasTable}
+              />
+            )}
           />
         </div>
       </main>

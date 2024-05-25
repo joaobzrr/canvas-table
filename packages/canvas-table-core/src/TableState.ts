@@ -33,82 +33,15 @@ export class TableState {
     this.updateClipRegions();
   }
 
-  private static createInitialLayout(columnDefs: ColumnDef[]) {
-    return makeLayout(TableState.calculateColumnWidths(columnDefs));
-  }
-
-  private static calculateColumnWidths(columnDefs: ColumnDef[]) {
-    const columnWidths = [] as number[];
-    for (const { width } of columnDefs) {
-      columnWidths.push(width ?? DEFAULT_COLUMN_WIDTH);
-    }
-    return columnWidths;
-  }
-
-  private applyChanges(props: Partial<CanvasTableProps>) {
-    this.layout.canvasWidth = this.platform.canvas.width;
-    this.layout.canvasHeight = this.platform.canvas.height;
-
-    if (props.columnDefs && !Object.is(props.columnDefs, this.props.columnDefs)) {
-      this.props.columnDefs = props.columnDefs;
-      this.layout.columnWidths = TableState.calculateColumnWidths(props.columnDefs);
-    }
-
-    if (props.dataRows && !Object.is(props.dataRows, this.props.dataRows)) {
-      this.props.dataRows = props.dataRows;
-    }
-
-    if (props.theme && !Object.is(props.theme, this.props.theme)) {
-      this.props.theme = props.theme;
-    }
-
-    if ('selectedRowId' in props) {
-      this.props.selectedRowId = props.selectedRowId;
-    }
-
-    this.props.selectId = props.selectId ?? this.props.selectId;
-    this.props.selectProp = props.selectProp ?? this.props.selectProp;
-    this.props.onSelectRow = props.onSelectRow ?? this.props.onSelectRow;
-    this.props.onResizeColumn = props.onResizeColumn ?? this.props.onResizeColumn;
-
-    return this;
-  }
-
-  private updateScrollPos(scrollAmountX: number, scrollAmountY: number) {
-    this.layout.scrollLeft = clamp(
-      this.layout.scrollLeft + scrollAmountX,
-      0,
-      this.layout.maxScrollX,
-    );
-    this.layout.scrollTop = clamp(this.layout.scrollTop + scrollAmountY, 0, this.layout.maxScrollY);
-
-    this.layout.hsbThumbX = this.calculateHorizontalScrollbarThumbX();
-    this.layout.vsbThumbY = this.calculateVerticalScrollbarThumbY();
-  }
-
-  private updateClipRegions() {
-    this.guictx.bodyAreaClipRegion = new Path2D();
-    this.guictx.bodyAreaClipRegion.rect(
-      this.layout.bodyAreaX,
-      this.layout.bodyAreaY,
-      this.layout.bodyAreaWidth,
-      this.layout.bodyAreaHeight,
-    );
-
-    this.guictx.headAreaClipRegion = new Path2D();
-    this.guictx.headAreaClipRegion.rect(
-      this.layout.headAreaX,
-      this.layout.headAreaY,
-      this.layout.headAreaWidth,
-      this.layout.headAreaHeight,
-    );
-  }
-
   public copy() {
     const props = Object.assign({}, this.props);
     const layout = Object.assign({}, this.layout);
     const newState = new TableState(this.platform, props, layout, this.guictx);
     return newState;
+  }
+
+  public setPlatform(platform: Platform) {
+    this.platform = platform;
   }
 
   public update(props: Partial<CanvasTableProps>) {
@@ -505,6 +438,77 @@ export class TableState {
         0,
         this.layout.maxScrollY,
       ),
+    );
+  }
+
+  private static createInitialLayout(columnDefs: ColumnDef[]) {
+    return makeLayout(TableState.calculateColumnWidths(columnDefs));
+  }
+
+  private static calculateColumnWidths(columnDefs: ColumnDef[]) {
+    const columnWidths = [] as number[];
+    for (const { width } of columnDefs) {
+      columnWidths.push(width ?? DEFAULT_COLUMN_WIDTH);
+    }
+    return columnWidths;
+  }
+
+  private applyChanges(props: Partial<CanvasTableProps>) {
+    this.layout.canvasWidth = this.platform.canvas.width;
+    this.layout.canvasHeight = this.platform.canvas.height;
+
+    if (props.columnDefs && !Object.is(props.columnDefs, this.props.columnDefs)) {
+      this.props.columnDefs = props.columnDefs;
+      this.layout.columnWidths = TableState.calculateColumnWidths(props.columnDefs);
+    }
+
+    if (props.dataRows && !Object.is(props.dataRows, this.props.dataRows)) {
+      this.props.dataRows = props.dataRows;
+    }
+
+    if (props.theme && !Object.is(props.theme, this.props.theme)) {
+      this.props.theme = props.theme;
+    }
+
+    if ('selectedRowId' in props) {
+      this.props.selectedRowId = props.selectedRowId;
+    }
+
+    this.props.selectId = props.selectId ?? this.props.selectId;
+    this.props.selectProp = props.selectProp ?? this.props.selectProp;
+    this.props.onSelectRow = props.onSelectRow ?? this.props.onSelectRow;
+    this.props.onResizeColumn = props.onResizeColumn ?? this.props.onResizeColumn;
+
+    return this;
+  }
+
+  private updateScrollPos(scrollAmountX: number, scrollAmountY: number) {
+    this.layout.scrollLeft = clamp(
+      this.layout.scrollLeft + scrollAmountX,
+      0,
+      this.layout.maxScrollX,
+    );
+    this.layout.scrollTop = clamp(this.layout.scrollTop + scrollAmountY, 0, this.layout.maxScrollY);
+
+    this.layout.hsbThumbX = this.calculateHorizontalScrollbarThumbX();
+    this.layout.vsbThumbY = this.calculateVerticalScrollbarThumbY();
+  }
+
+  private updateClipRegions() {
+    this.guictx.bodyAreaClipRegion = new Path2D();
+    this.guictx.bodyAreaClipRegion.rect(
+      this.layout.bodyAreaX,
+      this.layout.bodyAreaY,
+      this.layout.bodyAreaWidth,
+      this.layout.bodyAreaHeight,
+    );
+
+    this.guictx.headAreaClipRegion = new Path2D();
+    this.guictx.headAreaClipRegion.rect(
+      this.layout.headAreaX,
+      this.layout.headAreaY,
+      this.layout.headAreaWidth,
+      this.layout.headAreaHeight,
     );
   }
 }

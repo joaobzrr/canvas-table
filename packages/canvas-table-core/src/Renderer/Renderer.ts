@@ -3,7 +3,6 @@ import { getContext } from '../utils';
 import type { DrawLineCommand, DrawRectCommand, DrawCommand } from './types';
 
 export type RendererParams = {
-  canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   glyphAtlasParams?: {
     width?: number;
@@ -12,7 +11,6 @@ export type RendererParams = {
 };
 
 export class Renderer {
-  canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
 
   textRenderer: TextRenderer;
@@ -27,7 +25,6 @@ export class Renderer {
   commandBuffer: DrawCommand[];
 
   constructor(params: RendererParams) {
-    this.canvas = params.canvas;
     this.ctx = params.ctx;
 
     this.textRenderer = new TextRenderer({
@@ -51,6 +48,10 @@ export class Renderer {
     this.commandBuffer = [];
   }
 
+  setContext(ctx: CanvasRenderingContext2D) {
+    this.ctx = ctx;
+  }
+
   render() {
     this.commandBuffer.sort((a, b) => {
       const { sortOrder: aSortOrder = 0 } = a;
@@ -58,7 +59,7 @@ export class Renderer {
       return bSortOrder - aSortOrder;
     });
 
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
 
     while (this.commandBuffer.length > 0) {
       const command = this.commandBuffer.pop()!;
