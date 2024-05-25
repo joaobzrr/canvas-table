@@ -1,9 +1,10 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "noEmit": true,
     "sourceMap": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js"
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "rollup.config.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

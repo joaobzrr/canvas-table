@@ -6,7 +6,6 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": false,
     "skipLibCheck": true,
-    "noEmit": true,
     "strict": true,
     "isolatedModules": true
   }

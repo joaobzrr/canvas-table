@@ -1,15 +1,18 @@
 {
+  "name": "canvas-table",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "build:all": "pnpm --filter @bzrr/canvas-table-core run build && pnpm --filter @bzrr/canvas-table-react run build && pnpm --filter @bzrr/canvas-table-solid run build && pnpm --filter canvas-table-demo run build",
-    "lint": "eslint .",
-    "format": "npx prettier --write \"**/*.{js,mjs,cjs,ts,tsx,mts,cts,json}\""
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "packageManager": "pnpm@8.15.5",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "build": "turbo build",
+    "lint": "eslint .",
+    "format": "npx prettier --write \"**/*.{js,mjs,cjs,ts,tsx,mts,cts,json}\""
+  },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
     "eslint": "^8.57.0",

@@ -1,17 +1,16 @@
 import { cwd } from 'node:process';
 import { readFileSync, rmSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
-import type { RollupOptions } from 'rollup';
 import typescript from '@rollup/plugin-typescript';
 import { babel } from '@rollup/plugin-babel';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import dts from 'rollup-plugin-dts';
 
-function findClosestPackageJson(start = cwd(), level = 0): Record<string, unknown> {
+function findClosestPackageJson(start = cwd(), level = 0) {
   try {
     const path = resolve(start, 'package.json');
     const content = readFileSync(path, { encoding: 'utf8' });
-    return JSON.parse(content) as Record<string, unknown>;
+    return JSON.parse(content);
   } catch {
     return level >= 10 ? {} : findClosestPackageJson(dirname(start), level + 1);
   }
@@ -32,7 +31,7 @@ const external = [
 
 const extensions = ['.js', '.ts', '.jsx', '.tsx'];
 
-const config: RollupOptions[] = [
+const config = [
   {
     input: 'src/index.ts',
     external: ['solid-js', 'solid-js/web', 'solid-js/store', ...external],
@@ -58,7 +57,9 @@ const config: RollupOptions[] = [
         ],
       }),
       nodeResolve({ extensions }),
-      typescript({ tsconfig: resolve(cwd(), 'tsconfig.dts.json') }),
+      typescript({
+        tsconfig: resolve(cwd(), 'tsconfig.dts.json'),
+      }),
     ],
   },
   {

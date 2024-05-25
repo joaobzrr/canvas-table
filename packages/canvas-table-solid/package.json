@@ -21,8 +21,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "watch": "rollup --config rollup.config.ts --configPlugin typescript --watch",
-    "build": "rollup --config rollup.config.ts --configPlugin typescript",
+    "build": "rollup --config rollup.config.mjs",
     "prepublish": "npm run build"
   },
   "devDependencies": {
