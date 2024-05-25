@@ -6,7 +6,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@8.15.5",
+  "packageManager": "pnpm@9.1.2",
   "workspaces": ["packages/*", "apps/*"],
   "scripts": {
     "build": "turbo build",
