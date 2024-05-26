@@ -1,6 +1,5 @@
-import { Platform } from './Platform';
+import { Context } from './Context';
 import { Gui } from './Gui';
-import { TableState } from './TableState';
 import { shallowMerge } from './utils';
 import type {
   CanvasTableProps,
@@ -12,21 +11,24 @@ import type {
 } from './types';
 
 export class CanvasTable {
-  private platform: Platform;
-  private state: TableState;
+  private context: Context;
+
   private gui: Gui;
 
   private batchedProps: Partial<CanvasTableProps>[] = [];
 
   constructor(params: CanvasTableParams) {
-    const { container, ...props } = params;
+    const { container, ...initialProps } = params;
 
-    this.platform = this.createPlatform(container);
-    this.state = new TableState(this.platform, this.createProps(props));
-    this.gui = new Gui(this.platform, this.state);
+    this.context = new Context({
+      containerId: container,
+      props: this.createProps(initialProps),
+    });
 
-    this.platform.updateFunction = this.update.bind(this);
-    this.platform.startAnimation();
+    this.gui = new Gui({ context: this.context });
+
+    this.context.platform.updateFunction = this.update.bind(this);
+    this.context.platform.startAnimation();
   }
 
   public config(props: Partial<CanvasTableProps>) {
@@ -34,7 +36,7 @@ export class CanvasTable {
   }
 
   public destroy() {
-    this.platform.destroy();
+    this.context.platform.destroy();
   }
 
   private createProps(...changes: Partial<CanvasTableProps>[]): CanvasTableProps {
@@ -42,33 +44,31 @@ export class CanvasTable {
   }
 
   private mergeProps(...changes: Partial<CanvasTableProps>[]): CanvasTableProps {
-    return shallowMerge(this.state.props, defaultProps, ...changes);
+    return shallowMerge(this.context.props, defaultProps, ...changes);
   }
 
   private update() {
-    this.state.layout.canvasWidth = this.platform.canvas.width;
-    this.state.layout.canvasHeight = this.platform.canvas.height;
+    this.context.state.layout.canvasWidth = this.context.platform.canvas.width;
+    this.context.state.layout.canvasHeight = this.context.platform.canvas.height;
+    this.context.props = this.mergeProps(...this.batchedProps);
 
-    this.state.props = this.mergeProps(...this.batchedProps);
-
-    this.state.update();
-    this.gui.update(this.state);
+    this.gui.update();
   }
 
-  private reattach(prevPlatform: Platform) {
-    prevPlatform.destroy();
+  // private reattach(prevPlatform: Platform) {
+  //   prevPlatform.destroy();
 
-    this.platform = this.createPlatform(prevPlatform.containerId);
-    this.state.setPlatform(this.platform);
-    this.gui.setPlatform(this.platform);
+  //   this.platform = this.createPlatform(prevPlatform.containerId);
+  //   this.context.state.setPlatform(this.platform);
+  //   this.gui.setPlatform(this.platform);
 
-    this.platform.updateFunction = this.update.bind(this);
-    this.platform.startAnimation();
-  }
+  //   this.platform.updateFunction = this.update.bind(this);
+  //   this.platform.startAnimation();
+  // }
 
-  private createPlatform(containerId: string) {
-    return new Platform({ containerId, onDetach: this.reattach.bind(this) });
-  }
+  //private createPlatform(containerId: string) {
+  //  return new Platform({ containerId, onDetach: this.reattach.bind(this) });
+  //}
 }
 
 const defaultProps: Partial<CanvasTableProps> = {

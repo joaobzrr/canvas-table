@@ -2,14 +2,6 @@ export class GuiContext {
   public hotWidget: string | null = null;
   public activeWidget: string | null = null;
 
-  public hoveredRowIndex = -1;
-
-  public dragAnchorX = 0;
-  public dragAnchorY = 0;
-
-  public headAreaClipRegion: Path2D = undefined!;
-  public bodyAreaClipRegion: Path2D = undefined!;
-
   setActiveWidget(id: string | null) {
     this.activeWidget = id;
   }
