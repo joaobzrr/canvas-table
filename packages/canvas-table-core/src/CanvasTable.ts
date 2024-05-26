@@ -1,3 +1,4 @@
+import { Platform } from './Platform';
 import { Context } from './Context';
 import { Gui } from './Gui';
 import { shallowMerge } from './utils';
@@ -12,7 +13,6 @@ import type {
 
 export class CanvasTable {
   private context: Context;
-
   private gui: Gui;
 
   private batchedProps: Partial<CanvasTableProps>[] = [];
@@ -21,13 +21,13 @@ export class CanvasTable {
     const { container, ...initialProps } = params;
 
     this.context = new Context({
-      containerId: container,
+      platform: this.createPlatform(container),
       props: this.createProps(initialProps),
     });
 
     this.gui = new Gui({ context: this.context });
 
-    this.context.platform.updateFunction = this.update.bind(this);
+    this.context.platform.callback = this.update.bind(this);
     this.context.platform.startAnimation();
   }
 
@@ -55,20 +55,18 @@ export class CanvasTable {
     this.gui.update();
   }
 
-  // private reattach(prevPlatform: Platform) {
-  //   prevPlatform.destroy();
+  private reattach(prev: Platform) {
+    prev.destroy();
 
-  //   this.platform = this.createPlatform(prevPlatform.containerId);
-  //   this.context.state.setPlatform(this.platform);
-  //   this.gui.setPlatform(this.platform);
+    this.context.platform = this.createPlatform(prev.containerId);
+    this.context.platform.setCallback(this.update.bind(this));
+    this.context.renderer.setRenderingContext(this.context.platform.ctx);
+    this.context.platform.startAnimation();
+  }
 
-  //   this.platform.updateFunction = this.update.bind(this);
-  //   this.platform.startAnimation();
-  // }
-
-  //private createPlatform(containerId: string) {
-  //  return new Platform({ containerId, onDetach: this.reattach.bind(this) });
-  //}
+  private createPlatform(containerId: string) {
+    return new Platform({ containerId, onDetach: this.reattach.bind(this) });
+  }
 }
 
 const defaultProps: Partial<CanvasTableProps> = {

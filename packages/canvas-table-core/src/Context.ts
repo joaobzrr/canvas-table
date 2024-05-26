@@ -1,23 +1,24 @@
-import { Platform } from './Platform';
+import { type Platform } from './Platform';
+import { Renderer } from './Renderer';
 import { Layout } from './Layout';
 import { type CanvasTableProps } from './types';
 
 export type CanvasTableContextParams = {
-  containerId: string;
+  platform: Platform;
   props: CanvasTableProps;
 };
 
 export class Context {
   platform: Platform;
-  props: CanvasTableProps;
+  renderer: Renderer;
   layout: Layout;
+  props: CanvasTableProps;
 
   constructor(params: CanvasTableContextParams) {
-    this.platform = new Platform({
-      containerId: params.containerId,
-    });
-
+    this.platform = params.platform;
     this.props = params.props;
+
+    this.renderer = new Renderer({ ctx: this.platform.ctx });
     this.layout = new Layout({ context: this });
   }
 }

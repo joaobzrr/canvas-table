@@ -1,5 +1,4 @@
 import { type Context } from './Context';
-import { Renderer } from './Renderer';
 import { GuiContext } from './GuiContext';
 import { clamp, createFontSpecifier, isNumber } from './utils';
 import {
@@ -18,7 +17,6 @@ export type GuiParams = {
 
 export class Gui {
   context: Context;
-  renderer: Renderer;
   guictx: GuiContext;
 
   hoveredRowIndex = -1;
@@ -31,7 +29,6 @@ export class Gui {
 
   constructor(params: GuiParams) {
     this.context = params.context;
-    this.renderer = new Renderer({ ctx: this.context.platform.ctx });
     this.guictx = new GuiContext();
   }
 
@@ -146,7 +143,7 @@ export class Gui {
 
     this.drawBodyText();
 
-    this.renderer.render();
+    this.context.renderer.render();
   }
 
   public dragHorizontalScrollbarThumb() {
@@ -250,7 +247,7 @@ export class Gui {
     if (this.guictx.isWidgetActive(id) || this.guictx.isWidgetHot(id)) {
       const { columnResizerColor } = props.theme;
 
-      this.renderer.pushDrawCommand({
+      this.context.renderer.pushDrawCommand({
         type: 'rect',
         x,
         y,
@@ -272,7 +269,7 @@ export class Gui {
     const { scrollbarBackgroundColor } = props.theme;
     if (scrollbarBackgroundColor) {
       const { hsbX, hsbY, hsbWidth, hsbHeight } = this.context.layout;
-      this.renderer.pushDrawCommand({
+      this.context.renderer.pushDrawCommand({
         type: 'rect',
         x: hsbX,
         y: hsbY,
@@ -324,7 +321,7 @@ export class Gui {
     }
 
     if (fillColor) {
-      this.renderer.pushDrawCommand({
+      this.context.renderer.pushDrawCommand({
         type: 'rect',
         x,
         y,
@@ -342,7 +339,7 @@ export class Gui {
     const { scrollbarBackgroundColor } = props.theme;
     if (scrollbarBackgroundColor) {
       const { vsbX, vsbY, vsbWidth, vsbHeight } = this.context.layout;
-      this.renderer.pushDrawCommand({
+      this.context.renderer.pushDrawCommand({
         type: 'rect',
         x: vsbX,
         y: vsbY,
@@ -394,7 +391,7 @@ export class Gui {
     }
 
     if (fillColor) {
-      this.renderer.pushDrawCommand({
+      this.context.renderer.pushDrawCommand({
         type: 'rect',
         x,
         y,
@@ -424,7 +421,7 @@ export class Gui {
 
       const { hoveredRowBackgroundColor } = props.theme;
       if (hoveredRowBackgroundColor && this.guictx.isNoWidgetActive()) {
-        this.renderer.pushDrawCommand({
+        this.context.renderer.pushDrawCommand({
           type: 'rect',
           x: bodyAreaX,
           y: this.context.layout.calculateRowScreenTop(this.hoveredRowIndex),
@@ -445,7 +442,7 @@ export class Gui {
         if (props.selectedRowId == dataRowId) {
           const { selectedRowBackgroundColor } = props.theme;
 
-          this.renderer.pushDrawCommand({
+          this.context.renderer.pushDrawCommand({
             type: 'rect',
             x: bodyAreaX,
             y: this.context.layout.calculateRowScreenTop(i),
@@ -465,7 +462,7 @@ export class Gui {
     const { canvasWidth, canvasHeight } = this.context.layout;
     const { tableBackgroundColor } = this.context.props.theme;
 
-    this.renderer.pushDrawCommand({
+    this.context.renderer.pushDrawCommand({
       type: 'rect',
       x: 0,
       y: 0,
@@ -480,7 +477,7 @@ export class Gui {
 
     const { bodyBackgroundColor } = this.context.props.theme;
 
-    this.renderer.pushDrawCommand({
+    this.context.renderer.pushDrawCommand({
       type: 'rect',
       x: bodyAreaX,
       y: bodyAreaY,
@@ -495,7 +492,7 @@ export class Gui {
 
     const { headBackgroundColor } = this.context.props.theme;
 
-    this.renderer.pushDrawCommand({
+    this.context.renderer.pushDrawCommand({
       type: 'rect',
       x: headAreaX,
       y: headAreaY,
@@ -509,7 +506,7 @@ export class Gui {
     const { vsbX, vsbWidth } = this.context.layout;
     const { rowHeight, topRightCornerBackgroundColor } = this.context.props.theme;
 
-    this.renderer.pushDrawCommand({
+    this.context.renderer.pushDrawCommand({
       type: 'rect',
       x: vsbX,
       y: 0,
@@ -523,7 +520,7 @@ export class Gui {
     const { hsbY, vsbX, vsbWidth } = this.context.layout;
     const { scrollbarThickness, bottomRightCornerBackgroundColor } = this.context.props.theme;
 
-    this.renderer.pushDrawCommand({
+    this.context.renderer.pushDrawCommand({
       type: 'rect',
       x: vsbX,
       y: hsbY,
@@ -539,7 +536,7 @@ export class Gui {
 
     for (let i = rowStart; i < rowEnd; i += 2) {
       const y = this.context.layout.calculateRowScreenTop(i);
-      this.renderer.pushDrawCommand({
+      this.context.renderer.pushDrawCommand({
         type: 'rect',
         x: bodyAreaX,
         y,
@@ -557,7 +554,7 @@ export class Gui {
 
     for (let i = rowStart + 1; i < rowEnd; i += 2) {
       const y = this.context.layout.calculateRowScreenTop(i);
-      this.renderer.pushDrawCommand({
+      this.context.renderer.pushDrawCommand({
         type: 'rect',
         x: bodyAreaX,
         y,
@@ -573,7 +570,7 @@ export class Gui {
     const { canvasWidth, headAreaY, headAreaHeight } = this.context.layout;
     const { borderColor } = this.context.props.theme;
 
-    this.renderer.pushDrawCommand({
+    this.context.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'horizontal',
       x: 0,
@@ -588,7 +585,7 @@ export class Gui {
     const { canvasWidth, hsbY } = this.context.layout;
     const { borderColor } = this.context.props.theme;
 
-    this.renderer.pushDrawCommand({
+    this.context.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'horizontal',
       x: 0,
@@ -603,7 +600,7 @@ export class Gui {
     const { canvasHeight, vsbX } = this.context.layout;
     const { borderColor } = this.context.props.theme;
 
-    this.renderer.pushDrawCommand({
+    this.context.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'vertical',
       x: vsbX,
@@ -618,7 +615,7 @@ export class Gui {
     const { tableAreaX, tableAreaY, gridWidth, gridHeight } = this.context.layout;
     const { borderColor } = this.context.props.theme;
 
-    this.renderer.pushDrawCommand({
+    this.context.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'vertical',
       x: tableAreaX + gridWidth,
@@ -633,7 +630,7 @@ export class Gui {
     const { tableAreaX, tableAreaY, gridWidth, gridHeight } = this.context.layout;
     const { borderColor } = this.context.props.theme;
 
-    this.renderer.pushDrawCommand({
+    this.context.renderer.pushDrawCommand({
       type: 'line',
       orientation: 'horizontal',
       x: tableAreaX,
@@ -649,7 +646,7 @@ export class Gui {
     const { borderColor } = this.context.props.theme;
 
     for (let rowIndex = rowStart; rowIndex < rowEnd - 1; rowIndex++) {
-      this.renderer.pushDrawCommand({
+      this.context.renderer.pushDrawCommand({
         type: 'line',
         orientation: 'horizontal',
         x: bodyAreaX,
@@ -666,7 +663,7 @@ export class Gui {
     const { borderColor } = this.context.props.theme;
 
     for (let columnIndex = columnStart; columnIndex < columnEnd - 1; columnIndex++) {
-      this.renderer.pushDrawCommand({
+      this.context.renderer.pushDrawCommand({
         type: 'line',
         orientation: 'vertical',
         x: this.context.layout.calculateColumnScreenRight(columnIndex) - 1,
@@ -693,7 +690,7 @@ export class Gui {
       headFontColor,
     } = theme;
 
-    const { textRenderer } = this.renderer;
+    const { textRenderer } = this.context.renderer;
 
     const textStyle = headFontStyle ?? fontStyle;
     const font = createFontSpecifier(fontFamily, fontSize, textStyle);
@@ -727,7 +724,7 @@ export class Gui {
         true,
       );
 
-      this.renderer.pushDrawCommand({
+      this.context.renderer.pushDrawCommand({
         type: 'text',
         chars,
         subpixelOffsets,
@@ -756,7 +753,7 @@ export class Gui {
       bodyFontColor,
     } = theme;
 
-    const { textRenderer } = this.renderer;
+    const { textRenderer } = this.context.renderer;
 
     const textStyle = bodyFontStyle ?? fontStyle;
     const font = createFontSpecifier(fontFamily, fontSize, textStyle);
@@ -796,7 +793,7 @@ export class Gui {
           true,
         );
 
-        this.renderer.pushDrawCommand({
+        this.context.renderer.pushDrawCommand({
           type: 'text',
           chars,
           subpixelOffsets,

@@ -20,8 +20,8 @@ export class Platform {
   fontMetricsCanvas: HTMLCanvasElement;
   fontMetricsCanvasCtx: CanvasRenderingContext2D;
 
-  updateFunction?: () => void;
-  isUpdating = false;
+  callback?: () => void;
+  running = false;
 
   currMouseX = 0;
   currMouseY = 0;
@@ -97,18 +97,24 @@ export class Platform {
   }
 
   public startAnimation() {
+    this.running = true;
+
     if (this.rafId === undefined) {
       this.rafId = requestAnimationFrame(() => this.animate());
     }
-    this.isUpdating = true;
   }
 
   public stopAnimation() {
+    this.running = false;
+
     if (this.rafId !== undefined) {
       cancelAnimationFrame(this.rafId);
       this.rafId = undefined;
-      this.isUpdating = false;
     }
+  }
+
+  public setCallback(callback: () => void) {
+    this.callback = callback;
   }
 
   public getFontMetrics(font: string) {
@@ -165,7 +171,7 @@ export class Platform {
       this.dragDistanceY = this.currMouseY - this.dragStartY;
     }
 
-    this.updateFunction?.();
+    this.callback?.();
 
     this.prevMouseX = this.currMouseX;
     this.prevMouseY = this.currMouseY;
@@ -174,7 +180,7 @@ export class Platform {
     this.scrollAmountX = 0;
     this.scrollAmountY = 0;
 
-    if (this.isUpdating) {
+    if (this.running) {
       this.rafId = requestAnimationFrame(() => this.animate());
     }
   }

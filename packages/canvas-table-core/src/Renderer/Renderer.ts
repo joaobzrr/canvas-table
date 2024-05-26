@@ -48,7 +48,7 @@ export class Renderer {
     this.commandBuffer = [];
   }
 
-  setContext(ctx: CanvasRenderingContext2D) {
+  setRenderingContext(ctx: CanvasRenderingContext2D) {
     this.ctx = ctx;
   }
 
