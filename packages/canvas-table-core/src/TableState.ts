@@ -44,22 +44,10 @@ export class TableState {
     this.platform = platform;
   }
 
-  public update(props: Partial<CanvasTableProps>) {
-    const newState = this.copy().applyChanges(props);
+  public update() {
+    this.layout.columnWidths = TableState.calculateColumnWidths(this.props.columnDefs);
 
-    const canvasSizeChanged =
-      newState.layout.canvasWidth !== this.layout.canvasWidth ||
-      newState.layout.canvasHeight !== this.layout.canvasHeight;
-
-    const columnDefsChanged = !Object.is(newState.props.columnDefs, this.props.columnDefs);
-    const dataRowsChanged = !Object.is(newState.props.dataRows, this.props.dataRows);
-    const themeChanged = !Object.is(newState.props.theme, this.props.theme);
-
-    const shouldRefreshLayout =
-      canvasSizeChanged || columnDefsChanged || dataRowsChanged || themeChanged;
-    if (shouldRefreshLayout) {
-      newState.refreshLayout();
-    }
+    this.refreshLayout();
 
     let scrollAmountX: number;
     let scrollAmountY: number;
@@ -71,27 +59,19 @@ export class TableState {
       scrollAmountY = 0;
     }
 
-    newState.updateScrollPos(scrollAmountX, scrollAmountY);
-
-    const scrollPosChanged =
-      newState.layout.scrollLeft !== this.layout.scrollLeft ||
-      newState.layout.scrollTop !== this.layout.scrollTop;
-    if (shouldRefreshLayout || scrollPosChanged) {
-      newState.refreshViewport();
-    }
+    this.updateScrollPos(scrollAmountX, scrollAmountY);
+    this.refreshViewport();
 
     if (this.platform.mouseHasMoved) {
-      newState.guictx.hoveredRowIndex = this.calculateHoveredRowIndex();
+      this.guictx.hoveredRowIndex = this.calculateHoveredRowIndex();
     }
 
     const shouldSetContainerBorder =
-      (newState.props.theme.outerBorder !== undefined && newState.props.theme.outerBorder) ||
-      (newState.props.theme.outerBorder === undefined && newState.props.theme.border);
+      (this.props.theme.outerBorder !== undefined && this.props.theme.outerBorder) ||
+      (this.props.theme.outerBorder === undefined && this.props.theme.border);
     if (shouldSetContainerBorder) {
-      this.platform.containerEl.style.border = `${BORDER_WIDTH}px solid ${newState.props.theme.borderColor}`;
+      this.platform.containerEl.style.border = `${BORDER_WIDTH}px solid ${this.props.theme.borderColor}`;
     }
-
-    return newState;
   }
 
   public refreshLayout() {
@@ -451,35 +431,6 @@ export class TableState {
       columnWidths.push(width ?? DEFAULT_COLUMN_WIDTH);
     }
     return columnWidths;
-  }
-
-  private applyChanges(props: Partial<CanvasTableProps>) {
-    this.layout.canvasWidth = this.platform.canvas.width;
-    this.layout.canvasHeight = this.platform.canvas.height;
-
-    if (props.columnDefs && !Object.is(props.columnDefs, this.props.columnDefs)) {
-      this.props.columnDefs = props.columnDefs;
-      this.layout.columnWidths = TableState.calculateColumnWidths(props.columnDefs);
-    }
-
-    if (props.dataRows && !Object.is(props.dataRows, this.props.dataRows)) {
-      this.props.dataRows = props.dataRows;
-    }
-
-    if (props.theme && !Object.is(props.theme, this.props.theme)) {
-      this.props.theme = props.theme;
-    }
-
-    if ('selectedRowId' in props) {
-      this.props.selectedRowId = props.selectedRowId;
-    }
-
-    this.props.selectId = props.selectId ?? this.props.selectId;
-    this.props.selectProp = props.selectProp ?? this.props.selectProp;
-    this.props.onSelectRow = props.onSelectRow ?? this.props.onSelectRow;
-    this.props.onResizeColumn = props.onResizeColumn ?? this.props.onResizeColumn;
-
-    return this;
   }
 
   private updateScrollPos(scrollAmountX: number, scrollAmountY: number) {

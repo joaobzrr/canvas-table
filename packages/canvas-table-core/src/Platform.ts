@@ -9,11 +9,7 @@ export type PlatformParams = {
   onDetach?: (platform: Platform) => void;
 };
 
-let counter = 0;
-
 export class Platform {
-  ID: number;
-
   containerId: string;
   containerEl: HTMLDivElement;
   sizingEl: HTMLDivElement;
@@ -52,8 +48,6 @@ export class Platform {
   onDetach?: (platform: Platform) => void;
 
   constructor(params: PlatformParams) {
-    this.ID = counter++;
-
     this.containerId = params.containerId;
 
     const containerEl = document.getElementById(params.containerId);

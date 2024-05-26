@@ -7,7 +7,10 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@9.1.2",
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "build": "turbo build",
     "lint": "eslint .",

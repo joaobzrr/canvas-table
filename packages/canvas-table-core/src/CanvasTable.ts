@@ -1,7 +1,6 @@
 import { Platform } from './Platform';
 import { Gui } from './Gui';
 import { TableState } from './TableState';
-import { defaultTheme } from './defaultTheme';
 import { shallowMerge } from './utils';
 import type {
   CanvasTableProps,
@@ -10,8 +9,6 @@ import type {
   DataRow,
   DataRowId,
   PropValue,
-  IdSelector,
-  PropSelector,
 } from './types';
 
 export class CanvasTable {
@@ -22,10 +19,10 @@ export class CanvasTable {
   private batchedProps: Partial<CanvasTableProps>[] = [];
 
   constructor(params: CanvasTableParams) {
-    const { container, ...rest } = params;
+    const { container, ...props } = params;
 
     this.platform = this.createPlatform(container);
-    this.state = new TableState(this.platform, CanvasTable.createProps(rest));
+    this.state = new TableState(this.platform, this.createProps(props));
     this.gui = new Gui(this.platform, this.state);
 
     this.platform.updateFunction = this.update.bind(this);
@@ -40,30 +37,22 @@ export class CanvasTable {
     this.platform.destroy();
   }
 
-  private static createProps(params: Omit<CanvasTableParams, 'container'>) {
-    const theme = params.theme ?? defaultTheme;
+  private createProps(...changes: Partial<CanvasTableProps>[]): CanvasTableProps {
+    return shallowMerge(defaultProps, ...changes);
+  }
 
-    let selectId = params.selectId as IdSelector;
-    if (!params.selectId) {
-      selectId = defaultIdSelector;
-    }
-
-    let selectProp = params.selectProp as PropSelector;
-    if (!params.selectProp) {
-      selectProp = defaultPropSelector;
-    }
-
-    return { ...params, theme, selectId, selectProp };
+  private mergeProps(...changes: Partial<CanvasTableProps>[]): CanvasTableProps {
+    return shallowMerge(this.state.props, defaultProps, ...changes);
   }
 
   private update() {
-    const props = this.mergeBatchedProps();
-    this.state = this.state.update(props);
-    this.gui.update(this.state);
-  }
+    this.state.layout.canvasWidth = this.platform.canvas.width;
+    this.state.layout.canvasHeight = this.platform.canvas.height;
 
-  private mergeBatchedProps() {
-    return shallowMerge<Partial<CanvasTableProps>>(...this.batchedProps);
+    this.state.props = this.mergeProps(...this.batchedProps);
+
+    this.state.update();
+    this.gui.update(this.state);
   }
 
   private reattach(prevPlatform: Platform) {
@@ -82,10 +71,11 @@ export class CanvasTable {
   }
 }
 
-const defaultIdSelector = (row: DataRow) => {
-  return row.id as DataRowId;
-};
-
-const defaultPropSelector = (row: DataRow, columnDef: ColumnDef) => {
-  return row[columnDef.key] as PropValue;
+const defaultProps: Partial<CanvasTableProps> = {
+  selectId: (row: DataRow) => {
+    return row.id as DataRowId;
+  },
+  selectProp: (row: DataRow, columnDef: ColumnDef) => {
+    return row[columnDef.key] as PropValue;
+  },
 };
