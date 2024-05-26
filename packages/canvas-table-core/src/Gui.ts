@@ -36,15 +36,12 @@ export class Gui {
   }
 
   public update() {
-    const { layout } = this.context.state;
     const { theme } = this.context.props;
-    const { columnStart, columnEnd } = layout;
+    const { columnStart, columnEnd, overflowX, overflowY } = this.context.layout;
 
-    this.context.state.layout.columnWidths = this.calculateColumnWidths(
-      this.context.props.columnDefs,
-    );
+    this.context.layout.columnWidths = this.calculateColumnWidths(this.context.props.columnDefs);
 
-    this.context.state.refreshLayout();
+    this.context.layout.refreshLayout();
 
     let scrollAmountX: number;
     let scrollAmountY: number;
@@ -56,8 +53,8 @@ export class Gui {
       scrollAmountY = 0;
     }
 
-    this.context.state.updateScrollPos(scrollAmountX, scrollAmountY);
-    this.context.state.refreshViewport();
+    this.context.layout.updateScrollPos(scrollAmountX, scrollAmountY);
+    this.context.layout.refreshViewport();
 
     const shouldSetContainerBorder =
       (this.context.props.theme.outerBorder !== undefined &&
@@ -68,7 +65,7 @@ export class Gui {
     }
 
     if (this.context.platform.mouseHasMoved) {
-      this.hoveredRowIndex = this.context.state.calculateHoveredRowIndex();
+      this.hoveredRowIndex = this.context.layout.calculateHoveredRowIndex();
     }
 
     this.updateClipRegions();
@@ -79,11 +76,11 @@ export class Gui {
       }
     }
 
-    if (layout.overflowX) {
+    if (overflowX) {
       this.doHorizontalScrollbar();
     }
 
-    if (layout.overflowY) {
+    if (overflowY) {
       this.doVerticalScrollbar();
     }
 
@@ -101,11 +98,11 @@ export class Gui {
       this.drawHeadBackground();
     }
 
-    if (layout.overflowY && theme.topRightCornerBackgroundColor) {
+    if (overflowY && theme.topRightCornerBackgroundColor) {
       this.drawTopRightCornerBackground();
     }
 
-    if (layout.overflowX && layout.overflowY && theme.bottomRightCornerBackgroundColor) {
+    if (overflowX && overflowY && theme.bottomRightCornerBackgroundColor) {
       this.drawBottomRightCornerBackground();
     }
 
@@ -119,13 +116,13 @@ export class Gui {
 
     this.drawHeadBottomBorder();
 
-    if (layout.overflowX) {
+    if (overflowX) {
       this.drawHorizontalScrollbarBorder();
     } else {
       this.drawRightTableContentBorder();
     }
 
-    if (layout.overflowY) {
+    if (overflowY) {
       this.drawVerticalScrollbarBorder();
     } else {
       this.drawBottomTableContentBorder();
@@ -154,32 +151,32 @@ export class Gui {
 
   public dragHorizontalScrollbarThumb() {
     const { dragDistanceX } = this.context.platform;
-    const { hsbThumbMinX: min, hsbThumbMaxX: max } = this.context.state.layout;
+    const { hsbThumbMinX: min, hsbThumbMaxX: max } = this.context.layout;
 
-    this.context.state.layout.hsbThumbX = clamp(this.dragAnchorX + dragDistanceX, min, max);
-    this.context.state.layout.scrollLeft = this.context.state.calculateScrollX(
-      this.context.state.layout.hsbThumbX,
+    this.context.layout.hsbThumbX = clamp(this.dragAnchorX + dragDistanceX, min, max);
+    this.context.layout.scrollLeft = this.context.layout.calculateScrollX(
+      this.context.layout.hsbThumbX,
     );
 
-    this.context.state.refreshViewport();
+    this.context.layout.refreshViewport();
   }
 
   public dragVerticalScrollbarThumb() {
     const { dragDistanceY } = this.context.platform;
-    const { vsbThumbMinY: min, vsbThumbMaxY: max } = this.context.state.layout;
+    const { vsbThumbMinY: min, vsbThumbMaxY: max } = this.context.layout;
 
-    this.context.state.layout.vsbThumbY = clamp(this.dragAnchorY + dragDistanceY, min, max);
-    this.context.state.layout.scrollTop = this.context.state.calculateScrollY(
-      this.context.state.layout.vsbThumbY,
+    this.context.layout.vsbThumbY = clamp(this.dragAnchorY + dragDistanceY, min, max);
+    this.context.layout.scrollTop = this.context.layout.calculateScrollY(
+      this.context.layout.vsbThumbY,
     );
 
-    this.context.state.refreshViewport();
+    this.context.layout.refreshViewport();
   }
 
   public dragColumnResizer(columnIndex: number) {
     const { dragDistanceX } = this.context.platform;
 
-    const columnScrollLeft = this.context.state.calculateColumnScrollLeft(columnIndex);
+    const columnScrollLeft = this.context.layout.calculateColumnScrollLeft(columnIndex);
     const columnScrollRight = this.dragAnchorX + dragDistanceX;
     const columnWidth = Math.max(columnScrollRight - columnScrollLeft + 1, MIN_COLUMN_WIDTH);
 
@@ -187,23 +184,23 @@ export class Gui {
   }
 
   public resizeColumn(columnIndex: number, columnWidth: number) {
-    this.context.state.layout.columnWidths[columnIndex] = columnWidth;
+    this.context.layout.columnWidths[columnIndex] = columnWidth;
 
-    this.context.state.refreshLayout();
+    this.context.layout.refreshLayout();
 
-    this.context.state.layout.scrollLeft = Math.min(
-      this.context.state.layout.scrollLeft,
-      this.context.state.layout.maxScrollX,
+    this.context.layout.scrollLeft = Math.min(
+      this.context.layout.scrollLeft,
+      this.context.layout.maxScrollX,
     );
-    this.context.state.layout.scrollTop = Math.min(
-      this.context.state.layout.scrollTop,
-      this.context.state.layout.maxScrollY,
+    this.context.layout.scrollTop = Math.min(
+      this.context.layout.scrollTop,
+      this.context.layout.maxScrollY,
     );
 
-    this.context.state.refreshViewport();
+    this.context.layout.refreshViewport();
 
-    this.context.state.layout.hsbThumbX = this.context.state.calculateHorizontalScrollbarThumbX();
-    this.context.state.layout.vsbThumbY = this.context.state.calculateVerticalScrollbarThumbY();
+    this.context.layout.hsbThumbX = this.context.layout.calculateHorizontalScrollbarThumbX();
+    this.context.layout.vsbThumbY = this.context.layout.calculateVerticalScrollbarThumbY();
 
     const columnDef = this.context.props.columnDefs[columnIndex];
     this.context.props.onResizeColumn?.(columnDef.key, columnIndex, columnWidth);
@@ -211,10 +208,9 @@ export class Gui {
 
   private doColumnResizer(columnIndex: number) {
     const { props } = this.context;
-    const { layout } = this.context.state;
-    const { headAreaY, headAreaHeight } = layout;
+    const { headAreaY, headAreaHeight } = this.context.layout;
 
-    const initialResizerScrollX = this.context.state.calculateResizerScrollX(columnIndex);
+    const initialResizerScrollX = this.context.layout.calculateResizerScrollX(columnIndex);
     let columnWasResized = false;
 
     const id = `column-resizer-${columnIndex}`;
@@ -234,12 +230,12 @@ export class Gui {
 
     let finalResizerScrollX: number;
     if (columnWasResized) {
-      finalResizerScrollX = this.context.state.calculateResizerScrollX(columnIndex);
+      finalResizerScrollX = this.context.layout.calculateResizerScrollX(columnIndex);
     } else {
       finalResizerScrollX = initialResizerScrollX;
     }
 
-    const x = this.context.state.scrollToScreenX(finalResizerScrollX);
+    const x = this.context.layout.scrollToScreenX(finalResizerScrollX);
     const y = headAreaY;
     const width = COLUMN_RESIZER_WIDTH;
     const height = headAreaHeight - BORDER_WIDTH;
@@ -272,11 +268,10 @@ export class Gui {
 
   private doHorizontalScrollbar() {
     const { props } = this.context;
-    const { layout } = this.context.state;
 
     const { scrollbarBackgroundColor } = props.theme;
     if (scrollbarBackgroundColor) {
-      const { hsbX, hsbY, hsbWidth, hsbHeight } = layout;
+      const { hsbX, hsbY, hsbWidth, hsbHeight } = this.context.layout;
       this.renderer.pushDrawCommand({
         type: 'rect',
         x: hsbX,
@@ -298,7 +293,7 @@ export class Gui {
     } else if (this.guictx.isWidgetHot(id)) {
       if (this.context.platform.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
         this.guictx.setActiveWidget(id);
-        this.dragAnchorX = layout.hsbThumbX;
+        this.dragAnchorX = this.context.layout.hsbThumbX;
       }
     }
 
@@ -307,7 +302,7 @@ export class Gui {
       hsbThumbY: y,
       hsbThumbWidth: width,
       hsbThumbHeight: height,
-    } = this.context.state.layout;
+    } = this.context.layout;
 
     const inside = this.context.platform.isMouseInRect(x, y, width, height);
     if (inside) {
@@ -343,11 +338,10 @@ export class Gui {
 
   private doVerticalScrollbar() {
     const { props } = this.context;
-    const { layout } = this.context.state;
 
     const { scrollbarBackgroundColor } = props.theme;
     if (scrollbarBackgroundColor) {
-      const { vsbX, vsbY, vsbWidth, vsbHeight } = layout;
+      const { vsbX, vsbY, vsbWidth, vsbHeight } = this.context.layout;
       this.renderer.pushDrawCommand({
         type: 'rect',
         x: vsbX,
@@ -369,7 +363,7 @@ export class Gui {
     } else if (this.guictx.isWidgetHot(id)) {
       if (this.context.platform.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
         this.guictx.setActiveWidget(id);
-        this.dragAnchorY = layout.vsbThumbY;
+        this.dragAnchorY = this.context.layout.vsbThumbY;
       }
     }
 
@@ -378,7 +372,7 @@ export class Gui {
       vsbThumbY: y,
       vsbThumbWidth: width,
       vsbThumbHeight: height,
-    } = this.context.state.layout;
+    } = this.context.layout;
 
     const inside = this.context.platform.isMouseInRect(x, y, width, height);
     if (inside) {
@@ -414,9 +408,8 @@ export class Gui {
 
   private doRows() {
     const { props } = this.context;
-    const { layout } = this.context.state;
     const { rowHeight } = props.theme;
-    const { bodyAreaX, bodyVisibleWidth, rowStart, rowEnd } = layout;
+    const { bodyAreaX, bodyVisibleWidth, rowStart, rowEnd } = this.context.layout;
 
     if (this.hoveredRowIndex !== -1) {
       if (this.context.platform.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
@@ -434,7 +427,7 @@ export class Gui {
         this.renderer.pushDrawCommand({
           type: 'rect',
           x: bodyAreaX,
-          y: this.context.state.calculateRowScreenTop(this.hoveredRowIndex),
+          y: this.context.layout.calculateRowScreenTop(this.hoveredRowIndex),
           width: bodyVisibleWidth,
           height: rowHeight,
           fillColor: hoveredRowBackgroundColor,
@@ -455,7 +448,7 @@ export class Gui {
           this.renderer.pushDrawCommand({
             type: 'rect',
             x: bodyAreaX,
-            y: this.context.state.calculateRowScreenTop(i),
+            y: this.context.layout.calculateRowScreenTop(i),
             width: bodyVisibleWidth,
             height: rowHeight,
             fillColor: selectedRowBackgroundColor,
@@ -469,7 +462,7 @@ export class Gui {
   }
 
   private drawTableBackground() {
-    const { canvasWidth, canvasHeight } = this.context.state.layout;
+    const { canvasWidth, canvasHeight } = this.context.layout;
     const { tableBackgroundColor } = this.context.props.theme;
 
     this.renderer.pushDrawCommand({
@@ -483,7 +476,7 @@ export class Gui {
   }
 
   private drawBodyBackground() {
-    const { bodyAreaX, bodyAreaY, bodyAreaWidth, bodyAreaHeight } = this.context.state.layout;
+    const { bodyAreaX, bodyAreaY, bodyAreaWidth, bodyAreaHeight } = this.context.layout;
 
     const { bodyBackgroundColor } = this.context.props.theme;
 
@@ -498,7 +491,7 @@ export class Gui {
   }
 
   private drawHeadBackground() {
-    const { headAreaX, headAreaY, headAreaWidth, headAreaHeight } = this.context.state.layout;
+    const { headAreaX, headAreaY, headAreaWidth, headAreaHeight } = this.context.layout;
 
     const { headBackgroundColor } = this.context.props.theme;
 
@@ -513,7 +506,7 @@ export class Gui {
   }
 
   private drawTopRightCornerBackground() {
-    const { vsbX, vsbWidth } = this.context.state.layout;
+    const { vsbX, vsbWidth } = this.context.layout;
     const { rowHeight, topRightCornerBackgroundColor } = this.context.props.theme;
 
     this.renderer.pushDrawCommand({
@@ -527,7 +520,7 @@ export class Gui {
   }
 
   private drawBottomRightCornerBackground() {
-    const { hsbY, vsbX, vsbWidth } = this.context.state.layout;
+    const { hsbY, vsbX, vsbWidth } = this.context.layout;
     const { scrollbarThickness, bottomRightCornerBackgroundColor } = this.context.props.theme;
 
     this.renderer.pushDrawCommand({
@@ -541,11 +534,11 @@ export class Gui {
   }
 
   private drawEvenRowsBackground() {
-    const { bodyAreaX, gridWidth, rowStart, rowEnd } = this.context.state.layout;
+    const { bodyAreaX, gridWidth, rowStart, rowEnd } = this.context.layout;
     const { rowHeight, evenRowBackgroundColor } = this.context.props.theme;
 
     for (let i = rowStart; i < rowEnd; i += 2) {
-      const y = this.context.state.calculateRowScreenTop(i);
+      const y = this.context.layout.calculateRowScreenTop(i);
       this.renderer.pushDrawCommand({
         type: 'rect',
         x: bodyAreaX,
@@ -559,11 +552,11 @@ export class Gui {
   }
 
   private drawOddRowsBackground() {
-    const { bodyAreaX, gridWidth, rowStart, rowEnd } = this.context.state.layout;
+    const { bodyAreaX, gridWidth, rowStart, rowEnd } = this.context.layout;
     const { rowHeight, oddRowBackgroundColor } = this.context.props.theme;
 
     for (let i = rowStart + 1; i < rowEnd; i += 2) {
-      const y = this.context.state.calculateRowScreenTop(i);
+      const y = this.context.layout.calculateRowScreenTop(i);
       this.renderer.pushDrawCommand({
         type: 'rect',
         x: bodyAreaX,
@@ -577,7 +570,7 @@ export class Gui {
   }
 
   private drawHeadBottomBorder() {
-    const { canvasWidth, headAreaY, headAreaHeight } = this.context.state.layout;
+    const { canvasWidth, headAreaY, headAreaHeight } = this.context.layout;
     const { borderColor } = this.context.props.theme;
 
     this.renderer.pushDrawCommand({
@@ -592,7 +585,7 @@ export class Gui {
   }
 
   private drawHorizontalScrollbarBorder() {
-    const { canvasWidth, hsbY } = this.context.state.layout;
+    const { canvasWidth, hsbY } = this.context.layout;
     const { borderColor } = this.context.props.theme;
 
     this.renderer.pushDrawCommand({
@@ -607,7 +600,7 @@ export class Gui {
   }
 
   private drawVerticalScrollbarBorder() {
-    const { canvasHeight, vsbX } = this.context.state.layout;
+    const { canvasHeight, vsbX } = this.context.layout;
     const { borderColor } = this.context.props.theme;
 
     this.renderer.pushDrawCommand({
@@ -622,7 +615,7 @@ export class Gui {
   }
 
   private drawRightTableContentBorder() {
-    const { tableAreaX, tableAreaY, gridWidth, gridHeight } = this.context.state.layout;
+    const { tableAreaX, tableAreaY, gridWidth, gridHeight } = this.context.layout;
     const { borderColor } = this.context.props.theme;
 
     this.renderer.pushDrawCommand({
@@ -637,7 +630,7 @@ export class Gui {
   }
 
   private drawBottomTableContentBorder() {
-    const { tableAreaX, tableAreaY, gridWidth, gridHeight } = this.context.state.layout;
+    const { tableAreaX, tableAreaY, gridWidth, gridHeight } = this.context.layout;
     const { borderColor } = this.context.props.theme;
 
     this.renderer.pushDrawCommand({
@@ -652,7 +645,7 @@ export class Gui {
   }
 
   private drawRowBorders() {
-    const { bodyAreaX, gridWidth, rowStart, rowEnd } = this.context.state.layout;
+    const { bodyAreaX, gridWidth, rowStart, rowEnd } = this.context.layout;
     const { borderColor } = this.context.props.theme;
 
     for (let rowIndex = rowStart; rowIndex < rowEnd - 1; rowIndex++) {
@@ -660,7 +653,7 @@ export class Gui {
         type: 'line',
         orientation: 'horizontal',
         x: bodyAreaX,
-        y: this.context.state.calculateRowScreenBottom(rowIndex) - 1,
+        y: this.context.layout.calculateRowScreenBottom(rowIndex) - 1,
         length: gridWidth,
         color: borderColor,
         sortOrder: 4,
@@ -669,14 +662,14 @@ export class Gui {
   }
 
   private drawColumnBorders() {
-    const { tableAreaY, gridHeight, columnStart, columnEnd } = this.context.state.layout;
+    const { tableAreaY, gridHeight, columnStart, columnEnd } = this.context.layout;
     const { borderColor } = this.context.props.theme;
 
     for (let columnIndex = columnStart; columnIndex < columnEnd - 1; columnIndex++) {
       this.renderer.pushDrawCommand({
         type: 'line',
         orientation: 'vertical',
-        x: this.context.state.calculateColumnScreenRight(columnIndex) - 1,
+        x: this.context.layout.calculateColumnScreenRight(columnIndex) - 1,
         y: tableAreaY,
         length: gridHeight,
         color: borderColor,
@@ -687,7 +680,7 @@ export class Gui {
 
   private drawHeadText() {
     const { columnDefs, theme } = this.context.props;
-    const { columnWidths, columnStart, columnEnd } = this.context.state.layout;
+    const { columnWidths, columnStart, columnEnd } = this.context.layout;
 
     const {
       rowHeight,
@@ -717,7 +710,7 @@ export class Gui {
       const columnDef = columnDefs[j];
       const columnWidth = columnWidths[j];
 
-      const columnPos = this.context.state.calculateColumnScreenLeft(j);
+      const columnPos = this.context.layout.calculateColumnScreenLeft(j);
 
       const x = columnPos + cellPadding;
       const y = baselineY;
@@ -750,7 +743,7 @@ export class Gui {
 
   private drawBodyText() {
     const { columnDefs, dataRows, theme, selectProp } = this.context.props;
-    const { columnWidths, rowStart, rowEnd, columnStart, columnEnd } = this.context.state.layout;
+    const { columnWidths, rowStart, rowEnd, columnStart, columnEnd } = this.context.layout;
 
     const {
       rowHeight,
@@ -780,7 +773,7 @@ export class Gui {
       const columnDef = columnDefs[j];
       const columnWidth = columnWidths[j];
 
-      const columnPos = this.context.state.calculateColumnScreenLeft(j);
+      const columnPos = this.context.layout.calculateColumnScreenLeft(j);
 
       const x = columnPos + cellPadding;
       const maxWidth = columnWidth - cellPadding * 2;
@@ -788,7 +781,7 @@ export class Gui {
       for (let i = rowStart; i < rowEnd; i++) {
         const dataRow = dataRows[i];
 
-        const rowPos = this.context.state.calculateRowScreenTop(i);
+        const rowPos = this.context.layout.calculateRowScreenTop(i);
         const y = rowPos + baselineY;
 
         const value = selectProp(dataRow, columnDef);
@@ -821,18 +814,18 @@ export class Gui {
   private updateClipRegions() {
     this.bodyAreaClipRegion = new Path2D();
     this.bodyAreaClipRegion.rect(
-      this.context.state.layout.bodyAreaX,
-      this.context.state.layout.bodyAreaY,
-      this.context.state.layout.bodyAreaWidth,
-      this.context.state.layout.bodyAreaHeight,
+      this.context.layout.bodyAreaX,
+      this.context.layout.bodyAreaY,
+      this.context.layout.bodyAreaWidth,
+      this.context.layout.bodyAreaHeight,
     );
 
     this.headAreaClipRegion = new Path2D();
     this.headAreaClipRegion.rect(
-      this.context.state.layout.headAreaX,
-      this.context.state.layout.headAreaY,
-      this.context.state.layout.headAreaWidth,
-      this.context.state.layout.headAreaHeight,
+      this.context.layout.headAreaX,
+      this.context.layout.headAreaY,
+      this.context.layout.headAreaWidth,
+      this.context.layout.headAreaHeight,
     );
   }
 

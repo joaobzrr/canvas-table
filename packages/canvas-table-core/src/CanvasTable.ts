@@ -48,8 +48,8 @@ export class CanvasTable {
   }
 
   private update() {
-    this.context.state.layout.canvasWidth = this.context.platform.canvas.width;
-    this.context.state.layout.canvasHeight = this.context.platform.canvas.height;
+    this.context.layout.canvasWidth = this.context.platform.canvas.width;
+    this.context.layout.canvasHeight = this.context.platform.canvas.height;
     this.context.props = this.mergeProps(...this.batchedProps);
 
     this.gui.update();

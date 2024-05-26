@@ -1,3 +1,14 @@
+import { DEFAULT_COLUMN_WIDTH } from './constants';
+import type { ColumnDef } from './types';
+
+export function computeColumnWidths(columnDefs: ColumnDef[]) {
+  const columnWidths = [] as number[];
+  for (const { width } of columnDefs) {
+    columnWidths.push(width ?? DEFAULT_COLUMN_WIDTH);
+  }
+  return columnWidths;
+}
+
 export function getContext(canvas: HTMLCanvasElement) {
   const ctx = canvas.getContext('2d');
   if (!ctx) {

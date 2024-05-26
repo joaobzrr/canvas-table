@@ -1,5 +1,5 @@
 import { Platform } from './Platform';
-import { TableState } from './TableState';
+import { Layout } from './Layout';
 import { type CanvasTableProps } from './types';
 
 export type CanvasTableContextParams = {
@@ -10,7 +10,7 @@ export type CanvasTableContextParams = {
 export class Context {
   platform: Platform;
   props: CanvasTableProps;
-  state: TableState;
+  layout: Layout;
 
   constructor(params: CanvasTableContextParams) {
     this.platform = new Platform({
@@ -18,6 +18,6 @@ export class Context {
     });
 
     this.props = params.props;
-    this.state = new TableState({ context: this });
+    this.layout = new Layout({ context: this });
   }
 }
