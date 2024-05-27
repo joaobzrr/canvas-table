@@ -1,4 +1,4 @@
-import { createEffect, splitProps, Show, type JSX } from 'solid-js';
+import { createEffect, onMount, onCleanup, splitProps, Show, type JSX } from 'solid-js';
 import { CanvasTable, type CanvasTableParams } from '@bzrr/canvas-table-core';
 
 let instanceCount = 0;
@@ -25,11 +25,21 @@ export const CanvasTableComponent = (props: CanvasTableComponentProps) => {
   const containerId = makeContainerId();
 
   let instance: CanvasTable | null = null;
+  onMount(() => {
+    if (!instance) {
+      instance = new CanvasTable({ container: containerId, ...others });
+    }
+  });
+
   createEffect(() => {
     if (instance) {
       instance.config({ ...others });
-    } else {
-      instance = new CanvasTable({ container: containerId, ...others });
+    }
+  });
+
+  onCleanup(() => {
+    if (instance) {
+      instance.destroy();
     }
   });
 
