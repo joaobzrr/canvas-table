@@ -1,7 +1,7 @@
 import { Platform } from './Platform';
 import { Context } from './Context';
 import { Gui } from './Gui';
-import { shallowMerge } from './utils';
+import { computeColumnWidths, compareProps, shallowMerge } from './utils';
 import type {
   CanvasTableProps,
   CanvasTableParams,
@@ -48,11 +48,21 @@ export class CanvasTable {
   }
 
   private update() {
-    this.context.layout.canvasWidth = this.context.platform.canvas.width;
-    this.context.layout.canvasHeight = this.context.platform.canvas.height;
-    this.context.props = this.mergeProps(...this.batchedProps);
+    const newProps = this.mergeProps(...this.batchedProps);
+    this.applyProps(newProps);
 
     this.gui.update();
+  }
+
+  private applyProps(newProps: CanvasTableProps) {
+    const { layout, props: oldProps } = this.context;
+
+    const diff = compareProps(oldProps, newProps);
+    if (diff.columnDefs) {
+      layout.columnWidths = computeColumnWidths(newProps.columnDefs);
+    }
+
+    this.context.props = newProps;
   }
 
   private reattach(prev: Platform) {

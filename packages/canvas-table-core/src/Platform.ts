@@ -1,5 +1,5 @@
 import { getContext, isPointInRect } from './utils';
-import { MOUSE_BUTTONS } from './constants';
+import { BORDER_WIDTH, MOUSE_BUTTONS } from './constants';
 
 export type Mouse_Buttons = typeof MOUSE_BUTTONS;
 export type Mouse_Button_Value = Mouse_Buttons[keyof Mouse_Buttons];
@@ -115,6 +115,10 @@ export class Platform {
 
   public setCallback(callback: () => void) {
     this.callback = callback;
+  }
+
+  public setContainerBorder(color: string) {
+    this.containerEl.style.border = `${BORDER_WIDTH}px solid ${color}`;
   }
 
   public getFontMetrics(font: string) {

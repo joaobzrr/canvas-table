@@ -1,38 +1,38 @@
 export class GuiContext {
-  public hotWidget: string | null = null;
-  public activeWidget: string | null = null;
+  public hot: string | null = null;
+  public active: string | null = null;
 
-  setActiveWidget(id: string | null) {
-    this.activeWidget = id;
+  public setActive(id: string | null) {
+    this.active = id;
   }
 
-  setHotWidget(id: string | null) {
-    if (this.isNoWidgetActive()) {
-      this.hotWidget = id;
+  public setHot(id: string | null) {
+    if (this.isNoneActive()) {
+      this.hot = id;
     }
   }
 
-  isWidgetActive(id: string | null) {
-    return this.activeWidget === id;
+  public isActive(id: string | null) {
+    return this.active === id;
   }
 
-  isWidgetHot(id: string | null) {
-    return this.hotWidget === id;
+  public isHot(id: string | null) {
+    return this.hot === id;
   }
 
-  isAnyWidgetActive() {
-    return this.activeWidget !== null;
+  public isAnyActive() {
+    return this.active !== null;
   }
 
-  isAnyWidgetHot() {
-    return this.hotWidget !== null;
+  public isAnyHot() {
+    return this.hot !== null;
   }
 
-  isNoWidgetActive() {
-    return this.activeWidget === null;
+  public isNoneActive() {
+    return this.active === null;
   }
 
-  isNoWidgetHot() {
-    return this.hotWidget === null;
+  public isNoneHot() {
+    return this.hot === null;
   }
 }

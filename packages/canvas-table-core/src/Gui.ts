@@ -1,6 +1,6 @@
 import { type Context } from './Context';
 import { GuiContext } from './GuiContext';
-import { clamp, createFontSpecifier, isNumber } from './utils';
+import { createFontSpecifier, clamp, isNumber } from './utils';
 import {
   BORDER_WIDTH,
   COLUMN_RESIZER_LEFT_WIDTH,
@@ -16,16 +16,16 @@ export type GuiParams = {
 };
 
 export class Gui {
-  context: Context;
-  guictx: GuiContext;
+  private context: Context;
+  private guictx: GuiContext;
 
-  hoveredRowIndex = -1;
+  private hoveredRowIndex = -1;
 
-  dragAnchorX = 0;
-  dragAnchorY = 0;
+  private dragAnchorX = 0;
+  private dragAnchorY = 0;
 
-  headAreaClipRegion: Path2D = undefined!;
-  bodyAreaClipRegion: Path2D = undefined!;
+  private headAreaClipRegion: Path2D = undefined!;
+  private bodyAreaClipRegion: Path2D = undefined!;
 
   constructor(params: GuiParams) {
     this.context = params.context;
@@ -33,51 +33,22 @@ export class Gui {
   }
 
   public update() {
+    const { layout } = this.context;
     const { theme } = this.context.props;
-    const { columnStart, columnEnd, overflowX, overflowY } = this.context.layout;
 
-    this.context.layout.columnWidths = this.calculateColumnWidths(this.context.props.columnDefs);
+    this.prepareFrame();
 
-    this.context.layout.refreshLayout();
-
-    let scrollAmountX: number;
-    let scrollAmountY: number;
-    if (this.guictx.isNoWidgetActive()) {
-      scrollAmountX = this.context.platform.scrollAmountX;
-      scrollAmountY = this.context.platform.scrollAmountY;
-    } else {
-      scrollAmountX = 0;
-      scrollAmountY = 0;
-    }
-
-    this.context.layout.updateScrollPos(scrollAmountX, scrollAmountY);
-    this.context.layout.refreshViewport();
-
-    const shouldSetContainerBorder =
-      (this.context.props.theme.outerBorder !== undefined &&
-        this.context.props.theme.outerBorder) ||
-      (this.context.props.theme.outerBorder === undefined && this.context.props.theme.border);
-    if (shouldSetContainerBorder) {
-      this.context.platform.containerEl.style.border = `${BORDER_WIDTH}px solid ${this.context.props.theme.borderColor}`;
-    }
-
-    if (this.context.platform.mouseHasMoved) {
-      this.hoveredRowIndex = this.context.layout.calculateHoveredRowIndex();
-    }
-
-    this.updateClipRegions();
-
-    for (let j = columnStart; j < columnEnd; j++) {
+    for (let j = layout.columnStart; j < layout.columnEnd; j++) {
       if (this.doColumnResizer(j)) {
         break;
       }
     }
 
-    if (overflowX) {
+    if (layout.overflowX) {
       this.doHorizontalScrollbar();
     }
 
-    if (overflowY) {
+    if (layout.overflowY) {
       this.doVerticalScrollbar();
     }
 
@@ -95,11 +66,11 @@ export class Gui {
       this.drawHeadBackground();
     }
 
-    if (overflowY && theme.topRightCornerBackgroundColor) {
+    if (layout.overflowY && theme.topRightCornerBackgroundColor) {
       this.drawTopRightCornerBackground();
     }
 
-    if (overflowX && overflowY && theme.bottomRightCornerBackgroundColor) {
+    if (layout.overflowX && layout.overflowY && theme.bottomRightCornerBackgroundColor) {
       this.drawBottomRightCornerBackground();
     }
 
@@ -113,13 +84,13 @@ export class Gui {
 
     this.drawHeadBottomBorder();
 
-    if (overflowX) {
+    if (layout.overflowX) {
       this.drawHorizontalScrollbarBorder();
     } else {
       this.drawRightTableContentBorder();
     }
 
-    if (overflowY) {
+    if (layout.overflowY) {
       this.drawVerticalScrollbarBorder();
     } else {
       this.drawBottomTableContentBorder();
@@ -144,6 +115,39 @@ export class Gui {
     this.drawBodyText();
 
     this.context.renderer.render();
+  }
+
+  public prepareFrame() {
+    const { platform, layout, props } = this.context;
+    const { theme } = props;
+
+    layout.refreshLayout();
+
+    let scrollAmountX: number;
+    let scrollAmountY: number;
+    if (this.guictx.isNoneActive()) {
+      scrollAmountX = platform.scrollAmountX;
+      scrollAmountY = platform.scrollAmountY;
+    } else {
+      scrollAmountX = 0;
+      scrollAmountY = 0;
+    }
+
+    layout.updateScrollPos(scrollAmountX, scrollAmountY);
+    layout.refreshViewport();
+
+    const shouldSetContainerBorder =
+      (theme.outerBorder !== undefined && theme.outerBorder) ||
+      (theme.outerBorder === undefined && theme.border);
+    if (shouldSetContainerBorder) {
+      platform.setContainerBorder(theme.borderColor);
+    }
+
+    if (platform.mouseHasMoved) {
+      this.hoveredRowIndex = layout.calculateHoveredRowIndex();
+    }
+
+    this.updateClipRegions();
   }
 
   public dragHorizontalScrollbarThumb() {
@@ -211,16 +215,16 @@ export class Gui {
     let columnWasResized = false;
 
     const id = `column-resizer-${columnIndex}`;
-    if (this.guictx.isWidgetActive(id)) {
+    if (this.guictx.isActive(id)) {
       if (this.context.platform.isMouseReleased(MOUSE_BUTTONS.PRIMARY)) {
-        this.guictx.setActiveWidget(null);
+        this.guictx.setActive(null);
       } else {
         this.dragColumnResizer(columnIndex);
         columnWasResized = true;
       }
-    } else if (this.guictx.isWidgetHot(id)) {
+    } else if (this.guictx.isHot(id)) {
       if (this.context.platform.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
-        this.guictx.setActiveWidget(id);
+        this.guictx.setActive(id);
         this.dragAnchorX = initialResizerScrollX + COLUMN_RESIZER_LEFT_WIDTH;
       }
     }
@@ -239,12 +243,12 @@ export class Gui {
 
     const inside = this.context.platform.isMouseInRect(x, y, width, height);
     if (inside) {
-      this.guictx.setHotWidget(id);
-    } else if (this.guictx.isWidgetHot(id)) {
-      this.guictx.setHotWidget(null);
+      this.guictx.setHot(id);
+    } else if (this.guictx.isHot(id)) {
+      this.guictx.setHot(null);
     }
 
-    if (this.guictx.isWidgetActive(id) || this.guictx.isWidgetHot(id)) {
+    if (this.guictx.isActive(id) || this.guictx.isHot(id)) {
       const { columnResizerColor } = props.theme;
 
       this.context.renderer.pushDrawCommand({
@@ -281,15 +285,15 @@ export class Gui {
     }
 
     const id = 'horizontal-scrollbar-thumb';
-    if (this.guictx.isWidgetActive(id)) {
+    if (this.guictx.isActive(id)) {
       if (this.context.platform.isMouseReleased(MOUSE_BUTTONS.PRIMARY)) {
-        this.guictx.setActiveWidget(null);
+        this.guictx.setActive(null);
       } else {
         this.dragHorizontalScrollbarThumb();
       }
-    } else if (this.guictx.isWidgetHot(id)) {
+    } else if (this.guictx.isHot(id)) {
       if (this.context.platform.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
-        this.guictx.setActiveWidget(id);
+        this.guictx.setActive(id);
         this.dragAnchorX = this.context.layout.hsbThumbX;
       }
     }
@@ -303,18 +307,18 @@ export class Gui {
 
     const inside = this.context.platform.isMouseInRect(x, y, width, height);
     if (inside) {
-      this.guictx.setHotWidget(id);
-    } else if (this.guictx.isWidgetHot(id)) {
-      this.guictx.setHotWidget(null);
+      this.guictx.setHot(id);
+    } else if (this.guictx.isHot(id)) {
+      this.guictx.setHot(null);
     }
 
     const { scrollbarThumbPressedColor, scrollbarThumbHoverColor, scrollbarThumbColor } =
       props.theme;
 
     let fillColor: string | undefined;
-    if (this.guictx.isWidgetActive(id)) {
+    if (this.guictx.isActive(id)) {
       fillColor = scrollbarThumbPressedColor;
-    } else if (this.guictx.isWidgetHot(id)) {
+    } else if (this.guictx.isHot(id)) {
       fillColor = scrollbarThumbHoverColor;
     } else {
       fillColor = scrollbarThumbColor;
@@ -351,15 +355,15 @@ export class Gui {
     }
 
     const id = 'vertical-scrollbar-thumb';
-    if (this.guictx.isWidgetActive(id)) {
+    if (this.guictx.isActive(id)) {
       if (this.context.platform.isMouseReleased(MOUSE_BUTTONS.PRIMARY)) {
-        this.guictx.setActiveWidget(null);
+        this.guictx.setActive(null);
       } else {
         this.dragVerticalScrollbarThumb();
       }
-    } else if (this.guictx.isWidgetHot(id)) {
+    } else if (this.guictx.isHot(id)) {
       if (this.context.platform.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
-        this.guictx.setActiveWidget(id);
+        this.guictx.setActive(id);
         this.dragAnchorY = this.context.layout.vsbThumbY;
       }
     }
@@ -373,18 +377,18 @@ export class Gui {
 
     const inside = this.context.platform.isMouseInRect(x, y, width, height);
     if (inside) {
-      this.guictx.setHotWidget(id);
-    } else if (this.guictx.isWidgetHot(id)) {
-      this.guictx.setHotWidget(null);
+      this.guictx.setHot(id);
+    } else if (this.guictx.isHot(id)) {
+      this.guictx.setHot(null);
     }
 
     const { scrollbarThumbPressedColor, scrollbarThumbHoverColor, scrollbarThumbColor } =
       props.theme;
 
     let fillColor: string | undefined;
-    if (this.guictx.isWidgetActive(id)) {
+    if (this.guictx.isActive(id)) {
       fillColor = scrollbarThumbPressedColor;
-    } else if (this.guictx.isWidgetHot(id)) {
+    } else if (this.guictx.isHot(id)) {
       fillColor = scrollbarThumbHoverColor;
     } else {
       fillColor = scrollbarThumbColor;
@@ -420,7 +424,7 @@ export class Gui {
       }
 
       const { hoveredRowBackgroundColor } = props.theme;
-      if (hoveredRowBackgroundColor && this.guictx.isNoWidgetActive()) {
+      if (hoveredRowBackgroundColor && this.guictx.isNoneActive()) {
         this.context.renderer.pushDrawCommand({
           type: 'rect',
           x: bodyAreaX,

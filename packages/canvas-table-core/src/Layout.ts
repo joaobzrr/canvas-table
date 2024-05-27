@@ -94,7 +94,7 @@ export class Layout {
   public rowStart = 0;
   public rowEnd = 0;
 
-  public columnWidths: number[];
+  public columnWidths = [] as number[];
   public columnPositions = [] as number[];
 
   constructor(params: LayoutParams) {
@@ -103,6 +103,9 @@ export class Layout {
   }
 
   public refreshLayout() {
+    this.canvasWidth = this.context.platform.canvas.width;
+    this.canvasHeight = this.context.platform.canvas.height;
+
     let scrollWidth = 0;
     for (const width of this.columnWidths) {
       scrollWidth += width;
