@@ -19,8 +19,8 @@ export class Gui {
 
   private hoveredRowIndex = -1;
 
-  private dragAnchorX = 0;
-  private dragAnchorY = 0;
+  private dragAddendX = 0;
+  private dragAddendY = 0;
 
   private headAreaClipRegion: Path2D = undefined!;
   private bodyAreaClipRegion: Path2D = undefined!;
@@ -152,9 +152,6 @@ export class Gui {
     const { platform, renderer, layout, props } = this.context;
     const { theme } = props;
 
-    const initialResizerScrollX = layout.calculateResizerScrollX(columnIndex);
-    let columnWasResized = false;
-
     const id = `column-resizer-${columnIndex}`;
 
     if (this.guictx.isActive(id)) {
@@ -162,23 +159,16 @@ export class Gui {
         this.guictx.setActive(null);
       } else {
         this.dragColumnResizer(columnIndex);
-        columnWasResized = true;
       }
     } else if (this.guictx.isHot(id)) {
       if (platform.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
         this.guictx.setActive(id);
-        this.dragAnchorX = initialResizerScrollX + COLUMN_RESIZER_LEFT_WIDTH;
+        this.dragAddendX = layout.columnWidths[columnIndex];
       }
     }
 
-    let finalResizerScrollX: number;
-    if (columnWasResized) {
-      finalResizerScrollX = layout.calculateResizerScrollX(columnIndex);
-    } else {
-      finalResizerScrollX = initialResizerScrollX;
-    }
-
-    const x = layout.scrollToScreenX(finalResizerScrollX);
+    const resizerScrollX = this.calculateResizerScrollX(columnIndex);
+    const x = layout.scrollToScreenX(resizerScrollX);
     const y = layout.headAreaY;
     const width = COLUMN_RESIZER_WIDTH;
     const height = layout.headAreaHeight - BORDER_WIDTH;
@@ -201,6 +191,7 @@ export class Gui {
         clipRegion: this.headAreaClipRegion,
         sortOrder: 5,
       });
+
       return true;
     }
 
@@ -210,14 +201,12 @@ export class Gui {
   public dragColumnResizer(columnIndex: number) {
     const { platform, layout, props } = this.context;
 
-    const columnScrollLeft = layout.calculateColumnScrollLeft(columnIndex);
-    const columnScrollRight = this.dragAnchorX + platform.dragDistanceX;
-    const columnWidth = Math.max(columnScrollRight - columnScrollLeft + 1, MIN_COLUMN_WIDTH);
-
-    layout.resizeColumn(columnIndex, columnWidth);
+    const computedColumnWidth = this.dragAddendX + platform.dragDistanceX;
+    const newColumnWidth = Math.max(computedColumnWidth, MIN_COLUMN_WIDTH);
+    layout.resizeColumn(columnIndex, newColumnWidth);
 
     const columnDef = props.columnDefs[columnIndex];
-    props.onResizeColumn?.(columnDef.key, columnIndex, columnWidth);
+    props.onResizeColumn?.(columnDef.key, columnIndex, newColumnWidth);
   }
 
   private doHorizontalScrollbar() {
@@ -247,7 +236,7 @@ export class Gui {
     } else if (this.guictx.isHot(id)) {
       if (platform.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
         this.guictx.setActive(id);
-        this.dragAnchorX = layout.hsbThumbX;
+        this.dragAddendX = layout.hsbThumbX;
       }
     }
 
@@ -289,7 +278,7 @@ export class Gui {
     const { platform, layout } = this.context;
 
     layout.hsbThumbX = clamp(
-      this.dragAnchorX + platform.dragDistanceX,
+      this.dragAddendX + platform.dragDistanceX,
       layout.hsbThumbMinX,
       layout.hsbThumbMaxX,
     );
@@ -325,7 +314,7 @@ export class Gui {
     } else if (this.guictx.isHot(id)) {
       if (platform.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
         this.guictx.setActive(id);
-        this.dragAnchorY = layout.vsbThumbY;
+        this.dragAddendY = layout.vsbThumbY;
       }
     }
     const inside = platform.isMouseInRect(
@@ -366,7 +355,7 @@ export class Gui {
     const { platform, layout } = this.context;
 
     layout.vsbThumbY = clamp(
-      this.dragAnchorY + platform.dragDistanceY,
+      this.dragAddendY + platform.dragDistanceY,
       layout.vsbThumbMinY,
       layout.vsbThumbMaxY,
     );
@@ -744,6 +733,21 @@ export class Gui {
         });
       }
     }
+  }
+
+  public calculateResizerScrollX(columnIndex: number) {
+    const { layout } = this.context;
+
+    const columnScrollLeft = layout.calculateColumnScrollLeft(columnIndex);
+
+    const columnWidth = layout.columnWidths[columnIndex];
+    const columnScrollRight = columnScrollLeft + columnWidth;
+
+    const resizerScrollLeft = Math.min(
+      columnScrollRight - COLUMN_RESIZER_LEFT_WIDTH - 1,
+      layout.scrollWidthMinCapped - COLUMN_RESIZER_WIDTH,
+    );
+    return resizerScrollLeft;
   }
 
   public calculateHoveredRowIndex() {

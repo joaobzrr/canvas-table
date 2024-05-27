@@ -1,11 +1,6 @@
 import { type Context } from './Context';
 import { clamp, computeColumnWidths, lerp } from './utils';
-import {
-  BORDER_WIDTH,
-  COLUMN_RESIZER_LEFT_WIDTH,
-  COLUMN_RESIZER_WIDTH,
-  MIN_THUMB_LENGTH,
-} from './constants';
+import { BORDER_WIDTH, MIN_THUMB_LENGTH } from './constants';
 
 export type LayoutParams = {
   context: Context;
@@ -284,21 +279,6 @@ export class Layout {
     return Math.round(
       lerp(this.scrollTop, 0, this.maxScrollY, this.vsbThumbMinY, this.vsbThumbMaxY),
     );
-  }
-
-  public calculateResizerScrollX(columnIndex: number) {
-    const { columnWidths, scrollWidthMinCapped } = this;
-
-    const columnScrollLeft = this.calculateColumnScrollLeft(columnIndex);
-
-    const columnWidth = columnWidths[columnIndex];
-    const columnScrollRight = columnScrollLeft + columnWidth;
-
-    const resizerScrollLeft = Math.min(
-      columnScrollRight - COLUMN_RESIZER_LEFT_WIDTH - 1,
-      scrollWidthMinCapped - COLUMN_RESIZER_WIDTH,
-    );
-    return resizerScrollLeft;
   }
 
   public calculateColumnScrollLeft(columnIndex: number) {
