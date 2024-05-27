@@ -1,6 +1,6 @@
 import { type Context } from './Context';
 import { GuiContext } from './GuiContext';
-import { createFontSpecifier, clamp, isNumber } from './utils';
+import { isNumber, clamp, createFontSpecifier } from './utils';
 import {
   BORDER_WIDTH,
   COLUMN_RESIZER_LEFT_WIDTH,
@@ -623,7 +623,7 @@ export class Gui {
         orientation: 'vertical',
         x: layout.calculateColumnScreenRight(j) - 1,
         y: layout.tableAreaY,
-        lEngth: layout.gridHeight,
+        length: layout.gridHeight,
         color: theme.borderColor,
         sortOrder: 4,
       });

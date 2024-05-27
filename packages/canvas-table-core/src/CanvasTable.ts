@@ -1,7 +1,7 @@
 import { Platform } from './Platform';
 import { Context } from './Context';
 import { Gui } from './Gui';
-import { computeColumnWidths, compareProps, shallowMerge } from './utils';
+import { shallowMerge, computeColumnWidths, compareProps } from './utils';
 import type {
   CanvasTableProps,
   CanvasTableParams,
