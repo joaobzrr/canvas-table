@@ -12,7 +12,7 @@ import type {
 } from './types';
 
 export class CanvasTable {
-  private context: Context;
+  private ctx: Context;
   private gui: Gui;
 
   private batchedProps: Partial<CanvasTableProps>[] = [];
@@ -20,15 +20,15 @@ export class CanvasTable {
   constructor(params: CanvasTableParams) {
     const { container, ...initialProps } = params;
 
-    this.context = new Context({
+    this.ctx = new Context({
       platform: this.createPlatform(container),
       props: this.createProps(initialProps),
     });
 
-    this.gui = new Gui({ context: this.context });
+    this.gui = new Gui({ context: this.ctx });
 
-    this.context.platform.setCallback(this.update.bind(this));
-    this.context.platform.startAnimation();
+    this.ctx.platform.setCallback(this.update.bind(this));
+    this.ctx.platform.startAnimation();
   }
 
   public config(props: Partial<CanvasTableProps>) {
@@ -36,7 +36,7 @@ export class CanvasTable {
   }
 
   public destroy() {
-    this.context.platform.destroy();
+    this.ctx.platform.destroy();
   }
 
   private createProps(...changes: Partial<CanvasTableProps>[]): CanvasTableProps {
@@ -44,7 +44,7 @@ export class CanvasTable {
   }
 
   private mergeProps(...changes: Partial<CanvasTableProps>[]): CanvasTableProps {
-    return shallowMerge(this.context.props, defaultProps, ...changes);
+    return shallowMerge(this.ctx.props, defaultProps, ...changes);
   }
 
   private update() {
@@ -55,23 +55,23 @@ export class CanvasTable {
   }
 
   private applyProps(newProps: CanvasTableProps) {
-    const { layout, props: oldProps } = this.context;
+    const { layout, props: oldProps } = this.ctx;
 
     const diff = compareProps(oldProps, newProps);
     if (diff.columnDefs) {
       layout.columnWidths = computeColumnWidths(newProps.columnDefs);
     }
 
-    this.context.props = newProps;
+    this.ctx.props = newProps;
   }
 
   private reattach(prev: Platform) {
     prev.destroy();
 
-    this.context.platform = this.createPlatform(prev.containerId);
-    this.context.platform.setCallback(this.update.bind(this));
-    this.context.renderer.setRenderingContext(this.context.platform.ctx);
-    this.context.platform.startAnimation();
+    this.ctx.platform = this.createPlatform(prev.containerId);
+    this.ctx.platform.setCallback(this.update.bind(this));
+    this.ctx.renderer.setRenderingContext(this.ctx.platform.ctx);
+    this.ctx.platform.startAnimation();
   }
 
   private createPlatform(containerId: string) {

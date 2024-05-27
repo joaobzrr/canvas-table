@@ -14,8 +14,8 @@ export type GuiParams = {
 };
 
 export class Gui {
-  private context: Context;
-  private guictx: GuiContext;
+  private ctx: Context;
+  private guiCtx: GuiContext;
 
   private hoveredRowIndex = -1;
 
@@ -26,13 +26,13 @@ export class Gui {
   private bodyAreaClipRegion: Path2D = undefined!;
 
   constructor(params: GuiParams) {
-    this.context = params.context;
-    this.guictx = new GuiContext();
+    this.ctx = params.context;
+    this.guiCtx = new GuiContext();
   }
 
   public update() {
-    const { layout, renderer } = this.context;
-    const { theme } = this.context.props;
+    const { layout, renderer } = this.ctx;
+    const { theme } = this.ctx.props;
 
     this.prepareFrame();
 
@@ -116,14 +116,14 @@ export class Gui {
   }
 
   public prepareFrame() {
-    const { platform, layout, props } = this.context;
+    const { platform, layout, props } = this.ctx;
     const { theme } = props;
 
     layout.reflow();
 
     let scrollAmountX: number;
     let scrollAmountY: number;
-    if (this.guictx.isNoneActive()) {
+    if (this.guiCtx.isNoneActive()) {
       scrollAmountX = platform.scrollAmountX;
       scrollAmountY = platform.scrollAmountY;
     } else {
@@ -149,20 +149,20 @@ export class Gui {
   }
 
   private doColumnResizer(columnIndex: number) {
-    const { platform, renderer, layout, props } = this.context;
+    const { platform, renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     const id = `column-resizer-${columnIndex}`;
 
-    if (this.guictx.isActive(id)) {
+    if (this.guiCtx.isActive(id)) {
       if (platform.isMouseReleased(MOUSE_BUTTONS.PRIMARY)) {
-        this.guictx.setActive(null);
+        this.guiCtx.setActive(null);
       } else {
         this.dragColumnResizer(columnIndex);
       }
-    } else if (this.guictx.isHot(id)) {
+    } else if (this.guiCtx.isHot(id)) {
       if (platform.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
-        this.guictx.setActive(id);
+        this.guiCtx.setActive(id);
         this.dragAddendX = layout.columnWidths[columnIndex];
       }
     }
@@ -175,12 +175,12 @@ export class Gui {
 
     const inside = platform.isMouseInRect(x, y, width, height);
     if (inside) {
-      this.guictx.setHot(id);
-    } else if (this.guictx.isHot(id)) {
-      this.guictx.setHot(null);
+      this.guiCtx.setHot(id);
+    } else if (this.guiCtx.isHot(id)) {
+      this.guiCtx.setHot(null);
     }
 
-    if (this.guictx.isActive(id) || this.guictx.isHot(id)) {
+    if (this.guiCtx.isActive(id) || this.guiCtx.isHot(id)) {
       renderer.pushDrawCommand({
         type: 'rect',
         x,
@@ -199,7 +199,7 @@ export class Gui {
   }
 
   public dragColumnResizer(columnIndex: number) {
-    const { platform, layout, props } = this.context;
+    const { platform, layout, props } = this.ctx;
 
     const computedColumnWidth = this.dragAddendX + platform.dragDistanceX;
     const newColumnWidth = Math.max(computedColumnWidth, MIN_COLUMN_WIDTH);
@@ -210,7 +210,7 @@ export class Gui {
   }
 
   private doHorizontalScrollbar() {
-    const { platform, renderer, layout, props } = this.context;
+    const { platform, renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     if (theme.scrollbarBackgroundColor) {
@@ -227,15 +227,15 @@ export class Gui {
 
     const id = 'horizontal-scrollbar-thumb';
 
-    if (this.guictx.isActive(id)) {
+    if (this.guiCtx.isActive(id)) {
       if (platform.isMouseReleased(MOUSE_BUTTONS.PRIMARY)) {
-        this.guictx.setActive(null);
+        this.guiCtx.setActive(null);
       } else {
         this.dragHorizontalScrollbarThumb();
       }
-    } else if (this.guictx.isHot(id)) {
+    } else if (this.guiCtx.isHot(id)) {
       if (platform.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
-        this.guictx.setActive(id);
+        this.guiCtx.setActive(id);
         this.dragAddendX = layout.hsbThumbX;
       }
     }
@@ -247,15 +247,15 @@ export class Gui {
       layout.hsbThumbHeight,
     );
     if (inside) {
-      this.guictx.setHot(id);
-    } else if (this.guictx.isHot(id)) {
-      this.guictx.setHot(null);
+      this.guiCtx.setHot(id);
+    } else if (this.guiCtx.isHot(id)) {
+      this.guiCtx.setHot(null);
     }
 
     let fillColor: string | undefined;
-    if (this.guictx.isActive(id)) {
+    if (this.guiCtx.isActive(id)) {
       fillColor = theme.scrollbarThumbPressedColor;
-    } else if (this.guictx.isHot(id)) {
+    } else if (this.guiCtx.isHot(id)) {
       fillColor = theme.scrollbarThumbHoverColor;
     } else {
       fillColor = theme.scrollbarThumbColor;
@@ -275,7 +275,7 @@ export class Gui {
   }
 
   public dragHorizontalScrollbarThumb() {
-    const { platform, layout } = this.context;
+    const { platform, layout } = this.ctx;
 
     layout.hsbThumbX = clamp(
       this.dragAddendX + platform.dragDistanceX,
@@ -288,7 +288,7 @@ export class Gui {
   }
 
   private doVerticalScrollbar() {
-    const { platform, renderer, layout, props } = this.context;
+    const { platform, renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     if (theme.scrollbarBackgroundColor) {
@@ -305,15 +305,15 @@ export class Gui {
 
     const id = 'vertical-scrollbar-thumb';
 
-    if (this.guictx.isActive(id)) {
+    if (this.guiCtx.isActive(id)) {
       if (platform.isMouseReleased(MOUSE_BUTTONS.PRIMARY)) {
-        this.guictx.setActive(null);
+        this.guiCtx.setActive(null);
       } else {
         this.dragVerticalScrollbarThumb();
       }
-    } else if (this.guictx.isHot(id)) {
+    } else if (this.guiCtx.isHot(id)) {
       if (platform.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
-        this.guictx.setActive(id);
+        this.guiCtx.setActive(id);
         this.dragAddendY = layout.vsbThumbY;
       }
     }
@@ -324,15 +324,15 @@ export class Gui {
       layout.vsbThumbHeight,
     );
     if (inside) {
-      this.guictx.setHot(id);
-    } else if (this.guictx.isHot(id)) {
-      this.guictx.setHot(null);
+      this.guiCtx.setHot(id);
+    } else if (this.guiCtx.isHot(id)) {
+      this.guiCtx.setHot(null);
     }
 
     let fillColor: string | undefined;
-    if (this.guictx.isActive(id)) {
+    if (this.guiCtx.isActive(id)) {
       fillColor = theme.scrollbarThumbPressedColor;
-    } else if (this.guictx.isHot(id)) {
+    } else if (this.guiCtx.isHot(id)) {
       fillColor = theme.scrollbarThumbHoverColor;
     } else {
       fillColor = theme.scrollbarThumbColor;
@@ -352,7 +352,7 @@ export class Gui {
   }
 
   public dragVerticalScrollbarThumb() {
-    const { platform, layout } = this.context;
+    const { platform, layout } = this.ctx;
 
     layout.vsbThumbY = clamp(
       this.dragAddendY + platform.dragDistanceY,
@@ -365,7 +365,7 @@ export class Gui {
   }
 
   private doRows() {
-    const { platform, layout, renderer, props } = this.context;
+    const { platform, layout, renderer, props } = this.ctx;
     const { theme } = props;
 
     if (this.hoveredRowIndex !== -1) {
@@ -379,7 +379,7 @@ export class Gui {
         }
       }
 
-      if (theme.hoveredRowBackgroundColor && this.guictx.isNoneActive()) {
+      if (theme.hoveredRowBackgroundColor && this.guiCtx.isNoneActive()) {
         renderer.pushDrawCommand({
           type: 'rect',
           x: layout.bodyAreaX,
@@ -416,7 +416,7 @@ export class Gui {
   }
 
   private drawTableBackground() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     renderer.pushDrawCommand({
@@ -430,7 +430,7 @@ export class Gui {
   }
 
   private drawBodyBackground() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     renderer.pushDrawCommand({
@@ -444,7 +444,7 @@ export class Gui {
   }
 
   private drawHeadBackground() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     renderer.pushDrawCommand({
@@ -458,7 +458,7 @@ export class Gui {
   }
 
   private drawTopRightCornerBackground() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     renderer.pushDrawCommand({
@@ -472,7 +472,7 @@ export class Gui {
   }
 
   private drawBottomRightCornerBackground() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     renderer.pushDrawCommand({
@@ -486,7 +486,7 @@ export class Gui {
   }
 
   private drawEvenRowsBackground() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     for (let i = layout.rowStart; i < layout.rowEnd; i += 2) {
@@ -504,7 +504,7 @@ export class Gui {
   }
 
   private drawOddRowsBackground() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     for (let i = layout.rowStart + 1; i < layout.rowEnd; i += 2) {
@@ -522,7 +522,7 @@ export class Gui {
   }
 
   private drawHeadBottomBorder() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     renderer.pushDrawCommand({
@@ -537,7 +537,7 @@ export class Gui {
   }
 
   private drawHorizontalScrollbarBorder() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     renderer.pushDrawCommand({
@@ -552,7 +552,7 @@ export class Gui {
   }
 
   private drawVerticalScrollbarBorder() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     renderer.pushDrawCommand({
@@ -567,7 +567,7 @@ export class Gui {
   }
 
   private drawRightTableContentBorder() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     renderer.pushDrawCommand({
@@ -582,7 +582,7 @@ export class Gui {
   }
 
   private drawBottomTableContentBorder() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     renderer.pushDrawCommand({
@@ -597,7 +597,7 @@ export class Gui {
   }
 
   private drawRowBorders() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     for (let i = layout.rowStart; i < layout.rowEnd - 1; i++) {
@@ -614,7 +614,7 @@ export class Gui {
   }
 
   private drawColumnBorders() {
-    const { renderer, layout, props } = this.context;
+    const { renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     for (let j = layout.columnStart; j < layout.columnEnd - 1; j++) {
@@ -623,7 +623,7 @@ export class Gui {
         orientation: 'vertical',
         x: layout.calculateColumnScreenRight(j) - 1,
         y: layout.tableAreaY,
-        length: layout.gridHeight,
+        lEngth: layout.gridHeight,
         color: theme.borderColor,
         sortOrder: 4,
       });
@@ -631,7 +631,7 @@ export class Gui {
   }
 
   private drawHeadText() {
-    const { platform, renderer, layout, props } = this.context;
+    const { platform, renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     const textStyle = theme.headFontStyle ?? theme.fontStyle;
@@ -680,7 +680,7 @@ export class Gui {
   }
 
   private drawBodyText() {
-    const { platform, renderer, layout, props } = this.context;
+    const { platform, renderer, layout, props } = this.ctx;
     const { theme } = props;
 
     const textStyle = theme.bodyFontStyle ?? theme.fontStyle;
@@ -736,7 +736,7 @@ export class Gui {
   }
 
   public calculateResizerScrollX(columnIndex: number) {
-    const { layout } = this.context;
+    const { layout } = this.ctx;
 
     const columnScrollLeft = layout.calculateColumnScrollLeft(columnIndex);
 
@@ -751,7 +751,7 @@ export class Gui {
   }
 
   public calculateHoveredRowIndex() {
-    const { platform, layout, props } = this.context;
+    const { platform, layout, props } = this.ctx;
     const { theme } = props;
 
     let mouseRow: number;
@@ -772,7 +772,7 @@ export class Gui {
   }
 
   private updateClipRegions() {
-    const { layout } = this.context;
+    const { layout } = this.ctx;
 
     this.bodyAreaClipRegion = new Path2D();
     this.bodyAreaClipRegion.rect(

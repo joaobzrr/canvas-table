@@ -7,7 +7,7 @@ export type LayoutParams = {
 };
 
 export class Layout {
-  private context: Context;
+  private ctx: Context;
 
   public canvasWidth = 1;
   public canvasHeight = 1;
@@ -93,12 +93,12 @@ export class Layout {
   public columnPositions = [] as number[];
 
   constructor(params: LayoutParams) {
-    this.context = params.context;
-    this.columnWidths = computeColumnWidths(this.context.props.columnDefs);
+    this.ctx = params.context;
+    this.columnWidths = computeColumnWidths(this.ctx.props.columnDefs);
   }
 
   public reflow() {
-    const { platform, props } = this.context;
+    const { platform, props } = this.ctx;
     const { theme } = props;
 
     this.canvasWidth = platform.canvas.width;
@@ -219,7 +219,7 @@ export class Layout {
   }
 
   public updateViewport() {
-    const { props } = this.context;
+    const { props } = this.ctx;
     const { theme } = props;
 
     let columnPos = 0;
@@ -286,7 +286,7 @@ export class Layout {
   }
 
   public calculateRowScrollTop(rowIndex: number) {
-    const { theme } = this.context.props;
+    const { theme } = this.ctx.props;
     return rowIndex * theme.rowHeight;
   }
 
@@ -309,7 +309,7 @@ export class Layout {
   }
 
   public calculateRowScreenBottom(rowIndex: number) {
-    const { theme } = this.context.props;
+    const { theme } = this.ctx.props;
     const rowScreenTop = this.calculateRowScreenTop(rowIndex);
     return rowScreenTop + theme.rowHeight;
   }
