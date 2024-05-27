@@ -27,7 +27,7 @@ export class CanvasTable {
 
     this.gui = new Gui({ context: this.context });
 
-    this.context.platform.callback = this.update.bind(this);
+    this.context.platform.setCallback(this.update.bind(this));
     this.context.platform.startAnimation();
   }
 

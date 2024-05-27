@@ -32,8 +32,6 @@ export class Platform {
   currMouseButtons = 0;
   prevMouseButtons = 0;
 
-  mouseHasMoved = false;
-
   dragStartX = 0;
   dragStartY = 0;
 
@@ -151,6 +149,10 @@ export class Platform {
     return (this.currMouseButtons & value) === 0 && (this.prevMouseButtons & value) === 1;
   }
 
+  public isMouseMoved() {
+    return this.currMouseX !== this.prevMouseX || this.currMouseY !== this.prevMouseY;
+  }
+
   private animate() {
     if (!document.contains(this.containerEl)) {
       this.onDetach?.(this);
@@ -162,8 +164,6 @@ export class Platform {
     ) {
       this.resizeCanvas(this.sizingEl.offsetWidth, this.sizingEl.offsetHeight);
     }
-
-    this.mouseHasMoved = this.currMouseX !== this.prevMouseX || this.currMouseY !== this.prevMouseY;
 
     if (this.isMousePressed(MOUSE_BUTTONS.PRIMARY)) {
       this.dragStartX = this.currMouseX;
