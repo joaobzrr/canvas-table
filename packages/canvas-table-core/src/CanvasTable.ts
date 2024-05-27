@@ -1,6 +1,7 @@
 import { Platform } from './Platform';
 import { Context } from './Context';
 import { Gui } from './Gui';
+import { defaultTheme } from './defaultTheme';
 import { shallowMerge, computeColumnWidths, compareProps } from './utils';
 import type {
   CanvasTableProps,
@@ -14,7 +15,6 @@ import type {
 export class CanvasTable {
   private ctx: Context;
   private gui: Gui;
-
   private batchedProps: Partial<CanvasTableProps>[] = [];
 
   constructor(params: CanvasTableParams) {
@@ -74,6 +74,7 @@ export class CanvasTable {
 }
 
 const defaultProps: Partial<CanvasTableProps> = {
+  theme: defaultTheme,
   selectId: (row: DataRow) => {
     return row.id as DataRowId;
   },
