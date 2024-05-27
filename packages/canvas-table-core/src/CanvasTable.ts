@@ -22,7 +22,7 @@ export class CanvasTable {
 
     this.ctx = new Context({
       platform: this.createPlatform(container),
-      props: this.createProps(initialProps),
+      props: shallowMerge(defaultProps, initialProps),
     });
 
     this.gui = new Gui({ context: this.ctx });
@@ -39,16 +39,10 @@ export class CanvasTable {
     this.ctx.platform.destroy();
   }
 
-  private createProps(...changes: Partial<CanvasTableProps>[]): CanvasTableProps {
-    return shallowMerge(defaultProps, ...changes);
-  }
-
-  private mergeProps(...changes: Partial<CanvasTableProps>[]): CanvasTableProps {
-    return shallowMerge(this.ctx.props, defaultProps, ...changes);
-  }
-
   private update() {
-    const newProps = this.mergeProps(...this.batchedProps);
+    const { props } = this.ctx;
+
+    const newProps = shallowMerge<CanvasTableProps>(props, defaultProps, ...this.batchedProps);
     this.applyProps(newProps);
 
     this.gui.update();
