@@ -759,8 +759,8 @@ export class Gui {
       platform.isMouseInRect(
         layout.bodyAreaX,
         layout.bodyAreaY,
-        layout.bodyAreaWidth,
-        layout.bodyAreaHeight,
+        layout.bodyVisibleWidth,
+        layout.bodyVisibleHeight,
       )
     ) {
       mouseRow = Math.floor(layout.screenToScrollY(platform.currMouseY) / theme.rowHeight);
