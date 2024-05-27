@@ -43,20 +43,20 @@ export class CanvasTable {
     const { props } = this.ctx;
 
     const newProps = shallowMerge<CanvasTableProps>(props, defaultProps, ...this.batchedProps);
-    this.applyProps(newProps);
+    this.handleChanges(newProps);
+
+    this.ctx.props = newProps;
 
     this.gui.update();
   }
 
-  private applyProps(newProps: CanvasTableProps) {
+  private handleChanges(newProps: CanvasTableProps) {
     const { layout, props: oldProps } = this.ctx;
 
     const diff = compareProps(oldProps, newProps);
     if (diff.columnDefs) {
       layout.columnWidths = computeColumnWidths(newProps.columnDefs);
     }
-
-    this.ctx.props = newProps;
   }
 
   private reattach(prev: Platform) {
